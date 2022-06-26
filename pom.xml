@@ -38,6 +38,17 @@
         <url>https://github.com/katplus/kat/issues</url>
     </issueManagement>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-snapshots</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>sonatype-release</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
+
     <developers>
         <developer>
             <id>kraity</id>
@@ -98,8 +109,13 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>1.6</version>
+                    <version>3.0.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -125,6 +141,7 @@
                         <artifactId>maven-gpg-plugin</artifactId>
                         <executions>
                             <execution>
+                                <id>sign-artifacts</id>
                                 <phase>verify</phase>
                                 <goals>
                                     <goal>sign</goal>
@@ -134,16 +151,6 @@
                     </plugin>
                 </plugins>
             </build>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>sonatype-snapshots</id>
-                    <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-                </snapshotRepository>
-                <repository>
-                    <id>sonatype-release</id>
-                    <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
         </profile>
     </profiles>
 
