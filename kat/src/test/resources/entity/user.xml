@@ -1,0 +1,14 @@
+<User>
+    <uid>1</uid>
+    <name>kraity</name>
+    <role>developer</role>
+
+    <!-- status -->
+    <blocked>0</blocked>
+
+    <!-- extra data -->
+    <resource>
+        <age>6</age>
+        <devote>1024</devote>
+    </resource>
+</User>

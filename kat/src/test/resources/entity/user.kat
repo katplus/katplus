@@ -1,0 +1,15 @@
+# this is a test entity
+User{
+    l:uid(1)
+    s:name(kraity)
+    s:role(developer)
+
+    # status
+    b:blocked(0)
+
+    # extra data
+    M:resource{
+        I:age(6)
+        D:devote(1024)
+    }
+}

@@ -1,0 +1,113 @@
+/*
+ * Copyright 2022 Kat+ Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package plus.kat.reflex;
+
+import plus.kat.anno.NotNull;
+import plus.kat.anno.Nullable;
+
+import plus.kat.*;
+import plus.kat.chain.*;
+
+import java.lang.reflect.*;
+
+/**
+ * @author kraity
+ * @since 0.0.1
+ */
+public class Reflex {
+
+    @Nullable
+    public static Spare<?> lookup(
+        @Nullable Type type,
+        @NotNull Supplier supplier
+    ) {
+        if (type instanceof Class) {
+            if (type == Object.class) {
+                return null;
+            }
+
+            return supplier.embed(
+                (Class<?>) type
+            );
+        }
+
+        if (type instanceof Space) {
+            Space s = (Space) type;
+            type = s.getType();
+            if (type != null) {
+                return lookup(
+                    type, supplier
+                );
+            }
+            return supplier.lookup(s);
+        }
+
+        if (type instanceof ParameterizedType) {
+            ParameterizedType p = (ParameterizedType) type;
+            return supplier.embed(
+                (Class<?>) p.getRawType()
+            );
+        }
+
+        if (type instanceof WildcardType) {
+            WildcardType w = (WildcardType) type;
+            type = w.getUpperBounds()[0];
+            if (type != Object.class) {
+                return supplier.embed(
+                    (Class<?>) type
+                );
+            }
+            Type[] bounds = w.getLowerBounds();
+            if (bounds.length != 0) {
+                type = bounds[0];
+                if (type != Object.class) {
+                    return supplier.embed(
+                        (Class<?>) type
+                    );
+                }
+            }
+            return null;
+        }
+
+        if (type instanceof TypeVariable) {
+            TypeVariable<?> v = (TypeVariable<?>) type;
+            Type[] bounds = v.getBounds();
+            if (bounds.length != 0) {
+                type = bounds[0];
+                if (type != Object.class) {
+                    return supplier.embed(
+                        (Class<?>) type
+                    );
+                }
+            }
+            return null;
+        }
+
+        if (type instanceof ArrayType) {
+            return supplier.embed(
+                Object[].class
+            );
+        }
+
+        if (type instanceof GenericArrayType) {
+            return supplier.embed(
+                Object[].class
+            );
+        }
+
+        return null;
+    }
+}

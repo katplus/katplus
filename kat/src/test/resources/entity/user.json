@@ -1,0 +1,10 @@
+{
+    "uid": 1,
+    "name": "kraity",
+    "role": "developer",
+    "blocked": 0,
+    "resource": {
+        "age": 6,
+        "devote": 1024
+    }
+}

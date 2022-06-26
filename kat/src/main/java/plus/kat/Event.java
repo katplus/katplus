@@ -1,0 +1,707 @@
+/*
+ * Copyright 2022 Kat+ Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package plus.kat;
+
+import plus.kat.anno.NotNull;
+import plus.kat.anno.Nullable;
+
+import java.io.*;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.net.*;
+import java.nio.file.Path;
+import javax.crypto.Cipher;
+
+import plus.kat.chain.*;
+import plus.kat.crash.*;
+import plus.kat.entity.*;
+import plus.kat.reflex.*;
+import plus.kat.stream.*;
+import plus.kat.stream.Reader;
+import plus.kat.stream.InputStreamReader;
+
+import static plus.kat.Supplier.Impl.INS;
+
+/**
+ * @author kraity
+ * @since 0.0.1
+ */
+public class Event<T> extends Builder<Object> implements Flag {
+
+    protected int range;
+    protected long flags;
+
+    protected Alias name;
+    protected Object result;
+
+    protected Reader reader;
+    protected Type type;
+    protected Spare<?> spare;
+
+    /**
+     * For example
+     * <pre>{@code
+     *   Event<User> event = new Event<>();
+     *   Reader reader = ...;
+     *   event.with(reader);
+     * }</pre>
+     */
+    public Event() {
+        this(Event.class);
+    }
+
+    /**
+     * @param impl the specified {@link Class} that needs to be compared
+     */
+    public Event(
+        @NotNull Class<?> impl
+    ) {
+        this.flag = this;
+        this.range = 8;
+        this.supplier = INS;
+
+        Class<?> klass = getClass();
+        if (klass != impl) {
+            type = ((ParameterizedType) klass.getGenericSuperclass()).getActualTypeArguments()[0];
+        }
+    }
+
+    /**
+     * @param reader the specified {@link Supplier} to be used
+     */
+    public Event(
+        @NotNull Reader reader
+    ) {
+        this(Event.class);
+        this.reader = reader;
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   byte[] data = ...;
+     *   Event<User> event = new Event<>(data);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see ByteReader#ByteReader(byte[])
+     */
+    public Event(
+        @NotNull byte[] data
+    ) {
+        this(Event.class);
+        reader = new ByteReader(data);
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   byte[] data = ...;
+     *   Cipher cipher = ...;
+     *   Event<User> event = new Event<>(data, cipher);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code data} or {@code cipher} is null
+     * @see CipherByteReader#CipherByteReader(byte[], Cipher)
+     */
+    public Event(
+        @NotNull byte[] data,
+        @NotNull Cipher cipher
+    ) {
+        this(Event.class);
+        reader = new CipherByteReader(
+            data, cipher
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   Paper data = ...;
+     *   Event<User> event = new Event<>(data);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see ByteReader#ByteReader(Paper)
+     */
+    public Event(
+        @NotNull Paper data
+    ) {
+        this(Event.class);
+        reader = new ByteReader(data);
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   byte[] data = ...;
+     *   Event<User> event = new Event<>(data);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see CharReader#CharReader(CharSequence)
+     */
+    public Event(
+        @NotNull CharSequence data
+    ) {
+        this(Event.class);
+        reader = new CharReader(data);
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   CharSequence data = ...;
+     *   Cipher cipher = ...;
+     *   Event<User> event = new Event<>(data, cipher);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see CipherCharReader#CipherCharReader(CharSequence, Cipher)
+     */
+    public Event(
+        @NotNull CharSequence data,
+        @NotNull Cipher cipher
+    ) {
+        this(Event.class);
+        reader = new CipherCharReader(data, cipher);
+    }
+
+    /**
+     * @throws NullPointerException      If the specified {@code data} is null
+     * @throws IndexOutOfBoundsException If the index and the length are out of range
+     * @see ByteReader#ByteReader(byte[], int, int)
+     */
+    public Event(
+        @NotNull byte[] data, int index, int length
+    ) {
+        this(Event.class);
+        reader = new ByteReader(
+            data, index, length
+        );
+    }
+
+    /**
+     * @throws NullPointerException      If the specified {@code data} is null
+     * @throws IndexOutOfBoundsException If the index and the length are out of range
+     * @see CharReader#CharReader(CharSequence, int, int)
+     */
+    public Event(
+        @NotNull CharSequence data, int index, int length
+    ) {
+        this(Event.class);
+        reader = new CharReader(
+            data, index, length
+        );
+    }
+
+    /**
+     * @throws NullPointerException      If the specified {@code data} is null
+     * @throws IndexOutOfBoundsException If the index and the length are out of range
+     * @see CharReader#CharReader(CharSequence, int, int)
+     */
+    public Event(
+        @NotNull CharSequence data, int index, int length, @Nullable Supplier supplier
+    ) {
+        this(Event.class);
+        with(supplier);
+        reader = new CharReader(
+            data, index, length
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   URL url = ...;
+     *   Event<User> event = new Event<>(url);
+     * }</pre>
+     *
+     * @throws IOException          If an I/O exception occurs
+     * @throws NullPointerException If the specified {@code url} is null
+     * @see URL#openStream()
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    public Event(
+        @NotNull URL url
+    ) throws IOException {
+        this(Event.class);
+        reader = new InputStreamReader(
+            url.openStream()
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   File file = ...;
+     *   Event<User> event = new Event<>(file);
+     * }</pre>
+     *
+     * @throws NullPointerException  If the specified {@code file} is null
+     * @throws FileNotFoundException If the file does not exist or is not a regular file or for some other reason cannot be opened for reading.
+     * @see FileInputStream#FileInputStream(String)
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    public Event(
+        @NotNull File file
+    ) throws FileNotFoundException {
+        this(Event.class);
+        reader = new InputStreamReader(
+            new FileInputStream(file)
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   Path path = ...;
+     *   Event<User> event = new Event<>(path);
+     * }</pre>
+     *
+     * @throws NullPointerException          If the specified {@code path} is null
+     * @throws FileNotFoundException         If the file does not exist or is not a regular file or for some other reason cannot be opened for reading.
+     * @throws UnsupportedOperationException If this Path is not associated with the default provider
+     * @see Path#toFile()
+     * @see FileInputStream#FileInputStream(File)
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    public Event(
+        @NotNull Path path
+    ) throws FileNotFoundException {
+        this(Event.class);
+        reader = new InputStreamReader(
+            new FileInputStream(
+                path.toFile()
+            )
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   URLConnection conn = ...;
+     *   Event<User> event = new Event<>(conn);
+     * }</pre>
+     *
+     * @throws NullPointerException    If the specified {@code conn} is null
+     * @throws IOException             If an I/O error occurs while creating the input stream
+     * @throws UnknownServiceException If the protocol does not support input
+     * @see URLConnection#getInputStream()
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    public Event(
+        @NotNull URLConnection conn
+    ) throws IOException {
+        this(Event.class);
+        reader = new InputStreamReader(
+            conn.getInputStream()
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   InputStream stream = ...;
+     *   Event<User> event = new Event<>(stream);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code stream} is null
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    public Event(
+        @NotNull InputStream stream
+    ) {
+        this(Event.class);
+        reader = new InputStreamReader(stream);
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   cipher.init(
+     *      Cipher.DECRYPT_MODE,
+     *      new SecretKeySpec(
+     *         "key".getBytes(), "AES"
+     *      ),
+     *      new IvParameterSpec(
+     *         "iv".getBytes()
+     *      )
+     *   );
+     *   InputStream stream = ...;
+     *   Event<User> event = new Event<>(stream, cipher);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code stream} is null
+     * @see CipherStreamReader#CipherStreamReader(InputStream, Cipher)
+     */
+    public Event(
+        @NotNull InputStream stream,
+        @NotNull Cipher cipher
+    ) {
+        this(Event.class);
+        reader = new CipherStreamReader(
+            stream, cipher
+        );
+    }
+
+    /**
+     * Check if this {@link Event} use the {@code flag}
+     *
+     * @param flag the specified {@code flag}
+     */
+    @Override
+    public boolean isFlag(
+        long flag
+    ) {
+        return (flags & flag) != 0;
+    }
+
+    /**
+     * Use the specified feature {@code flag}
+     *
+     * @param flag the specified {@code flag}
+     */
+    public void with(
+        long flag
+    ) {
+        flags |= flag;
+    }
+
+    /**
+     * Use the specified {@link Type}
+     *
+     * @param type the specified type
+     */
+    public void with(
+        @Nullable Type type
+    ) {
+        this.type = type;
+    }
+
+    /**
+     * Use the specified {@link Reader}
+     *
+     * @param reader the specified {@link Reader} to be read
+     */
+    public void with(
+        @Nullable Reader reader
+    ) {
+        this.reader = reader;
+    }
+
+    /**
+     * Use the specified {@link Spare}
+     *
+     * @param spare the specified spare
+     */
+    public void with(
+        @Nullable Spare<? super T> spare
+    ) {
+        this.spare = spare;
+    }
+
+    /**
+     * Use the specified {@link Supplier}
+     *
+     * @param supplier the specified supplier
+     */
+    public void with(
+        @Nullable Supplier supplier
+    ) {
+        if (supplier != null) {
+            this.supplier = supplier;
+        }
+    }
+
+    /**
+     * Use the specified {@link Type}
+     * If this {@link Event} does not have {@code type}
+     *
+     * @param type the specified type may be used
+     */
+    public void expect(
+        @Nullable Type type
+    ) {
+        if (this.type == null) {
+            this.type = type;
+        }
+    }
+
+    /**
+     * Captures unexpected crash
+     *
+     * @param e the unexpected crash
+     */
+    public void onCrash(
+        @NotNull Exception e
+    ) {
+        // Nothing
+    }
+
+    /**
+     * Returns the maximum range
+     */
+    public int getRange() {
+        return range;
+    }
+
+    /**
+     * @param range the specified maximum range
+     */
+    public void setRange(
+        int range
+    ) {
+        if (range > 0) {
+            this.range = range;
+        }
+    }
+
+    /**
+     * Returns the specified {@link Flag} being used
+     */
+    @NotNull
+    public Flag getFlag() {
+        Flag f = flag;
+        return f != null ? f : this;
+    }
+
+    /**
+     * @param flag the specified {@link Flag} to be used
+     */
+    public void setFlag(
+        Flag flag
+    ) {
+        if (flag != null) {
+            this.flag = flag;
+        }
+    }
+
+    /**
+     * Returns the specified {@link Reader} being read
+     *
+     * @return {@link Reader} or null
+     */
+    @Nullable
+    public Reader getReader() {
+        return reader;
+    }
+
+    @Override
+    public void create(
+        @NotNull Alias alias
+    ) {
+        // Nothing
+    }
+
+    @Override
+    public void accept(
+        @NotNull Space space,
+        @NotNull Alias alias,
+        @NotNull Value value
+    ) throws IOCrash {
+        if (spare != null) {
+            name = alias.copy();
+            result = spare.read(
+                flag, value
+            );
+        } else {
+            if (type == null) {
+                spare = supplier.lookup(space);
+            } else {
+                spare = Reflex.lookup(
+                    type, supplier
+                );
+            }
+
+            if (spare != null) {
+                name = alias.copy();
+                result = spare.read(
+                    flag, value
+                );
+            }
+        }
+    }
+
+    @Nullable
+    @Override
+    public Object bundle() {
+        return result;
+    }
+
+    @Override
+    public Builder<?> explore(
+        @NotNull Space space,
+        @NotNull Alias alias
+    ) {
+        if (spare != null) {
+            return spare.getBuilder(type);
+        }
+
+        if (type == null) {
+            spare = supplier.lookup(space);
+        } else {
+            spare = Reflex.lookup(
+                type, supplier
+            );
+        }
+
+        if (spare == null) {
+            return null;
+        }
+
+        return spare.getBuilder(type);
+    }
+
+    @Override
+    public void receive(
+        @NotNull Builder<?> child
+    ) {
+        name = child.alias();
+        result = child.bundle();
+    }
+
+    /**
+     * Close this {@link Event}
+     */
+    public void close() {
+        name = null;
+        result = null;
+        spare = null;
+        flag = null;
+        reader = null;
+        supplier = null;
+    }
+
+    /**
+     * @see CharAsciiReader#CharAsciiReader(CharSequence)
+     */
+    @NotNull
+    public static <T> Event<T> ascii(
+        @NotNull CharSequence data
+    ) {
+        return new Event<>(
+            new CharAsciiReader(data)
+        );
+    }
+
+    /**
+     * @throws IndexOutOfBoundsException If the index and the range are out of range
+     * @see CharAsciiReader#CharAsciiReader(CharSequence, int, int)
+     */
+    @NotNull
+    public static <T> Event<T> ascii(
+        @NotNull CharSequence data, int index, int range
+    ) {
+        return new Event<>(
+            new CharAsciiReader(
+                data, index, range
+            )
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   Event.file("./test/entity/user.kat");
+     * }</pre>
+     *
+     * @param path the file path
+     * @throws FileNotFoundException If the file does not exist or is not a regular file or for some other reason cannot be opened for reading.
+     * @see FileInputStream#FileInputStream(String)
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    @NotNull
+    public static <T> Event<T> file(
+        @NotNull String path
+    ) throws FileNotFoundException {
+        return new Event<>(
+            new InputStreamReader(
+                new FileInputStream(path)
+            )
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   Event.file(getClass(), "/entity/user.kat");
+     * }</pre>
+     *
+     * @param path the file path
+     * @throws NullPointerException  If the specified {@code path} or {@code klass} is null
+     * @throws FileNotFoundException If the file does not exist or is not a regular file or for some other reason cannot be opened for reading.
+     * @see Class#getResourceAsStream(String)
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    @NotNull
+    public static <T> Event<T> file(
+        @NotNull Class<?> klass,
+        @NotNull String path
+    ) throws FileNotFoundException {
+        InputStream in = klass
+            .getResourceAsStream(path);
+
+        if (in == null) {
+            throw new FileNotFoundException(
+                "the file does not exist"
+            );
+        }
+
+        return new Event<>(
+            new InputStreamReader(in)
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   Event.remote("https://kat.plus/test/entity/user.kat");
+     * }</pre>
+     *
+     * @param url the String to parse as a URL.
+     * @throws IOException             If an I/O error occurs while creating the input stream
+     * @throws UnknownServiceException If the protocol does not support input
+     * @throws MalformedURLException   If the url is {@code null} or no protocol is specified or an unknown protocol is found
+     * @see URL#URL(String)
+     * @see URL#openConnection()
+     * @see URLConnection#getInputStream()
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    @NotNull
+    public static <T> Event<T> remote(
+        @NotNull String url
+    ) throws IOException {
+        URL $url = new URL(url);
+        URLConnection conn = $url.openConnection();
+
+        conn.setReadTimeout(6000);
+        conn.setConnectTimeout(3000);
+
+        conn.setRequestProperty(
+            "User-Agent", "kat/0.0.1"
+        );
+        conn.setRequestProperty(
+            "Accept", "text/kat,text/xml,text/plain,application/kat,application/xml,application/json"
+        );
+
+        return new Event<>(
+            new InputStreamReader(
+                conn.getInputStream()
+            )
+        );
+    }
+}
