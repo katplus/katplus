@@ -40,7 +40,7 @@ fun <T : Any> embed(
 inline fun <reified T : Any> read(
     data: ByteArray?
 ) = Kat.decode(
-    T::class.java, Event(data)
+    T::class.java, data
 )
 
 /**
@@ -52,7 +52,7 @@ inline fun <reified T : Any> read(
 inline fun <reified T : Any> read(
     data: CharSequence?
 ) = Kat.decode(
-    T::class.java, Event(data)
+    T::class.java, data
 )
 
 /**
@@ -76,7 +76,7 @@ inline fun <reified T : Any> read(
 inline fun <reified T : Any> down(
     data: ByteArray?
 ) = Doc.decode(
-    T::class.java, Event(data)
+    T::class.java, data
 )
 
 /**
@@ -88,7 +88,7 @@ inline fun <reified T : Any> down(
 inline fun <reified T : Any> down(
     data: CharSequence?
 ) = Doc.decode(
-    T::class.java, Event(data)
+    T::class.java, data
 )
 
 /**
@@ -98,7 +98,7 @@ inline fun <reified T : Any> down(
 @Nullable
 @Suppress("HasPlatformType")
 inline fun <reified T : Any> down(
-    data: Event<T>?
+    data: Event<out T>?
 ) = Doc.decode(
     T::class.java, data
 )
@@ -112,7 +112,7 @@ inline fun <reified T : Any> down(
 inline fun <reified T : Any> parse(
     data: ByteArray?
 ) = Json.decode(
-    T::class.java, Event(data)
+    T::class.java, data
 )
 
 /**
@@ -124,7 +124,7 @@ inline fun <reified T : Any> parse(
 inline fun <reified T : Any> parse(
     data: CharSequence?
 ) = Json.decode(
-    T::class.java, Event(data)
+    T::class.java, data
 )
 
 /**
@@ -134,7 +134,7 @@ inline fun <reified T : Any> parse(
 @Nullable
 @Suppress("HasPlatformType")
 inline fun <reified T : Any> parse(
-    data: Event<T>?
+    data: Event<out T>?
 ) = Json.decode(
     T::class.java, data
 )
