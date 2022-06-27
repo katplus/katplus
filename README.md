@@ -12,7 +12,6 @@ KAT+ 一个轻量级的 **KAT** + **XML** + **JSON** 库
 Maven:
 
 ```xml
-
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat</artifactId>

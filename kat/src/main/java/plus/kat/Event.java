@@ -80,7 +80,7 @@ public class Event<T> extends Builder<Object> implements Flag {
     }
 
     /**
-     * @param reader the specified {@link Supplier} to be used
+     * @param reader the specified {@link Reader} to be used
      */
     public Event(
         @NotNull Reader reader

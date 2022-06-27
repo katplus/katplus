@@ -99,8 +99,8 @@ public class Parser implements Pipe {
 
         // skip if null
         if (reader != null) {
-            range = event.getRange();
             builder = event;
+            range = event.getRange();
 
             try {
                 coder.read(
@@ -204,23 +204,23 @@ public class Parser implements Pipe {
         }
 
         Alias name;
-        Builder<?> branch;
+        Builder<?> child;
 
         // branch
-        branch = builder.explore(
+        child = builder.explore(
             space, (name = alias.copy())
         );
 
         // drop if null
-        if (branch == null) {
+        if (child == null) {
             return false;
         }
 
         try {
-            branch.create(
+            child.create(
                 name, builder
             );
-            this.builder = branch;
+            this.builder = child;
         } catch (Crash e) {
             // drop packet
             return false;
@@ -256,16 +256,14 @@ public class Parser implements Pipe {
             );
         }
 
-        Builder<?> branch = builder;
-        builder = branch.getParent();
+        Builder<?> child = builder;
+        builder = child.getParent();
 
         try {
-            builder.receive(
-                branch
-            );
+            builder.receive(child);
         } finally {
             // destroy builder
-            branch.destroy();
+            child.destroy();
         }
 
         return --depth != 0;
