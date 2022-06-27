@@ -438,9 +438,9 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Captures unexpected crash
+     * Captures exception
      *
-     * @param e the unexpected crash
+     * @param e the crash
      */
     public void onCrash(
         @NotNull Exception e
@@ -449,7 +449,9 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * @param alias the specified alias of this {@link Event}
+     * Sets the alias of this {@link Event}
+     *
+     * @param alias the specified alias
      * @since 0.0.2
      */
     public void setAlias(
@@ -469,7 +471,7 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Returns the maximum range
+     * Returns the specified range
      */
     public int getRange() {
         int r = range;
@@ -477,7 +479,7 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * @param range the specified maximum range
+     * @param range the specified range
      */
     public void setRange(
         int range
@@ -545,10 +547,11 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Return the result of this {@link Value}
+     * Returns the result of the {@link Value}
      *
      * @since 0.0.2
      */
+    @Nullable
     public Object getBundle(
         @NotNull Space space,
         @NotNull Alias alias,
@@ -586,6 +589,7 @@ public class Event<T> implements Flag {
      *
      * @since 0.0.2
      */
+    @Nullable
     public Builder<?> getBuilder(
         @NotNull Space space,
         @NotNull Alias alias
