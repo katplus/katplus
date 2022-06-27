@@ -42,12 +42,13 @@ public abstract class Builder<K> {
      */
     final void create(
         @NotNull Alias alias,
+        @NotNull Event<?> event,
         @NotNull Builder<?> parent
     ) throws Crash, IOCrash {
         this.alias = alias;
         this.parent = parent;
-        this.flag = parent.flag;
-        this.supplier = parent.supplier;
+        this.flag = event.getFlag();
+        this.supplier = event.getSupplier();
         this.create(alias);
     }
 

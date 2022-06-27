@@ -39,17 +39,19 @@ import static plus.kat.Supplier.Impl.INS;
  * @author kraity
  * @since 0.0.1
  */
-public class Event<T> extends Builder<Object> implements Flag {
+public class Event<T> implements Flag {
 
     protected int range;
     protected long flags;
 
-    protected Alias name;
-    protected Object result;
+    protected Flag flag;
+    protected Alias alias;
 
-    protected Reader reader;
     protected Type type;
     protected Spare<?> spare;
+
+    protected Reader reader;
+    protected Supplier supplier;
 
     /**
      * For example
@@ -69,10 +71,6 @@ public class Event<T> extends Builder<Object> implements Flag {
     public Event(
         @NotNull Class<?> impl
     ) {
-        this.flag = this;
-        this.range = 8;
-        this.supplier = INS;
-
         Class<?> klass = getClass();
         if (klass != impl) {
             type = ((ParameterizedType) klass.getGenericSuperclass()).getActualTypeArguments()[0];
@@ -422,9 +420,7 @@ public class Event<T> extends Builder<Object> implements Flag {
     public void with(
         @Nullable Supplier supplier
     ) {
-        if (supplier != null) {
-            this.supplier = supplier;
-        }
+        this.supplier = supplier;
     }
 
     /**
@@ -453,10 +449,31 @@ public class Event<T> extends Builder<Object> implements Flag {
     }
 
     /**
+     * @param alias the specified alias of this {@link Event}
+     * @since 0.0.2
+     */
+    public void setAlias(
+        @Nullable Alias alias
+    ) {
+        this.alias = alias;
+    }
+
+    /**
+     * Returns the {@link Alias} of this {@link Event}
+     *
+     * @since 0.0.2
+     */
+    @Nullable
+    public Alias getAlias() {
+        return alias;
+    }
+
+    /**
      * Returns the maximum range
      */
     public int getRange() {
-        return range;
+        int r = range;
+        return r > 0 ? r : 8;
     }
 
     /**
@@ -465,9 +482,7 @@ public class Event<T> extends Builder<Object> implements Flag {
     public void setRange(
         int range
     ) {
-        if (range > 0) {
-            this.range = range;
-        }
+        this.range = range;
     }
 
     /**
@@ -485,9 +500,27 @@ public class Event<T> extends Builder<Object> implements Flag {
     public void setFlag(
         Flag flag
     ) {
-        if (flag != null) {
-            this.flag = flag;
-        }
+        this.flag = flag;
+    }
+
+    /**
+     * Returns the specified {@link Type} being used
+     *
+     * @since 0.0.2
+     */
+    @Nullable
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * Returns the specified {@link Spare} being used
+     *
+     * @since 0.0.2
+     */
+    @Nullable
+    public Spare<?> getSpare() {
+        return spare;
     }
 
     /**
@@ -500,56 +533,70 @@ public class Event<T> extends Builder<Object> implements Flag {
         return reader;
     }
 
-    @Override
-    public void create(
-        @NotNull Alias alias
-    ) {
-        // Nothing
+    /**
+     * Returns the specified {@link Supplier} being used
+     *
+     * @since 0.0.2
+     */
+    @NotNull
+    public Supplier getSupplier() {
+        Supplier s = supplier;
+        return s != null ? s : INS;
     }
 
-    @Override
-    public void accept(
+    /**
+     * Return the result of this {@link Value}
+     *
+     * @since 0.0.2
+     */
+    public Object getBundle(
         @NotNull Space space,
         @NotNull Alias alias,
         @NotNull Value value
     ) throws IOCrash {
+        this.alias = alias;
         if (spare != null) {
-            name = alias.copy();
-            result = spare.read(
-                flag, value
+            return spare.read(
+                getFlag(), value
             );
-        } else {
-            if (type == null) {
-                spare = supplier.lookup(space);
-            } else {
-                spare = Reflex.lookup(
-                    type, supplier
-                );
-            }
-
-            if (spare != null) {
-                name = alias.copy();
-                result = spare.read(
-                    flag, value
-                );
-            }
         }
+
+        Spare<?> spare;
+        Supplier supplier = getSupplier();
+
+        if (type == null) {
+            spare = supplier.lookup(space);
+        } else {
+            spare = Reflex.lookup(
+                type, supplier
+            );
+        }
+
+        if (spare == null) {
+            return null;
+        }
+
+        return spare.read(
+            getFlag(), value
+        );
     }
 
-    @Nullable
-    @Override
-    public Object bundle() {
-        return result;
-    }
-
-    @Override
-    public Builder<?> explore(
+    /**
+     * Returns the specified {@link Builder} being used
+     *
+     * @since 0.0.2
+     */
+    public Builder<?> getBuilder(
         @NotNull Space space,
         @NotNull Alias alias
-    ) {
+    ) throws IOCrash {
+        this.alias = alias;
         if (spare != null) {
             return spare.getBuilder(type);
         }
+
+        Spare<?> spare;
+        Supplier supplier = getSupplier();
 
         if (type == null) {
             spare = supplier.lookup(space);
@@ -564,26 +611,6 @@ public class Event<T> extends Builder<Object> implements Flag {
         }
 
         return spare.getBuilder(type);
-    }
-
-    @Override
-    public void receive(
-        @NotNull Builder<?> child
-    ) {
-        name = child.alias();
-        result = child.bundle();
-    }
-
-    /**
-     * Close this {@link Event}
-     */
-    public void close() {
-        name = null;
-        result = null;
-        spare = null;
-        flag = null;
-        reader = null;
-        supplier = null;
     }
 
     /**

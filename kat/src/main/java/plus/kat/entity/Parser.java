@@ -38,8 +38,11 @@ public class Parser implements Pipe {
     /**
      * snapshot etc.
      */
+    protected Object bundle;
     protected int depth, range;
-    protected Builder<?> builder;
+
+    protected Event<?> event;
+    protected Builder<?> active;
 
     /**
      * solver etc.
@@ -76,10 +79,11 @@ public class Parser implements Pipe {
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code event} is null
      */
-    public void read(
+    @Nullable
+    public Object read(
         @NotNull Event<?> event
     ) {
-        this.read(
+        return read(
             radar, event
         );
     }
@@ -90,30 +94,40 @@ public class Parser implements Pipe {
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code coder} or {@code event} is null
      */
-    public void read(
+    @Nullable
+    public Object read(
         @NotNull Solver coder,
         @NotNull Event<?> event
     ) {
-        // submitted reader
-        Reader reader = event.getReader();
+        Reader reader =
+            event.getReader();
 
-        // skip if null
-        if (reader != null) {
-            builder = event;
-            range = event.getRange();
+        if (reader == null) {
+            return null;
+        }
 
-            try {
-                coder.read(
-                    this, reader
-                );
-            } catch (Exception e) {
-                event.onCrash(e);
-            } finally {
-                coder.clear();
-                reader.close();
-                release(event);
+        this.event = event;
+        this.range = event.getRange();
+
+        try {
+            coder.read(
+                this, reader
+            );
+        } catch (Exception e) {
+            event.onCrash(e);
+        } finally {
+            coder.clear();
+            reader.close();
+
+            Builder<?> k, t = active;
+            active = null;
+            for (; t != null; t = k) {
+                k = t.getParent();
+                t.destroy();
             }
         }
+
+        return bundle;
     }
 
     /**
@@ -122,28 +136,26 @@ public class Parser implements Pipe {
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code job} or {@code event} is null
      */
-    public void read(
+    @Nullable
+    public Object read(
         @NotNull Job job,
         @NotNull Event<?> event
     ) {
         switch (job) {
             case KAT: {
-                this.read(
+                return read(
                     radar, event
                 );
-                break;
             }
             case DOC: {
-                this.read(
+                return read(
                     docx != null ? docx : (docx = new Docx(radar)), event
                 );
-                break;
             }
             case JSON: {
-                this.read(
+                return read(
                     mage != null ? mage : (mage = new Mage(radar)), event
                 );
-                break;
             }
             default: {
                 throw new RunCrash(
@@ -172,18 +184,12 @@ public class Parser implements Pipe {
         Parser parser = cluster.borrow();
 
         // solve
-        parser.read(
+        Object data = parser.read(
             job, event
         );
 
         // returns parser
         cluster.retreat(parser);
-
-        // parsed result
-        Object data = event.bundle();
-
-        // close event
-        event.close();
 
         // convert result
         return data == null ? null : (T) data;
@@ -203,31 +209,33 @@ public class Parser implements Pipe {
             );
         }
 
-        Alias name;
-        Builder<?> child;
+        Alias name = alias.copy();
+        Builder<?> child, parent = active;
 
-        // branch
-        child = builder.explore(
-            space, (name = alias.copy())
-        );
+        if (depth != 0) {
+            child = active.explore(
+                space, name
+            );
+        } else {
+            child = event.getBuilder(
+                space, name
+            );
+        }
 
-        // drop if null
         if (child == null) {
             return false;
         }
 
         try {
             child.create(
-                name, builder
+                name, event, parent
             );
-            this.builder = child;
+            active = child;
+            ++depth;
+            return true;
         } catch (Crash e) {
-            // drop packet
             return false;
         }
-
-        ++depth;
-        return true;
     }
 
     /**
@@ -239,9 +247,15 @@ public class Parser implements Pipe {
         @NotNull Alias alias,
         @NotNull Value value
     ) throws IOCrash {
-        builder.accept(
-            space, alias, value
-        );
+        if (depth != 0) {
+            active.accept(
+                space, alias, value
+            );
+        } else {
+            bundle = event.getBundle(
+                space, alias.copy(), value
+            );
+        }
     }
 
     /**
@@ -250,23 +264,26 @@ public class Parser implements Pipe {
     @Override
     public boolean bundle()
         throws IOCrash {
-        if (depth <= 0) {
+        if (--depth < 0) {
             throw new OutOfRangeCrash(
                 "Parse depth out of range"
             );
         }
 
-        Builder<?> child = builder;
-        builder = child.getParent();
+        Builder<?> child = active;
+        active = child.getParent();
 
         try {
-            builder.receive(child);
+            if (depth != 0) {
+                active.receive(child);
+                return true;
+            } else {
+                bundle = child.bundle();
+                return false;
+            }
         } finally {
-            // destroy builder
             child.destroy();
         }
-
-        return --depth != 0;
     }
 
     /**
@@ -310,6 +327,7 @@ public class Parser implements Pipe {
     public void clear() {
         depth = 0;
         range = 0;
+        bundle = null;
     }
 
     /**
@@ -318,20 +336,6 @@ public class Parser implements Pipe {
     public void close() {
         this.clear();
         radar.close();
-    }
-
-    /**
-     * release trash of the {@code root}
-     */
-    private void release(
-        @NotNull Builder<?> root
-    ) {
-        Builder<?> k, t = builder;
-        builder = null;
-        for (; t != root; t = k) {
-            k = t.getParent();
-            t.destroy();
-        }
     }
 
     /**
