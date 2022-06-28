@@ -65,7 +65,7 @@ public class Docx implements Solver {
         Value v = value;
 
         Boot:
-        // decode mark stream
+        // decode doc stream
         while (r.also()) {
             byte b = r.read();
             if (b != LT) {

@@ -163,6 +163,22 @@ public class KatTest {
     }
 
     @Test
+    public void test_read_wildcard() {
+        Supplier supplier = Supplier.ins();
+
+        Map<String, Object> user = supplier.read(
+            Map.class, Event.ascii(
+                "User{:id(1):name(kraity):blocked(true)}"
+            )
+        );
+
+        assertNotNull(user);
+        assertEquals(1, user.get("id"));
+        assertEquals(true, user.get("blocked"));
+        assertEquals("kraity", user.get("name"));
+    }
+
+    @Test
     public void test_member_cast() {
         HashMap<String, Object> map = new HashMap<>();
         map.put("i", 1);
