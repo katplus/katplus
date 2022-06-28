@@ -501,6 +501,7 @@ public interface Supplier {
         static final Impl INS = new Impl();
 
         static {
+            INS.put(EMPTY, ObjectSpare.INSTANCE);
             INS.put($, ObjectSpare.INSTANCE);
             INS.put($A, ArraySpare.INSTANCE);
             INS.put($M, MapSpare.INSTANCE);
