@@ -10,6 +10,7 @@ import plus.kat.anno.Format;
 import plus.kat.reflex.ArrayType;
 
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,12 +61,12 @@ public class SpareTest {
 
         Role role = spare.read(
             new Event<>(
-                "${$:now(2022-01-11 11:11:11)$:last(1641910260)$:time(1641871353000)$:date(2022-02-22T22:22:22.222Z)$:just(03,三月 2022)}"
+                "${$:now(2022-01-11 11:11:11)$:last(1641910260)$:time(1641871353000)$:date(2022-02-22T22:22:22.222Z)$:just(03,三月 2022)$:local(2022-02-22)}"
             )
         );
 
         assertNotNull(role);
-        assertEquals("Role{Date:now(2022-01-11 11:11:11)Date:last(2022-01-11 22:11:00)Date:time(2022-01-11 11:22:33)Date:date(2022-02-22T22:22:22.222Z)Date:just(03,三月 2022)}", spare.write(role).toString());
+        assertEquals("Role{Date:now(2022-01-11 11:11:11)Date:last(2022-01-11 22:11:00)Date:time(2022-01-11 11:22:33)Date:date(2022-02-22T22:22:22.222Z)Date:just(03,三月 2022)LocalDate:local(2022-02-22)}", spare.write(role).toString());
     }
 
     @Embed("Role")
@@ -86,6 +87,10 @@ public class SpareTest {
         @Expose("just")
         @Format(value = "dd,MMMM yyyy", lang = "zh")
         private Date just;
+
+        @Expose("local")
+        @Format("yyyy-MM-dd")
+        private LocalDate local;
     }
 
     @Test

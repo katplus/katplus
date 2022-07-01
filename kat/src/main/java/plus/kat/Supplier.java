@@ -501,13 +501,7 @@ public interface Supplier {
         static final Impl INS = new Impl();
 
         static {
-            INS.put(EMPTY, ObjectSpare.INSTANCE);
             INS.put($, ObjectSpare.INSTANCE);
-            INS.put($A, ArraySpare.INSTANCE);
-            INS.put($M, MapSpare.INSTANCE);
-            INS.put($L, ListSpare.INSTANCE);
-            INS.put($S, SetSpare.INSTANCE);
-            INS.put($E, CrashSpare.INSTANCE);
             INS.put($s, StringSpare.INSTANCE);
             INS.put($b, BooleanSpare.INSTANCE);
             INS.put($i, IntegerSpare.INSTANCE);
@@ -517,9 +511,15 @@ public interface Supplier {
             INS.put($c, CharSpare.INSTANCE);
             INS.put($o, ByteSpare.INSTANCE);
             INS.put($u, ShortSpare.INSTANCE);
+            INS.put($M, MapSpare.INSTANCE);
+            INS.put($A, ArraySpare.INSTANCE);
+            INS.put($L, ListSpare.INSTANCE);
+            INS.put($S, SetSpare.INSTANCE);
+            INS.put($E, CrashSpare.INSTANCE);
             INS.put($B, ByteArraySpare.INSTANCE);
             INS.put($I, BigIntegerSpare.INSTANCE);
             INS.put($D, BigDecimalSpare.INSTANCE);
+            INS.put(EMPTY, ObjectSpare.INSTANCE);
         }
 
         public Impl() {

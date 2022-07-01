@@ -15,19 +15,18 @@
  */
 package plus.kat.reflex;
 
-import plus.kat.Supplier;
 import plus.kat.anno.Expose;
 import plus.kat.anno.Format;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.entity.Coder;
-import plus.kat.entity.Getter;
-import plus.kat.entity.Setter;
-import plus.kat.spare.DateSpare;
+import plus.kat.*;
+import plus.kat.spare.*;
+import plus.kat.entity.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -74,6 +73,8 @@ public class ReflexMethod<K> implements Setter<K, Object>, Getter<K, Object> {
         if (format != null) {
             if (klass == Date.class) {
                 coder = new DateSpare(format);
+            } else if (klass == LocalDate.class) {
+                coder = LocalDateSpare.of(format);
             }
         } else {
             Class<?> with = expose.with();

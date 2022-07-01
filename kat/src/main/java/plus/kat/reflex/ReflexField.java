@@ -21,11 +21,12 @@ import plus.kat.anno.Format;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.spare.*;
 import plus.kat.entity.*;
-import plus.kat.spare.DateSpare;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -56,6 +57,8 @@ public class ReflexField<K> implements Setter<K, Object>, Getter<K, Object> {
         if (format != null) {
             if (klass == Date.class) {
                 coder = new DateSpare(format);
+            } else if (klass == LocalDate.class) {
+                coder = LocalDateSpare.of(format);
             }
         } else {
             Class<?> with = expose.with();

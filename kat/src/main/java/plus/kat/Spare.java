@@ -28,6 +28,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -393,6 +394,7 @@ public interface Spare<K> extends Coder<K> {
             INS.put(List.class, ListSpare.INSTANCE);
             INS.put(ArrayList.class, ListSpare.INSTANCE);
             INS.put(Date.class, DateSpare.INSTANCE);
+            INS.put(LocalDate.class, LocalDateSpare.INSTANCE);
         }
 
         /**
