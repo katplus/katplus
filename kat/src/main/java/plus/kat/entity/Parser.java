@@ -159,7 +159,7 @@ public class Parser implements Pipe {
             }
             default: {
                 throw new RunCrash(
-                    "Unexpectedly, Parser did not find " + job + "'s Sovler"
+                    "Unexpectedly, Parser did not find " + job + "'s Solver"
                 );
             }
         }
