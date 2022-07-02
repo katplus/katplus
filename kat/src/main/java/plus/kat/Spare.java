@@ -100,8 +100,7 @@ public interface Spare<K> extends Coder<K> {
     default <T extends K> T read(
         @NotNull Event<T> event
     ) {
-        event.with(this);
-        return Parser.solve(
+        return solve(
             Job.KAT, event
         );
     }
@@ -155,8 +154,7 @@ public interface Spare<K> extends Coder<K> {
     default <T extends K> T down(
         @NotNull Event<T> event
     ) {
-        event.with(this);
-        return Parser.solve(
+        return solve(
             Job.DOC, event
         );
     }
@@ -210,8 +208,7 @@ public interface Spare<K> extends Coder<K> {
     default <T extends K> T parse(
         @NotNull Event<T> event
     ) {
-        event.with(this);
-        return Parser.solve(
+        return solve(
             Job.JSON, event
         );
     }
@@ -272,6 +269,24 @@ public interface Spare<K> extends Coder<K> {
             );
         }
         return null;
+    }
+
+    /**
+     * Parse {@link Event} and convert result to {@link K}
+     *
+     * @param event specify the {@code event} to be handled
+     * @throws NullPointerException If the specified {@code event} is null
+     * @since 0.0.2
+     */
+    @Nullable
+    default <T extends K> T solve(
+        @NotNull Job job,
+        @NotNull Event<T> event
+    ) {
+        event.with(this);
+        return Parser.solve(
+            job, event
+        );
     }
 
     /**

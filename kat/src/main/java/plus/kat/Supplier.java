@@ -243,23 +243,16 @@ public interface Supplier {
      *
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Spare#read(Event)
+     * @see Supplier#solve(CharSequence, Job, Event)
      */
     @Nullable
-    @SuppressWarnings("unchecked")
     default <T> T read(
         @NotNull CharSequence klass,
         @NotNull Event<T> event
     ) {
-        Spare<T> spare =
-            (Spare<T>) lookup(klass);
-
-        if (spare == null) {
-            return null;
-        }
-
-        event.with(this);
-        return spare.read(event);
+        return solve(
+            klass, Job.KAT, event
+        );
     }
 
     /**
@@ -267,23 +260,16 @@ public interface Supplier {
      *
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Spare#read(Event)
+     * @see Supplier#solve(Class, Job, Event)
      */
     @Nullable
     default <E, T extends E> T read(
         @NotNull Class<E> klass,
         @NotNull Event<T> event
     ) {
-        Spare<E> spare = embed(klass);
-
-        if (spare == null) {
-            return null;
-        }
-
-        event.with(this);
-        event.expect(klass);
-
-        return spare.read(event);
+        return solve(
+            klass, Job.KAT, event
+        );
     }
 
     /**
@@ -315,23 +301,16 @@ public interface Supplier {
      *
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Spare#down(Event)
+     * @see Supplier#solve(CharSequence, Job, Event)
      */
     @Nullable
-    @SuppressWarnings("unchecked")
     default <T> T down(
         @NotNull CharSequence klass,
         @NotNull Event<T> event
     ) {
-        Spare<T> spare =
-            (Spare<T>) lookup(klass);
-
-        if (spare == null) {
-            return null;
-        }
-
-        event.with(this);
-        return spare.down(event);
+        return solve(
+            klass, Job.DOC, event
+        );
     }
 
     /**
@@ -339,23 +318,16 @@ public interface Supplier {
      *
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Spare#down(Event)
+     * @see Supplier#solve(Class, Job, Event)
      */
     @Nullable
     default <E, T extends E> T down(
         @NotNull Class<E> klass,
         @NotNull Event<T> event
     ) {
-        Spare<E> spare = embed(klass);
-
-        if (spare == null) {
-            return null;
-        }
-
-        event.with(this);
-        event.expect(klass);
-
-        return spare.down(event);
+        return solve(
+            klass, Job.DOC, event
+        );
     }
 
     /**
@@ -387,23 +359,16 @@ public interface Supplier {
      *
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
-     * @see Spare#parse(Event)
+     * @see Supplier#solve(CharSequence, Job, Event)
      */
     @Nullable
-    @SuppressWarnings("unchecked")
     default <T> T parse(
         @NotNull CharSequence klass,
         @NotNull Event<T> event
     ) {
-        Spare<T> spare =
-            (Spare<T>) lookup(klass);
-
-        if (spare == null) {
-            return null;
-        }
-
-        event.with(this);
-        return spare.parse(event);
+        return solve(
+            klass, Job.JSON, event
+        );
     }
 
     /**
@@ -411,23 +376,16 @@ public interface Supplier {
      *
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
-     * @see Spare#parse(Event)
+     * @see Supplier#solve(Class, Job, Event)
      */
     @Nullable
     default <E, T extends E> T parse(
         @NotNull Class<E> klass,
         @NotNull Event<T> event
     ) {
-        Spare<E> spare = embed(klass);
-
-        if (spare == null) {
-            return null;
-        }
-
-        event.with(this);
-        event.expect(klass);
-
-        return spare.parse(event);
+        return solve(
+            klass, Job.JSON, event
+        );
     }
 
     /**
@@ -452,6 +410,86 @@ public interface Supplier {
         @Nullable Object value, long flags
     ) {
         return new Json(this, value, flags);
+    }
+
+    /**
+     * Parse {@link Event} and convert result to {@link T}
+     *
+     * @param event specify the {@code event} to be handled
+     * @throws NullPointerException If the specified {@code klass} or {@code event} is null
+     * @see Spare#solve(Job, Event)
+     * @since 0.0.2
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    default <T> T solve(
+        @NotNull CharSequence klass,
+        @NotNull Job job,
+        @NotNull Event<T> event
+    ) {
+        Spare<T> spare =
+            (Spare<T>) lookup(klass);
+
+        if (spare == null) {
+            return null;
+        }
+
+        event.with(this);
+        return spare.solve(job, event);
+    }
+
+    /**
+     * Parse {@link Event} and convert result to {@link T}
+     *
+     * @param event specify the {@code event} to be handled
+     * @throws NullPointerException If the specified {@code klass} or {@code event} is null
+     * @see Spare#solve(Job, Event)
+     * @since 0.0.2
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    default <T> T solve(
+        @NotNull Type type,
+        @NotNull Job job,
+        @NotNull Event<T> event
+    ) {
+        Spare<T> spare = (Spare<T>)
+            Reflex.lookup(type, this);
+
+        if (spare == null) {
+            return null;
+        }
+
+        event.with(this);
+        event.expect(type);
+
+        return spare.solve(job, event);
+    }
+
+    /**
+     * Parse {@link Event} and convert result to {@link T}
+     *
+     * @param event specify the {@code event} to be handled
+     * @throws NullPointerException If the specified {@code klass} or {@code event} is null
+     * @see Spare#solve(Job, Event)
+     * @since 0.0.2
+     */
+    @Nullable
+    default <E, T extends E> T solve(
+        @NotNull Class<E> klass,
+        @NotNull Job job,
+        @NotNull Event<T> event
+    ) {
+        Spare<E> spare = embed(klass);
+
+        if (spare == null) {
+            return null;
+        }
+
+        event.with(this);
+        event.expect(klass);
+
+        return spare.solve(job, event);
     }
 
     /**
