@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022 Kat+ Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package plus.kat.spring;
 
 import org.springframework.core.GenericTypeResolver;
@@ -12,7 +27,7 @@ import plus.kat.chain.Paper;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 
 /**
  * @author kraity
@@ -22,6 +37,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
 
     protected Job job;
     protected Supplier supplier;
+    protected MediaType[] mediaTypes;
 
     /**
      * @param job the specified job
@@ -46,29 +62,23 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         this.supplier = supplier;
         switch (this.job = job) {
             case KAT: {
-                setSupportedMediaTypes(
-                    Arrays.asList(
-                        new MediaType("text", "kat"),
-                        new MediaType("application", "kat")
-                    )
-                );
+                mediaTypes = new MediaType[]{
+                    new MediaType("text", "kat"),
+                    new MediaType("application", "kat")
+                };
                 break;
             }
             case DOC: {
-                setSupportedMediaTypes(
-                    Arrays.asList(
-                        MediaType.TEXT_XML,
-                        MediaType.APPLICATION_XML
-                    )
-                );
+                mediaTypes = new MediaType[]{
+                    MediaType.TEXT_XML,
+                    MediaType.APPLICATION_XML
+                };
                 break;
             }
             case JSON: {
-                setSupportedMediaTypes(
-                    Collections.singletonList(
-                        MediaType.APPLICATION_JSON
-                    )
-                );
+                mediaTypes = new MediaType[]{
+                    MediaType.APPLICATION_JSON
+                };
                 break;
             }
             default: {
@@ -77,6 +87,23 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
                 );
             }
         }
+    }
+
+    @Override
+    protected boolean canRead(
+        MediaType mediaType
+    ) {
+        if (mediaType == null) {
+            return false;
+        }
+
+        for (MediaType m : mediaTypes) {
+            if (m.includes(mediaType)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -116,6 +143,23 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     }
 
     @Override
+    protected boolean canWrite(
+        MediaType mediaType
+    ) {
+        if (mediaType == null) {
+            return false;
+        }
+
+        for (MediaType m : mediaTypes) {
+            if (m.isCompatibleWith(mediaType)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
     protected void writeInternal(
         Object data,
         Type type,
@@ -148,5 +192,10 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         output.getBody().write(
             flow.getSource(), 0, flow.length()
         );
+    }
+
+    @Override
+    public List<MediaType> getSupportedMediaTypes() {
+        return Arrays.asList(mediaTypes);
     }
 }
