@@ -61,35 +61,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <charset>UTF-8</charset>
-                    <encoding>UTF-8</encoding>
-                    <docencoding>UTF-8</docencoding>
-                    <doclint>-missing</doclint>
-                    <links>
-                        <link>https://docs.oracle.com/javase/8/docs/api</link>
-                    </links>
-                    <sourcepath>
-                        ${project.basedir}/src/java;
-                        ${project.basedir}/src/kotlin
-                    </sourcepath>
-                    <additionalJOptions>
-                        <additionalJOption>-J-Duser.language=en -J-Duser.country=US</additionalJOption>
-                    </additionalJOptions>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>${kotlin.version}</version>
