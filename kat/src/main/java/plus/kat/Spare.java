@@ -32,7 +32,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static plus.kat.Supplier.Impl.INS;
+import static plus.kat.Supplier.Impl;
 
 /**
  * @author kraity
@@ -248,7 +248,7 @@ public interface Spare<K> extends Coder<K> {
         @Nullable Object data
     ) {
         return cast(
-            INS, data
+            Impl.INS, data
         );
     }
 
@@ -458,14 +458,13 @@ public interface Spare<K> extends Coder<K> {
                         put(klass, $spare);
                         return $spare;
                     } catch (Exception e) {
-                        // NOOP
+                        // Nothing
                     }
                 }
             }
 
             if (klass.isEnum()) {
                 Spare<T> $spare;
-                //noinspection rawtypes
                 put(klass, $spare =
                     new EnumSpare(klass, embed)
                 );
@@ -480,7 +479,7 @@ public interface Spare<K> extends Coder<K> {
                 Spare<T> $spare;
                 put(klass, $spare =
                     new ReflexWorker<>(
-                        embed, klass, Supplier.Impl.INS
+                        embed, klass, Impl.INS
                     )
                 );
                 return $spare;
@@ -538,7 +537,7 @@ public interface Spare<K> extends Coder<K> {
                     put(klass, $spare);
                     return $spare;
                 } catch (Exception e) {
-                    // NOOP
+                    // Nothing
                 }
             }
 
@@ -550,7 +549,7 @@ public interface Spare<K> extends Coder<K> {
                 Spare<T> $spare;
                 put(klass, $spare =
                     new ReflexWorker<>(
-                        embed, klass, Supplier.Impl.INS
+                        embed, klass, Impl.INS
                     )
                 );
                 return $spare;

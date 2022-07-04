@@ -33,12 +33,24 @@ import java.util.Date;
  * @author kraity
  * @since 0.0.1
  */
-public class ReflexMethod<K> implements Setter<K, Object>, Getter<K, Object> {
+public class ReflexMethod<K> extends ReflexWorker.Node<K> implements Setter<K, Object>, Getter<K, Object> {
 
     private final Method method;
     private Coder<?> coder;
     private final Type type;
     private final Class<?> klass;
+
+    /**
+     * @since 0.0.2
+     */
+    public ReflexMethod(
+        @NotNull ReflexMethod<?> ref
+    ) {
+        this.method = ref.method;
+        this.coder = ref.coder;
+        this.type = ref.type;
+        this.klass = ref.klass;
+    }
 
     /**
      * @throws NullPointerException If the parameter length of {@code method} is greater than 1
@@ -49,6 +61,7 @@ public class ReflexMethod<K> implements Setter<K, Object>, Getter<K, Object> {
         @NotNull Expose expose,
         @NotNull Supplier supplier
     ) {
+        super(expose.index());
         this.method = method;
         switch (method.getParameterCount()) {
             case 0: {
@@ -80,7 +93,7 @@ public class ReflexMethod<K> implements Setter<K, Object>, Getter<K, Object> {
             Class<?> with = expose.with();
             if (with != Coder.class) {
                 coder = supplier.activate(
-                    (Class<Coder<K>>) with
+                    (Class<Coder<Object>>) with
                 );
             }
         }
@@ -149,5 +162,13 @@ public class ReflexMethod<K> implements Setter<K, Object>, Getter<K, Object> {
     @Override
     public Class<?> getKlass() {
         return klass;
+    }
+
+    /**
+     * @since 0.0.2
+     */
+    @Override
+    public ReflexMethod<K> clone() {
+        return new ReflexMethod<>(this);
     }
 }

@@ -29,20 +29,20 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.utils.Casting;
+import plus.kat.utils.KatMap;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class ReflexWorker<E> implements Worker<E> {
+public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Worker<E> {
 
     private final Class<E> klass;
     private final CharSequence space;
+
+    private Node<E> head, tail;
     private final boolean refract;
     private final Constructor<E> builder;
-
-    private final MultiMap<E>
-        mutable = new MultiMap<>();
 
     /**
      * @throws SecurityException     If the {@link Constructor#setAccessible(boolean)} is denied
@@ -111,7 +111,7 @@ public class ReflexWorker<E> implements Worker<E> {
         @NotNull int index,
         @NotNull Alias alias
     ) {
-        return mutable.get(
+        return get(
             alias.isEmpty() ? index : alias
         );
     }
@@ -173,7 +173,7 @@ public class ReflexWorker<E> implements Worker<E> {
                 }
 
                 // try lookup
-                Setter<E, ?> setter = mutable.get(key);
+                Setter<E, ?> setter = get(key);
                 if (setter == null) {
                     continue;
                 }
@@ -213,9 +213,13 @@ public class ReflexWorker<E> implements Worker<E> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOCrash {
-        mutable.each(
-            chan, value
-        );
+        Node<E> node = head;
+        while (node != null) {
+            chan.set(
+                node.key, node.getCoder(), node.onApply(value)
+            );
+            node = node.next;
+        }
     }
 
     private void register(
@@ -223,8 +227,7 @@ public class ReflexWorker<E> implements Worker<E> {
         @NotNull Supplier supplier
     ) {
         for (Field field : fields) {
-            Expose expose = field
-                .getAnnotation(Expose.class);
+            Expose expose = field.getAnnotation(Expose.class);
             if (expose == null) continue;
 
             field.setAccessible(true);
@@ -233,32 +236,30 @@ public class ReflexWorker<E> implements Worker<E> {
                     field, expose, supplier
                 );
 
+            int h = expose.index();
+            if (refract && h > -1) put(
+                h, reflex.clone()
+            );
+
+            String name;
             String[] names = expose.value();
-            int index = expose.index();
-            if (refract && index > -1) {
-                mutable.put(index, reflex);
-            }
 
             if (names.length == 0) {
-                String name = field.getName();
-                mutable.put(name, reflex);
-                if (expose.export()) {
-                    mutable.add(
-                        index, name, reflex
-                    );
-                }
+                name = field.getName();
+                put(
+                    name, reflex.clone()
+                );
             } else {
-                String primary = names[0];
-                if (!primary.isEmpty()) {
-                    mutable.add(
-                        index, primary, reflex
+                name = names[0];
+                for (String alias : names) {
+                    if (!alias.isEmpty()) put(
+                        alias, reflex.clone()
                     );
                 }
-                for (String alias : names) {
-                    if (!alias.isEmpty()) {
-                        mutable.put(alias, reflex);
-                    }
-                }
+            }
+
+            if (expose.export()) {
+                register(name, reflex);
             }
         }
     }
@@ -271,55 +272,105 @@ public class ReflexWorker<E> implements Worker<E> {
             int count = method.getParameterCount();
             if (count > 1) continue;
 
-            Expose expose = method
-                .getAnnotation(Expose.class);
+            Expose expose = method.getAnnotation(Expose.class);
             if (expose == null) continue;
 
             method.setAccessible(true);
-            ReflexMethod<E> reflex = null;
+            ReflexMethod<E> reflex =
+                new ReflexMethod<>(
+                    method, expose, supplier
+                );
 
-            int index = expose.index();
+            int h = expose.index();
             String[] names = expose.value();
 
             if (count == 0) {
                 if (expose.export()) {
-                    for (String alias : names) {
-                        if (!alias.isEmpty()) {
-                            if (reflex == null) {
-                                reflex = new ReflexMethod<>(
-                                    method, expose, supplier
-                                );
-                            }
-                            mutable.add(
-                                index, alias, reflex
-                            );
-                        }
+                    if (names.length != 0) {
+                        register(names[0], reflex);
                     }
                 }
             } else {
-                if (refract && index > -1) {
-                    reflex = new ReflexMethod<>(
-                        method, expose, supplier
-                    );
-                    mutable.put(
-                        index, reflex
+                if (refract && h > -1) put(
+                    h, reflex.clone()
+                );
+
+                for (String alias : names) {
+                    if (!alias.isEmpty()) put(
+                        alias, reflex.clone()
                     );
                 }
-                if (names.length != 0) {
-                    for (String alias : names) {
-                        if (!alias.isEmpty()) {
-                            if (reflex == null) {
-                                reflex = new ReflexMethod<>(
-                                    method, expose, supplier
-                                );
-                            }
-                            mutable.put(
-                                alias, reflex
-                            );
-                        }
+            }
+        }
+    }
+
+    private void register(
+        @NotNull CharSequence key,
+        @NotNull Node<E> node
+    ) {
+        node.key = key;
+        int hash = node.getHash();
+        if (tail == null) {
+            head = node;
+            tail = node;
+        } else if (hash < 0) {
+            tail.next = node;
+            tail = node;
+        } else {
+            Node<E> m = head;
+            Node<E> n = null;
+
+            int wgt;
+            while (true) {
+                wgt = m.getHash();
+                if (wgt < 0) {
+                    node.next = m;
+                    if (m == head) {
+                        head = node;
+                    }
+                    break;
+                }
+
+                if (wgt > hash) {
+                    if (n == null) {
+                        head = node;
+                    } else {
+                        n.next = node;
+                    }
+                    node.next = m;
+                    break;
+                } else {
+                    n = m;
+                    m = m.next;
+                    if (m == null) {
+                        tail = node;
+                        n.next = node;
+                        break;
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    static abstract class Node<E>
+        extends Entry<E, Node<E>>
+        implements Getter<E, Object> {
+
+        CharSequence key;
+        Node<E> next;
+
+        public Node() {
+            super(0);
+        }
+
+        public Node(
+            int hash
+        ) {
+            super(hash);
         }
     }
 }

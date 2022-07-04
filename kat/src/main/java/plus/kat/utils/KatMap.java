@@ -101,11 +101,20 @@ public class KatMap<K, V> {
             int m = len - 1;
             int i = m & h;
 
-            Entry<K, V> e = tab[i];
+            Entry<K, V> n, e = tab[i];
             if (e == null) {
-                tab[i] = new Entry<>(
-                    h, key, val
-                );
+                if (val instanceof Entry) {
+                    n = (Entry<K, V>) val;
+                    n.hash = h;
+                    n.key = key;
+                    n.val = val;
+                    n.next = null;
+                    tab[i] = n;
+                } else {
+                    tab[i] = new Entry<>(
+                        h, key, val
+                    );
+                }
                 size++;
                 return null;
             }
@@ -118,9 +127,18 @@ public class KatMap<K, V> {
 
             for (int b = 0; b < m; ++b) {
                 if (e.next == null) {
-                    e.next = new Entry<>(
-                        h, key, val
-                    );
+                    if (val instanceof Entry) {
+                        n = (Entry<K, V>) val;
+                        n.hash = h;
+                        n.key = key;
+                        n.val = val;
+                        n.next = null;
+                        e.next = n;
+                    } else {
+                        e.next = new Entry<>(
+                            h, key, val
+                        );
+                    }
                     size++;
                     return null;
                 }
@@ -138,7 +156,7 @@ public class KatMap<K, V> {
             Entry<K, V>[] bucket = new Entry[size];
 
             m = size - 1;
-            Entry<K, V> n, b;
+            Entry<K, V> b;
 
             for (int k = 0; k < len; ++k) {
                 if ((e = tab[k]) != null) {
@@ -354,12 +372,18 @@ public class KatMap<K, V> {
      * @author kraity
      * @since 0.0.1
      */
-    static class Entry<K, V> implements Map.Entry<K, V> {
+    public static class Entry<K, V> implements Map.Entry<K, V> {
 
-        final int hash;
-        final K key;
-        V val;
-        Entry<K, V> next;
+        private int hash;
+        private K key;
+        private V val;
+        private Entry<K, V> next;
+
+        public Entry(
+            int hash
+        ) {
+            this.hash = hash;
+        }
 
         public Entry(
             int hash, K key, V val
@@ -377,6 +401,10 @@ public class KatMap<K, V> {
         @Override
         public V getValue() {
             return val;
+        }
+
+        public int getHash() {
+            return hash;
         }
 
         @Override

@@ -33,7 +33,7 @@ import java.util.Date;
  * @author kraity
  * @since 0.0.1
  */
-public class ReflexField<K> implements Setter<K, Object>, Getter<K, Object> {
+public class ReflexField<K> extends ReflexWorker.Node<K> implements Setter<K, Object>, Getter<K, Object> {
 
     private final Field field;
     private Coder<?> coder;
@@ -41,12 +41,26 @@ public class ReflexField<K> implements Setter<K, Object>, Getter<K, Object> {
     private final Class<?> klass;
     private final boolean nullable;
 
+    /**
+     * @since 0.0.2
+     */
+    public ReflexField(
+        @NotNull ReflexField<?> ref
+    ) {
+        this.field = ref.field;
+        this.coder = ref.coder;
+        this.type = ref.type;
+        this.klass = ref.klass;
+        this.nullable = ref.nullable;
+    }
+
     @SuppressWarnings("unchecked")
     public ReflexField(
         @NotNull Field field,
         @NotNull Expose expose,
         @NotNull Supplier supplier
     ) {
+        super(expose.index());
         this.field = field;
         this.type = field.getGenericType();
         this.klass = field.getType();
@@ -64,7 +78,7 @@ public class ReflexField<K> implements Setter<K, Object>, Getter<K, Object> {
             Class<?> with = expose.with();
             if (with != Coder.class) {
                 coder = supplier.activate(
-                    (Class<Coder<K>>) with
+                    (Class<Coder<Object>>) with
                 );
             }
         }
@@ -137,5 +151,13 @@ public class ReflexField<K> implements Setter<K, Object>, Getter<K, Object> {
     @Override
     public Class<?> getKlass() {
         return klass;
+    }
+
+    /**
+     * @since 0.0.2
+     */
+    @Override
+    public ReflexField<K> clone() {
+        return new ReflexField<>(this);
     }
 }

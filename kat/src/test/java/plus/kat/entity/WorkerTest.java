@@ -31,6 +31,7 @@ public class WorkerTest {
         assertNotNull(user.meta);
 
         assertEquals(101, user.meta.sig);
+        assertEquals("K", user.meta.key);
         assertEquals("RSA", user.meta.algo);
         assertEquals("User{Meta:meta{i:sig(101)s:key(K)s:algo(RSA)}}", spare.write(user).toString());
     }
