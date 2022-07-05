@@ -29,6 +29,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.utils.Casting;
+import plus.kat.utils.Config;
 import plus.kat.utils.KatMap;
 
 /**
@@ -41,8 +42,11 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
     private final CharSequence space;
 
     private Node<E> head, tail;
-    private final boolean refract;
+    private int flags;
     private final Constructor<E> builder;
+
+    private static final boolean SPARE_POJO =
+        Config.get("kat.spare.pojo", false);
 
     /**
      * @throws SecurityException     If the {@link Constructor#setAccessible(boolean)} is denied
@@ -66,8 +70,11 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
         this.klass = klass;
         builder = constructor;
         builder.setAccessible(true);
+
         Embed embed = klass.getAnnotation(Embed.class);
-        refract = embed != null && embed.index();
+        if (embed != null) {
+            flags = embed.claim();
+        }
 
         register(klass.getDeclaredFields(), supplier);
         register(klass.getMethods(), supplier);
@@ -86,7 +93,9 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
         this.klass = klass;
         builder = klass.getDeclaredConstructor();
         builder.setAccessible(true);
-        refract = embed != null && embed.index();
+        if (embed != null) {
+            flags = embed.claim();
+        }
 
         register(klass.getDeclaredFields(), supplier);
         register(klass.getMethods(), supplier);
@@ -226,6 +235,7 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
         @NotNull Field[] fields,
         @NotNull Supplier supplier
     ) {
+        boolean REF = (flags & Embed.INDEX) != 0;
         for (Field field : fields) {
             Expose expose = field.getAnnotation(Expose.class);
             if (expose == null) continue;
@@ -237,7 +247,7 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
                 );
 
             int h = expose.index();
-            if (refract && h > -1) put(
+            if (REF && h > -1) put(
                 h, reflex.clone()
             );
 
@@ -268,12 +278,81 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
         @NotNull Method[] methods,
         @NotNull Supplier supplier
     ) {
+        boolean REF = (flags & Embed.INDEX) != 0;
+        boolean POJO = (flags & Embed.POJO) != 0 || SPARE_POJO;
+
         for (Method method : methods) {
             int count = method.getParameterCount();
             if (count > 1) continue;
 
             Expose expose = method.getAnnotation(Expose.class);
-            if (expose == null) continue;
+            if (expose == null) {
+                if (POJO) {
+                    String key = method.getName();
+                    int i = 0;
+                    int l = key.length();
+                    if (l < 4) {
+                        continue;
+                    }
+
+                    char ch = key.charAt(i++);
+                    if (ch == 's') {
+                        if (count == 0 ||
+                            key.charAt(i++) != 'e' ||
+                            key.charAt(i++) != 't') {
+                            continue;
+                        }
+                    } else if (ch == 'g') {
+                        if (count != 0 ||
+                            key.charAt(i++) != 'e' ||
+                            key.charAt(i++) != 't') {
+                            continue;
+                        }
+                        if (l == 8 &&
+                            key.charAt(i) == 'C' &&
+                            key.charAt(i + 1) == 'l' &&
+                            key.charAt(i + 2) == 'a' &&
+                            key.charAt(i + 3) == 's' &&
+                            key.charAt(i + 4) == 's') {
+                            continue;
+                        }
+                    } else if (ch == 'i') {
+                        if (count != 0 ||
+                            key.charAt(i++) != 's') {
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
+
+                    ch = key.charAt(i);
+                    if (ch < 'A' || 'Z' < ch) {
+                        continue;
+                    }
+
+                    byte[] k = new byte[l - i];
+                    k[0] = (byte) (ch + 0x20);
+
+                    for (int o = 1; ++i < l; ) {
+                        k[o++] = (byte) key.charAt(i);
+                    }
+
+                    Alias alias = new Alias(k);
+                    ReflexMethod<E> reflex =
+                        new ReflexMethod<>(method);
+
+                    if (count != 0) {
+                        put(
+                            alias, reflex
+                        );
+                    } else {
+                        register(
+                            alias, reflex
+                        );
+                    }
+                }
+                continue;
+            }
 
             method.setAccessible(true);
             ReflexMethod<E> reflex =
@@ -291,7 +370,7 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
                     }
                 }
             } else {
-                if (refract && h > -1) put(
+                if (REF && h > -1) put(
                     h, reflex.clone()
                 );
 

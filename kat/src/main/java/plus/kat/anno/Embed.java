@@ -28,14 +28,20 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Embed {
     /**
+     * Embed Flags
+     */
+    int POJO = 0x1;
+    int INDEX = 0x2;
+
+    /**
      * Returns the space of this
      */
     String[] value() default {};
 
     /**
-     * Whether it can be refracted
+     * Returns the flags of this
      */
-    boolean index() default false;
+    int claim() default 0;
 
     /**
      * Whether it can be exposed

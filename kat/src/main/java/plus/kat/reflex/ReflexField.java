@@ -25,6 +25,7 @@ import plus.kat.spare.*;
 import plus.kat.entity.*;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.util.Date;
@@ -54,20 +55,36 @@ public class ReflexField<K> extends ReflexWorker.Node<K> implements Setter<K, Ob
         this.nullable = ref.nullable;
     }
 
+    /**
+     * @since 0.0.2
+     */
+    public ReflexField(
+        @NotNull Field field
+    ) {
+        this(-1, field);
+    }
+
+    /**
+     * @since 0.0.2
+     */
+    public ReflexField(
+        int hash, @NotNull Field field
+    ) {
+        super(hash);
+        this.field = field;
+        this.type = field.getGenericType();
+        this.klass = field.getType();
+        this.nullable = field.getAnnotation(NotNull.class) == null;
+    }
+
     @SuppressWarnings("unchecked")
     public ReflexField(
         @NotNull Field field,
         @NotNull Expose expose,
         @NotNull Supplier supplier
     ) {
-        super(expose.index());
-        this.field = field;
-        this.type = field.getGenericType();
-        this.klass = field.getType();
-        this.nullable = field.getAnnotation(NotNull.class) == null;
-
-        Format format = field
-            .getAnnotation(Format.class);
+        this(expose.index(), field);
+        Format format = field.getAnnotation(Format.class);
         if (format != null) {
             if (klass == Date.class) {
                 coder = new DateSpare(format);

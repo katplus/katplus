@@ -53,15 +53,21 @@ public class ReflexMethod<K> extends ReflexWorker.Node<K> implements Setter<K, O
     }
 
     /**
-     * @throws NullPointerException If the parameter length of {@code method} is greater than 1
+     * @since 0.0.2
      */
-    @SuppressWarnings("unchecked")
     public ReflexMethod(
-        @NotNull Method method,
-        @NotNull Expose expose,
-        @NotNull Supplier supplier
+        @NotNull Method method
     ) {
-        super(expose.index());
+        this(-1, method);
+    }
+
+    /**
+     * @since 0.0.2
+     */
+    public ReflexMethod(
+        int hash, @NotNull Method method
+    ) {
+        super(hash);
         this.method = method;
         switch (method.getParameterCount()) {
             case 0: {
@@ -80,9 +86,19 @@ public class ReflexMethod<K> extends ReflexWorker.Node<K> implements Setter<K, O
                 );
             }
         }
+    }
 
-        Format format = method
-            .getAnnotation(Format.class);
+    /**
+     * @since 0.0.1
+     */
+    @SuppressWarnings("unchecked")
+    public ReflexMethod(
+        @NotNull Method method,
+        @NotNull Expose expose,
+        @NotNull Supplier supplier
+    ) {
+        this(expose.index(), method);
+        Format format = method.getAnnotation(Format.class);
         if (format != null) {
             if (klass == Date.class) {
                 coder = new DateSpare(format);

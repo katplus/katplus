@@ -42,7 +42,7 @@ public class WorkerTest {
         private Meta meta;
     }
 
-    @Embed(value = "Meta", index = true)
+    @Embed(value = "Meta", claim = Embed.POJO | Embed.INDEX)
     static class Meta {
         @Expose(index = 0)
         private int sig;
