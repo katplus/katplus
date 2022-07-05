@@ -1574,6 +1574,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         if (count == 0) {
             return "";
         }
+
         return new String(
             Convert.toCharArray(
                 value, 0, count
@@ -1589,14 +1590,16 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @throws IndexOutOfBoundsException if the beginIndex is negative
      */
     @NotNull
-    public String toString(int b, int e) {
-        int l = e - b;
-        if (l <= 0 || e >= count) {
+    public String toString(
+        int b, int e
+    ) {
+        if (e <= b || e >= count) {
             return "";
         }
+
         return new String(
             Convert.toCharArray(
-                value, 0, count
+                value, b, e
             )
         );
     }
@@ -1613,11 +1616,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         if (count == 0) {
             return "";
         }
+
         if (c != UTF_8) {
             return new String(
                 value, 0, count, c
             );
         }
+
         return new String(
             Convert.toCharArray(
                 value, 0, count
@@ -1641,8 +1646,17 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         if (l <= 0 || e >= count) {
             return "";
         }
+
+        if (c != UTF_8) {
+            return new String(
+                value, b, l, c
+            );
+        }
+
         return new String(
-            value, b, l, c
+            Convert.toCharArray(
+                value, b, e
+            )
         );
     }
 
