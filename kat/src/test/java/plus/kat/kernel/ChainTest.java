@@ -14,9 +14,17 @@ public class ChainTest {
         assertTrue(new Value("$").is('$'));
         assertTrue(new Value("$").is((byte) '$'));
         assertTrue(new Value("kat.plus").is("kat.plus"));
+        assertTrue(new Value("😀").is("😀"));
+        assertTrue(new Value("陆").is('陆'));
+        assertTrue(new Value("陆之岇").is("陆之岇"));
+        assertTrue(new Value("😀陆之岇😀").is("😀陆之岇😀"));
+        assertTrue(new Value("😀陆之岇😀").is(1, '陆'));
+        assertTrue(new Value("😀陆之岇😀+").is(5, '+'));
 
+        assertFalse(new Value("陆之岇").is("陆之岇+"));
+        assertFalse(new Value("陆之岇+").is("陆之岇"));
+        assertFalse(new Value("+陆之岇+").is("陆之岇+"));
         assertFalse(new Value("$$").is('$'));
-        assertFalse(new Value("陆之岇").is("陆之岇"));
         assertFalse(new Value("//kat.plus").is("kat.plus"));
     }
 

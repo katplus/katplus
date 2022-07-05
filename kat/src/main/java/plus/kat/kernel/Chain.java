@@ -201,6 +201,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Compares the internal {@code byte[]} and specified {@code byte}
+     *
      * @param b the byte value to be compared
      */
     public boolean is(
@@ -210,15 +212,57 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Compares the internal UTF-8 {@code byte[]} and specified {@code char}
+     *
      * @param c the char value to be compared
+     * @since 0.0.2
      */
     public boolean is(
         char c
     ) {
-        return count == 1 && (value[0] & 0xFF) == c;
+        int l = count;
+        byte[] it = value;
+
+        // U+0000 ~ U+007F
+        if (c < 0x80) {
+            if (l != 1) {
+                return false;
+            }
+
+            return it[0] == (byte) c;
+        }
+
+        // U+0080 ~ U+07FF
+        else if (c < 0x800) {
+            if (l != 2) {
+                return false;
+            }
+
+            return it[0] == (byte) ((c >> 6) | 0xC0)
+                && it[1] == (byte) ((c & 0x3F) | 0x80);
+        }
+
+        // U+10000 ~ U+10FFFF
+        // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+        else if (c >= 0xD800 && c <= 0xDFFF) {
+            return false;
+        }
+
+        // U+0800 ~ U+FFFF
+        else {
+            if (l != 3) {
+                return false;
+            }
+
+            return it[0] == (byte) ((c >> 12) | 0xE0)
+                && it[1] == (byte) (((c >> 6) & 0x3F) | 0x80)
+                && it[2] == (byte) ((c & 0x3F) | 0x80);
+        }
     }
 
     /**
+     * Compares specified index of internal {@code byte[]} and specified {@code byte}
+     *
      * @param i the specified index
      * @param b the byte value to be compared
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
@@ -230,35 +274,119 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Compares specified index of internal UTF-8 {@code byte[]} and specified {@code char}
+     *
      * @param i the specified index
      * @param c the byte value to be compared
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
+     * @since 0.0.2
      */
     public boolean is(
         int i, char c
     ) {
-        return i < count && (value[i] & 0xFF) == c;
-    }
-
-    /**
-     * Compares a {@link CharSequence} to this {@link Chain} to determine if their contents are equal
-     *
-     * @param c the {@link CharSequence} to compare this {@link Chain} against
-     */
-    public boolean is(
-        @Nullable CharSequence c
-    ) {
-        if (c == null) {
+        int l = count;
+        if (i >= l) {
             return false;
         }
 
-        int range = c.length();
+        int o = 0;
+        byte[] it = value;
+
+        for (int k = 0; k < l; ) {
+            if (i == o) {
+                // U+0000 ~ U+007F
+                if (c < 0x80) {
+                    return it[k] == (byte) c;
+                }
+
+                // U+0080 ~ U+07FF
+                else if (c < 0x800) {
+                    if (k + 2 > l) {
+                        return false;
+                    }
+
+                    return it[k] == (byte) ((c >> 6) | 0xC0)
+                        && it[k + 1] == (byte) ((c & 0x3F) | 0x80);
+                }
+
+                // U+10000 ~ U+10FFFF
+                // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+                else if (c >= 0xD800 && c <= 0xDFFF) {
+                    return false;
+                }
+
+                // U+0800 ~ U+FFFF
+                else {
+                    if (k + 3 > l) {
+                        return false;
+                    }
+
+                    return it[k] == (byte) ((c >> 12) | 0xE0)
+                        && it[k + 1] == (byte) (((c >> 6) & 0x3F) | 0x80)
+                        && it[k + 2] == (byte) ((c & 0x3F) | 0x80);
+                }
+            }
+
+            // data
+            byte b = it[k];
+
+            // U+0000 ~ U+007F
+            // 0xxxxxxx
+            if (b > -1) {
+                o++;
+                k++;
+            }
+
+            // U+0080 ~ U+07FF
+            // 110xxxxx 10xxxxxx
+            else if ((b >> 5) == -2) {
+                o++;
+                k += 2;
+            }
+
+            // U+0800 ~ U+FFFF
+            // 1110xxxx 10xxxxxx 10xxxxxx
+            else if ((b >> 4) == -2) {
+                if (i + 1 < l) {
+                    o++;
+                    k += 3;
+                } else {
+                    return false;
+                }
+            }
+
+            // U+10000 ~ U+10FFFF
+            // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+            // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+            else if ((b >> 3) == -2) {
+                o++;
+                k += 4;
+            } else {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Compares the internal {@code byte[]} and specified {@code byte[]}
+     *
+     * @param b the {@code byte[]} to compare this {@link Chain} against
+     * @since 0.0.2
+     */
+    public boolean is(
+        @Nullable byte[] b
+    ) {
+        if (b == null) {
+            return false;
+        }
+
+        int range = b.length;
         if (count == range) {
-            char ch;
             byte[] it = value;
             for (int i = 0; i < range; i++) {
-                ch = (char) (it[i] & 0xFF);
-                if (ch != c.charAt(i)) {
+                if (it[i] != b[i]) {
                     return false;
                 }
             }
@@ -266,6 +394,174 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         }
 
         return false;
+    }
+
+    /**
+     * Compares the internal UTF-8 {@code byte[]} and specified {@code char[]}
+     *
+     * @param ch the {@code char[]} to compare this {@link Chain} against
+     * @since 0.0.2
+     */
+    public boolean is(
+        @Nullable char[] ch
+    ) {
+        if (ch == null) {
+            return false;
+        }
+
+        int l = count;
+        int r = ch.length;
+
+        int i = 0, j = 0;
+        byte[] it = value;
+
+        for (; i < l && j < r; j++) {
+            // get char
+            char c = ch[j];
+
+            // U+0000 ~ U+007F
+            if (c < 0x80) {
+                if (it[i++] != (byte) c) {
+                    return false;
+                }
+            }
+
+            // U+0080 ~ U+07FF
+            else if (c < 0x800) {
+                if (i + 2 > l) {
+                    return false;
+                }
+
+                if (it[i++] != (byte) ((c >> 6) | 0xC0) ||
+                    it[i++] != (byte) ((c & 0x3F) | 0x80)) {
+                    return false;
+                }
+            }
+
+            // U+10000 ~ U+10FFFF
+            // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+            else if (c >= 0xD800 && c <= 0xDFFF) {
+                if (i + 4 > l) {
+                    return false;
+                }
+
+                if (++j >= r) {
+                    return false;
+                }
+
+                char d = ch[j];
+                if (d < 0xDC00 || d > 0xDFFF) {
+                    return false;
+                }
+
+                int u = (c << 10) + d - 0x35F_DC00;
+                if (it[i++] != (byte) ((u >> 18) | 0xF0) ||
+                    it[i++] != (byte) (((u >> 12) & 0x3F) | 0x80) ||
+                    it[i++] != (byte) (((u >> 6) & 0x3F) | 0x80) ||
+                    it[i++] != (byte) ((u & 0x3F) | 0x80)) {
+                    return false;
+                }
+            }
+
+            // U+0800 ~ U+FFFF
+            else {
+                if (i + 3 > l) {
+                    return false;
+                }
+
+                if (it[i++] != (byte) ((c >> 12) | 0xE0) ||
+                    it[i++] != (byte) (((c >> 6) & 0x3F) | 0x80) ||
+                    it[i++] != (byte) ((c & 0x3F) | 0x80)) {
+                    return false;
+                }
+            }
+        }
+
+        return i == l && j == r;
+    }
+
+    /**
+     * Compares the internal UTF-8 {@code byte[]} and specified {@link CharSequence}
+     *
+     * @param ch the {@link CharSequence} to compare this {@link Chain} against
+     * @since 0.0.2
+     */
+    public boolean is(
+        @Nullable CharSequence ch
+    ) {
+        if (ch == null) {
+            return false;
+        }
+
+        int l = count;
+        int r = ch.length();
+
+        int i = 0, j = 0;
+        byte[] it = value;
+
+        for (; i < l && j < r; j++) {
+            // get char
+            char c = ch.charAt(j);
+
+            // U+0000 ~ U+007F
+            if (c < 0x80) {
+                if (it[i++] != (byte) c) {
+                    return false;
+                }
+            }
+
+            // U+0080 ~ U+07FF
+            else if (c < 0x800) {
+                if (i + 2 > l) {
+                    return false;
+                }
+
+                if (it[i++] != (byte) ((c >> 6) | 0xC0) ||
+                    it[i++] != (byte) ((c & 0x3F) | 0x80)) {
+                    return false;
+                }
+            }
+
+            // U+10000 ~ U+10FFFF
+            // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+            else if (c >= 0xD800 && c <= 0xDFFF) {
+                if (i + 4 > l) {
+                    return false;
+                }
+
+                if (++j >= r) {
+                    return false;
+                }
+
+                char d = ch.charAt(j);
+                if (d < 0xDC00 || d > 0xDFFF) {
+                    return false;
+                }
+
+                int u = (c << 10) + d - 0x35F_DC00;
+                if (it[i++] != (byte) ((u >> 18) | 0xF0) ||
+                    it[i++] != (byte) (((u >> 12) & 0x3F) | 0x80) ||
+                    it[i++] != (byte) (((u >> 6) & 0x3F) | 0x80) ||
+                    it[i++] != (byte) ((u & 0x3F) | 0x80)) {
+                    return false;
+                }
+            }
+
+            // U+0800 ~ U+FFFF
+            else {
+                if (i + 3 > l) {
+                    return false;
+                }
+
+                if (it[i++] != (byte) ((c >> 12) | 0xE0) ||
+                    it[i++] != (byte) (((c >> 6) & 0x3F) | 0x80) ||
+                    it[i++] != (byte) ((c & 0x3F) | 0x80)) {
+                    return false;
+                }
+            }
+        }
+
+        return i == l && j == r;
     }
 
     /**
@@ -1436,8 +1732,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                     break;
                 }
 
-                char e = c[i++];
-                if (e < 0xDC00 || e > 0xDFFF) {
+                char f = c[i++];
+                if (f < 0xDC00 || f > 0xDFFF) {
                     grow(count + 1);
                     hash = 0;
                     value[count++] = '?';
@@ -1446,7 +1742,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
                 grow(count + 4);
                 hash = 0;
-                int u = (e << 10) + e - 0x35F_DC00;
+                int u = (d << 10) + f - 0x35F_DC00;
                 value[count++] = (byte) ((u >> 18) | 0xF0);
                 value[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
                 value[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
@@ -1499,8 +1795,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                     break;
                 }
 
-                char e = c.charAt(i++);
-                if (e < 0xDC00 || e > 0xDFFF) {
+                char f = c.charAt(i++);
+                if (f < 0xDC00 || f > 0xDFFF) {
                     grow(count + 1);
                     hash = 0;
                     value[count++] = '?';
@@ -1509,8 +1805,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
                 grow(count + 4);
                 hash = 0;
-                int u = (e << 10) + e - 0x35F_DC00;
-
+                int u = (d << 10) + f - 0x35F_DC00;
                 value[count++] = (byte) ((u >> 18) | 0xF0);
                 value[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
                 value[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
