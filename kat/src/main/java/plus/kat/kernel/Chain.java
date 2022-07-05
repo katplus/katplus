@@ -215,7 +215,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Compares the internal UTF-8 {@code byte[]} and specified {@code char}
      *
      * @param c the char value to be compared
-     * @since 0.0.2
+     * @since 0.0.2 supports UTF-8
      */
     public boolean is(
         char c
@@ -279,7 +279,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @param i the specified index
      * @param c the byte value to be compared
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
-     * @since 0.0.2
+     * @since 0.0.2 supports UTF-8
      */
     public boolean is(
         int i, char c
@@ -483,7 +483,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Compares the internal UTF-8 {@code byte[]} and specified {@link CharSequence}
      *
      * @param ch the {@link CharSequence} to compare this {@link Chain} against
-     * @since 0.0.2
+     * @since 0.0.2 supports UTF-8
      */
     public boolean is(
         @Nullable CharSequence ch
@@ -1092,24 +1092,49 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Raw byte array to char array without utf8 encoding
+     * copy the internal UTF-8 {@code byte[]} to {@code char[]}
+     *
+     * @since 0.0.2 supports UTF-8
      */
     @NotNull
     public char[] copyChars() {
         if (count != 0) {
-            byte[] it = value;
-            int len = count;
-            char[] copy = new char[len];
-            for (int i = 0; i < len; i++) {
-                copy[i] = (char) (it[i] & 0xFF);
-            }
-            return copy;
+            return Convert.toCharArray(
+                value, 0, count
+            );
         }
         return EMPTY_CHARS;
     }
 
     /**
-     * Raw byte array without encoding
+     * copy the internal UTF-8 {@code byte[]} to {@code char[]}
+     *
+     * @param start the start index, inclusive
+     * @param end   the end index, exclusive
+     * @since 0.0.2
+     */
+    @NotNull
+    public char[] copyChars(
+        int start, int end
+    ) {
+        int length = end - start;
+        if (start < 0 || length < 0 || end >= count) {
+            throw new IndexOutOfBoundsException(
+                "Index start " + start + " < 0 or end >= start or end " + end + " >= " + count
+            );
+        }
+
+        if (length != 0) {
+            return Convert.toCharArray(
+                value, start, end
+            );
+        }
+
+        return EMPTY_CHARS;
+    }
+
+    /**
+     * copy the internal UTF-8 {@code byte[]}
      */
     @NotNull
     public byte[] copyBytes() {
@@ -1124,8 +1149,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param start the start index
-     * @param end   the end index
+     * copy the internal UTF-8 {@code byte[]}
+     *
+     * @param start the start index, inclusive
+     * @param end   the end index, exclusive
      */
     @NotNull
     public byte[] copyBytes(
@@ -1548,7 +1575,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return "";
         }
         return new String(
-            value, 0, count, UTF_8
+            Convert.toCharArray(
+                value, 0, count
+            )
         );
     }
 
@@ -1566,7 +1595,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return "";
         }
         return new String(
-            value, b, l, UTF_8
+            Convert.toCharArray(
+                value, 0, count
+            )
         );
     }
 
@@ -1582,8 +1613,15 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         if (count == 0) {
             return "";
         }
+        if (c != UTF_8) {
+            return new String(
+                value, 0, count, c
+            );
+        }
         return new String(
-            value, 0, count, c
+            Convert.toCharArray(
+                value, 0, count
+            )
         );
     }
 

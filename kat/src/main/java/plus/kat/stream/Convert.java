@@ -17,6 +17,8 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
+import plus.kat.kernel.Chain;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -580,5 +582,116 @@ public interface Convert {
         }
 
         return def;
+    }
+
+    /**
+     * Parses the UTF-8 {@code byte[]} as a {@code char[]}
+     *
+     * @since 0.0.2
+     */
+    @NotNull
+    static char[] toCharArray(
+        @NotNull byte[] it, int i, int j
+    ) {
+        if (i >= j) {
+            return Chain.EMPTY_CHARS;
+        }
+
+        int o = 0;
+        int k = i;
+
+        while (k < j) {
+            // get byte
+            byte b = it[k];
+
+            // U+0000 ~ U+007F
+            // 0xxxxxxx
+            if (b > -1) {
+                o++;
+                k++;
+            }
+
+            // U+0080 ~ U+07FF
+            // 110xxxxx 10xxxxxx
+            else if ((b >> 5) == -2) {
+                o++;
+                k += 2;
+            }
+
+            // U+0800 ~ U+FFFF
+            // 1110xxxx 10xxxxxx 10xxxxxx
+            else if ((b >> 4) == -2) {
+                o++;
+                k += 3;
+            }
+
+            // U+10000 ~ U+10FFFF
+            // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+            // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+            else if ((b >> 3) == -2) {
+                o += 2;
+                k += 4;
+            }
+
+            // beyond the current range
+            else {
+                return Chain.EMPTY_CHARS;
+            }
+        }
+
+        char[] ch = new char[o];
+        for (o = 0, k = i; k < j; ) {
+            // get byte
+            byte b = it[k++];
+
+            // U+0000 ~ U+007F
+            // 0xxxxxxx
+            if (b > -1) {
+                ch[o++] = (char) b;
+            }
+
+            // U+0080 ~ U+07FF
+            // 110xxxxx 10xxxxxx
+            else if ((b >> 5) == -2) {
+                ch[o++] = (char) (
+                    (b << 6) | (it[k++] & 0x3F)
+                );
+            }
+
+            // U+0800 ~ U+FFFF
+            // 1110xxxx 10xxxxxx 10xxxxxx
+            else if ((b >> 4) == -2) {
+                ch[o++] = (char) (
+                    (b << 12) | ((it[k++] & 0x3F) << 6) | (it[k++] & 0x3F)
+                );
+            }
+
+            // U+10000 ~ U+10FFFF
+            // 11110x xx : 10xxxx xx : 10xx xx xx : 10xx xxxx
+            // 11110x xx : 10x100 00
+            // 1101 10xx xxxx xxxx 1101 11xx xxxx xxxx
+            else if ((b >> 3) == -2) {
+                byte b2 = it[k++];
+                byte b3 = it[k++];
+                ch[o++] = (char) (
+                    ((0xD8 | (b & 0x03)) << 8) |
+                        ((((b2 - 0x10 >> 2)) & 0x0F) << 4) |
+                        (((b2 & 0x03) << 2) | ((b3 >> 4) & 0x03))
+                );
+
+                byte b4 = it[k++];
+                ch[o++] = (char) (
+                    ((0xDC | ((b3 >> 2) & 0x03)) << 8) |
+                        ((((b3 & 0x3) << 2) | ((b4 >> 4) & 0x03)) << 4) | (b4 & 0x0F)
+                );
+            }
+
+            // beyond the current range
+            else {
+                return Chain.EMPTY_CHARS;
+            }
+        }
+
+        return ch;
     }
 }
