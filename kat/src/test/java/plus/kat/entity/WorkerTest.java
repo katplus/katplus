@@ -1,6 +1,7 @@
 package plus.kat.entity;
 
 import org.junit.jupiter.api.Test;
+
 import plus.kat.Event;
 import plus.kat.Spare;
 import plus.kat.Supplier;
@@ -8,6 +9,8 @@ import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 import plus.kat.reflex.ReflexWorker;
 
+import static plus.kat.anno.Embed.POJO;
+import static plus.kat.anno.Embed.INDEX;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -42,7 +45,7 @@ public class WorkerTest {
         private Meta meta;
     }
 
-    @Embed(value = "Meta", claim = Embed.POJO | Embed.INDEX)
+    @Embed(value = "Meta", claim = POJO | INDEX)
     static class Meta {
         @Expose(index = 0)
         private int sig;

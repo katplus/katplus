@@ -1,11 +1,14 @@
 package plus.kat.reflex;
 
 import org.junit.jupiter.api.Test;
+
 import plus.kat.Event;
 import plus.kat.Supplier;
+
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 
+import static plus.kat.anno.Embed.POJO;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ReflexTest {
@@ -65,7 +68,7 @@ public class ReflexTest {
         }
     }
 
-    @Embed(claim = Embed.POJO)
+    @Embed(claim = POJO)
     static class Meta {
         private int id;
         private String tag;
