@@ -327,7 +327,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 }
             }
 
-            // data
+            // get byte
             byte b = it[k];
 
             // U+0000 ~ U+007F
@@ -347,12 +347,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             // U+0800 ~ U+FFFF
             // 1110xxxx 10xxxxxx 10xxxxxx
             else if ((b >> 4) == -2) {
-                if (i + 1 < l) {
-                    o++;
-                    k += 3;
-                } else {
-                    return false;
-                }
+                o++;
+                k += 3;
             }
 
             // U+10000 ~ U+10FFFF
@@ -361,7 +357,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             else if ((b >> 3) == -2) {
                 o++;
                 k += 4;
-            } else {
+            }
+
+            // beyond the current range
+            else {
                 return false;
             }
         }
