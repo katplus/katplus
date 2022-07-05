@@ -246,30 +246,35 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
                     field, expose, supplier
                 );
 
-            int h = expose.index();
+            int h = reflex.getHash();
+            // check use index
             if (REF && h > -1) put(
                 h, reflex.clone()
             );
 
-            String name;
-            String[] names = expose.value();
-
-            if (names.length == 0) {
-                name = field.getName();
-                put(
-                    name, reflex.clone()
+            String[] keys = expose.value();
+            if (keys.length == 0) {
+                String name = field.getName();
+                if (expose.export()) {
+                    // register getter
+                    register(name, reflex);
+                    // register setter
+                    put(name, reflex.clone());
+                } else put(
+                    name, reflex
                 );
             } else {
-                name = names[0];
-                for (String alias : names) {
+                // register only the first alias
+                if (expose.export()) {
+                    register(keys[0], reflex);
+                }
+
+                for (String alias : keys) {
+                    // check empty
                     if (!alias.isEmpty()) put(
                         alias, reflex.clone()
                     );
                 }
-            }
-
-            if (expose.export()) {
-                register(name, reflex);
             }
         }
     }
@@ -285,100 +290,136 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
             int count = method.getParameterCount();
             if (count > 1) continue;
 
+            ReflexMethod<E> reflex;
             Expose expose = method.getAnnotation(Expose.class);
-            if (expose == null) {
-                if (POJO) {
-                    String key = method.getName();
-                    int i = 0;
-                    int l = key.length();
-                    if (l < 4) {
-                        continue;
-                    }
 
-                    char ch = key.charAt(i++);
-                    if (ch == 's') {
-                        if (count == 0 ||
-                            key.charAt(i++) != 'e' ||
-                            key.charAt(i++) != 't') {
-                            continue;
-                        }
-                    } else if (ch == 'g') {
-                        if (count != 0 ||
-                            key.charAt(i++) != 'e' ||
-                            key.charAt(i++) != 't') {
-                            continue;
-                        }
-                        if (l == 8 &&
-                            key.charAt(i) == 'C' &&
-                            key.charAt(i + 1) == 'l' &&
-                            key.charAt(i + 2) == 'a' &&
-                            key.charAt(i + 3) == 's' &&
-                            key.charAt(i + 4) == 's') {
-                            continue;
-                        }
-                    } else if (ch == 'i') {
-                        if (count != 0 ||
-                            key.charAt(i++) != 's') {
-                            continue;
-                        }
-                    } else {
-                        continue;
-                    }
-
-                    ch = key.charAt(i);
-                    if (ch < 'A' || 'Z' < ch) {
-                        continue;
-                    }
-
-                    byte[] k = new byte[l - i];
-                    k[0] = (byte) (ch + 0x20);
-
-                    for (int o = 1; ++i < l; ) {
-                        k[o++] = (byte) key.charAt(i);
-                    }
-
-                    Alias alias = new Alias(k);
-                    ReflexMethod<E> reflex =
-                        new ReflexMethod<>(method);
+            // via Expose
+            if (expose != null) {
+                // have aliases
+                String[] keys = expose.value();
+                if (keys.length != 0) {
+                    method.setAccessible(true);
+                    reflex = new ReflexMethod<>(
+                        method, expose, supplier
+                    );
 
                     if (count != 0) {
-                        put(
-                            alias, reflex
-                        );
+                        int h = reflex.getHash();
+                        // check use index
+                        if (REF && h > -1) {
+                            // register setter
+                            put(h, reflex);
+                        }
+
+                        for (String alias : keys) {
+                            // check empty
+                            if (!alias.isEmpty()) put(
+                                alias, reflex.clone()
+                            );
+                        }
                     } else {
-                        register(
-                            alias, reflex
+                        // register all aliases
+                        for (int i = 0; i < keys.length; i++) {
+                            register(
+                                keys[i], i == 0 ? reflex : reflex.clone()
+                            );
+                        }
+                    }
+                    continue;
+                }
+
+                // empty alias and use index
+                else if (REF && count == 1) {
+                    int h = expose.index();
+                    // check use index
+                    if (h > -1) {
+                        method.setAccessible(true);
+                        reflex = new ReflexMethod<>(
+                            method, expose, supplier
                         );
+
+                        // register setter
+                        put(h, reflex);
+                        // use index only
+                        continue;
                     }
                 }
+
+                // directly via POJO
+            }
+
+            // check if via POJO
+            else if (!POJO) {
                 continue;
             }
 
-            method.setAccessible(true);
-            ReflexMethod<E> reflex =
-                new ReflexMethod<>(
-                    method, expose, supplier
-                );
+            String key = method.getName();
+            int i = 0, l = key.length();
+            if (l < 4) {
+                continue;
+            }
 
-            int h = expose.index();
-            String[] names = expose.value();
-
-            if (count == 0) {
-                if (expose.export()) {
-                    if (names.length != 0) {
-                        register(names[0], reflex);
-                    }
+            char ch = key.charAt(i++);
+            if (ch == 's') {
+                if (count == 0 ||
+                    key.charAt(i++) != 'e' ||
+                    key.charAt(i++) != 't') {
+                    continue;
+                }
+            } else if (ch == 'g') {
+                if (count != 0 ||
+                    key.charAt(i++) != 'e' ||
+                    key.charAt(i++) != 't') {
+                    continue;
+                }
+                if (l == 8 &&
+                    key.charAt(i) == 'C' &&
+                    key.charAt(i + 1) == 'l' &&
+                    key.charAt(i + 2) == 'a' &&
+                    key.charAt(i + 3) == 's' &&
+                    key.charAt(i + 4) == 's') {
+                    continue;
+                }
+            } else if (ch == 'i') {
+                if (count != 0 ||
+                    key.charAt(i++) != 's') {
+                    continue;
                 }
             } else {
-                if (REF && h > -1) put(
-                    h, reflex.clone()
-                );
+                continue;
+            }
 
-                for (String alias : names) {
-                    if (!alias.isEmpty()) put(
-                        alias, reflex.clone()
-                    );
-                }
+            ch = key.charAt(i);
+            if (ch < 'A' || 'Z' < ch) {
+                continue;
+            }
+
+            byte[] k = new byte[l - i];
+            k[0] = (byte) (ch + 0x20);
+
+            for (int o = 1; ++i < l; ) {
+                k[o++] = (byte) key.charAt(i);
+            }
+
+            Alias alias = new Alias(k);
+            method.setAccessible(true);
+
+            if (expose == null) {
+                reflex = new ReflexMethod<>(method);
+            } else {
+                reflex = new ReflexMethod<>(
+                    method, expose, supplier
+                );
+            }
+
+            if (count != 0) {
+                // register setter
+                put(alias, reflex);
+            } else {
+                // register getter
+                register(
+                    alias, reflex
+                );
             }
         }
     }
