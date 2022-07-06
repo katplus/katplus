@@ -43,6 +43,22 @@ public class ReflexTest {
         assertEquals("kat", meta.tag);
     }
 
+    @Test
+    public void test2() {
+        Supplier supplier = Supplier.ins();
+
+        Author author = supplier.read(
+            Author.class, Event.ascii(
+                "Author{$:id(1)$:name(kraity)$:meta(kat)}"
+            )
+        );
+
+        assertNotNull(author);
+        assertEquals(1, author.id);
+        assertEquals("kat", author.meta);
+        assertEquals("kraity", author.name);
+    }
+
     static class User {
         private int id;
         private String name;
@@ -87,6 +103,21 @@ public class ReflexTest {
 
         public void setTag(String tag) {
             this.tag = tag;
+        }
+    }
+
+    static class Author {
+        private int id;
+        private String name;
+
+        @Expose("meta")
+        private String meta;
+
+        public Author(
+            int id, String name
+        ) {
+            this.id = id;
+            this.name = name;
         }
     }
 }

@@ -18,9 +18,7 @@ package plus.kat.reflex;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.*;
 
 import plus.kat.*;
@@ -41,65 +39,61 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
     private final Class<E> klass;
     private final CharSequence space;
 
-    private Node<E> head, tail;
     private int flags;
+    private Node<E> head, tail;
+
+    private Parameter[] parameters;
     private final Constructor<E> builder;
 
     private static final boolean SPARE_POJO =
         Config.get("kat.spare.pojo", false);
 
     /**
-     * @throws SecurityException     If the {@link Constructor#setAccessible(boolean)} is denied
-     * @throws NoSuchMethodException If the klass has no parameterless constructor
+     * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
      */
     public ReflexWorker(
         @NotNull Class<E> klass,
         @NotNull Supplier supplier
-    ) throws NoSuchMethodException {
-        this(klass, supplier, klass.getDeclaredConstructor());
+    ) {
+        this(klass.getAnnotation(Embed.class), klass, supplier);
     }
 
     /**
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
      */
-    public ReflexWorker(
-        @NotNull Class<E> klass,
-        @NotNull Supplier supplier,
-        @NotNull Constructor<E> constructor
-    ) {
-        this.klass = klass;
-        builder = constructor;
-        builder.setAccessible(true);
-
-        Embed embed = klass.getAnnotation(Embed.class);
-        if (embed != null) {
-            flags = embed.claim();
-        }
-
-        register(klass.getDeclaredFields(), supplier);
-        register(klass.getMethods(), supplier);
-        space = supplier.register(embed, klass, this);
-    }
-
-    /**
-     * @throws SecurityException     If the {@link Constructor#setAccessible(boolean)} is denied
-     * @throws NoSuchMethodException If the klass has no parameterless constructor
-     */
+    @SuppressWarnings("unchecked")
     public ReflexWorker(
         @Nullable Embed embed,
         @NotNull Class<E> klass,
         @NotNull Supplier supplier
-    ) throws NoSuchMethodException {
+    ) {
+        Constructor<?>[] a =
+            klass.getDeclaredConstructors();
+        Constructor<?> b = a[0];
+        for (int i = 1; i < a.length; i++) {
+            if (b.getParameterCount() <
+                a[i].getParameterCount()) {
+                b = a[i];
+            }
+        }
+
+        builder = (Constructor<E>) b;
+        b.setAccessible(true);
+        if (b.getParameterCount() != 0) {
+            parameters = b.getParameters();
+        }
+
         this.klass = klass;
-        builder = klass.getDeclaredConstructor();
-        builder.setAccessible(true);
         if (embed != null) {
             flags = embed.claim();
         }
 
         register(klass.getDeclaredFields(), supplier);
         register(klass.getMethods(), supplier);
-        space = supplier.register(embed, klass, this);
+
+        space = supplier.register(
+            embed, klass, this
+        );
     }
 
     @Override
@@ -229,6 +223,16 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
             );
             node = node.next;
         }
+    }
+
+    @Override
+    public Builder<E> getBuilder(
+        @Nullable Type type
+    ) {
+        if (parameters == null) {
+            return new Builder0<>(this);
+        }
+        return new Builder1<>(this);
     }
 
     private void register(
@@ -491,6 +495,117 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
             int hash
         ) {
             super(hash);
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    static class Builder1<K> extends Builder0<K> {
+
+        private Object[] params;
+        private Parameter[] a;
+        private Constructor<K> c;
+        private ReflexWorker<K> reflex;
+
+        public Builder1(
+            @NotNull ReflexWorker<K> reflex
+        ) {
+            super(reflex);
+            this.reflex = reflex;
+        }
+
+        @Override
+        public void create(
+            @NotNull Alias alias
+        ) {
+            c = reflex.builder;
+            a = reflex.parameters;
+            params = new Object[a.length];
+        }
+
+        @Override
+        public void accept(
+            @NotNull Space space,
+            @NotNull Alias alias,
+            @NotNull Value value
+        ) throws IOCrash {
+            if (entity != null) {
+                super.accept(
+                    space, alias, value
+                );
+            } else {
+                Parameter p = a[++index];
+                Spare<?> spare = supplier
+                    .embed(
+                        p.getType()
+                    );
+
+                if (spare != null) {
+                    params[index] = spare.read(
+                        flag, value
+                    );
+                }
+
+                if (index + 1 == a.length) try {
+                    entity = c.newInstance(params);
+                } catch (Exception e) {
+                    throw new IOCrash(e);
+                }
+            }
+        }
+
+        @Override
+        public Builder<?> explore(
+            @NotNull Space space,
+            @NotNull Alias alias
+        ) {
+            if (entity != null) {
+                return super.explore(
+                    space, alias
+                );
+            }
+
+            Parameter p = a[++index];
+            Spare<?> spare = supplier
+                .embed(
+                    p.getType()
+                );
+
+            if (spare == null) {
+                return null;
+            }
+
+            return spare.getBuilder(
+                p.getParameterizedType()
+            );
+        }
+
+        @Override
+        public void receive(
+            @NotNull Builder<?> child
+        ) {
+            if (entity != null) {
+                super.receive(child);
+            }
+
+            params[index] = child.bundle();
+
+            if (index + 1 == a.length) try {
+                entity = c.newInstance(params);
+            } catch (Exception e) {
+                throw new RunCrash(e);
+            }
+        }
+
+        @Override
+        public void close() {
+            super.close();
+            a = null;
+            c = null;
+            params = null;
+            reflex = null;
         }
     }
 }

@@ -28,3 +28,39 @@ inline fun <reified T : Any> Supplier.cast(
 ) = cast(
     T::class.java, data
 )
+
+/**
+ * @param data Event
+ * @return T?
+ */
+@Nullable
+@Suppress("HasPlatformType")
+inline fun <reified T : Any> Supplier.read(
+    data: Event<out T>
+) = read(
+    T::class.java, data
+)
+
+/**
+ * @param data Event
+ * @return T?
+ */
+@Nullable
+@Suppress("HasPlatformType")
+inline fun <reified T : Any> Supplier.down(
+    data: Event<out T>
+) = down(
+    T::class.java, data
+)
+
+/**
+ * @param data Event
+ * @return T?
+ */
+@Nullable
+@Suppress("HasPlatformType")
+inline fun <reified T : Any> Supplier.parse(
+    data: Event<out T>
+) = parse(
+    T::class.java, data
+)
