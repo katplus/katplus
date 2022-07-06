@@ -253,8 +253,8 @@ public interface Sketch<K> extends Spare<K> {
         public void close() {
             entity = null;
             index = -1;
-            sketch = null;
             setter = null;
+            sketch = null;
         }
     }
 }

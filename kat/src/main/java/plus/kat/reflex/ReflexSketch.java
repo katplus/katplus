@@ -588,7 +588,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
             @NotNull Value value
         ) throws IOCrash {
             if (entity == null) {
-                p = a.get(alias);
+                Param p = a.get(alias);
                 if (p != null) {
                     ++index;
                     Spare<?> spare =
@@ -619,7 +619,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
             @NotNull Alias alias
         ) throws IOCrash {
             if (entity == null) {
-                Param p = a.get(alias);
+                p = a.get(alias);
                 if (p != null) {
                     ++index;
                     Spare<?> spare =
