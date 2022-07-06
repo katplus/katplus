@@ -631,7 +631,7 @@ public class Paper extends Value implements Flow {
 
         byte b1, b2, b3, b4;
         while (i < l) {
-            // data
+            // get byte
             b1 = data[i++];
 
             // U+0000 ~ U+007F

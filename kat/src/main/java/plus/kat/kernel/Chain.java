@@ -122,6 +122,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Only supports ASCII code comparison
+     * <p>
      * Compares a {@link Chain} or {@link CharSequence} to this {@link Chain} to determine if their contents are equal
      *
      * @param o the {@link Object} to compare this {@link Chain} against
@@ -170,6 +172,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Only supports ASCII code comparison
+     *
      * @param o the {@link CharSequence} to be compared
      * @see String#compareTo(String)
      */
@@ -187,12 +191,12 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 len2 = o.length()
             );
 
-        char ch;
         byte[] it = value;
-
         for (int i = 0; i < limit; i++) {
-            ch = (char) (it[i] & 0xFF);
-            if ((diff = ch - o.charAt(i)) != 0) {
+            diff = (it[i] & 0xFF) - (
+                o.charAt(i) & 0xFFFF
+            );
+            if (diff != 0) {
                 return diff;
             }
         }
@@ -713,24 +717,27 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Only supports ASCII code comparison
+     *
      * @param c the prefix
      * @see String#startsWith(String)
      */
     public boolean startWith(
         @NotNull CharSequence c
     ) {
-        int len = c.length();
-        if (count < len) {
+        int l = c.length();
+        if (count < l) {
             return false;
         }
 
-        int to = 0;
         char ch;
         byte[] it = value;
 
-        while (to < len) {
-            ch = (char) (it[to] & 0xFF);
-            if (ch != c.charAt(to++)) {
+        for (int i = 0; i < l; i++) {
+            ch = (char) (
+                it[i] & 0xFF
+            );
+            if (ch != c.charAt(i)) {
                 return false;
             }
         }
@@ -739,25 +746,28 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Only supports ASCII code comparison
+     *
      * @param c the suffix
      * @see String#endsWith(String)
      */
     public boolean endsWith(
         @NotNull CharSequence c
     ) {
-        int len = c.length();
-        int to = count - len;
-        if (to < 0) {
+        int l = c.length();
+        int k = count - l;
+        if (k < 0) {
             return false;
         }
 
-        int po = 0;
         char ch;
         byte[] it = value;
 
-        while (po < len) {
-            ch = (char) (it[to++] & 0xFF);
-            if (ch != c.charAt(po++)) {
+        for (int i = 0; i < l; i++, k++) {
+            ch = (char) (
+                it[k] & 0xFF
+            );
+            if (ch != c.charAt(i)) {
                 return false;
             }
         }
@@ -884,6 +894,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Only supports ASCII code comparison
+     *
      * @param c the specified {@link CharSequence}
      * @see String#indexOf(String)
      */
@@ -894,6 +906,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Only supports ASCII code comparison
+     *
      * @param c the specified {@link CharSequence}
      * @param o the index from which to start the search
      * @throws ArrayIndexOutOfBoundsException if the offset argument is negative
@@ -974,12 +988,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     public int lastIndexOf(
         byte b, int o
     ) {
-        if (o < count && o >= 0) {
-            byte[] it = value;
-            for (; o >= 0; o--) {
-                if (it[o] == b) {
-                    return o;
-                }
+        if (o >= count) {
+            o = count - 1;
+        }
+        byte[] it = value;
+        for (; o >= 0; o--) {
+            if (it[o] == b) {
+                return o;
             }
         }
         return -1;
@@ -997,6 +1012,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Only supports ASCII code comparison
+     *
      * @param c the specified {@link CharSequence}
      * @see String#lastIndexOf(String)
      */
@@ -1007,6 +1024,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Only supports ASCII code comparison
+     *
      * @param c the specified {@link CharSequence}
      * @param f the index from which to start the search
      * @see String#lastIndexOf(String, int)
@@ -1014,10 +1033,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     public int lastIndexOf(
         @NotNull CharSequence c, int f
     ) {
-        int len = c.length();
-        f = Math.min(
-            f, count - len
-        );
+        int len = c.length(),
+            r = count - len;
+        if (f > r) {
+            f = r;
+        }
 
         if (f < 0) {
             return -1;
@@ -1034,15 +1054,17 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         byte fir = (byte) ch;
         byte[] it = value;
 
+        char ot;
         for (; f >= 0; --f) {
             if (it[f] != fir) {
                 continue;
             }
 
-            char ot;
             int o1 = f, o2 = 0;
             while (++o2 < len) {
-                ot = (char) (it[++o1] & 0xFF);
+                ot = (char) (
+                    it[++o1] & 0xFF
+                );
                 if (ot != c.charAt(o2)) break;
             }
             if (o2 == len) {
@@ -1070,28 +1092,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param b the byte value to search for
-     * @param o the index from which to start the search
-     * @see Chain#indexOf(byte, int)
-     */
-    public boolean contains(
-        byte b, int o
-    ) {
-        return indexOf(b, o) != -1;
-    }
-
-    /**
-     * @param b the byte value to search for
-     * @param o the index from which to start the search
-     * @see Chain#indexOf(byte, int)
-     */
-    public boolean contains(
-        int b, int o
-    ) {
-        return indexOf((byte) b, o) != -1;
-    }
-
-    /**
+     * Only supports ASCII code comparison
+     *
      * @param c the {@link CharSequence} to search for
      * @see Chain#indexOf(CharSequence)
      * @see String#contains(CharSequence)
@@ -1100,18 +1102,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         @NotNull CharSequence c
     ) {
         return indexOf(c, 0) != -1;
-    }
-
-    /**
-     * @param c the {@link CharSequence} to search for
-     * @param o the index from which to start the search
-     * @see Chain#indexOf(CharSequence, int)
-     * @see String#contains(CharSequence)
-     */
-    public boolean contains(
-        @NotNull CharSequence c, int o
-    ) {
-        return indexOf(c, o) != -1;
     }
 
     /**
@@ -1693,7 +1683,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             grow(count + 1);
             hash = 0;
             value[count++] = c.value[0];
-        } else if (c.count != 0) {
+        }
+
+        // multiple
+        else if (c.count != 0) {
             grow(count + c.count);
             System.arraycopy(
                 c.value, 0,
@@ -1780,7 +1773,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         grow(count + l);
 
         while (i < l) {
+            // get char
             char d = c[i++];
+
             // U+0000 ~ U+007F
             if (d < 0x80) {
                 grow(count + 1);
@@ -1843,7 +1838,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         grow(count + l);
 
         while (i < l) {
+            // get char
             char d = c.charAt(i++);
+
             // U+0000 ~ U+007F
             if (d < 0x80) {
                 grow(count + 1);

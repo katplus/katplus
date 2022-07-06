@@ -107,13 +107,19 @@ public class ChainTest {
 
         assertTrue(value.contains('.'));
         assertTrue(value.contains("kat"));
-        assertTrue(value.contains("kat", 3));
         assertTrue(value.contains("plus.kat.plus"));
-
-        assertFalse(value.contains('.', 10));
-        assertFalse(value.contains("kat", 10));
+        assertFalse(value.contains("plus.kat.plus$"));
         assertFalse(value.contains("$plus.kat.plus"));
-
     }
 
+    @Test
+    public void test_compareTo() {
+        String s = "kat.plus";
+        Value v = new Value(s);
+
+        assertEquals(0, v.compareTo("kat.plus"));
+        assertEquals(s.compareTo("+kat.plus"), v.compareTo("+kat.plus"));
+        assertEquals(s.compareTo("kat.plus+"), v.compareTo("kat.plus+"));
+        assertEquals(s.compareTo("+kat.plus+"), v.compareTo("+kat.plus+"));
+    }
 }
