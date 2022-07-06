@@ -213,7 +213,7 @@ public class Parser implements Pipe {
         Builder<?> child, parent = active;
 
         if (depth != 0) {
-            child = active.explore(
+            child = active.observe(
                 space, name
             );
         } else {
@@ -275,7 +275,7 @@ public class Parser implements Pipe {
 
         try {
             if (depth != 0) {
-                active.receive(child);
+                active.dispose(child);
                 return true;
             } else {
                 bundle = child.bundle();

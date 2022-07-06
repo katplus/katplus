@@ -81,7 +81,7 @@ public abstract class Builder<K> {
      * Create a branch of this {@link Builder}
      */
     @Nullable
-    public abstract Builder<?> explore(
+    public abstract Builder<?> observe(
         @NotNull Space space,
         @NotNull Alias alias
     ) throws IOCrash;
@@ -89,7 +89,7 @@ public abstract class Builder<K> {
     /**
      * @throws IOCrash If an I/O error occurs
      */
-    public abstract void receive(
+    public abstract void dispose(
         @NotNull Builder<?> child
     ) throws IOCrash;
 

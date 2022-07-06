@@ -226,7 +226,7 @@ public class ListSpare implements Spare<List> {
         }
 
         @Override
-        public Builder<?> explore(
+        public Builder<?> observe(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -246,7 +246,7 @@ public class ListSpare implements Spare<List> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public void receive(
+        public void dispose(
             @NotNull Builder<?> child
         ) throws IOCrash {
             entity.add(

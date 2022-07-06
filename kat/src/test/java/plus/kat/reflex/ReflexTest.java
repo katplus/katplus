@@ -49,13 +49,13 @@ public class ReflexTest {
 
         Author author = supplier.read(
             Author.class, Event.ascii(
-                "Author{$:id(1)$:name(kraity)$:meta(kat)}"
+                "Author{$:id(1)$:tag(kat)$:name(kraity)}"
             )
         );
 
         assertNotNull(author);
         assertEquals(1, author.id);
-        assertEquals("kat", author.meta);
+        assertEquals("kat", author.tag);
         assertEquals("kraity", author.name);
     }
 
@@ -110,11 +110,12 @@ public class ReflexTest {
         private int id;
         private String name;
 
-        @Expose("meta")
-        private String meta;
+        @Expose("tag")
+        private String tag;
 
         public Author(
-            int id, String name
+            @Expose("id") int id,
+            @Expose("name") String name
         ) {
             this.id = id;
             this.name = name;

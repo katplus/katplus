@@ -13,7 +13,7 @@ class WorkerKtTest {
         val supplier = Supplier.ins()
         val user = supplier.read<User>(
             Event(
-                "{$:id(1)$:name(kraity)}"
+                "{$:arg0(1)$:arg1(kraity)}"
             )
         )
 

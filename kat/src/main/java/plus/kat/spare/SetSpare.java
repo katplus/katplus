@@ -215,7 +215,7 @@ public class SetSpare implements Spare<Set> {
         }
 
         @Override
-        public Builder<?> explore(
+        public Builder<?> observe(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -235,7 +235,7 @@ public class SetSpare implements Spare<Set> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public void receive(
+        public void dispose(
             @NotNull Builder<?> child
         ) throws IOCrash {
             entity.add(

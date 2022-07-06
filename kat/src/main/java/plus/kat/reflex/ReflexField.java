@@ -33,7 +33,7 @@ import java.util.Date;
  * @author kraity
  * @since 0.0.1
  */
-public class ReflexField<K> extends ReflexWorker.Node<K> implements Setter<K, Object>, Getter<K, Object> {
+public class ReflexField<K> extends ReflexSketch.Node<K> implements Setter<K, Object>, Getter<K, Object> {
 
     private final Field field;
     private Coder<?> coder;

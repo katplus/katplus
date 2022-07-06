@@ -7,7 +7,7 @@ import plus.kat.Spare;
 import plus.kat.Supplier;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
-import plus.kat.reflex.ReflexWorker;
+import plus.kat.reflex.ReflexSketch;
 
 import static plus.kat.anno.Embed.POJO;
 import static plus.kat.anno.Embed.INDEX;
@@ -16,11 +16,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author kraity
  */
-public class WorkerTest {
+public class SketchTest {
 
     @Test
     public void test() throws NoSuchMethodException {
-        Spare<User> spare = new ReflexWorker<>(
+        Spare<User> spare = new ReflexSketch<>(
             User.class, Supplier.ins()
         );
 

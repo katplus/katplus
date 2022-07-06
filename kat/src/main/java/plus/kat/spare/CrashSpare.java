@@ -128,7 +128,7 @@ public class CrashSpare implements Spare<Crash> {
         }
 
         @Override
-        public Builder<?> explore(
+        public Builder<?> observe(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -136,7 +136,7 @@ public class CrashSpare implements Spare<Crash> {
         }
 
         @Override
-        public void receive(
+        public void dispose(
             @NotNull Builder<?> child
         ) throws IOCrash {
             // NOOP

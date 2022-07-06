@@ -26,9 +26,9 @@ import java.lang.reflect.Type;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.2
  */
-public interface Worker<K> extends Spare<K> {
+public interface Sketch<K> extends Spare<K> {
     /**
      * @param alias the alias of entity
      * @throws Crash If a failure occurs
@@ -60,21 +60,23 @@ public interface Worker<K> extends Spare<K> {
 
     /**
      * @author kraity
-     * @since 0.0.1
+     * @since 0.0.2
      */
     class Builder0<K> extends Builder<K> {
 
         protected K entity;
         protected int index = -1;
-        protected Worker<K> worker;
+
+        protected Sketch<K> sketch;
+        protected Setter<K, ?> setter;
 
         /**
          * default
          */
         public Builder0(
-            @NotNull Worker<K> worker
+            @NotNull Sketch<K> sketch
         ) {
-            this.worker = worker;
+            this.sketch = sketch;
         }
 
         @Override
@@ -82,12 +84,12 @@ public interface Worker<K> extends Spare<K> {
             @NotNull Alias alias
         ) throws Crash, IOCrash {
             // get an instance
-            entity = worker.apply(alias);
+            entity = sketch.apply(alias);
 
             // check this instance
             if (entity == null) {
                 throw new Crash(
-                    "Entity created through Worker is null", false
+                    "Entity created through Sketch is null", false
                 );
             }
         }
@@ -98,10 +100,9 @@ public interface Worker<K> extends Spare<K> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOCrash {
-            Setter<K, ?> setter =
-                worker.setter(
-                    ++index, alias
-                );
+            setter = sketch.setter(
+                ++index, alias
+            );
 
             if (setter == null) {
                 return;
@@ -111,8 +112,8 @@ public interface Worker<K> extends Spare<K> {
             Coder<?> coder = setter.getCoder();
 
             if (coder != null) {
-                setter.onAccept(
-                    entity, coder.read(
+                dispose(
+                    coder.read(
                         flag, value
                     )
                 );
@@ -128,8 +129,8 @@ public interface Worker<K> extends Spare<K> {
                 spare = supplier.lookup(space);
 
                 if (spare != null) {
-                    setter.onAccept(
-                        entity, spare.read(
+                    dispose(
+                        spare.read(
                             flag, value
                         )
                     );
@@ -140,8 +141,8 @@ public interface Worker<K> extends Spare<K> {
 
                 // skip if null
                 if (spare != null) {
-                    setter.onAccept(
-                        entity, spare.read(
+                    dispose(
+                        spare.read(
                             flag, value
                         )
                     );
@@ -154,8 +155,8 @@ public interface Worker<K> extends Spare<K> {
                 // skip if null
                 if (spare != null &&
                     spare.accept(klass)) {
-                    setter.onAccept(
-                        entity, spare.read(
+                    dispose(
+                        spare.read(
                             flag, value
                         )
                     );
@@ -170,15 +171,13 @@ public interface Worker<K> extends Spare<K> {
         }
 
         @Nullable
-        @Override
-        public Builder<?> explore(
+        public Builder<?> observe(
             @NotNull Space space,
             @NotNull Alias alias
-        ) {
-            Setter<K, ?> setter =
-                worker.setter(
-                    ++index, alias
-                );
+        ) throws IOCrash {
+            setter = sketch.setter(
+                ++index, alias
+            );
 
             if (setter == null) {
                 return null;
@@ -233,28 +232,29 @@ public interface Worker<K> extends Spare<K> {
             return null;
         }
 
-        @Override
-        public void receive(
-            @NotNull Builder<?> child
-        ) {
-            Setter<K, ?> setter;
-
-            setter = worker.setter(
-                index, child.alias()
+        public void dispose(
+            @Nullable Object value
+        ) throws IOCrash {
+            setter.onAccept(
+                entity, value
             );
+        }
 
-            if (setter != null) {
-                setter.onAccept(
-                    entity, child.bundle()
-                );
-            }
+        @Override
+        public void dispose(
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            setter.onAccept(
+                entity, child.bundle()
+            );
         }
 
         @Override
         public void close() {
             entity = null;
             index = -1;
-            worker = null;
+            sketch = null;
+            setter = null;
         }
     }
 }

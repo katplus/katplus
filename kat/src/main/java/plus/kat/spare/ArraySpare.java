@@ -196,7 +196,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public Builder<?> explore(
+        public Builder<?> observe(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -204,7 +204,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void receive(
+        public void dispose(
             @NotNull Builder<?> child
         ) throws IOCrash {
             // NOOP
@@ -331,7 +331,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public Builder<?> explore(
+        public Builder<?> observe(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -351,7 +351,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void receive(
+        public void dispose(
             @NotNull Builder<?> child
         ) {
             if (length == size) {
@@ -416,7 +416,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public Builder<?> explore(
+        public Builder<?> observe(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -438,7 +438,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void receive(
+        public void dispose(
             @NotNull Builder<?> child
         ) {
             list[size - 1] = child.bundle();

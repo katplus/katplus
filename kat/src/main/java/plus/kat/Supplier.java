@@ -534,7 +534,7 @@ public interface Supplier {
      */
     class Impl extends ConcurrentHashMap<CharSequence, Spare<?>> implements Supplier {
         /**
-         * default worker
+         * default supplier
          */
         static final Impl INS = new Impl();
 

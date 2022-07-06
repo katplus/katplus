@@ -225,7 +225,7 @@ public class MapSpare implements Spare<Map> {
         }
 
         @Override
-        public Builder<?> explore(
+        public Builder<?> observe(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -245,7 +245,7 @@ public class MapSpare implements Spare<Map> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public void receive(
+        public void dispose(
             @NotNull Builder<?> child
         ) throws IOCrash {
             Alias alias =

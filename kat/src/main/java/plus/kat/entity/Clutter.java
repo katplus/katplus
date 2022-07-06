@@ -37,7 +37,7 @@ public interface Clutter<K> extends Coder<K> {
     /**
      * @throws IOCrash If an I/O error occurs
      */
-    default Builder<?> explore(
+    default Builder<?> channel(
         @NotNull K entity,
         @NotNull int index,
         @NotNull Space space,
@@ -117,18 +117,18 @@ public interface Clutter<K> extends Coder<K> {
 
         @Nullable
         @Override
-        public Builder<?> explore(
+        public Builder<?> observe(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOCrash {
-            return clutter.explore(
+            return clutter.channel(
                 entity, ++index,
                 space, alias, supplier
             );
         }
 
         @Override
-        public void receive(
+        public void dispose(
             @NotNull Builder<?> child
         ) throws IOCrash {
             clutter.receive(

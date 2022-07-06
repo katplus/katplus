@@ -32,9 +32,9 @@ import plus.kat.utils.KatMap;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.2
  */
-public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Worker<E> {
+public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Sketch<E> {
 
     private final Class<E> klass;
     private final CharSequence space;
@@ -42,8 +42,8 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
     private int flags;
     private Node<E> head, tail;
 
-    private Parameter[] parameters;
     private final Constructor<E> builder;
+    private KatMap<Object, Param> params;
 
     private static final boolean SPARE_POJO =
         Config.get("kat.spare.pojo", false);
@@ -51,7 +51,7 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
     /**
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
      */
-    public ReflexWorker(
+    public ReflexSketch(
         @NotNull Class<E> klass,
         @NotNull Supplier supplier
     ) {
@@ -62,11 +62,16 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
      */
     @SuppressWarnings("unchecked")
-    public ReflexWorker(
+    public ReflexSketch(
         @Nullable Embed embed,
         @NotNull Class<E> klass,
         @NotNull Supplier supplier
     ) {
+        this.klass = klass;
+        if (embed != null) {
+            flags = embed.claim();
+        }
+
         Constructor<?>[] a =
             klass.getDeclaredConstructors();
         Constructor<?> b = a[0];
@@ -77,15 +82,10 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
             }
         }
 
-        builder = (Constructor<E>) b;
         b.setAccessible(true);
+        builder = (Constructor<E>) b;
         if (b.getParameterCount() != 0) {
-            parameters = b.getParameters();
-        }
-
-        this.klass = klass;
-        if (embed != null) {
-            flags = embed.claim();
+            register(b);
         }
 
         register(klass.getDeclaredFields(), supplier);
@@ -229,10 +229,36 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
     public Builder<E> getBuilder(
         @Nullable Type type
     ) {
-        if (parameters == null) {
+        if (params == null) {
             return new Builder0<>(this);
         }
         return new Builder1<>(this);
+    }
+
+    private void register(
+        @NotNull Constructor<?> b
+    ) {
+        params = new KatMap<>();
+        Parameter[] q = b.getParameters();
+        for (int i = 0; i < q.length; i++) {
+            Parameter p = q[i];
+            Expose expose = p
+                .getAnnotation(
+                    Expose.class
+                );
+
+            if (expose != null) {
+                for (String name : expose.value()) {
+                    params.put(
+                        name, new Param(i, p)
+                    );
+                }
+            } else {
+                params.put(
+                    p.getName(), new Param(i, p)
+                );
+            }
+        }
     }
 
     private void register(
@@ -241,7 +267,10 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
     ) {
         boolean REF = (flags & Embed.INDEX) != 0;
         for (Field field : fields) {
-            Expose expose = field.getAnnotation(Expose.class);
+            Expose expose = field
+                .getAnnotation(
+                    Expose.class
+                );
             if (expose == null) continue;
 
             field.setAccessible(true);
@@ -295,7 +324,10 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
             if (count > 1) continue;
 
             ReflexMethod<E> reflex;
-            Expose expose = method.getAnnotation(Expose.class);
+            Expose expose = method
+                .getAnnotation(
+                    Expose.class
+                );
 
             // via Expose
             if (expose != null) {
@@ -502,15 +534,39 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
      * @author kraity
      * @since 0.0.2
      */
+    static class Param extends KatMap.Entry<String, Param> {
+
+        final int index;
+        final Parameter param;
+
+        public Param(
+            int hash,
+            Parameter param
+        ) {
+            super(0);
+            this.index = hash;
+            this.param = param;
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
     static class Builder1<K> extends Builder0<K> {
 
         private Object[] params;
-        private Parameter[] a;
         private Constructor<K> c;
-        private ReflexWorker<K> reflex;
+
+        private int count;
+        private Param p;
+        private Cache<K> cache;
+
+        private ReflexSketch<K> reflex;
+        private KatMap<Object, Param> a;
 
         public Builder1(
-            @NotNull ReflexWorker<K> reflex
+            @NotNull ReflexSketch<K> reflex
         ) {
             super(reflex);
             this.reflex = reflex;
@@ -520,9 +576,9 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
         public void create(
             @NotNull Alias alias
         ) {
+            a = reflex.params;
             c = reflex.builder;
-            a = reflex.parameters;
-            params = new Object[a.length];
+            params = new Object[c.getParameterCount()];
         }
 
         @Override
@@ -531,71 +587,121 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOCrash {
-            if (entity != null) {
-                super.accept(
-                    space, alias, value
-                );
-            } else {
-                Parameter p = a[++index];
-                Spare<?> spare = supplier
-                    .embed(
-                        p.getType()
-                    );
+            if (entity == null) {
+                p = a.get(alias);
+                if (p != null) {
+                    ++index;
+                    Spare<?> spare =
+                        supplier.embed(
+                            p.param.getType()
+                        );
 
-                if (spare != null) {
-                    params[index] = spare.read(
-                        flag, value
-                    );
-                }
+                    if (spare != null) {
+                        params[p.index] =
+                            spare.read(
+                                flag, value
+                            );
+                    }
 
-                if (index + 1 == a.length) try {
-                    entity = c.newInstance(params);
-                } catch (Exception e) {
-                    throw new IOCrash(e);
+                    embark();
+                    return;
                 }
             }
-        }
 
-        @Override
-        public Builder<?> explore(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) {
-            if (entity != null) {
-                return super.explore(
-                    space, alias
-                );
-            }
-
-            Parameter p = a[++index];
-            Spare<?> spare = supplier
-                .embed(
-                    p.getType()
-                );
-
-            if (spare == null) {
-                return null;
-            }
-
-            return spare.getBuilder(
-                p.getParameterizedType()
+            super.accept(
+                space, alias, value
             );
         }
 
         @Override
-        public void receive(
-            @NotNull Builder<?> child
-        ) {
-            if (entity != null) {
-                super.receive(child);
+        public Builder<?> observe(
+            @NotNull Space space,
+            @NotNull Alias alias
+        ) throws IOCrash {
+            if (entity == null) {
+                Param p = a.get(alias);
+                if (p != null) {
+                    ++index;
+                    Spare<?> spare =
+                        supplier.embed(
+                            p.param.getType()
+                        );
+
+                    if (spare == null) {
+                        return null;
+                    }
+
+                    return spare.getBuilder(
+                        p.param.getParameterizedType()
+                    );
+                }
             }
 
-            params[index] = child.bundle();
+            return super.observe(
+                space, alias
+            );
+        }
 
-            if (index + 1 == a.length) try {
-                entity = c.newInstance(params);
-            } catch (Exception e) {
-                throw new RunCrash(e);
+        @Override
+        public void dispose(
+            @Nullable Object value
+        ) throws IOCrash {
+            if (entity != null) {
+                setter.onAccept(
+                    entity, value
+                );
+            } else {
+                Cache<K> c = new Cache<>();
+                c.value = value;
+                c.setter = setter;
+
+                if (cache == null) {
+                    cache = c;
+                } else {
+                    cache.next = c;
+                }
+            }
+        }
+
+        @Override
+        public void dispose(
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            if (entity != null) {
+                setter.onAccept(
+                    entity, child.bundle()
+                );
+            } else if (p == null) {
+                dispose(
+                    child.bundle()
+                );
+            } else {
+                params[p.index] = child.bundle();
+                p = null;
+                embark();
+            }
+        }
+
+        static class Cache<K> {
+            Object value;
+            Cache<K> next;
+            Setter<K, ?> setter;
+        }
+
+        private void embark()
+            throws IOCrash {
+            if (++count == params.length) {
+                try {
+                    entity = c.newInstance(params);
+                    while (cache != null) {
+                        cache.setter.onAccept(
+                            entity, cache.value
+                        );
+                        cache = cache.next;
+                    }
+                } catch (Exception e) {
+                    throw new IOCrash(e);
+                }
             }
         }
 
@@ -604,6 +710,8 @@ public class ReflexWorker<E> extends KatMap<Object, Setter<E, ?>> implements Wor
             super.close();
             a = null;
             c = null;
+            p = null;
+            cache = null;
             params = null;
             reflex = null;
         }

@@ -556,7 +556,7 @@ class AuthorBuilder extends Builder<User> {
     }
 
     @Override
-    public Builder<?> explore(
+    public Builder<?> observe(
         Space space,
         Alias alias
     ) throws IOCrash {
@@ -577,7 +577,7 @@ class AuthorBuilder extends Builder<User> {
     }
 
     @Override
-    public void receive(
+    public void dispose(
         Builder<?> child
     ) throws IOCrash {
         Alias alias = child.alias();

@@ -33,7 +33,7 @@ import java.util.Date;
  * @author kraity
  * @since 0.0.1
  */
-public class ReflexMethod<K> extends ReflexWorker.Node<K> implements Setter<K, Object>, Getter<K, Object> {
+public class ReflexMethod<K> extends ReflexSketch.Node<K> implements Setter<K, Object>, Getter<K, Object> {
 
     private final Method method;
     private Coder<?> coder;
