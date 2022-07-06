@@ -17,7 +17,7 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.kernel.Chain;
+import static plus.kat.kernel.Chain.EMPTY_CHARS;
 
 /**
  * @author kraity
@@ -586,6 +586,7 @@ public interface Convert {
 
     /**
      * Parses the UTF-8 {@code byte[]} as a {@code char[]}
+     * Strictly check UTF-8 code, if illegal returns the empty array
      *
      * @since 0.0.2
      */
@@ -594,48 +595,73 @@ public interface Convert {
         @NotNull byte[] it, int i, int j
     ) {
         if (i >= j) {
-            return Chain.EMPTY_CHARS;
+            return EMPTY_CHARS;
         }
 
         int o = 0;
         int k = i;
 
-        while (k < j) {
+        for (; k < j; o++) {
             // get byte
-            byte b = it[k];
+            byte b = it[k++];
 
             // U+0000 ~ U+007F
             // 0xxxxxxx
-            if (b > -1) {
-                o++;
-                k++;
+            if (b >= 0) {
+                continue;
             }
 
             // U+0080 ~ U+07FF
             // 110xxxxx 10xxxxxx
-            else if ((b >> 5) == -2) {
-                o++;
-                k += 2;
+            if ((b >> 5) == -2) {
+                // overflow
+                if (k >= j) {
+                    return EMPTY_CHARS;
+                }
+
+                // check code
+                if ((it[k++] & 0xC0) != 0x80) {
+                    return EMPTY_CHARS;
+                }
             }
 
             // U+0800 ~ U+FFFF
             // 1110xxxx 10xxxxxx 10xxxxxx
             else if ((b >> 4) == -2) {
-                o++;
-                k += 3;
+                // overflow
+                if (k + 1 >= j) {
+                    return EMPTY_CHARS;
+                }
+
+                // check code
+                if ((it[k++] & 0xC0) != 0x80 ||
+                    (it[k++] & 0xC0) != 0x80) {
+                    return EMPTY_CHARS;
+                }
             }
 
             // U+10000 ~ U+10FFFF
             // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
             // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
             else if ((b >> 3) == -2) {
-                o += 2;
-                k += 4;
+                // overflow
+                if (k + 2 >= j) {
+                    return EMPTY_CHARS;
+                }
+
+                // check code
+                if ((it[k++] & 0xC0) != 0x80 ||
+                    (it[k++] & 0xC0) != 0x80 ||
+                    (it[k++] & 0xC0) != 0x80) {
+                    return EMPTY_CHARS;
+                }
+
+                o++; // another agent pair
             }
 
             // beyond the current range
             else {
-                return Chain.EMPTY_CHARS;
+                return EMPTY_CHARS;
             }
         }
 
@@ -646,7 +672,7 @@ public interface Convert {
 
             // U+0000 ~ U+007F
             // 0xxxxxxx
-            if (b > -1) {
+            if (b >= 0) {
                 ch[o++] = (char) b;
             }
 
@@ -688,7 +714,7 @@ public interface Convert {
 
             // beyond the current range
             else {
-                return Chain.EMPTY_CHARS;
+                return EMPTY_CHARS;
             }
         }
 

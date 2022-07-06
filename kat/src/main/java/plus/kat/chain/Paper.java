@@ -636,7 +636,7 @@ public class Paper extends Value implements Flow {
 
             // U+0000 ~ U+007F
             // 0xxxxxxx
-            if (b1 > -1) {
+            if (b1 >= 0) {
                 addData(b1);
                 continue;
             }

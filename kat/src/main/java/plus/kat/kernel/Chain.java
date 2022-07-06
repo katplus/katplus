@@ -332,7 +332,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
             // U+0000 ~ U+007F
             // 0xxxxxxx
-            if (b > -1) {
+            if (b >= 0) {
                 o++;
                 k++;
             }
