@@ -292,7 +292,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         int o = 0;
         byte[] it = value;
 
-        for (int k = 0; k < l; ) {
+        for (int k = 0; k < l; o++) {
             if (i == o) {
                 // U+0000 ~ U+007F
                 if (c < 0x80) {
@@ -333,21 +333,18 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             // U+0000 ~ U+007F
             // 0xxxxxxx
             if (b >= 0) {
-                o++;
                 k++;
             }
 
             // U+0080 ~ U+07FF
             // 110xxxxx 10xxxxxx
             else if ((b >> 5) == -2) {
-                o++;
                 k += 2;
             }
 
             // U+0800 ~ U+FFFF
             // 1110xxxx 10xxxxxx 10xxxxxx
             else if ((b >> 4) == -2) {
-                o++;
                 k += 3;
             }
 

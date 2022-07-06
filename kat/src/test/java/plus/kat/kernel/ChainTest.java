@@ -18,8 +18,8 @@ public class ChainTest {
         assertTrue(new Value("陆").is('陆'));
         assertTrue(new Value("陆之岇").is("陆之岇"));
         assertTrue(new Value("😀陆之岇😀").is("😀陆之岇😀"));
-        assertTrue(new Value("😀陆之岇😀").is(1, '陆'));
-        assertTrue(new Value("😀陆之岇😀+").is(5, '+'));
+        assertTrue(new Value("😀陆之岇😀").is(2, '陆'));
+        assertTrue(new Value("😀陆之岇😀+").is(7, '+'));
 
         assertFalse(new Value("陆之岇").is("陆之岇+"));
         assertFalse(new Value("陆之岇+").is("陆之岇"));
