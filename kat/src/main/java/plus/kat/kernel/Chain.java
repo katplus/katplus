@@ -312,7 +312,18 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 // U+10000 ~ U+10FFFF
                 // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
                 else if (c >= 0xD800 && c <= 0xDFFF) {
-                    return false;
+                    if (k + 2 >= l ||
+                        c > 0xDBFF) {
+                        return false;
+                    }
+
+                    byte b2 = it[k + 1];
+                    byte b3 = it[k + 2];
+                    return c == (char) (
+                        ((0xD8 | (it[k] & 0x03)) << 8) |
+                            ((((b2 - 0x10 >> 2)) & 0x0F) << 4) |
+                            (((b2 & 0x03) << 2) | ((b3 >> 4) & 0x03))
+                    );
                 }
 
                 // U+0800 ~ U+FFFF
@@ -352,8 +363,23 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
             // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
             else if ((b >> 3) == -2) {
-                o++;
-                k += 4;
+                if (i != ++o) {
+                    k += 4;
+                    continue;
+                }
+
+                if (k + 3 >= l ||
+                    c < 0xDC00 ||
+                    c > 0xDFFF) {
+                    return false;
+                }
+
+                byte b3 = it[k + 2];
+                byte b4 = it[k + 3];
+                return c == (char) (
+                    ((0xDC | ((b3 >> 2) & 0x03)) << 8) |
+                        ((((b3 & 0x3) << 2) | ((b4 >> 4) & 0x03)) << 4) | (b4 & 0x0F)
+                );
             }
 
             // beyond the current range

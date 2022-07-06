@@ -21,6 +21,15 @@ public class ChainTest {
         assertTrue(new Value("😀陆之岇😀").is(2, '陆'));
         assertTrue(new Value("😀陆之岇😀+").is(7, '+'));
 
+        assertTrue(new Value("+😀+").is(1, '\uD83D'));
+        assertTrue(new Value("+😀+").is(2, '\uDE00'));
+        assertTrue(new Value("😀陆之岇😀").is(0, '\uD83D'));
+        assertTrue(new Value("😀陆之岇😀").is(1, '\uDE00'));
+        assertTrue(new Value("😀陆之岇😀").is(2, '陆'));
+        assertTrue(new Value("😀陆之岇😀").is(4, '岇'));
+        assertTrue(new Value("😀陆之岇😀").is(5, '\uD83D'));
+        assertTrue(new Value("😀陆之岇😀").is(6, '\uDE00'));
+
         assertFalse(new Value("陆之岇").is("陆之岇+"));
         assertFalse(new Value("陆之岇+").is("陆之岇"));
         assertFalse(new Value("+陆之岇+").is("陆之岇+"));
