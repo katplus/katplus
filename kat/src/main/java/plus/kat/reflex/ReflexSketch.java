@@ -18,6 +18,7 @@ package plus.kat.reflex;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -43,7 +44,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
     private Node<E> head, tail;
 
     private final Constructor<E> builder;
-    private KatMap<Object, Param> params;
+    private KatMap<Object, ReflexParam> params;
 
     private static final boolean SPARE_POJO =
         Config.get("kat.spare.pojo", false);
@@ -85,7 +86,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
         b.setAccessible(true);
         builder = (Constructor<E>) b;
         if (b.getParameterCount() != 0) {
-            register(b);
+            register(b, supplier);
         }
 
         register(klass.getDeclaredFields(), supplier);
@@ -236,27 +237,48 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
     }
 
     private void register(
-        @NotNull Constructor<?> b
+        @NotNull Constructor<?> b,
+        @NotNull Supplier supplier
     ) {
+        Parameter[] ps = null;
         params = new KatMap<>();
-        Parameter[] q = b.getParameters();
-        for (int i = 0; i < q.length; i++) {
-            Parameter p = q[i];
-            Expose expose = p
-                .getAnnotation(
-                    Expose.class
+
+        Class<?>[] cs = b.getParameterTypes();
+        Type[] ts = b.getGenericParameterTypes();
+        Annotation[][] as = b.getParameterAnnotations();
+
+        for (int i = 0; i < cs.length; i++) {
+            Format format = null;
+            Expose expose = null;
+            for (Annotation a : as[i]) {
+                Class<?> at = a.annotationType();
+                if (at == Expose.class) {
+                    expose = (Expose) a;
+                } else if (at == Format.class) {
+                    format = (Format) a;
+                }
+            }
+
+            ReflexParam param =
+                new ReflexParam(
+                    i, ts[i], cs[i],
+                    format, expose, supplier
                 );
 
-            if (expose != null) {
-                for (String name : expose.value()) {
+            if (expose == null) {
+                if (ps == null) {
+                    ps = b.getParameters();
+                }
+                params.put(
+                    ps[i].getName(), param
+                );
+            } else {
+                String[] keys = expose.value();
+                for (int k = 0; k < keys.length; k++) {
                     params.put(
-                        name, new Param(i, p)
+                        keys[k], k == 0 ? param : param.clone()
                     );
                 }
-            } else {
-                params.put(
-                    p.getName(), new Param(i, p)
-                );
             }
         }
     }
@@ -534,36 +556,17 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
      * @author kraity
      * @since 0.0.2
      */
-    static class Param extends KatMap.Entry<String, Param> {
-
-        final int index;
-        final Parameter param;
-
-        public Param(
-            int hash,
-            Parameter param
-        ) {
-            super(0);
-            this.index = hash;
-            this.param = param;
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.2
-     */
     static class Builder1<K> extends Builder0<K> {
 
         private Object[] params;
         private Constructor<K> c;
 
         private int count;
-        private Param p;
         private Cache<K> cache;
+        private ReflexParam param;
 
         private ReflexSketch<K> reflex;
-        private KatMap<Object, Param> a;
+        private KatMap<Object, ReflexParam> a;
 
         public Builder1(
             @NotNull ReflexSketch<K> reflex
@@ -588,19 +591,31 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
             @NotNull Value value
         ) throws IOCrash {
             if (entity == null) {
-                Param p = a.get(alias);
-                if (p != null) {
-                    ++index;
-                    Spare<?> spare =
-                        supplier.embed(
-                            p.param.getType()
-                        );
+                ReflexParam param = a.get(alias);
+                if (param != null) {
+                    ++index; // increment
 
-                    if (spare != null) {
-                        params[p.index] =
-                            spare.read(
+                    // specified coder
+                    Coder<?> coder = param.coder;
+
+                    if (coder != null) {
+                        params[param.index] =
+                            coder.read(
                                 flag, value
                             );
+                    } else {
+                        // specified spare
+                        coder = supplier.embed(
+                            param.klass
+                        );
+
+                        // skip if null
+                        if (coder != null) {
+                            params[param.index] =
+                                coder.read(
+                                    flag, value
+                                );
+                        }
                     }
 
                     embark();
@@ -619,21 +634,25 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
             @NotNull Alias alias
         ) throws IOCrash {
             if (entity == null) {
-                p = a.get(alias);
-                if (p != null) {
-                    ++index;
-                    Spare<?> spare =
-                        supplier.embed(
-                            p.param.getType()
+                param = a.get(alias);
+                if (param != null) {
+                    ++index; // increment
+
+                    // specified coder
+                    Coder<?> coder = param.coder;
+
+                    if (coder == null) {
+                        // specified spare
+                        coder = supplier.embed(
+                            param.klass
                         );
 
-                    if (spare == null) {
-                        return null;
+                        if (coder == null) {
+                            return null;
+                        }
                     }
 
-                    return spare.getBuilder(
-                        p.param.getParameterizedType()
-                    );
+                    return coder.getBuilder(param.type);
                 }
             }
 
@@ -671,13 +690,13 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
                 setter.onAccept(
                     entity, child.bundle()
                 );
-            } else if (p == null) {
+            } else if (param == null) {
                 dispose(
                     child.bundle()
                 );
             } else {
-                params[p.index] = child.bundle();
-                p = null;
+                params[param.index] = child.bundle();
+                param = null;
                 embark();
             }
         }
@@ -710,7 +729,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
             super.close();
             a = null;
             c = null;
-            p = null;
+            param = null;
             cache = null;
             params = null;
             reflex = null;
