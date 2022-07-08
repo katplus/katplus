@@ -30,8 +30,8 @@ public @interface Embed {
     /**
      * Embed Flags
      */
-    int POJO = 0x1;
-    int INDEX = 0x2;
+    int SEALED = 0x1;
+    int DIRECT = 0x2;
 
     /**
      * Returns the space of this

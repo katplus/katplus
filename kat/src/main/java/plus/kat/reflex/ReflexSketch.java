@@ -28,7 +28,6 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.utils.Casting;
-import plus.kat.utils.Config;
 import plus.kat.utils.KatMap;
 
 /**
@@ -45,9 +44,6 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
 
     private final Constructor<E> builder;
     private KatMap<Object, ReflexParam> params;
-
-    private static final boolean SPARE_POJO =
-        Config.get("kat.spare.pojo", false);
 
     /**
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
@@ -287,7 +283,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
         @NotNull Field[] fields,
         @NotNull Supplier supplier
     ) {
-        boolean REF = (flags & Embed.INDEX) != 0;
+        boolean direct = (flags & Embed.DIRECT) != 0;
         for (Field field : fields) {
             Expose expose = field
                 .getAnnotation(
@@ -303,7 +299,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
 
             int h = reflex.getHash();
             // check use index
-            if (REF && h > -1) put(
+            if (direct && h > -1) put(
                 h, reflex.clone()
             );
 
@@ -338,8 +334,8 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
         @NotNull Method[] methods,
         @NotNull Supplier supplier
     ) {
-        boolean REF = (flags & Embed.INDEX) != 0;
-        boolean POJO = (flags & Embed.POJO) != 0 || SPARE_POJO;
+        boolean sealed = (flags & Embed.SEALED) != 0;
+        boolean direct = (flags & Embed.DIRECT) != 0;
 
         for (Method method : methods) {
             int count = method.getParameterCount();
@@ -364,7 +360,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
                     if (count != 0) {
                         int h = reflex.getHash();
                         // check use index
-                        if (REF && h > -1) {
+                        if (direct && h > -1) {
                             // register setter
                             put(h, reflex);
                         }
@@ -387,7 +383,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
                 }
 
                 // empty alias and use index
-                else if (REF && count == 1) {
+                else if (direct && count == 1) {
                     int h = expose.index();
                     // check use index
                     if (h > -1) {
@@ -407,7 +403,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
             }
 
             // check if via POJO
-            else if (!POJO) {
+            else if (sealed) {
                 continue;
             }
 

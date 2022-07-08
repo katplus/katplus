@@ -9,8 +9,7 @@ import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 import plus.kat.reflex.ReflexSketch;
 
-import static plus.kat.anno.Embed.POJO;
-import static plus.kat.anno.Embed.INDEX;
+import static plus.kat.anno.Embed.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -45,7 +44,7 @@ public class SketchTest {
         private Meta meta;
     }
 
-    @Embed(value = "Meta", claim = POJO | INDEX)
+    @Embed(value = "Meta", claim = DIRECT)
     static class Meta {
         @Expose(index = 0)
         private int sig;

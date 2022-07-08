@@ -8,7 +8,6 @@ import plus.kat.Supplier;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 
-import static plus.kat.anno.Embed.POJO;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ReflexTest {
@@ -84,7 +83,7 @@ public class ReflexTest {
         }
     }
 
-    @Embed(claim = POJO)
+    @Embed("Meta")
     static class Meta {
         private int id;
         private String tag;
