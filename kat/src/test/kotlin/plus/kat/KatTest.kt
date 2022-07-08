@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 import plus.kat.anno.Embed
+import plus.kat.anno.Embed.*
 import plus.kat.anno.Expose
 
 class KatKtTest {
@@ -85,15 +86,15 @@ class KatKtTest {
         )
     }
 
-    @Embed("User")
+    @Embed("User", claim = SEALED)
     class User {
         @Expose("id")
-        internal val id = 0
+        val id = 0
 
         @Expose("name")
-        internal val name: String? = null
+        val name: String? = null
 
         @Expose("blocked", "disabled")
-        internal val blocked = false
+        val blocked = false
     }
 }
