@@ -175,6 +175,23 @@ public class JsonTest {
     }
 
     @Test
+    public void test_encode2() {
+        assertEquals(
+            "null", Json.encode(null)
+        );
+        assertEquals(
+            "[null,1,\"kat\"]", Json.encode(
+                new Object[]{null, 1, "kat"}
+            )
+        );
+        assertEquals(
+            "[\"kat\",null,null]", Json.encode(
+                new Object[]{"kat", null, null}
+            )
+        );
+    }
+
+    @Test
     public void test_json_channel() {
         Json chan = new Json(c -> {
             c.set("id", 100001);

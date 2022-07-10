@@ -709,13 +709,12 @@ public class Json extends Chan {
          * Writes null
          */
         public void addNull() {
-            grow(count + 5);
+            grow(count + 4);
             hash = 0;
             value[count++] = 'n';
             value[count++] = 'u';
             value[count++] = 'l';
             value[count++] = 'l';
-            value[count++] = ',';
         }
 
         /**
