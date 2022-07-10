@@ -173,6 +173,18 @@ public class SpareTest {
         assertEquals(Meta.JSON, spare.cast(Meta.JSON));
     }
 
+
+    @Test
+    public void test_uuid_read() {
+        UUIDSpare spare = UUIDSpare.INSTANCE;
+
+        UUID uuid = spare.read(
+            "$(092f7929-d2d6-44d6-9cc1-694c2e360c56)"
+        );
+
+        assertEquals("092f7929-d2d6-44d6-9cc1-694c2e360c56", uuid.toString());
+    }
+
     static class Hook {
         public void on(
             ArrayList<Integer> data,
