@@ -301,7 +301,9 @@ public interface Spare<K> extends Coder<K> {
     static <T> Spare<T> embed(
         @NotNull Class<T> klass
     ) {
-        return Cluster.INS.embed(klass);
+        return Cluster.INS.embed(
+            klass, Impl.INS
+        );
     }
 
     /**
@@ -317,7 +319,9 @@ public interface Spare<K> extends Coder<K> {
         @NotNull Class<T> klass,
         @NotNull Spare<? super T> spare
     ) {
-        return Cluster.INS.put(klass, spare);
+        return Cluster.INS.put(
+            klass, spare
+        );
     }
 
     /**
@@ -359,7 +363,9 @@ public interface Spare<K> extends Coder<K> {
     static <T> Spare<T> lookup(
         @NotNull Class<T> klass
     ) {
-        return Cluster.INS.lookup(klass);
+        return Cluster.INS.lookup(
+            klass, Impl.INS
+        );
     }
 
     /**
@@ -420,7 +426,8 @@ public interface Spare<K> extends Coder<K> {
         @Nullable
         @SuppressWarnings({"unchecked", "rawtypes"})
         public <T> Spare<T> embed(
-            @NotNull Class<T> klass
+            @NotNull Class<T> klass,
+            @NotNull Supplier supplier
         ) {
             Spare<?> spare = get(klass);
 
@@ -479,7 +486,7 @@ public interface Spare<K> extends Coder<K> {
                 Spare<T> $spare;
                 put(klass, $spare =
                     new ReflectSpare<>(
-                        embed, klass, Impl.INS
+                        embed, klass, supplier
                     )
                 );
                 return $spare;
@@ -496,7 +503,8 @@ public interface Spare<K> extends Coder<K> {
         @Nullable
         @SuppressWarnings({"unchecked", "rawtypes"})
         public <T> Spare<T> lookup(
-            @NotNull Class<T> klass
+            @NotNull Class<T> klass,
+            @NotNull Supplier supplier
         ) {
             Spare<?> spare = get(klass);
 
@@ -549,7 +557,7 @@ public interface Spare<K> extends Coder<K> {
                 Spare<T> $spare;
                 put(klass, $spare =
                     new ReflectSpare<>(
-                        embed, klass, Impl.INS
+                        embed, klass, supplier
                     )
                 );
                 return $spare;

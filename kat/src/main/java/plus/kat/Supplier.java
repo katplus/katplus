@@ -48,7 +48,9 @@ public interface Supplier {
     default <T> Spare<T> embed(
         @NotNull Class<T> klass
     ) {
-        return INS.embed(klass);
+        return INS.embed(
+            klass, this
+        );
     }
 
     /**
@@ -133,7 +135,9 @@ public interface Supplier {
     default <T> Spare<T> lookup(
         @NotNull Class<T> klass
     ) {
-        return INS.lookup(klass);
+        return INS.lookup(
+            klass, this
+        );
     }
 
     /**
