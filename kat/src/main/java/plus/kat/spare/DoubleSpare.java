@@ -124,7 +124,7 @@ public class DoubleSpare implements Spare<Double> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        if (flow.isFlag(Flag.FLOAT_BITMAP)) {
+        if (flow.isFlag(Flag.FLOAT_AS_BITMAP)) {
             flow.addDouble(
                 (double) value, true
             );

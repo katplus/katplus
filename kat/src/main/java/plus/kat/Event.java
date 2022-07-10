@@ -88,6 +88,20 @@ public class Event<T> implements Flag {
     }
 
     /**
+     * @param flag   the specified {@link Flag} to be used
+     * @param reader the specified {@link Reader} to be used
+     * @since 0.0.2
+     */
+    public Event(
+        @Nullable Flag flag,
+        @NotNull Reader reader
+    ) {
+        this(Event.class);
+        this.setFlag(flag);
+        this.reader = reader;
+    }
+
+    /**
      * For example
      * <pre>{@code
      *   byte[] data = ...;
@@ -201,21 +215,6 @@ public class Event<T> implements Flag {
         @NotNull CharSequence data, int index, int length
     ) {
         this(Event.class);
-        reader = new CharReader(
-            data, index, length
-        );
-    }
-
-    /**
-     * @throws NullPointerException      If the specified {@code data} is null
-     * @throws IndexOutOfBoundsException If the index and the length are out of range
-     * @see CharReader#CharReader(CharSequence, int, int)
-     */
-    public Event(
-        @NotNull CharSequence data, int index, int length, @Nullable Supplier supplier
-    ) {
-        this(Event.class);
-        with(supplier);
         reader = new CharReader(
             data, index, length
         );
@@ -373,10 +372,11 @@ public class Event<T> implements Flag {
      *
      * @param flag the specified {@code flag}
      */
-    public void with(
+    public Event<T> with(
         long flag
     ) {
         flags |= flag;
+        return this;
     }
 
     /**
@@ -384,10 +384,11 @@ public class Event<T> implements Flag {
      *
      * @param type the specified type
      */
-    public void with(
+    public Event<T> with(
         @Nullable Type type
     ) {
         this.type = type;
+        return this;
     }
 
     /**
@@ -395,10 +396,11 @@ public class Event<T> implements Flag {
      *
      * @param reader the specified {@link Reader} to be read
      */
-    public void with(
+    public Event<T> with(
         @Nullable Reader reader
     ) {
         this.reader = reader;
+        return this;
     }
 
     /**
@@ -406,10 +408,11 @@ public class Event<T> implements Flag {
      *
      * @param spare the specified spare
      */
-    public void with(
+    public Event<T> with(
         @Nullable Spare<? super T> spare
     ) {
         this.spare = spare;
+        return this;
     }
 
     /**
@@ -417,10 +420,11 @@ public class Event<T> implements Flag {
      *
      * @param supplier the specified supplier
      */
-    public void with(
+    public Event<T> with(
         @Nullable Supplier supplier
     ) {
         this.supplier = supplier;
+        return this;
     }
 
     /**

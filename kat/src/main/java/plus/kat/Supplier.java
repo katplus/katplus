@@ -167,7 +167,9 @@ public interface Supplier {
         @NotNull Class<? extends Coder<T>> klass,
         @NotNull Coder<? super T> coder
     ) {
-        return Plug.INS.put(klass, coder);
+        return Plug.INS.put(
+            klass, coder
+        );
     }
 
     /**

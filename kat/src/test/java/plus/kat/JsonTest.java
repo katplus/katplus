@@ -60,6 +60,36 @@ public class JsonTest {
         assertEquals("kraity", user.name);
     }
 
+
+    @Test
+    public void test_parse1() {
+        Supplier supplier = Supplier.ins();
+
+        Meta meta0 = supplier.parse(
+            Meta.class, new Event<>(
+                "{\"user\":{\"id\":1,\"name\":\"kraity\"}}"
+            )
+        );
+
+        assertNotNull(meta0);
+        assertNotNull(meta0.user);
+        assertEquals(1, meta0.user.id);
+        assertEquals("kraity", meta0.user.name);
+
+        Meta meta1 = supplier.parse(
+            Meta.class, new Event<Meta>(
+                "{\"user\":\"{\\\"id\\\":1,\\\"name\\\":\\\"kraity\\\"}\"}"
+            ).with(
+                Flag.STRING_AS_OBJECT
+            )
+        );
+
+        assertNotNull(meta1);
+        assertNotNull(meta0.user);
+        assertEquals(1, meta1.user.id);
+        assertEquals("kraity", meta1.user.name);
+    }
+
     @Test
     @SuppressWarnings("unchecked")
     public void test_decode() {
@@ -174,5 +204,11 @@ public class JsonTest {
 
         @Expose({"blocked", "disabled"})
         private boolean blocked;
+    }
+
+    @Embed("Meta")
+    static class Meta {
+        @Expose("user")
+        private User user;
     }
 }

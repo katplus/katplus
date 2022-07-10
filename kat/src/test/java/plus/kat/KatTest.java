@@ -46,12 +46,12 @@ public class KatTest {
     public void test_encode1() {
         assertEquals(
             "f(0x42F6E979)", Kat.encode(
-                123.456F, Flag.FLOAT_BITMAP
+                123.456F, Flag.FLOAT_AS_BITMAP
             )
         );
         assertEquals(
             "d(0x405EDD3C07EE0B0B)", Kat.encode(
-                123.456789D, Flag.FLOAT_BITMAP
+                123.456789D, Flag.FLOAT_AS_BITMAP
             )
         );
     }
@@ -160,6 +160,35 @@ public class KatTest {
         assertEquals(1, user.id);
         assertTrue(user.blocked);
         assertEquals("kraity", user.name);
+    }
+
+    @Test
+    public void test_read1() {
+        Supplier supplier = Supplier.ins();
+
+        Meta meta0 = supplier.read(
+            Meta.class, new Event<Meta>(
+                "${$:user(${$:id^(1^)$:name^(kraity^)})}"
+            ).with(
+                Flag.STRING_AS_OBJECT
+            )
+        );
+
+        assertNotNull(meta0);
+        assertNotNull(meta0.user);
+        assertEquals(1, meta0.user.id);
+        assertEquals("kraity", meta0.user.name);
+
+        Meta meta1 = supplier.read(
+            Meta.class, new Event<>(
+                "${$:user{$:id(1)$:name(kraity)}}"
+            )
+        );
+
+        assertNotNull(meta1);
+        assertNotNull(meta0.user);
+        assertEquals(1, meta1.user.id);
+        assertEquals("kraity", meta1.user.name);
     }
 
     @Test
@@ -296,15 +325,13 @@ public class KatTest {
         assertEquals(State.OPEN, spare.read("State(OPEN)"));
         assertEquals(State.SELF, spare.read("State(SELF)"));
 
-        Event<Note> event = new Event<>(
-            "Note{State:state(1)}"
-        );
-
-        event.with(Flag.ENUM_ORDINAL);
-
         Supplier supplier = Supplier.ins();
         Note note = supplier.read(
-            Note.class, event
+            Note.class, new Event<Note>(
+                "Note{State:state(1)}"
+            ).with(
+                Flag.ENUM_AS_ORDINAL
+            )
         );
 
         assertNotNull(note);
@@ -372,6 +399,11 @@ public class KatTest {
 
         @Expose({"blocked", "disabled"})
         private boolean blocked;
+    }
+
+    static class Meta {
+        @Expose("user")
+        private User user;
     }
 
     @SuppressWarnings("rawtypes")

@@ -93,7 +93,7 @@ public class FloatSpare implements Spare<Float> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        if (flow.isFlag(Flag.FLOAT_BITMAP)) {
+        if (flow.isFlag(Flag.FLOAT_AS_BITMAP)) {
             flow.addFloat(
                 (float) value, true
             );

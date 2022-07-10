@@ -25,8 +25,9 @@ public interface Flag {
      */
     long PRETTY = 0x1;
     long UNICODE = 0x2;
-    long ENUM_ORDINAL = 0x4;
-    long FLOAT_BITMAP = 0x8;
+    long ENUM_AS_ORDINAL = 0x4;
+    long FLOAT_AS_BITMAP = 0x8;
+    long STRING_AS_OBJECT = 0x16;
 
     /**
      * Check if this {@link Object} use the {@code flag}

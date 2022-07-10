@@ -66,6 +66,19 @@ public class ListSpare implements Spare<List> {
     }
 
     @Override
+    public List read(
+        @NotNull Flag flag,
+        @NotNull Value value
+    ) throws IOCrash {
+        if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
+            return Casting.cast(
+                this, value, flag, null
+            );
+        }
+        return null;
+    }
+
+    @Override
     public void write(
         @NotNull Chan chan,
         @NotNull Object value
@@ -96,7 +109,7 @@ public class ListSpare implements Spare<List> {
 
         if (data instanceof CharSequence) {
             return Casting.cast(
-                this, (CharSequence) data, supplier
+                this, (CharSequence) data, null, supplier
             );
         }
 

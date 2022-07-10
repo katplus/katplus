@@ -19,6 +19,8 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
+import plus.kat.kernel.*;
+import plus.kat.stream.*;
 
 /**
  * @author kraity
@@ -36,7 +38,7 @@ public class Casting {
         @Nullable CharSequence text
     ) {
         return cast(
-            spare, text, null
+            spare, text, null, null
         );
     }
 
@@ -50,6 +52,57 @@ public class Casting {
     public static <K> K cast(
         @NotNull Spare<K> spare,
         @Nullable CharSequence text,
+        @Nullable Supplier supplier
+    ) {
+        return cast(
+            spare, text, null, supplier
+        );
+    }
+
+    /**
+     * @since 0.0.2
+     */
+    static <K> Event<K> event(
+        CharSequence data,
+        int i, int l,
+        Flag flag, Supplier supplier
+    ) {
+        Event<K> event =
+            new Event<>();
+
+        event.setFlag(flag);
+        event.with(supplier);
+
+        if (data instanceof Chain) {
+            Chain c = (Chain) data;
+            event.with(
+                c.reader(
+                    i, l
+                )
+            );
+        } else {
+            event.with(
+                new CharReader(
+                    data, i, l
+                )
+            );
+        }
+
+        return event;
+    }
+
+    /**
+     * Parse {@link CharSequence} and convert result to {@link K}
+     *
+     * @param supplier the specified {@code supplier}
+     * @param text     specify the {@code text} to be parsed
+     * @since 0.0.2
+     */
+    @Nullable
+    public static <K> K cast(
+        @NotNull Spare<K> spare,
+        @Nullable CharSequence text,
+        @Nullable Flag flag,
         @Nullable Supplier supplier
     ) {
         if (text == null) {
@@ -84,45 +137,35 @@ public class Casting {
 
         switch (c2) {
             case ')': {
-                return spare.read(
-                    new Event<>(
-                        text, i, l, supplier
-                    )
-                );
+                return spare.read(event(
+                    text, i, l, flag, supplier
+                ));
             }
             case ']': {
                 if (c1 != '[') {
                     return null;
                 }
-                return spare.parse(
-                    new Event<>(
-                        text, i, l, supplier
-                    )
-                );
+                return spare.parse(event(
+                    text, i, l, flag, supplier
+                ));
             }
             case '>': {
                 if (c1 != '<' || l < 8) {
                     return null;
                 }
-                return spare.down(
-                    new Event<>(
-                        text, i, l, supplier
-                    )
-                );
+                return spare.down(event(
+                    text, i, l, flag, supplier
+                ));
             }
             case '}': {
                 if (c1 != '{') {
-                    return spare.read(
-                        new Event<>(
-                            text, i, l, supplier
-                        )
-                    );
+                    return spare.read(event(
+                        text, i, l, flag, supplier
+                    ));
                 } else {
-                    return spare.parse(
-                        new Event<>(
-                            text, i, l, supplier
-                        )
-                    );
+                    return spare.parse(event(
+                        text, i, l, flag, supplier
+                    ));
                 }
             }
         }

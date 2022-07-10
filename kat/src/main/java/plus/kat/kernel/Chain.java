@@ -1507,24 +1507,37 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @NotNull
     public Reader reader() {
-        return new Reader(this, 0);
+        return new Reader(
+            this, 0, count
+        );
     }
 
     /**
      * Returns a {@link Reader} of this {@link Chain}
      *
-     * @param offset begin index
      * @throws IllegalStateException if the {@code offset} argument is negative
      * @see Reader
      */
     @NotNull
-    public Reader reader(int offset) {
-        if (offset < 0) {
+    public Reader reader(
+        int index, int length
+    ) {
+        if (index < 0) {
             throw new IllegalStateException(
-                "The 'offset' argument is negative"
+                "The 'index' argument is negative"
             );
         }
-        return new Reader(this, offset);
+
+        int offset = index + length;
+        if (offset > count) {
+            throw new IllegalStateException(
+                "The 'length' argument is ouf of range"
+            );
+        }
+
+        return new Reader(
+            this, index, offset
+        );
     }
 
     /**
@@ -1570,7 +1583,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     @SuppressWarnings("deprecation")
     public String string(int b, int e) {
         int l = e - b;
-        if (l <= 0 || e >= count) {
+        if (l <= 0 || e > count) {
             return "";
         }
         return new String(
@@ -1606,7 +1619,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     public String toString(
         int b, int e
     ) {
-        if (e <= b || e >= count) {
+        if (e <= b || e > count) {
             return "";
         }
 
@@ -1656,7 +1669,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         @NotNull Charset c, int b, int e
     ) {
         int l = e - b;
-        if (l <= 0 || e >= count) {
+        if (l <= 0 || e > count) {
             return "";
         }
 
@@ -1980,18 +1993,19 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     public static class Reader implements plus.kat.stream.Reader {
 
-        private int i;
-        private Chain c;
+        private int i, l;
+        private byte[] b;
 
         /**
          * @param c the specified {@link Chain}
          * @param i the start index of the {@link Chain}
          */
         private Reader(
-            @NotNull Chain c, int i
+            @NotNull Chain c, int i, int l
         ) {
-            this.c = c;
             this.i = i;
+            this.l = l;
+            this.b = c.value;
         }
 
         /**
@@ -2000,7 +2014,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
          * @throws NullPointerException If this has been closed
          */
         public byte read() {
-            return c.value[i++];
+            return b[i++];
         }
 
         /**
@@ -2009,7 +2023,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
          * @throws NullPointerException If this has been closed
          */
         public boolean also() {
-            return i < c.count;
+            return i < l;
         }
 
         /**
@@ -2030,7 +2044,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
          * close this {@link Reader}
          */
         public void close() {
-            c = null;
+            l = 0;
+            b = null;
         }
     }
 }

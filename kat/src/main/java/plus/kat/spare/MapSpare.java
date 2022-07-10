@@ -66,6 +66,19 @@ public class MapSpare implements Spare<Map> {
     }
 
     @Override
+    public Map read(
+        @NotNull Flag flag,
+        @NotNull Value value
+    ) throws IOCrash {
+        if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
+            return Casting.cast(
+                this, value, flag, null
+            );
+        }
+        return null;
+    }
+
+    @Override
     public void write(
         @NotNull Chan chan,
         @NotNull Object value
@@ -90,7 +103,7 @@ public class MapSpare implements Spare<Map> {
 
         if (data instanceof CharSequence) {
             return Casting.cast(
-                this, (CharSequence) data, supplier
+                this, (CharSequence) data, null, supplier
             );
         }
 

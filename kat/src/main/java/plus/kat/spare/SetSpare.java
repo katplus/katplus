@@ -65,6 +65,31 @@ public class SetSpare implements Spare<Set> {
         return HashSet.class;
     }
 
+    @Override
+    public Set read(
+        @NotNull Flag flag,
+        @NotNull Value value
+    ) throws IOCrash {
+        if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
+            return Casting.cast(
+                this, value, flag, null
+            );
+        }
+        return null;
+    }
+
+    @Override
+    public void write(
+        @NotNull Chan chan,
+        @NotNull Object value
+    ) throws IOCrash {
+        for (Object entry : (Set<?>) value) {
+            chan.set(
+                null, entry
+            );
+        }
+    }
+
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
@@ -78,7 +103,7 @@ public class SetSpare implements Spare<Set> {
 
         if (data instanceof CharSequence) {
             return Casting.cast(
-                this, (CharSequence) data, supplier
+                this, (CharSequence) data, null, supplier
             );
         }
 
@@ -109,18 +134,6 @@ public class SetSpare implements Spare<Set> {
         }
 
         return null;
-    }
-
-    @Override
-    public void write(
-        @NotNull Chan chan,
-        @NotNull Object value
-    ) throws IOCrash {
-        for (Object entry : (Set<?>) value) {
-            chan.set(
-                null, entry
-            );
-        }
     }
 
     @Nullable
