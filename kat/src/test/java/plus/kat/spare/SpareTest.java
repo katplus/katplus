@@ -38,7 +38,7 @@ public class SpareTest {
         assertEquals(false, spare.read("$(false)"));
         assertEquals(false, spare.read("$(FALSE)"));
         assertEquals("False", spare.read("$(False)"));
-        assertNull(spare.read("$(null)"));
+        assertEquals("null", spare.read("$(null)"));
         assertEquals("1A", spare.read("$(1A)"));
         assertEquals(255, spare.read("$(0xFF)"));
         assertEquals("0xGG", spare.read("$(0xGG)"));

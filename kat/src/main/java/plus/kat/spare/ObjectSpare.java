@@ -157,23 +157,11 @@ public class ObjectSpare implements Spare<Object> {
                         value.at(3) == 'e') {
                         return Boolean.TRUE;
                     }
-                } else if (b == 'n') {
-                    if (value.at(1) == 'u' &&
-                        value.at(2) == 'l' &&
-                        value.at(3) == 'l') {
-                        return null;
-                    }
                 } else if (b == 'T') {
                     if (value.at(1) == 'R' &&
                         value.at(2) == 'U' &&
                         value.at(3) == 'E') {
                         return Boolean.TRUE;
-                    }
-                } else if (b == 'N') {
-                    if (value.at(1) == 'U' &&
-                        value.at(2) == 'L' &&
-                        value.at(3) == 'L') {
-                        return null;
                     }
                 }
                 return value.toString();

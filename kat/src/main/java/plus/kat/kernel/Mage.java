@@ -182,6 +182,12 @@ public class Mage implements Solver {
                     case ',': {
                         continue;
                     }
+                    case 'n':
+                    case 'N': {
+                        escape(r);
+                        accept(p, $);
+                        continue;
+                    }
                     case '"': {
                         escape(value, r);
                         accept(p, $s);
@@ -209,6 +215,10 @@ public class Mage implements Solver {
                     }
 
                     switch (c) {
+                        case ',': {
+                            accept(p, $);
+                            continue Boot;
+                        }
                         case '}': {
                             accept(p, $);
                             bundle(p, true);
@@ -217,10 +227,6 @@ public class Mage implements Solver {
                         case ']': {
                             accept(p, $);
                             bundle(p, false);
-                            continue Boot;
-                        }
-                        case ',': {
-                            accept(p, $);
                             continue Boot;
                         }
                         default: {
@@ -285,14 +291,34 @@ public class Mage implements Solver {
         Pipe p,
         boolean m
     ) throws IOCrash {
-        if (mutable != m) {
+        if (mutable == m) {
+            p.bundle();
+            mask >>>= 1;
+            mutable = (data & mask) != 0L;
+        } else {
             throw new UnexpectedCrash(
                 "Unexpectedly, mismatched terminator"
             );
         }
-        p.bundle();
-        mask >>>= 1;
-        mutable = (data & mask) != 0L;
+    }
+
+    protected void escape(
+        Reader r
+    ) throws IOCrash {
+        byte b2 = r.next();
+        byte b3 = r.next();
+        byte b4 = r.next();
+
+        if ((b2 != 'u' && b2 != 'U') ||
+            (b3 != 'l' && b3 != 'L') ||
+            (b4 != 'l' && b4 != 'L')) {
+            throw new UnexpectedCrash(
+                "Unexpectedly, N" +
+                    (char) (b2 & 0xFF) +
+                    (char) (b3 & 0xFF) +
+                    (char) (b3 & 0xFF) + " is not null"
+            );
+        }
     }
 
     protected void escape(
