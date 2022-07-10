@@ -24,12 +24,11 @@ import plus.kat.entity.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.*;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.concurrent.*;
 
 import static plus.kat.chain.Space.*;
-import static plus.kat.Spare.Cluster.INS;
+import static plus.kat.Spare.Cluster;
 
 /**
  * @author kraity
@@ -48,9 +47,7 @@ public interface Supplier {
     default <T> Spare<T> embed(
         @NotNull Class<T> klass
     ) {
-        return INS.embed(
-            klass, this
-        );
+        return Cluster.INS.embed(klass, this);
     }
 
     /**
@@ -64,10 +61,24 @@ public interface Supplier {
     default Spare<?> embed(
         @NotNull Type type
     ) {
-        return Reflex.lookup(
-            type, this
-        );
+        return Reflex.lookup(type, this);
     }
+
+    /**
+     * Register the {@link Spare} of {@link Class}
+     * and returns the previous value associated with {@code klass}
+     *
+     * @param klass specify the type of embedding
+     * @param spare specify the {@code spare} of {@code klass}
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @since 0.0.2
+     */
+    @Nullable
+    Spare<?> embed(
+        @NotNull Class<?> klass,
+        @NotNull Spare<?> spare
+    );
 
     /**
      * Register the {@link Spare} of {@code klass}
@@ -105,11 +116,9 @@ public interface Supplier {
      * @see Spare#revoke(Type)
      */
     @Nullable
-    default Spare<?> revoke(
+    Spare<?> revoke(
         @NotNull Class<?> klass
-    ) {
-        return INS.remove(klass);
-    }
+    );
 
     /**
      * Returns the {@link Spare} of {@link CharSequence}
@@ -135,9 +144,7 @@ public interface Supplier {
     default <T> Spare<T> lookup(
         @NotNull Class<T> klass
     ) {
-        return INS.embed(
-            klass, this
-        );
+        return Cluster.INS.embed(klass, this);
     }
 
     /**
@@ -167,9 +174,7 @@ public interface Supplier {
         @NotNull Class<? extends Coder<T>> klass,
         @NotNull Coder<? super T> coder
     ) {
-        return Plug.INS.put(
-            klass, coder
-        );
+        return Plug.INS.put(klass, coder);
     }
 
     /**
@@ -570,6 +575,23 @@ public interface Supplier {
             super(Config.get(
                 "kat.supplier.capacity", 24
             ));
+        }
+
+        @Override
+        public Spare<?> embed(
+            @NotNull Class<?> klass,
+            @NotNull Spare<?> spare
+        ) {
+            return Cluster.INS.put(
+                klass, spare
+            );
+        }
+
+        @Override
+        public Spare<?> revoke(
+            @NotNull Class<?> klass
+        ) {
+            return Cluster.INS.remove(klass);
         }
 
         @Override
