@@ -18,15 +18,16 @@ package plus.kat.utils;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class KatMap<K, V> {
+public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
 
     private int size;
     private Entry<K, V>[] table;
@@ -306,6 +307,25 @@ public class KatMap<K, V> {
 
     /**
      * @param action The action to be performed for each entry
+     * @since 0.0.2
+     */
+    public void forEach(
+        @Nullable Consumer<? super Entry<K, V>> action
+    ) {
+        Entry<K, V>[] tab = table;
+        if (tab != null &&
+            size != 0 &&
+            action != null) {
+            for (Entry<K, V> e : tab) {
+                for (; e != null; e = e.next) {
+                    action.accept(e);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param action The action to be performed for each entry
      */
     public void forEach(
         @Nullable BiConsumer<? super K, ? super V> action
@@ -322,6 +342,16 @@ public class KatMap<K, V> {
                 }
             }
         }
+    }
+
+    /**
+     * Returns an iterator over elements of type {@code T}
+     *
+     * @since 0.0.2
+     */
+    @Override
+    public Iterator<Entry<K, V>> iterator() {
+        return new Iter<>(this);
     }
 
     /**
@@ -370,9 +400,56 @@ public class KatMap<K, V> {
 
     /**
      * @author kraity
+     * @since 0.0.2
+     */
+    public static class Iter<K, V>
+        implements Iterator<Entry<K, V>> {
+
+        int index;
+        Entry<K, V> next;
+        final KatMap<K, V> map;
+
+        public Iter(
+            KatMap<K, V> map
+        ) {
+            this.map = map;
+            Entry<K, V>[] t = map.table;
+            if (t != null && map.size > 0) do {
+                // Nothing
+            } while (
+                index < t.length && (next = t[index++]) == null
+            );
+        }
+
+        @Override
+        public boolean hasNext() {
+            return next != null;
+        }
+
+        @Override
+        public Entry<K, V> next() {
+            Entry<K, V> node = next;
+            next = node.next;
+
+            if (next == null) {
+                Entry<K, V>[] t = map.table;
+                if (t != null) do {
+                    // Nothing
+                } while (
+                    index < t.length && (next = t[index++]) == null
+                );
+            }
+
+            return node;
+        }
+    }
+
+    /**
+     * @author kraity
      * @since 0.0.1
      */
-    public static class Entry<K, V> implements Map.Entry<K, V> {
+    public static class Entry<K, V>
+        implements Map.Entry<K, V> {
 
         private int hash;
         private K key;

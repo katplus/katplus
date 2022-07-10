@@ -151,7 +151,7 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
     ) {
         if (enums != null) {
             if (flag.isFlag(Flag.INDEX_AS_ENUM)) {
-                int i = alias.toInt(10, -1);
+                int i = alias.toInt(-1);
                 if (i >= 0 && i < enums.length) {
                     return enums[i];
                 }

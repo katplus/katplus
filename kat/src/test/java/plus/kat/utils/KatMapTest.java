@@ -2,6 +2,8 @@ package plus.kat.utils;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -44,4 +46,17 @@ public class KatMapTest {
         assertEquals(0, map.size());
     }
 
+
+    @Test
+    public void test_iter() {
+        KatMap<Object, Object> map = new KatMap<>();
+
+        map.put("1", "1");
+        map.put(2, 2);
+        map.put(true, true);
+
+        for (Map.Entry<Object, Object> m : map) {
+            assertEquals(m.getKey(), m.getValue());
+        }
+    }
 }
