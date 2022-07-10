@@ -515,7 +515,7 @@ public class Chan implements Flag {
         );
         flow.addAlias(alias);
         flow.leftParen();
-        if (flow.isFlag(Flag.ENUM_AS_ORDINAL)) {
+        if (flow.isFlag(Flag.ENUM_AS_INDEX)) {
             flow.addInt(
                 value.ordinal()
             );

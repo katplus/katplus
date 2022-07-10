@@ -21,13 +21,19 @@ package plus.kat;
  */
 public interface Flag {
     /**
-     * Internal Flags
+     * Write Flags
      */
     long PRETTY = 0x1;
     long UNICODE = 0x2;
-    long ENUM_AS_ORDINAL = 0x4;
+    long ENUM_AS_INDEX = 0x4;
     long FLOAT_AS_BITMAP = 0x8;
-    long STRING_AS_OBJECT = 0x16;
+    long DATE_AS_TIMESTAMP = 0x16;
+
+    /**
+     * Read Flags
+     */
+    long INDEX_AS_ENUM = 0x4;
+    long STRING_AS_OBJECT = 0x8;
 
     /**
      * Check if this {@link Object} use the {@code flag}

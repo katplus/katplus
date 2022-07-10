@@ -163,12 +163,17 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        String result;
-        synchronized (this) {
-            result = format(
-                (Date) value
+        Date date = (Date) value;
+        if (flow.isFlag(Flag.DATE_AS_TIMESTAMP)) {
+            flow.addLong(
+                date.getTime()
             );
+        } else {
+            synchronized (this) {
+                flow.addData(
+                    format(date)
+                );
+            }
         }
-        flow.addData(result);
     }
 }

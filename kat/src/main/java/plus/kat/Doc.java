@@ -401,7 +401,7 @@ public class Doc extends Chan {
         }
 
         flow.leftAlias(alias, null);
-        if (flow.isFlag(Flag.ENUM_AS_ORDINAL)) {
+        if (flow.isFlag(Flag.ENUM_AS_INDEX)) {
             flow.addInt(
                 value.ordinal()
             );

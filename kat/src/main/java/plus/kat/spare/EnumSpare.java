@@ -131,7 +131,7 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
         @NotNull Alias alias
     ) {
         if (enums != null) {
-            if (flag.isFlag(Flag.ENUM_AS_ORDINAL)) {
+            if (flag.isFlag(Flag.INDEX_AS_ENUM)) {
                 int i = alias.toInt(10, -1);
                 if (i >= 0 && i < enums.length) {
                     return enums[i];
@@ -154,7 +154,7 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
         @NotNull Value value
     ) {
         if (enums != null) {
-            if (flag.isFlag(Flag.ENUM_AS_ORDINAL)) {
+            if (flag.isFlag(Flag.INDEX_AS_ENUM)) {
                 int i = value.toInt(-1);
                 if (i >= 0 && i < enums.length) {
                     return enums[i];
@@ -175,7 +175,7 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        if (flow.isFlag(Flag.ENUM_AS_ORDINAL)) {
+        if (flow.isFlag(Flag.ENUM_AS_INDEX)) {
             flow.addInt(
                 ((Enum<?>) value).ordinal()
             );

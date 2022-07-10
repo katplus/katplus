@@ -363,7 +363,7 @@ public class Json extends Chan {
         flow.addComma();
         flow.addAlias(alias);
         flow.addQuote();
-        if (flow.isFlag(Flag.ENUM_AS_ORDINAL)) {
+        if (flow.isFlag(Flag.ENUM_AS_INDEX)) {
             flow.addInt(
                 value.ordinal()
             );

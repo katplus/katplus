@@ -135,7 +135,7 @@ public interface Supplier {
     default <T> Spare<T> lookup(
         @NotNull Class<T> klass
     ) {
-        return INS.lookup(
+        return INS.embed(
             klass, this
         );
     }

@@ -330,7 +330,7 @@ public class KatTest {
             Note.class, new Event<Note>(
                 "Note{State:state(1)}"
             ).with(
-                Flag.ENUM_AS_ORDINAL
+                Flag.INDEX_AS_ENUM
             )
         );
 
