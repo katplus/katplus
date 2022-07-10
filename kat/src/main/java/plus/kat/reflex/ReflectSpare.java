@@ -34,7 +34,7 @@ import plus.kat.utils.KatMap;
  * @author kraity
  * @since 0.0.2
  */
-public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Sketch<E> {
+public class ReflectSpare<E> extends KatMap<Object, Setter<E, ?>> implements Sketch<E> {
 
     private final Class<E> klass;
     private final CharSequence space;
@@ -43,12 +43,12 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
     private Node<E> head, tail;
 
     private final Constructor<E> builder;
-    private KatMap<Object, ReflexParam> params;
+    private KatMap<Object, Param1> params;
 
     /**
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
      */
-    public ReflexSketch(
+    public ReflectSpare(
         @NotNull Class<E> klass,
         @NotNull Supplier supplier
     ) {
@@ -59,7 +59,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
      */
     @SuppressWarnings("unchecked")
-    public ReflexSketch(
+    public ReflectSpare(
         @Nullable Embed embed,
         @NotNull Class<E> klass,
         @NotNull Supplier supplier
@@ -86,7 +86,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
         }
 
         register(klass.getDeclaredFields(), supplier);
-        register(klass.getMethods(), supplier);
+        register(klass.getDeclaredMethods(), supplier);
 
         space = supplier.register(
             embed, klass, this
@@ -255,10 +255,13 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
                 }
             }
 
-            ReflexParam param =
-                new ReflexParam(
-                    i, ts[i], cs[i],
-                    format, expose, supplier
+            Coder<?> c = Reflex.lookup(
+                cs[i], expose, format, supplier
+            );
+
+            Param1 param =
+                new Param1(
+                    i, c, ts[i], cs[i]
                 );
 
             if (expose == null) {
@@ -291,16 +294,15 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
                 );
             if (expose == null) continue;
 
-            field.setAccessible(true);
-            ReflexField<E> reflex =
-                new ReflexField<>(
+            Field1<E> field1 =
+                new Field1<>(
                     field, expose, supplier
                 );
 
-            int h = reflex.getHash();
+            int h = field1.getHash();
             // check use index
             if (direct && h > -1) put(
-                h, reflex.clone()
+                h, field1.clone()
             );
 
             String[] keys = expose.value();
@@ -308,22 +310,22 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
                 String name = field.getName();
                 if (expose.export()) {
                     // register getter
-                    register(name, reflex);
+                    addGetter(name, field1);
                     // register setter
-                    put(name, reflex.clone());
+                    put(name, field1.clone());
                 } else put(
-                    name, reflex
+                    name, field1
                 );
             } else {
                 // register only the first alias
                 if (expose.export()) {
-                    register(keys[0], reflex);
+                    addGetter(keys[0], field1);
                 }
 
                 for (String alias : keys) {
                     // check empty
                     if (!alias.isEmpty()) put(
-                        alias, reflex.clone()
+                        alias, field1.clone()
                     );
                 }
             }
@@ -341,7 +343,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
             int count = method.getParameterCount();
             if (count > 1) continue;
 
-            ReflexMethod<E> reflex;
+            Method1<E> method1;
             Expose expose = method
                 .getAnnotation(
                     Expose.class
@@ -352,30 +354,29 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
                 // have aliases
                 String[] keys = expose.value();
                 if (keys.length != 0) {
-                    method.setAccessible(true);
-                    reflex = new ReflexMethod<>(
+                    method1 = new Method1<>(
                         method, expose, supplier
                     );
 
                     if (count != 0) {
-                        int h = reflex.getHash();
+                        int h = method1.getHash();
                         // check use index
                         if (direct && h > -1) {
                             // register setter
-                            put(h, reflex);
+                            put(h, method1);
                         }
 
                         for (String alias : keys) {
                             // check empty
                             if (!alias.isEmpty()) put(
-                                alias, reflex.clone()
+                                alias, method1.clone()
                             );
                         }
                     } else {
                         // register all aliases
                         for (int i = 0; i < keys.length; i++) {
-                            register(
-                                keys[i], i == 0 ? reflex : reflex.clone()
+                            addGetter(
+                                keys[i], i == 0 ? method1 : method1.clone()
                             );
                         }
                     }
@@ -387,13 +388,12 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
                     int h = expose.index();
                     // check use index
                     if (h > -1) {
-                        method.setAccessible(true);
-                        reflex = new ReflexMethod<>(
+                        method1 = new Method1<>(
                             method, expose, supplier
                         );
 
                         // register setter
-                        put(h, reflex);
+                        put(h, method1);
                         // use index only
                         continue;
                     }
@@ -455,30 +455,24 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
                 k[o++] = (byte) key.charAt(i);
             }
 
+            method1 = new Method1<>(
+                method, expose, supplier
+            );
+
             Alias alias = new Alias(k);
-            method.setAccessible(true);
-
-            if (expose == null) {
-                reflex = new ReflexMethod<>(method);
-            } else {
-                reflex = new ReflexMethod<>(
-                    method, expose, supplier
-                );
-            }
-
             if (count != 0) {
                 // register setter
-                put(alias, reflex);
+                put(alias, method1);
             } else {
                 // register getter
-                register(
-                    alias, reflex
+                addGetter(
+                    alias, method1
                 );
             }
         }
     }
 
-    private void register(
+    private void addGetter(
         @NotNull CharSequence key,
         @NotNull Node<E> node
     ) {
@@ -552,20 +546,299 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
      * @author kraity
      * @since 0.0.2
      */
+    static class Field1<K> extends Node<K>
+        implements Setter<K, Object>, Getter<K, Object> {
+
+        final Field field;
+        final Coder<?> coder;
+        final Type type;
+        final Class<?> klass;
+        final boolean nullable;
+
+        public Field1(
+            Field1<?> field
+        ) {
+            this.field = field.field;
+            this.coder = field.coder;
+            this.type = field.type;
+            this.klass = field.klass;
+            this.nullable = field.nullable;
+        }
+
+        public Field1(
+            Field field,
+            Expose expose,
+            Supplier supplier
+        ) {
+            super(expose == null
+                ? 0 : expose.index()
+            );
+            this.field = field;
+            field.setAccessible(true);
+
+            this.klass = field.getType();
+            this.type = field.getGenericType();
+            this.nullable = field.getAnnotation(NotNull.class) == null;
+
+            Format format = field
+                .getAnnotation(Format.class);
+            this.coder = Reflex.lookup(
+                klass, expose, format, supplier
+            );
+        }
+
+        @Override
+        @Nullable
+        public Object apply(
+            @NotNull K it
+        ) {
+            try {
+                return field.get(it);
+            } catch (Exception e) {
+                // nothing
+            }
+            return null;
+        }
+
+        @Override
+        @Nullable
+        public Object onApply(
+            @NotNull Object it
+        ) {
+            try {
+                return field.get(it);
+            } catch (Exception e) {
+                // nothing
+            }
+            return null;
+        }
+
+        @Override
+        public void accept(
+            @NotNull K it,
+            @Nullable Object val
+        ) {
+            if (val != null || nullable) {
+                try {
+                    field.set(it, val);
+                } catch (Exception e) {
+                    // nothing
+                }
+            }
+        }
+
+        @Override
+        public void onAccept(
+            @NotNull K it,
+            @Nullable Object val
+        ) {
+            if (val != null || nullable) {
+                try {
+                    field.set(it, val);
+                } catch (Exception e) {
+                    // nothing
+                }
+            }
+        }
+
+        @Override
+        public Coder<?> getCoder() {
+            return coder;
+        }
+
+        @Override
+        public Type getType() {
+            return type;
+        }
+
+        @Override
+        public Class<?> getKlass() {
+            return klass;
+        }
+
+        @Override
+        public Field1<K> clone() {
+            return new Field1<>(this);
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    static class Method1<K> extends Node<K>
+        implements Setter<K, Object>, Getter<K, Object> {
+
+        final Method method;
+        final Coder<?> coder;
+        final Type type;
+        final Class<?> klass;
+
+        public Method1(
+            Method1<?> method
+        ) {
+            this.coder = method.coder;
+            this.type = method.type;
+            this.klass = method.klass;
+            this.method = method.method;
+        }
+
+        public Method1(
+            Method method,
+            Expose expose,
+            Supplier supplier
+        ) {
+            super(expose == null
+                ? 0 : expose.index()
+            );
+            switch (method.getParameterCount()) {
+                case 0: {
+                    this.klass = method.getReturnType();
+                    this.type = klass;
+                    break;
+                }
+                case 1: {
+                    this.klass = method.getParameterTypes()[0];
+                    this.type = method.getGenericParameterTypes()[0];
+                    break;
+                }
+                default: {
+                    throw new NullPointerException(
+                        "Unexpectedly the parameter length of '" + method.getName() + "' is greater than '1'"
+                    );
+                }
+            }
+
+            this.method = method;
+            method.setAccessible(true);
+
+            Format format = method
+                .getAnnotation(Format.class);
+            this.coder = Reflex.lookup(
+                klass, expose, format, supplier
+            );
+        }
+
+        @Override
+        @Nullable
+        public Object apply(
+            @NotNull K it
+        ) {
+            try {
+                return method.invoke(it);
+            } catch (Exception e) {
+                // nothing
+            }
+            return null;
+        }
+
+        @Override
+        @Nullable
+        public Object onApply(
+            @NotNull Object it
+        ) {
+            try {
+                return method.invoke(it);
+            } catch (Exception e) {
+                // nothing
+            }
+            return null;
+        }
+
+        @Override
+        public void accept(
+            @NotNull K it,
+            @Nullable Object val
+        ) {
+            try {
+                method.invoke(it, val);
+            } catch (Exception e) {
+                // nothing
+            }
+        }
+
+        @Override
+        public void onAccept(
+            @NotNull K it,
+            @Nullable Object val
+        ) {
+            try {
+                method.invoke(it, val);
+            } catch (Exception e) {
+                // nothing
+            }
+        }
+
+        @Override
+        public Coder<?> getCoder() {
+            return coder;
+        }
+
+        @Override
+        public Type getType() {
+            return type;
+        }
+
+        @Override
+        public Class<?> getKlass() {
+            return klass;
+        }
+
+        @Override
+        public Method1<K> clone() {
+            return new Method1<>(this);
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    static class Param1 extends
+        KatMap.Entry<String, Param1> {
+
+        final int index;
+        final Coder<?> coder;
+        final Type type;
+        final Class<?> klass;
+
+        public Param1(
+            int index, Coder<?> coder,
+            Type type, Class<?> klass
+        ) {
+            super(0);
+            this.index = index;
+            this.coder = coder;
+            this.type = type;
+            this.klass = klass;
+        }
+
+        @Override
+        public Param1 clone() {
+            return new Param1(
+                index, coder, type, klass
+            );
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
     static class Builder1<K> extends Builder0<K> {
 
         private Object[] params;
         private Constructor<K> c;
 
         private int count;
+        private Param1 param;
         private Cache<K> cache;
-        private ReflexParam param;
 
-        private ReflexSketch<K> reflex;
-        private KatMap<Object, ReflexParam> a;
+        private ReflectSpare<K> reflex;
+        private KatMap<Object, Param1> a;
 
         public Builder1(
-            @NotNull ReflexSketch<K> reflex
+            @NotNull ReflectSpare<K> reflex
         ) {
             super(reflex);
             this.reflex = reflex;
@@ -587,7 +860,7 @@ public class ReflexSketch<E> extends KatMap<Object, Setter<E, ?>> implements Ske
             @NotNull Value value
         ) throws IOCrash {
             if (entity == null) {
-                ReflexParam param = a.get(alias);
+                Param1 param = a.get(alias);
                 if (param != null) {
                     ++index; // increment
 

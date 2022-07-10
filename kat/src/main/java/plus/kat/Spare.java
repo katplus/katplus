@@ -478,7 +478,7 @@ public interface Spare<K> extends Coder<K> {
             try {
                 Spare<T> $spare;
                 put(klass, $spare =
-                    new ReflexSketch<>(
+                    new ReflectSpare<>(
                         embed, klass, Impl.INS
                     )
                 );
@@ -548,7 +548,7 @@ public interface Spare<K> extends Coder<K> {
             try {
                 Spare<T> $spare;
                 put(klass, $spare =
-                    new ReflexSketch<>(
+                    new ReflectSpare<>(
                         embed, klass, Impl.INS
                     )
                 );

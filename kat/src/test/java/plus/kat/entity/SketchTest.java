@@ -7,7 +7,7 @@ import plus.kat.Spare;
 import plus.kat.Supplier;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
-import plus.kat.reflex.ReflexSketch;
+import plus.kat.reflex.ReflectSpare;
 
 import static plus.kat.anno.Embed.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,7 +19,7 @@ public class SketchTest {
 
     @Test
     public void test() throws NoSuchMethodException {
-        Spare<User> spare = new ReflexSketch<>(
+        Spare<User> spare = new ReflectSpare<>(
             User.class, Supplier.ins()
         );
 

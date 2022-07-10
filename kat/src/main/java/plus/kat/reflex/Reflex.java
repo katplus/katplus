@@ -15,20 +15,57 @@
  */
 package plus.kat.reflex;
 
+import plus.kat.anno.Expose;
+import plus.kat.anno.Format;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
+import plus.kat.spare.*;
 import plus.kat.chain.*;
+import plus.kat.entity.*;
 
 import java.lang.reflect.*;
+import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
 public class Reflex {
+    /**
+     * @since 0.0.2
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static Coder<?> lookup(
+        @NotNull Class<?> klass,
+        @Nullable Expose expose,
+        @Nullable Format format,
+        @NotNull Supplier supplier
+    ) {
+        if (format != null) {
+            if (klass == Date.class) {
+                return new DateSpare(format);
+            } else if (klass == LocalDate.class) {
+                return LocalDateSpare.of(format);
+            }
+        } else if (expose != null) {
+            Class<?> with = expose.with();
+            if (with != Coder.class) {
+                return supplier.activate(
+                    (Class<Coder<Object>>) with
+                );
+            }
+        }
 
+        return null;
+    }
+
+    /**
+     * @since 0.0.1
+     */
     @Nullable
     public static Spare<?> lookup(
         @Nullable Type type,
