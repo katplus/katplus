@@ -157,6 +157,22 @@ public class SpareTest {
         }
     }
 
+    enum Meta {
+        KAT, DOC, JSON
+    }
+
+    @Test
+    public void test_enum_cast() {
+        Spare<Meta> spare = Spare.embed(Meta.class);
+
+        assertEquals(Meta.KAT, spare.cast(0));
+        assertEquals(Meta.KAT, spare.cast("KAT"));
+        assertEquals(Meta.KAT, spare.cast(Meta.KAT));
+        assertEquals(Meta.JSON, spare.cast(2));
+        assertEquals(Meta.JSON, spare.cast("JSON"));
+        assertEquals(Meta.JSON, spare.cast(Meta.JSON));
+    }
+
     static class Hook {
         public void on(
             ArrayList<Integer> data,

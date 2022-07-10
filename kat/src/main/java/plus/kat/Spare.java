@@ -465,7 +465,9 @@ public interface Spare<K> extends Coder<K> {
             if (klass.isEnum()) {
                 Spare<T> $spare;
                 put(klass, $spare =
-                    new EnumSpare(klass, embed)
+                    new EnumSpare(
+                        klass, embed, supplier
+                    )
                 );
                 return $spare;
             }

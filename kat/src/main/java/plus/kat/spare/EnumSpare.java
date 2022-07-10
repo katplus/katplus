@@ -40,10 +40,10 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
 
     public EnumSpare(
         @NotNull Class<K> klass,
-        @Nullable Embed embed
+        @Nullable Embed embed,
+        @NotNull Supplier supplier
     ) {
         this.klass = klass;
-        this.space = Supplier.ins().register(embed, klass, this);
 
         try {
             Method values = klass
@@ -54,28 +54,35 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
         } catch (Exception e) {
             // NOOP
         }
+
+        this.space = supplier.register(
+            embed, klass, this
+        );
     }
 
     public EnumSpare(
         @NotNull Class<K> klass,
+        @Nullable K[] enums,
         @Nullable Embed embed,
-        @Nullable K[] enums
+        @NotNull Supplier supplier
     ) {
         this.klass = klass;
         this.enums = enums;
-        this.space = Supplier.ins().register(embed, klass, this);
+        this.space = supplier.register(
+            embed, klass, this
+        );
     }
 
     @Override
     public CharSequence getSpace() {
-        return this.space;
+        return space;
     }
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return this.klass == klass;
+        return klass == clazz;
     }
 
     @Override
@@ -85,7 +92,7 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
 
     @Override
     public Class<K> getType() {
-        return this.klass;
+        return klass;
     }
 
     @Override
@@ -105,6 +112,10 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
             return null;
         }
 
+        if (data.getClass() == klass) {
+            return (K) data;
+        }
+
         if (data instanceof String) {
             if (enums != null) {
                 String key = (String) data;
@@ -117,8 +128,16 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
             return null;
         }
 
-        if (data.getClass() == klass) {
-            return (K) data;
+        if (data instanceof Number) {
+            if (enums != null) {
+                Number num = (Number) data;
+                int index = num.intValue();
+                if (index >= 0 &&
+                    index < enums.length) {
+                    return enums[index];
+                }
+            }
+            return null;
         }
 
         return null;
