@@ -24,7 +24,6 @@ import plus.kat.entity.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.*;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -457,15 +456,8 @@ public interface Spare<K> extends Coder<K> {
                         return (Spare<T>) spare;
                     }
 
-                    if (!with.isInterface()) try {
-                        Constructor<? extends Spare> c =
-                            with.getDeclaredConstructor();
-                        c.setAccessible(true);
-                        Spare<T> $spare = c.newInstance();
-                        put(klass, $spare);
-                        return $spare;
-                    } catch (Exception e) {
-                        // Nothing
+                    if (!with.isInterface()) {
+                        return Reflex.apply(with);
                     }
                 }
             }
@@ -537,15 +529,8 @@ public interface Spare<K> extends Coder<K> {
                     return (Spare<T>) spare;
                 }
 
-                if (!with.isInterface()) try {
-                    Constructor<? extends Spare> c =
-                        with.getDeclaredConstructor();
-                    c.setAccessible(true);
-                    Spare<T> $spare = c.newInstance();
-                    put(klass, $spare);
-                    return $spare;
-                } catch (Exception e) {
-                    // Nothing
+                if (!with.isInterface()) {
+                    return Reflex.apply(with);
                 }
             }
 

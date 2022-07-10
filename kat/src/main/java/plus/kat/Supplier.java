@@ -633,16 +633,7 @@ public interface Supplier {
                 return null;
             }
 
-            try {
-                Constructor<? extends Coder<T>> c =
-                    klass.getDeclaredConstructor();
-                c.setAccessible(true);
-                return c.newInstance();
-            } catch (Exception e) {
-                // nothing
-            }
-
-            return null;
+            return Reflex.apply(klass);
         }
 
         /**
@@ -657,28 +648,20 @@ public interface Supplier {
         ) {
             Coder<?> coder = get(klass);
 
-            if (coder != null) {
-                return (Coder<T>) coder;
+            if (coder == null) {
+                if (klass.isInterface()) {
+                    return null;
+                }
+
+                coder = Reflex.apply(klass);
+                if (coder != null) {
+                    this.put(
+                        klass, coder
+                    );
+                }
             }
 
-            if (klass.isInterface()) {
-                return null;
-            }
-
-            try {
-                Constructor<? extends Coder<T>> c =
-                    klass.getDeclaredConstructor();
-                c.setAccessible(true);
-                Coder<T> $coder;
-                put(klass,
-                    $coder = c.newInstance()
-                );
-                return $coder;
-            } catch (Exception e) {
-                // nothing
-            }
-
-            return null;
+            return (Coder<T>) coder;
         }
     }
 }

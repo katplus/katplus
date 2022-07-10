@@ -39,6 +39,24 @@ public class Reflex {
      */
     @Nullable
     @SuppressWarnings("unchecked")
+    public static <T> T apply(
+        @NotNull Class<?> klass
+    ) {
+        try {
+            Constructor<?> c = klass
+                .getDeclaredConstructor();
+            c.setAccessible(true);
+            return (T) c.newInstance();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * @since 0.0.2
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
     public static Coder<?> lookup(
         @NotNull Class<?> klass,
         @Nullable Expose expose,
