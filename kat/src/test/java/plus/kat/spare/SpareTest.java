@@ -12,6 +12,8 @@ import plus.kat.anno.Format;
 import plus.kat.reflex.ArrayType;
 
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -256,6 +258,22 @@ public class SpareTest {
 
         BitSet b1 = spare.parse("[1,0,1,0]");
         assertEquals("[1,0,1]", Json.encode(b1));
+    }
+
+    @Test
+    public void test_URL_read() {
+        URLSpare spare = URLSpare.INSTANCE;
+
+        URL u0 = spare.read("$(https://kat.plus/user.kat)");
+        assertEquals("URL(https://kat.plus/user.kat)", Kat.encode(u0));
+    }
+
+    @Test
+    public void test_URI_read() {
+        URISpare spare = URISpare.INSTANCE;
+
+        URI u0 = spare.read("$(https://kat.plus/user.kat)");
+        assertEquals("URI(https://kat.plus/user.kat)", Kat.encode(u0));
     }
 
     static class Hook {

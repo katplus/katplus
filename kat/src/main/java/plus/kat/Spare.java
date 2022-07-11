@@ -27,6 +27,8 @@ import plus.kat.utils.*;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
@@ -422,6 +424,8 @@ public interface Spare<K> extends Coder<K> {
             INS.put(LocalDate.class, LocalDateSpare.INSTANCE);
             INS.put(Currency.class, CurrencySpare.INSTANCE);
             INS.put(BitSet.class, BitSetSpare.INSTANCE);
+            INS.put(URI.class, URISpare.INSTANCE);
+            INS.put(URL.class, URLSpare.INSTANCE);
             INS.put(AtomicLong.class, AtomicLongSpare.INSTANCE);
             INS.put(AtomicInteger.class, AtomicIntegerSpare.INSTANCE);
             INS.put(AtomicBoolean.class, AtomicBooleanSpare.INSTANCE);
