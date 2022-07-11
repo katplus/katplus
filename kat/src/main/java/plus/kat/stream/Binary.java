@@ -17,6 +17,7 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
 /**
@@ -142,23 +143,26 @@ public final class Binary {
     }
 
     /**
-     * @param t specify the {@code t} to be converted
+     * @param b specify the {@code b} to be converted
+     * @throws IOCrash If the {@code b} is not a hexadecimal number
      */
     public static int hex(
-        int t
-    ) {
-        if (t > 0x2F) {
-            if (t < 0x3A) {
-                return t - 0x30;
+        byte b
+    ) throws IOCrash {
+        if (b > 0x2F) {
+            if (b < 0x3A) {
+                return b - 0x30;
             }
-            if (t > 0x60 && t < 0x67) {
-                return t - 0x57;
+            if (b > 0x60 && b < 0x67) {
+                return b - 0x57;
             }
-            if (t > 0x40 && t < 0x47) {
-                return t - 0x37;
+            if (b > 0x40 && b < 0x47) {
+                return b - 0x37;
             }
         }
-        return 0;
+        throw new UnexpectedCrash(
+            "Unexpectedly, " + (char) b + " is not a hexadecimal number"
+        );
     }
 
     /**

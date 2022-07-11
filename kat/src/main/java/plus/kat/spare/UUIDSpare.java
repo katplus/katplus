@@ -23,6 +23,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.kernel.*;
+import plus.kat.stream.*;
 
 import java.lang.reflect.Type;
 import java.util.UUID;
@@ -120,39 +121,49 @@ public class UUIDSpare implements Spare<UUID> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        flow.addData(
-            value.toString()
-        );
-    }
+        UUID u = (UUID) value;
 
-    private static int hex(
-        byte b
-    ) throws IOCrash {
-        if (b > 0x2F) {
-            if (b < 0x3A) {
-                return b - 0x30;
-            }
-            if (b > 0x60 && b < 0x67) {
-                return b - 0x57;
-            }
-            if (b > 0x40 && b < 0x47) {
-                return b - 0x37;
-            }
-        }
-        throw new UnexpectedCrash(
-            "Unexpectedly, " + (char) b + " is not a hexadecimal number"
+        long most = u.getMostSignificantBits();
+        long least = u.getLeastSignificantBits();
+
+        flow.addLong(
+            (most >> 32) & 0xFFFFFFFFL, 4
+        );
+        flow.addByte(
+            (byte) '-'
+        );
+        flow.addLong(
+            (most >> 16) & 0xFFFFL, 4
+        );
+        flow.addByte(
+            (byte) '-'
+        );
+        flow.addLong(
+            most & 0xFFFFL, 4
+        );
+        flow.addByte(
+            (byte) '-'
+        );
+        flow.addLong(
+            (least >> 48) & 0xFFFFL, 4
+        );
+        flow.addByte(
+            (byte) '-'
+        );
+        flow.addLong(
+            least & 0xFFFFFFFFFFFFL, 4
         );
     }
 
     private static long hex(
         Chain c, int i, int o
     ) throws IOCrash {
-        long d = hex(
+        long d = Binary.hex(
             c.at(i++)
         );
         while (i < o) {
             d <<= 4;
-            d |= hex(
+            d |= Binary.hex(
                 c.at(i++)
             );
         }
@@ -169,11 +180,11 @@ public class UUIDSpare implements Spare<UUID> {
             return null;
         }
 
-        int dash1 = c.indexOf('-', 0);
-        int dash2 = c.indexOf('-', dash1 + 1);
-        int dash3 = c.indexOf('-', dash2 + 1);
-        int dash4 = c.indexOf('-', dash3 + 1);
-        int dash5 = c.indexOf('-', dash4 + 1);
+        int dash1 = c.indexOf((byte) '-', 0);
+        int dash2 = c.indexOf((byte) '-', dash1 + 1);
+        int dash3 = c.indexOf((byte) '-', dash2 + 1);
+        int dash4 = c.indexOf((byte) '-', dash3 + 1);
+        int dash5 = c.indexOf((byte) '-', dash4 + 1);
 
         if (dash4 < 0 || dash5 >= 0) {
             return null;
