@@ -149,9 +149,10 @@ public class BitSetSpare implements Spare<BitSet> {
         public Builder<?> observe(
             @NotNull Space space,
             @NotNull Alias alias
-        ) {
-            index++;
-            return null;
+        ) throws IOCrash {
+            throw new UnexpectedCrash(
+                "Unexpectedly, invalid BitSet value type '" + space + "'"
+            );
         }
 
         @Override
