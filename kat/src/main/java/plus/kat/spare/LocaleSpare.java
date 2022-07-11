@@ -29,7 +29,7 @@ import java.util.Locale;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.2
  */
 public class LocaleSpare implements Spare<Locale> {
 

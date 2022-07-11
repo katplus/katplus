@@ -222,6 +222,21 @@ public class SpareTest {
         assertFalse(spare.read("$(katplus)").get());
     }
 
+    @Test
+    public void test_Currency_read() {
+        CurrencySpare spare = CurrencySpare.INSTANCE;
+
+        Currency c0 = spare.read("$(CNY)");
+        assertNotNull(c0);
+        assertEquals("CNY", c0.getCurrencyCode());
+        assertEquals("Currency(CNY)", Kat.encode(c0));
+
+        Currency c1 = spare.read("$(USD)");
+        assertNotNull(c1);
+        assertEquals("USD", c1.getCurrencyCode());
+        assertEquals("Currency(USD)", Kat.encode(c1));
+    }
+
 
     @Test
     public void test_Locale_read() {
