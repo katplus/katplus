@@ -30,7 +30,7 @@ import java.util.UUID;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.2
  */
 public class UUIDSpare implements Spare<UUID> {
 
@@ -85,13 +85,30 @@ public class UUIDSpare implements Spare<UUID> {
             return (UUID) data;
         }
 
-        if (data instanceof String) {
+        if (data instanceof Chain) {
             try {
-                return UUID.fromString(
-                    (String) data
+                return parse(
+                    (Chain) data
                 );
             } catch (Exception e) {
-                // Nothing
+                return null;
+            }
+        }
+
+        if (data instanceof CharSequence) {
+            CharSequence c = (CharSequence) data;
+            int len = c.length();
+            if (len < 8 ||
+                len > 36) {
+                return null;
+            }
+
+            try {
+                return parse(
+                    new Value(c)
+                );
+            } catch (Exception e) {
+                return null;
             }
         }
 
