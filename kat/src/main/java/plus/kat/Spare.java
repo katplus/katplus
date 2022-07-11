@@ -421,6 +421,7 @@ public interface Spare<K> extends Coder<K> {
             INS.put(Locale.class, LocaleSpare.INSTANCE);
             INS.put(LocalDate.class, LocalDateSpare.INSTANCE);
             INS.put(Currency.class, CurrencySpare.INSTANCE);
+            INS.put(BitSet.class, BitSetSpare.INSTANCE);
             INS.put(AtomicLong.class, AtomicLongSpare.INSTANCE);
             INS.put(AtomicInteger.class, AtomicIntegerSpare.INSTANCE);
             INS.put(AtomicBoolean.class, AtomicBooleanSpare.INSTANCE);

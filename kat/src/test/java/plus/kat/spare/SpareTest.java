@@ -3,6 +3,7 @@ package plus.kat.spare;
 import org.junit.jupiter.api.Test;
 
 import plus.kat.Event;
+import plus.kat.Json;
 import plus.kat.Kat;
 import plus.kat.Spare;
 import plus.kat.anno.Embed;
@@ -237,7 +238,6 @@ public class SpareTest {
         assertEquals("Currency(USD)", Kat.encode(c1));
     }
 
-
     @Test
     public void test_Locale_read() {
         LocaleSpare spare = LocaleSpare.INSTANCE;
@@ -245,6 +245,17 @@ public class SpareTest {
         assertEquals("zh", spare.read("$(zh)").toString());
         assertEquals("zh_CN", spare.read("$(zh_CN)").toString());
         assertEquals("Locale(zh_CN)", Kat.encode(spare.read("$(zh_CN)")));
+    }
+
+    @Test
+    public void test_BitSet_read() {
+        BitSetSpare spare = BitSetSpare.INSTANCE;
+
+        BitSet b0 = spare.read("${(1)(0)(1)(0)}");
+        assertEquals("BitSet{i(1)i(0)i(1)}", Kat.encode(b0));
+
+        BitSet b1 = spare.parse("[1,0,1,0]");
+        assertEquals("[1,0,1]", Json.encode(b1));
     }
 
     static class Hook {
