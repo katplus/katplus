@@ -351,32 +351,6 @@ public class Json extends Chan {
     }
 
     /**
-     * Writes the specified {@code alias} and {@code value}
-     *
-     * @return {@code true} if successful
-     */
-    @Override
-    protected boolean coding(
-        @Nullable CharSequence alias,
-        @NotNull Enum<?> value
-    ) {
-        flow.addComma();
-        flow.addAlias(alias);
-        flow.addQuote();
-        if (flow.isFlag(Flag.ENUM_AS_INDEX)) {
-            flow.addInt(
-                value.ordinal()
-            );
-        } else {
-            flow.addText(
-                value.name()
-            );
-        }
-        flow.addQuote();
-        return true;
-    }
-
-    /**
      * Writes the specified {@code alias} and {@code value} by specified {@link Spare}
      *
      * @return {@code true} if successful

@@ -431,7 +431,7 @@ public interface Spare<K> extends Coder<K> {
          * @throws NullPointerException If the specified {@code klass} is null
          */
         @Nullable
-        @SuppressWarnings({"unchecked", "rawtypes"})
+        @SuppressWarnings("unchecked")
         public <T> Spare<T> embed(
             @NotNull Class<T> klass,
             @NotNull Supplier supplier
@@ -442,6 +442,45 @@ public interface Spare<K> extends Coder<K> {
                 return (Spare<T>) spare;
             }
 
+            return invoke(
+                klass, false, supplier
+            );
+        }
+
+        /**
+         * Lookup {@link Spare} of the specified {@link Class}
+         *
+         * @throws NullPointerException If the specified {@code klass} is null
+         */
+        @Nullable
+        @SuppressWarnings("unchecked")
+        public <T> Spare<T> lookup(
+            @NotNull Class<T> klass,
+            @NotNull Supplier supplier
+        ) {
+            Spare<?> spare = get(klass);
+
+            if (spare != null) {
+                return (Spare<T>) spare;
+            }
+
+            return invoke(
+                klass, true, supplier
+            );
+        }
+
+        /**
+         * Returns {@link Spare} of the specified {@link Class}
+         *
+         * @throws NullPointerException If the specified {@code klass} is null
+         */
+        @Nullable
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        public <T> Spare<T> invoke(
+            @NotNull Class<T> klass,
+            @NotNull boolean lookup,
+            @NotNull Supplier supplier
+        ) {
             if (klass.isArray()) {
                 return (Spare<T>) get(
                     Object[].class
@@ -451,14 +490,18 @@ public interface Spare<K> extends Coder<K> {
             Embed embed = klass
                 .getAnnotation(Embed.class);
 
-            if (embed != null) {
+            if (embed == null) {
+                if (lookup) {
+                    return null;
+                }
+            } else {
                 Class<? extends Spare>
                     with = embed.with();
 
                 if (with != Spare.class) {
                     // static inject
                     // and double-checking
-                    spare = get(klass);
+                    Spare<?> spare = get(klass);
 
                     if (spare != null) {
                         return (Spare<T>) spare;
@@ -468,6 +511,10 @@ public interface Spare<K> extends Coder<K> {
                         return Reflex.apply(with);
                     }
                 }
+            }
+
+            if (klass.isInterface()) {
+                return null;
             }
 
             if (klass.isEnum()) {
@@ -480,72 +527,36 @@ public interface Spare<K> extends Coder<K> {
                 return $spare;
             }
 
-            if (klass.isInterface()) {
-                return null;
-            }
-
-            try {
-                Spare<T> $spare;
-                put(klass, $spare =
-                    new ReflectSpare<>(
-                        embed, klass, supplier
-                    )
-                );
-                return $spare;
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        /**
-         * Lookup {@link Spare} of the specified {@link Class}
-         *
-         * @throws NullPointerException If the specified {@code klass} is null
-         */
-        @Nullable
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        public <T> Spare<T> lookup(
-            @NotNull Class<T> klass,
-            @NotNull Supplier supplier
-        ) {
-            Spare<?> spare = get(klass);
-
-            if (spare != null) {
-                return (Spare<T>) spare;
-            }
-
-            if (klass.isArray()) {
-                return (Spare<T>) get(
-                    Object[].class
-                );
-            }
-
-            Embed embed = klass
-                .getAnnotation(Embed.class);
-
-            if (embed == null) {
-                return null;
-            }
-
-            Class<? extends Spare>
-                with = embed.with();
-
-            if (with != Spare.class) {
-                // static inject
-                // and double-checking
-                spare = get(klass);
-
-                if (spare != null) {
-                    return (Spare<T>) spare;
+            // filter platform type
+            String name = klass.getName();
+            switch (name.charAt(0)) {
+                case 'j': {
+                    if (name.startsWith("java.") ||
+                        name.startsWith("javax.")) {
+                        return null;
+                    }
+                    break;
                 }
-
-                if (!with.isInterface()) {
-                    return Reflex.apply(with);
+                case 'k': {
+                    if (name.startsWith("kotlin.") ||
+                        name.startsWith("kotlinx.")) {
+                        return null;
+                    }
+                    break;
                 }
-            }
-
-            if (klass.isInterface()) {
-                return null;
+                case 's': {
+                    if (name.startsWith("scala.")) {
+                        return null;
+                    }
+                    break;
+                }
+                case 'a': {
+                    if (name.startsWith("android.") ||
+                        name.startsWith("androidx.")) {
+                        return null;
+                    }
+                    break;
+                }
             }
 
             try {

@@ -386,35 +386,6 @@ public class Doc extends Chan {
     }
 
     /**
-     * Writes the specified {@code alias} and {@code value}
-     *
-     * @return {@code true} if successful
-     */
-    @Override
-    protected boolean coding(
-        @Nullable CharSequence alias,
-        @NotNull Enum<?> value
-    ) {
-        if (alias == null) {
-            Class<?> klass = value.getClass();
-            alias = klass.getSimpleName();
-        }
-
-        flow.leftAlias(alias, null);
-        if (flow.isFlag(Flag.ENUM_AS_INDEX)) {
-            flow.addInt(
-                value.ordinal()
-            );
-        } else {
-            flow.addText(
-                value.name()
-            );
-        }
-        flow.rightAlias(alias, null);
-        return true;
-    }
-
-    /**
      * Writes the specified {@code alias} and {@code value} by specified {@link Spare}
      *
      * @return {@code true} if successful

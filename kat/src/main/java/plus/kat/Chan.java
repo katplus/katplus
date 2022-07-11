@@ -317,12 +317,6 @@ public class Chan implements Flag {
             );
         }
 
-        if (klass.isEnum()) {
-            return coding(
-                alias, (Enum<?>) value
-            );
-        }
-
         if (!klass.isArray()) {
             return coding(
                 alias, value
@@ -498,33 +492,6 @@ public class Chan implements Flag {
             value.onCoding(flow);
             flow.rightParen();
         }
-        return true;
-    }
-
-    /**
-     * Writes the specified {@code alias} and {@code value}
-     *
-     * @return {@code true} if successful
-     */
-    protected boolean coding(
-        @Nullable CharSequence alias,
-        @NotNull Enum<?> value
-    ) {
-        flow.addSpace(
-            value.getClass().getSimpleName()
-        );
-        flow.addAlias(alias);
-        flow.leftParen();
-        if (flow.isFlag(Flag.ENUM_AS_INDEX)) {
-            flow.addInt(
-                value.ordinal()
-            );
-        } else {
-            flow.addText(
-                value.name()
-            );
-        }
-        flow.rightParen();
         return true;
     }
 
