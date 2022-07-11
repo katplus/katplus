@@ -105,7 +105,7 @@ public class ShortSpare implements Spare<Short> {
         return (short) 0;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Short read(
         @NotNull Flag flag,
@@ -114,7 +114,7 @@ public class ShortSpare implements Spare<Short> {
         return alias.toShort();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Short read(
         @NotNull Flag flag,

@@ -108,7 +108,7 @@ public class BigIntegerSpare implements Spare<BigInteger> {
         return BigInteger.ZERO;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public BigInteger read(
         @NotNull Flag flag,

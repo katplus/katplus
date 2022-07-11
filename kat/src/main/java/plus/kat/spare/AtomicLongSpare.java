@@ -91,7 +91,7 @@ public class AtomicLongSpare implements Spare<AtomicLong> {
         );
     }
 
-    @Nullable
+    @NotNull
     @Override
     public AtomicLong read(
         @NotNull Flag flag,
@@ -102,7 +102,7 @@ public class AtomicLongSpare implements Spare<AtomicLong> {
         );
     }
 
-    @Nullable
+    @NotNull
     @Override
     public AtomicLong read(
         @NotNull Flag flag,

@@ -70,7 +70,7 @@ public class FloatSpare implements Spare<Float> {
         return null;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Float read(
         @NotNull Flag flag,
@@ -79,7 +79,7 @@ public class FloatSpare implements Spare<Float> {
         return alias.toFloat();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Float read(
         @NotNull Flag flag,

@@ -91,7 +91,7 @@ public class AtomicIntegerSpare implements Spare<AtomicInteger> {
         );
     }
 
-    @Nullable
+    @NotNull
     @Override
     public AtomicInteger read(
         @NotNull Flag flag,
@@ -102,7 +102,7 @@ public class AtomicIntegerSpare implements Spare<AtomicInteger> {
         );
     }
 
-    @Nullable
+    @NotNull
     @Override
     public AtomicInteger read(
         @NotNull Flag flag,

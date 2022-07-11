@@ -78,7 +78,7 @@ public class StringSpare implements Spare<String> {
         return data == null ? "" : data.toString();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public String read(
         @NotNull Flag flag,
@@ -87,7 +87,7 @@ public class StringSpare implements Spare<String> {
         return alias.toString();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public String read(
         @NotNull Flag flag,

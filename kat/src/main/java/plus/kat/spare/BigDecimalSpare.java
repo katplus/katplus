@@ -117,7 +117,7 @@ public class BigDecimalSpare implements Spare<BigDecimal> {
         return BigDecimal.ZERO;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public BigDecimal read(
         @NotNull Flag flag,

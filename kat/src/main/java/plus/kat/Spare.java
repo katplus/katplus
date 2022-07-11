@@ -418,6 +418,7 @@ public interface Spare<K> extends Coder<K> {
             INS.put(ArrayList.class, ListSpare.INSTANCE);
             INS.put(Date.class, DateSpare.INSTANCE);
             INS.put(UUID.class, UUIDSpare.INSTANCE);
+            INS.put(Locale.class, LocaleSpare.INSTANCE);
             INS.put(LocalDate.class, LocalDateSpare.INSTANCE);
             INS.put(AtomicLong.class, AtomicLongSpare.INSTANCE);
             INS.put(AtomicInteger.class, AtomicIntegerSpare.INSTANCE);

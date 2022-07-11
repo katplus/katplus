@@ -256,6 +256,28 @@ public class Paper extends Value implements Flow {
     }
 
     /**
+     * @param num    the specified int value
+     * @param shift  the log2 of the base to format
+     * @param length the length of the output bits
+     * @since 0.0.2
+     */
+    @Override
+    public void addInt(
+        int num, int shift, int length
+    ) {
+        if (shift > 0 && shift < 6) {
+            int mark = count;
+            int mask = (1 << shift) - 1;
+            while (--length != -1) {
+                grow(count + 1);
+                value[count++] = lower((num & mask));
+                num >>>= shift;
+            }
+            swop(mark, count - 1);
+        }
+    }
+
+    /**
      * @param num the specified long value
      */
     @Override
@@ -300,6 +322,28 @@ public class Paper extends Value implements Flow {
                 value[count++] = lower((int) (num & mask));
                 num >>>= shift;
             } while (num != 0L);
+            swop(mark, count - 1);
+        }
+    }
+
+    /**
+     * @param num    the specified long value
+     * @param shift  the log2 of the base to format
+     * @param length the length of the output bits
+     * @since 0.0.2
+     */
+    @Override
+    public void addLong(
+        long num, int shift, int length
+    ) {
+        if (shift > 0 && shift < 6) {
+            int mark = count;
+            long mask = (1L << shift) - 1L;
+            while (--length != -1) {
+                grow(count + 1);
+                value[count++] = lower((int) (num & mask));
+                num >>>= shift;
+            }
             swop(mark, count - 1);
         }
     }

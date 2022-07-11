@@ -101,7 +101,7 @@ public class DoubleSpare implements Spare<Double> {
         return 0D;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Double read(
         @NotNull Flag flag,
@@ -110,7 +110,7 @@ public class DoubleSpare implements Spare<Double> {
         return alias.toDouble();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Double read(
         @NotNull Flag flag,

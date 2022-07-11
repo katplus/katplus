@@ -101,7 +101,7 @@ public class BooleanSpare implements Spare<Boolean> {
         return Boolean.FALSE;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Boolean read(
         @NotNull Flag flag,
@@ -110,7 +110,7 @@ public class BooleanSpare implements Spare<Boolean> {
         return alias.toBoolean();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Boolean read(
         @NotNull Flag flag,

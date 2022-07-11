@@ -71,7 +71,7 @@ public class UUIDSpare implements Spare<UUID> {
         return null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public UUID cast(
         @NotNull Supplier supplier,
@@ -144,31 +144,31 @@ public class UUIDSpare implements Spare<UUID> {
         long least = u.getLeastSignificantBits();
 
         flow.addLong(
-            (most >> 32) & 0xFFFFFFFFL, 4
+            (most >> 32) & 0xFFFFFFFFL, 4, 8
         );
         flow.addByte(
             (byte) '-'
         );
         flow.addLong(
-            (most >> 16) & 0xFFFFL, 4
+            (most >> 16) & 0xFFFFL, 4, 4
         );
         flow.addByte(
             (byte) '-'
         );
         flow.addLong(
-            most & 0xFFFFL, 4
+            most & 0xFFFFL, 4, 4
         );
         flow.addByte(
             (byte) '-'
         );
         flow.addLong(
-            (least >> 48) & 0xFFFFL, 4
+            (least >> 48) & 0xFFFFL, 4, 4
         );
         flow.addByte(
             (byte) '-'
         );
         flow.addLong(
-            least & 0xFFFFFFFFFFFFL, 4
+            least & 0xFFFFFFFFFFFFL, 4, 12
         );
     }
 
@@ -188,7 +188,7 @@ public class UUIDSpare implements Spare<UUID> {
     }
 
     @Nullable
-    private static UUID parse(
+    public static UUID parse(
         @NotNull Chain c
     ) throws IOCrash {
         int len = c.length();

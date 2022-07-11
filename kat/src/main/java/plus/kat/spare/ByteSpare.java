@@ -106,7 +106,7 @@ public class ByteSpare implements Spare<Byte> {
         return (byte) 0;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Byte read(
         @NotNull Flag flag,
@@ -115,7 +115,7 @@ public class ByteSpare implements Spare<Byte> {
         return alias.toByte();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Byte read(
         @NotNull Flag flag,

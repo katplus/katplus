@@ -97,7 +97,7 @@ public class CharSpare implements Spare<Character> {
         return '?';
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Character read(
         @NotNull Flag flag,
@@ -106,7 +106,7 @@ public class CharSpare implements Spare<Character> {
         return alias.toChar();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Character read(
         @NotNull Flag flag,

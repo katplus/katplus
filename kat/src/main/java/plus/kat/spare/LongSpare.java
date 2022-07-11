@@ -99,7 +99,7 @@ public class LongSpare implements Spare<Long> {
         return 0L;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Long read(
         @NotNull Flag flag,
@@ -108,7 +108,7 @@ public class LongSpare implements Spare<Long> {
         return alias.toLong();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Long read(
         @NotNull Flag flag,

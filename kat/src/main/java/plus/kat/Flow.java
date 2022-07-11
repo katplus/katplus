@@ -70,6 +70,14 @@ public interface Flow extends Flag {
 
     /**
      * @throws IOCrash If an I/O error occurs
+     * @since 0.0.2
+     */
+    void addInt(
+        int num, int shift, int length
+    ) throws IOCrash;
+
+    /**
+     * @throws IOCrash If an I/O error occurs
      */
     void addLong(
         long num
@@ -80,6 +88,14 @@ public interface Flow extends Flag {
      */
     void addLong(
         long num, int shift
+    ) throws IOCrash;
+
+    /**
+     * @throws IOCrash If an I/O error occurs
+     * @since 0.0.2
+     */
+    void addLong(
+        long num, int shift, int length
     ) throws IOCrash;
 
     /**

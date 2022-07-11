@@ -91,7 +91,7 @@ public class AtomicBooleanSpare implements Spare<AtomicBoolean> {
         );
     }
 
-    @Nullable
+    @NotNull
     @Override
     public AtomicBoolean read(
         @NotNull Flag flag,
@@ -102,7 +102,7 @@ public class AtomicBooleanSpare implements Spare<AtomicBoolean> {
         );
     }
 
-    @Nullable
+    @NotNull
     @Override
     public AtomicBoolean read(
         @NotNull Flag flag,

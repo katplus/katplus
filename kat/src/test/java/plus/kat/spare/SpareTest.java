@@ -3,6 +3,7 @@ package plus.kat.spare;
 import org.junit.jupiter.api.Test;
 
 import plus.kat.Event;
+import plus.kat.Kat;
 import plus.kat.Spare;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
@@ -185,6 +186,7 @@ public class SpareTest {
         );
 
         assertEquals("092f7929-d2d6-44d6-9cc1-694c2e360c56", uuid.toString());
+        assertEquals("UUID(092f7929-d2d6-44d6-9cc1-694c2e360c56)", Kat.encode(uuid));
     }
 
     @Test
@@ -218,6 +220,16 @@ public class SpareTest {
         assertTrue(spare.read("$(true)").get());
         assertFalse(spare.read("$(false)").get());
         assertFalse(spare.read("$(katplus)").get());
+    }
+
+
+    @Test
+    public void test_Locale_read() {
+        LocaleSpare spare = LocaleSpare.INSTANCE;
+
+        assertEquals("zh", spare.read("$(zh)").toString());
+        assertEquals("zh_CN", spare.read("$(zh_CN)").toString());
+        assertEquals("Locale(zh_CN)", Kat.encode(spare.read("$(zh_CN)")));
     }
 
     static class Hook {

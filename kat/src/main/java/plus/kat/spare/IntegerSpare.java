@@ -99,7 +99,7 @@ public class IntegerSpare implements Spare<Integer> {
         return 0;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Integer read(
         @NotNull Flag flag,
@@ -108,7 +108,7 @@ public class IntegerSpare implements Spare<Integer> {
         return alias.toInt();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Integer read(
         @NotNull Flag flag,
