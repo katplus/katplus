@@ -421,14 +421,8 @@ public interface Spare<K> extends Coder<K> {
             INS.put(Date.class, DateSpare.INSTANCE);
             INS.put(UUID.class, UUIDSpare.INSTANCE);
             INS.put(Locale.class, LocaleSpare.INSTANCE);
-            INS.put(LocalDate.class, LocalDateSpare.INSTANCE);
-            INS.put(Currency.class, CurrencySpare.INSTANCE);
             INS.put(BitSet.class, BitSetSpare.INSTANCE);
-            INS.put(URI.class, URISpare.INSTANCE);
-            INS.put(URL.class, URLSpare.INSTANCE);
-            INS.put(AtomicLong.class, AtomicLongSpare.INSTANCE);
-            INS.put(AtomicInteger.class, AtomicIntegerSpare.INSTANCE);
-            INS.put(AtomicBoolean.class, AtomicBooleanSpare.INSTANCE);
+            INS.put(Currency.class, CurrencySpare.INSTANCE);
         }
 
         /**
@@ -539,7 +533,9 @@ public interface Spare<K> extends Coder<K> {
                 case 'j': {
                     if (name.startsWith("java.") ||
                         name.startsWith("javax.")) {
-                        return null;
+                        return invoke$java(
+                            name, klass
+                        );
                     }
                     break;
                 }
@@ -575,6 +571,82 @@ public interface Spare<K> extends Coder<K> {
                 return $spare;
             } catch (Exception e) {
                 return null;
+            }
+        }
+
+        /**
+         * Returns {@link Spare} of the specified {@link Class}
+         *
+         * @throws NullPointerException If the specified {@code klass} is null
+         */
+        @SuppressWarnings("unchecked")
+        public <T> Spare<T> invoke$java(
+            @NotNull String name,
+            @NotNull Class<T> klass
+        ) {
+            Spare<?> spare;
+            switch (name.charAt(5)) {
+                // java.net.
+                case 'n': {
+                    if (klass == URI.class) {
+                        spare = URISpare.INSTANCE;
+                    } else if (klass == URL.class) {
+                        spare = URLSpare.INSTANCE;
+                    } else {
+                        return null;
+                    }
+
+                    this.put(klass, spare);
+                    return (Spare<T>) spare;
+                }
+                // java.time.
+                case 't': {
+                    if (klass == LocalDate.class) {
+                        spare = LocalDateSpare.INSTANCE;
+                    } else {
+                        return null;
+                    }
+
+                    this.put(klass, spare);
+                    return (Spare<T>) spare;
+                }
+                // java.util.
+                case 'u': {
+                    switch (name.lastIndexOf('.')) {
+                        // java.util.concurrent.
+                        case 20: {
+                            if (klass == ConcurrentHashMap.class) {
+                                spare = MapSpare.INSTANCE;
+                            } else {
+                                return null;
+                            }
+
+                            this.put(klass, spare);
+                            return (Spare<T>) spare;
+                        }
+                        // java.util.concurrent.atomic.
+                        case 27: {
+                            if (klass == AtomicLong.class) {
+                                spare = AtomicLongSpare.INSTANCE;
+                            } else if (klass == AtomicInteger.class) {
+                                spare = AtomicIntegerSpare.INSTANCE;
+                            } else if (klass == AtomicBoolean.class) {
+                                spare = AtomicBooleanSpare.INSTANCE;
+                            } else {
+                                return null;
+                            }
+
+                            this.put(klass, spare);
+                            return (Spare<T>) spare;
+                        }
+                        default: {
+                            return null;
+                        }
+                    }
+                }
+                default: {
+                    return null;
+                }
             }
         }
     }
