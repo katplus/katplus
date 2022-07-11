@@ -30,6 +30,9 @@ import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static plus.kat.Supplier.Impl;
 
@@ -416,6 +419,9 @@ public interface Spare<K> extends Coder<K> {
             INS.put(Date.class, DateSpare.INSTANCE);
             INS.put(UUID.class, UUIDSpare.INSTANCE);
             INS.put(LocalDate.class, LocalDateSpare.INSTANCE);
+            INS.put(AtomicLong.class, AtomicLongSpare.INSTANCE);
+            INS.put(AtomicInteger.class, AtomicIntegerSpare.INSTANCE);
+            INS.put(AtomicBoolean.class, AtomicBooleanSpare.INSTANCE);
         }
 
         /**

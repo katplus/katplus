@@ -12,6 +12,8 @@ import plus.kat.reflex.ArrayType;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -175,7 +177,7 @@ public class SpareTest {
 
 
     @Test
-    public void test_uuid_read() {
+    public void test_UUID_read() {
         UUIDSpare spare = UUIDSpare.INSTANCE;
 
         UUID uuid = spare.read(
@@ -183,6 +185,39 @@ public class SpareTest {
         );
 
         assertEquals("092f7929-d2d6-44d6-9cc1-694c2e360c56", uuid.toString());
+    }
+
+    @Test
+    public void test_AtomicInteger_read() {
+        AtomicIntegerSpare spare = AtomicIntegerSpare.INSTANCE;
+
+        AtomicInteger atom = spare.read(
+            "$(143)"
+        );
+
+        assertEquals(143, atom.get());
+    }
+
+    @Test
+    public void test_AtomicLong_read() {
+        AtomicLongSpare spare = AtomicLongSpare.INSTANCE;
+
+        AtomicLong atom = spare.read(
+            "$(14725836913579)"
+        );
+
+        assertEquals(14725836913579L, atom.get());
+    }
+
+    @Test
+    public void test_AtomicBoolean_read() {
+        AtomicBooleanSpare spare = AtomicBooleanSpare.INSTANCE;
+
+        assertTrue(spare.read("$(1)").get());
+        assertFalse(spare.read("$(0)").get());
+        assertTrue(spare.read("$(true)").get());
+        assertFalse(spare.read("$(false)").get());
+        assertFalse(spare.read("$(katplus)").get());
     }
 
     static class Hook {
