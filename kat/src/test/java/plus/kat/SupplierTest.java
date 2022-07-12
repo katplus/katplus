@@ -45,6 +45,7 @@ public class SupplierTest {
             WeakHashMap.class,
             ConcurrentMap.class,
             NavigableMap.class,
+            Properties.class,
             ConcurrentHashMap.class,
             ConcurrentNavigableMap.class,
             ConcurrentSkipListMap.class
@@ -130,7 +131,9 @@ public class SupplierTest {
             Iterable.class,
             ArrayList.class,
             HashSet.class,
-            Collection.class
+            Collection.class,
+            Deque.class,
+            ArrayDeque.class
         };
 
         for (Class<Iterable<Object>> klass : cls) {
@@ -152,6 +155,33 @@ public class SupplierTest {
 
             assertTrue(it.hasNext());
             assertEquals("kat", it.next());
+        }
+
+        Class<Iterable<Object>>[] cls2 = new Class[]{
+            Queue.class,
+            PriorityQueue.class,
+            AbstractQueue.class
+        };
+
+        for (Class<Iterable<Object>> klass : cls2) {
+            Iterable<Object> iterable = spare.read(
+                new Event<Iterable<Object>>(
+                    "{i(123)i(456)}"
+                ).with(
+                    klass
+                )
+            );
+
+            assertNotNull(iterable);
+            assertTrue(klass.isInstance(iterable));
+
+            Iterator<?> it = iterable.iterator();
+
+            assertTrue(it.hasNext());
+            assertEquals(123, it.next());
+
+            assertTrue(it.hasNext());
+            assertEquals(456, it.next());
         }
     }
 

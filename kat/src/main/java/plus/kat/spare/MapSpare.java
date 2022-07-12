@@ -195,6 +195,11 @@ public class MapSpare implements Spare<Map> {
                 entity = new TreeMap<>();
             }
 
+            // property
+            else if (raw == Properties.class) {
+                entity = new Properties();
+            }
+
             // abstract
             else if (raw == AbstractMap.class) {
                 entity = new HashMap<>();

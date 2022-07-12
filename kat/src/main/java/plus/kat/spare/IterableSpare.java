@@ -196,6 +196,23 @@ public class IterableSpare implements Spare<Iterable> {
                 entity = new ArrayList<>();
             }
 
+            // queue
+            else if (raw == Queue.class ||
+                raw == PriorityQueue.class) {
+                entity = new PriorityQueue();
+            }
+
+            // deque
+            else if (raw == Deque.class ||
+                raw == ArrayDeque.class) {
+                entity = new ArrayDeque();
+            }
+
+            // abstract
+            else if (raw == AbstractQueue.class) {
+                entity = new PriorityQueue<>();
+            }
+
             // abstract
             else if (raw == AbstractCollection.class) {
                 entity = new ArrayList<>();
