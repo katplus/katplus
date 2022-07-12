@@ -209,9 +209,10 @@ public class IterableSpare implements Spare<Iterable> {
             }
 
             // spare
-            if (param != null) {
+            if (actual != null) {
+                param = actual.getActualTypeArguments()[0];
                 v = Reflex.lookup(
-                    param = actual.getActualTypeArguments()[0], supplier
+                    param, supplier
                 );
             }
         }

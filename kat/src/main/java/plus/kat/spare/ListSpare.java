@@ -176,8 +176,9 @@ public class ListSpare implements Spare<List> {
             if (type instanceof ParameterizedType) {
                 ParameterizedType p = (ParameterizedType) type;
                 raw = p.getRawType();
+                param = p.getActualTypeArguments()[0];
                 v = Reflex.lookup(
-                    param = p.getActualTypeArguments()[0], supplier
+                    param, supplier
                 );
             }
 
