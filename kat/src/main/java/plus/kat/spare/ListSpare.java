@@ -22,6 +22,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.*;
 
 import plus.kat.*;
 import plus.kat.chain.*;
@@ -192,9 +193,19 @@ public class ListSpare implements Spare<List> {
                 entity = new Vector<>();
             }
 
-            // lined
+            // linked
             else if (raw == LinkedList.class) {
                 entity = new LinkedList<>();
+            }
+
+            // concurrent
+            else if (raw == CopyOnWriteArrayList.class) {
+                entity = new CopyOnWriteArrayList<>();
+            }
+
+            // abstract
+            else if (raw == AbstractList.class) {
+                entity = new ArrayList<>();
             }
 
             // crash

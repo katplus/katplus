@@ -22,6 +22,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.*;
 
 import plus.kat.*;
 import plus.kat.chain.*;
@@ -176,14 +177,26 @@ public class SetSpare implements Spare<Set> {
                 entity = new HashSet<>();
             }
 
-            // lined
+            // linked
             else if (raw == LinkedHashSet.class) {
                 entity = new LinkedHashSet<>();
             }
 
             // tree
-            else if (raw == TreeSet.class) {
+            else if (raw == TreeSet.class ||
+                raw == SortedSet.class ||
+                raw == NavigableSet.class) {
                 entity = new TreeSet<>();
+            }
+
+            // concurrent
+            else if (raw == ConcurrentSkipListSet.class) {
+                entity = new ConcurrentSkipListSet<>();
+            }
+
+            // abstract
+            else if (raw == AbstractSet.class) {
+                entity = new HashSet<>();
             }
 
             // crash

@@ -412,17 +412,10 @@ public interface Spare<K> extends Coder<K> {
             INS.put(BigInteger.class, BigIntegerSpare.INSTANCE);
             INS.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
             INS.put(Map.class, MapSpare.INSTANCE);
-            INS.put(HashMap.class, MapSpare.INSTANCE);
-            INS.put(LinkedHashMap.class, MapSpare.INSTANCE);
             INS.put(Set.class, SetSpare.INSTANCE);
-            INS.put(HashSet.class, SetSpare.INSTANCE);
             INS.put(List.class, ListSpare.INSTANCE);
-            INS.put(ArrayList.class, ListSpare.INSTANCE);
             INS.put(Date.class, DateSpare.INSTANCE);
             INS.put(UUID.class, UUIDSpare.INSTANCE);
-            INS.put(Locale.class, LocaleSpare.INSTANCE);
-            INS.put(BitSet.class, BitSetSpare.INSTANCE);
-            INS.put(Currency.class, CurrencySpare.INSTANCE);
         }
 
         /**
@@ -513,29 +506,17 @@ public interface Spare<K> extends Coder<K> {
                 }
             }
 
-            if (klass.isInterface()) {
-                return null;
-            }
-
-            if (klass.isEnum()) {
-                Spare<T> $spare;
-                put(klass, $spare =
-                    new EnumSpare(
-                        klass, embed, supplier
-                    )
-                );
-                return $spare;
-            }
-
             // filter platform type
             String name = klass.getName();
             switch (name.charAt(0)) {
                 case 'j': {
-                    if (name.startsWith("java.") ||
-                        name.startsWith("javax.")) {
+                    if (name.startsWith("java.")) {
                         return invoke$java(
                             name, klass
                         );
+                    }
+                    if (name.startsWith("javax.")) {
+                        return null;
                     }
                     break;
                 }
@@ -561,14 +542,27 @@ public interface Spare<K> extends Coder<K> {
                 }
             }
 
+            if (klass.isInterface()) {
+                return null;
+            }
+
+            Spare<T> spare;
+            if (klass.isEnum()) {
+                put(klass, spare =
+                    new EnumSpare(
+                        klass, embed, supplier
+                    )
+                );
+                return spare;
+            }
+
             try {
-                Spare<T> $spare;
-                put(klass, $spare =
+                put(klass, spare =
                     new ReflectSpare<>(
                         embed, klass, supplier
                     )
                 );
-                return $spare;
+                return spare;
             } catch (Exception e) {
                 return null;
             }
@@ -586,7 +580,7 @@ public interface Spare<K> extends Coder<K> {
         ) {
             Spare<?> spare;
             switch (name.charAt(5)) {
-                // java.net.
+                // java.net
                 case 'n': {
                     if (klass == URI.class) {
                         spare = URISpare.INSTANCE;
@@ -599,7 +593,7 @@ public interface Spare<K> extends Coder<K> {
                     this.put(klass, spare);
                     return (Spare<T>) spare;
                 }
-                // java.time.
+                // java.time
                 case 't': {
                     if (klass == LocalDate.class) {
                         spare = LocalDateSpare.INSTANCE;
@@ -610,13 +604,38 @@ public interface Spare<K> extends Coder<K> {
                     this.put(klass, spare);
                     return (Spare<T>) spare;
                 }
-                // java.util.
+                // java.util
                 case 'u': {
                     switch (name.lastIndexOf('.')) {
+                        // java.util.
+                        case 9: {
+                            if (klass == BitSet.class) {
+                                spare = BitSetSpare.INSTANCE;
+                            } else if (klass == Currency.class) {
+                                spare = CurrencySpare.INSTANCE;
+                            } else if (klass == Locale.class) {
+                                spare = LocaleSpare.INSTANCE;
+                            } else if (Map.class.isAssignableFrom(klass)) {
+                                spare = MapSpare.INSTANCE;
+                            } else if (Set.class.isAssignableFrom(klass)) {
+                                spare = SetSpare.INSTANCE;
+                            } else if (List.class.isAssignableFrom(klass)) {
+                                spare = ListSpare.INSTANCE;
+                            } else {
+                                return null;
+                            }
+
+                            this.put(klass, spare);
+                            return (Spare<T>) spare;
+                        }
                         // java.util.concurrent.
                         case 20: {
-                            if (klass == ConcurrentHashMap.class) {
+                            if (Map.class.isAssignableFrom(klass)) {
                                 spare = MapSpare.INSTANCE;
+                            } else if (Set.class.isAssignableFrom(klass)) {
+                                spare = SetSpare.INSTANCE;
+                            } else if (List.class.isAssignableFrom(klass)) {
+                                spare = ListSpare.INSTANCE;
                             } else {
                                 return null;
                             }

@@ -7,7 +7,7 @@ import plus.kat.anno.Expose
 /**
  * @author kraity
  */
-class WorkerKtTest {
+class SupplierKtTest {
 
     @Test
     fun test() {

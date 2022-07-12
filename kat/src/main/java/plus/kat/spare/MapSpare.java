@@ -21,7 +21,7 @@ import plus.kat.anno.Nullable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 import plus.kat.*;
 import plus.kat.chain.*;
@@ -147,7 +147,7 @@ public class MapSpare implements Spare<Map> {
                 );
             }
 
-            // lined
+            // linked
             if (raw == null ||
                 raw == Map.class) {
                 entity = new LinkedHashMap<>();
@@ -158,13 +158,14 @@ public class MapSpare implements Spare<Map> {
                 entity = new HashMap<>();
             }
 
-            // lined
+            // linked
             else if (raw == LinkedHashMap.class) {
                 entity = new LinkedHashMap<>();
             }
 
             // concurrent
-            else if (raw == ConcurrentHashMap.class) {
+            else if (raw == ConcurrentHashMap.class ||
+                raw == ConcurrentMap.class) {
                 entity = new ConcurrentHashMap<>();
             }
 
@@ -181,6 +182,23 @@ public class MapSpare implements Spare<Map> {
             // weak
             else if (raw == WeakHashMap.class) {
                 entity = new WeakHashMap<>();
+            }
+
+            // sorted
+            else if (raw == SortedMap.class ||
+                raw == NavigableMap.class) {
+                entity = new TreeMap<>();
+            }
+
+            // abstract
+            else if (raw == AbstractMap.class) {
+                entity = new HashMap<>();
+            }
+
+            // concurrent
+            else if (raw == ConcurrentSkipListMap.class ||
+                raw == ConcurrentNavigableMap.class) {
+                entity = new ConcurrentSkipListMap<>();
             }
 
             // crash
