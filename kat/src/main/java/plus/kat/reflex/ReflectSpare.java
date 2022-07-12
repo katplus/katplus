@@ -205,7 +205,9 @@ public class ReflectSpare<E> extends AspectSpare<E> {
 
         for (Method method : klass.getDeclaredMethods()) {
             int count = method.getParameterCount();
-            if (count > 1) continue;
+            if (count > 1) {
+                continue;
+            }
 
             Method1<E> method1;
             Expose expose = method
@@ -213,9 +215,17 @@ public class ReflectSpare<E> extends AspectSpare<E> {
                     Expose.class
                 );
 
-            // via Expose
-            if (expose != null) {
-                // have aliases
+            if (expose == null) {
+                // check flag
+                if (sealed) {
+                    continue;
+                }
+
+                // check its modifier
+                if ((method.getModifiers() & Modifier.PUBLIC) == 0) {
+                    continue;
+                }
+            } else {
                 String[] keys = expose.value();
                 if (keys.length != 0) {
                     method1 = new Method1<>(
@@ -225,7 +235,7 @@ public class ReflectSpare<E> extends AspectSpare<E> {
                     if (count != 0) {
                         int h = method1.getHash();
                         // check use index
-                        if (direct && h > -1) {
+                        if (direct && h >= 0) {
                             // register setter
                             put(h, method1);
                         }
@@ -246,29 +256,6 @@ public class ReflectSpare<E> extends AspectSpare<E> {
                     }
                     continue;
                 }
-
-                // empty alias and use index
-                else if (direct && count == 1) {
-                    int h = expose.index();
-                    // check use index
-                    if (h > -1) {
-                        method1 = new Method1<>(
-                            method, expose, supplier
-                        );
-
-                        // register setter
-                        put(h, method1);
-                        // use index only
-                        continue;
-                    }
-                }
-
-                // directly via POJO
-            }
-
-            // check if via POJO
-            else if (sealed) {
-                continue;
             }
 
             String key = method.getName();
@@ -288,14 +275,6 @@ public class ReflectSpare<E> extends AspectSpare<E> {
                 if (count != 0 ||
                     key.charAt(i++) != 'e' ||
                     key.charAt(i++) != 't') {
-                    continue;
-                }
-                if (l == 8 &&
-                    key.charAt(i) == 'C' &&
-                    key.charAt(i + 1) == 'l' &&
-                    key.charAt(i + 2) == 'a' &&
-                    key.charAt(i + 3) == 's' &&
-                    key.charAt(i + 4) == 's') {
                     continue;
                 }
             } else if (ch == 'i') {
@@ -324,14 +303,22 @@ public class ReflectSpare<E> extends AspectSpare<E> {
             );
 
             Alias alias = new Alias(k);
-            if (count != 0) {
-                // register setter
-                put(alias, method1);
-            } else {
+            if (count == 0) {
                 // register getter
                 addGetter(
                     alias, method1
                 );
+            } else {
+                // register setter
+                put(alias, method1);
+
+                // check use index
+                if (direct && expose != null) {
+                    int h = expose.index();
+                    if (h >= 0) put(
+                        h, method1.clone()
+                    );
+                }
             }
         }
     }
