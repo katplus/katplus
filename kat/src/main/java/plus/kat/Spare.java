@@ -411,6 +411,7 @@ public interface Spare<K> extends Coder<K> {
             INS.put(Object[].class, ArraySpare.INSTANCE);
             INS.put(BigInteger.class, BigIntegerSpare.INSTANCE);
             INS.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
+            INS.put(Iterable.class, IterableSpare.INSTANCE);
             INS.put(Map.class, MapSpare.INSTANCE);
             INS.put(Set.class, SetSpare.INSTANCE);
             INS.put(List.class, ListSpare.INSTANCE);

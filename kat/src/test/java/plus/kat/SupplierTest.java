@@ -2,6 +2,7 @@ package plus.kat;
 
 import org.junit.jupiter.api.Test;
 import plus.kat.anno.Expose;
+import plus.kat.spare.IterableSpare;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -130,6 +131,43 @@ public class SupplierTest {
             );
             assertEquals(1, list.get(0));
             assertEquals("kat", list.get(1));
+        }
+    }
+
+    @Test
+    public void test_read_Iterable() {
+        IterableSpare spare = IterableSpare.INSTANCE;
+
+        Class<Iterable<Object>>[] cls = new Class[]{
+            Iterable.class,
+            ArrayList.class,
+            HashSet.class,
+            Collection.class
+        };
+
+        for (Class<Iterable<Object>> klass : cls) {
+            Iterable<Object> iterable = spare.read(
+                new Event<Iterable<Object>>(
+                    "{i(1)s(kat)}"
+                ).with(
+                    klass
+                )
+            );
+
+            assertNotNull(iterable);
+            assertTrue(
+                klass.isAssignableFrom(
+                    iterable.getClass()
+                )
+            );
+
+            Iterator<?> it = iterable.iterator();
+
+            assertTrue(it.hasNext());
+            assertEquals(1, it.next());
+
+            assertTrue(it.hasNext());
+            assertEquals("kat", it.next());
         }
     }
 

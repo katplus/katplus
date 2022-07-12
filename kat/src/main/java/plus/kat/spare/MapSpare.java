@@ -50,7 +50,7 @@ public class MapSpare implements Spare<Map> {
     public boolean accept(
         @NotNull Class<?> klass
     ) {
-        return klass.isAssignableFrom(LinkedHashMap.class);
+        return Map.class.isAssignableFrom(klass);
     }
 
     @Nullable
@@ -61,8 +61,8 @@ public class MapSpare implements Spare<Map> {
 
     @NotNull
     @Override
-    public Class<LinkedHashMap> getType() {
-        return LinkedHashMap.class;
+    public Class<Map> getType() {
+        return Map.class;
     }
 
     @Override
@@ -97,6 +97,10 @@ public class MapSpare implements Spare<Map> {
         @NotNull Supplier supplier,
         @Nullable Object data
     ) {
+        if (data == null) {
+            return null;
+        }
+
         if (data instanceof Map) {
             return (Map) data;
         }
@@ -122,6 +126,7 @@ public class MapSpare implements Spare<Map> {
 
         private Map entity;
         private Type type;
+        private Type param;
         private Spare<?> k, v;
 
         public Builder0(
@@ -143,7 +148,7 @@ public class MapSpare implements Spare<Map> {
                     ary[0], supplier
                 );
                 v = Reflex.lookup(
-                    type = ary[1], supplier
+                    param = ary[1], supplier
                 );
             }
 
@@ -261,7 +266,7 @@ public class MapSpare implements Spare<Map> {
             @NotNull Alias alias
         ) {
             if (v != null) {
-                return v.getBuilder(null);
+                return v.getBuilder(param);
             }
 
             Spare<?> spare = supplier
@@ -271,7 +276,7 @@ public class MapSpare implements Spare<Map> {
                 return null;
             }
 
-            return spare.getBuilder(null);
+            return spare.getBuilder(param);
         }
 
         @Override
@@ -301,6 +306,7 @@ public class MapSpare implements Spare<Map> {
             type = null;
             k = null;
             v = null;
+            param = null;
             entity = null;
         }
     }

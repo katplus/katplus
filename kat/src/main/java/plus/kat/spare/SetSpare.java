@@ -51,7 +51,7 @@ public class SetSpare implements Spare<Set> {
     public boolean accept(
         @NotNull Class<?> klass
     ) {
-        return klass.isAssignableFrom(HashSet.class);
+        return Set.class.isAssignableFrom(klass);
     }
 
     @Nullable
@@ -62,8 +62,8 @@ public class SetSpare implements Spare<Set> {
 
     @NotNull
     @Override
-    public Class<HashSet> getType() {
-        return HashSet.class;
+    public Class<Set> getType() {
+        return Set.class;
     }
 
     @Override
@@ -98,6 +98,10 @@ public class SetSpare implements Spare<Set> {
         @NotNull Supplier supplier,
         @Nullable Object data
     ) {
+        if (data == null) {
+            return null;
+        }
+
         if (data instanceof Set) {
             return (Set) data;
         }
@@ -149,6 +153,7 @@ public class SetSpare implements Spare<Set> {
 
         private Set entity;
         private Type type;
+        private Type param;
         private Spare<?> v;
 
         public Builder0(
@@ -166,7 +171,7 @@ public class SetSpare implements Spare<Set> {
                 ParameterizedType p = (ParameterizedType) type;
                 raw = p.getRawType();
                 v = Reflex.lookup(
-                    type = p.getActualTypeArguments()[0], supplier
+                    param = p.getActualTypeArguments()[0], supplier
                 );
             }
 
@@ -246,7 +251,7 @@ public class SetSpare implements Spare<Set> {
             @NotNull Alias alias
         ) {
             if (v != null) {
-                return v.getBuilder(null);
+                return v.getBuilder(param);
             }
 
             Spare<?> spare = supplier
@@ -256,7 +261,7 @@ public class SetSpare implements Spare<Set> {
                 return null;
             }
 
-            return spare.getBuilder(null);
+            return spare.getBuilder(param);
         }
 
         @Override
@@ -273,6 +278,7 @@ public class SetSpare implements Spare<Set> {
         public void close() {
             type = null;
             v = null;
+            param = null;
             entity = null;
         }
     }

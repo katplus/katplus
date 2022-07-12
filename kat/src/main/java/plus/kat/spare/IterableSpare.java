@@ -22,7 +22,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.*;
 
 import plus.kat.*;
 import plus.kat.chain.*;
@@ -33,13 +32,13 @@ import plus.kat.utils.Casting;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.2
  */
 @SuppressWarnings("rawtypes")
-public class ListSpare implements Spare<List> {
+public class IterableSpare implements Spare<Iterable> {
 
-    public static final ListSpare
-        INSTANCE = new ListSpare();
+    public static final IterableSpare
+        INSTANCE = new IterableSpare();
 
     @NotNull
     @Override
@@ -51,7 +50,7 @@ public class ListSpare implements Spare<List> {
     public boolean accept(
         @NotNull Class<?> klass
     ) {
-        return List.class.isAssignableFrom(klass);
+        return Iterable.class.isAssignableFrom(klass);
     }
 
     @Nullable
@@ -62,12 +61,12 @@ public class ListSpare implements Spare<List> {
 
     @NotNull
     @Override
-    public Class<List> getType() {
-        return List.class;
+    public Class<Iterable> getType() {
+        return Iterable.class;
     }
 
     @Override
-    public List read(
+    public Iterable read(
         @NotNull Flag flag,
         @NotNull Value value
     ) throws IOCrash {
@@ -84,15 +83,12 @@ public class ListSpare implements Spare<List> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOCrash {
-        List<?> val =
-            (List<?>) value;
+        Iterable<?> val =
+            (Iterable<?>) value;
 
-        int i = 0,
-            l = val.size();
-
-        while (i < l) {
+        for (Object v : val) {
             chan.set(
-                null, val.get(i++)
+                null, v
             );
         }
     }
@@ -100,36 +96,18 @@ public class ListSpare implements Spare<List> {
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
-    public List cast(
+    public Iterable cast(
         @NotNull Supplier supplier,
         @Nullable Object data
     ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (data instanceof List) {
-            return (List) data;
+        if (data instanceof Iterable) {
+            return (Iterable) data;
         }
 
         if (data instanceof CharSequence) {
             return Casting.cast(
                 this, (CharSequence) data, null, supplier
             );
-        }
-
-        if (data instanceof Collection) {
-            return new ArrayList(
-                (Collection) data
-            );
-        }
-
-        if (data instanceof Iterable) {
-            List list = new ArrayList();
-            for (Object o : (Iterable) data) {
-                list.add(o);
-            }
-            return list;
         }
 
         if (data.getClass().isArray()) {
@@ -149,67 +127,77 @@ public class ListSpare implements Spare<List> {
 
     @Nullable
     @Override
-    public Builder<List> getBuilder(
+    @SuppressWarnings("unchecked")
+    public Builder<Iterable> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder0(type);
+        if (type == null) {
+            return new Builder0(
+                null, null
+            );
+        }
+
+        Class<?> klass;
+        ParameterizedType param = null;
+
+        Builder<?> builder;
+        if (type instanceof ParameterizedType) {
+            param = (ParameterizedType) type;
+            klass = (Class<?>) param.getRawType();
+        }
+
+        // other
+        else if (type instanceof Class) {
+            klass = (Class<?>) type;
+        } else {
+            return new Builder0(
+                null, null
+            );
+        }
+
+        if (Set.class.isAssignableFrom(klass)) {
+            builder = new SetSpare.Builder0(type);
+            return (Builder<Iterable>) builder;
+        }
+
+        if (List.class.isAssignableFrom(klass)) {
+            builder = new ListSpare.Builder0(type);
+            return (Builder<Iterable>) builder;
+        }
+
+        return new Builder0(klass, param);
     }
 
-    public static class Builder0 extends Builder<List> {
+    public static class Builder0 extends Builder<Iterable> {
 
-        private List entity;
-        private Type type;
+        private Class<?> raw;
         private Type param;
         private Spare<?> v;
 
+        private Collection entity;
+        private ParameterizedType actual;
+
         public Builder0(
-            @Nullable Type type
+            @Nullable Class<?> raw,
+            @Nullable ParameterizedType actual
         ) {
-            this.type = type;
+            this.raw = raw;
+            this.actual = actual;
         }
 
         @Override
         public void create(
             @NotNull Alias alias
         ) throws Crash, IOCrash {
-            Type raw = type;
-            if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
-                raw = p.getRawType();
-                v = Reflex.lookup(
-                    param = p.getActualTypeArguments()[0], supplier
-                );
-            }
-
             // array
             if (raw == null ||
-                raw == List.class ||
-                raw == ArrayList.class) {
+                raw == Iterable.class ||
+                raw == Collection.class) {
                 entity = new ArrayList<>();
             }
 
-            // stack
-            else if (raw == Stack.class) {
-                entity = new Stack<>();
-            }
-
-            // vector
-            else if (raw == Vector.class) {
-                entity = new Vector<>();
-            }
-
-            // linked
-            else if (raw == LinkedList.class) {
-                entity = new LinkedList<>();
-            }
-
-            // concurrent
-            else if (raw == CopyOnWriteArrayList.class) {
-                entity = new CopyOnWriteArrayList<>();
-            }
-
             // abstract
-            else if (raw == AbstractList.class) {
+            else if (raw == AbstractCollection.class) {
                 entity = new ArrayList<>();
             }
 
@@ -217,6 +205,13 @@ public class ListSpare implements Spare<List> {
             else {
                 throw new Crash(
                     "Can't create instance of '" + raw + "'", false
+                );
+            }
+
+            // spare
+            if (param != null) {
+                v = Reflex.lookup(
+                    param = actual.getActualTypeArguments()[0], supplier
                 );
             }
         }
@@ -250,7 +245,7 @@ public class ListSpare implements Spare<List> {
 
         @Nullable
         @Override
-        public List bundle() {
+        public Iterable bundle() {
             return entity;
         }
 
@@ -285,8 +280,9 @@ public class ListSpare implements Spare<List> {
 
         @Override
         public void close() {
-            type = null;
+            raw = null;
             v = null;
+            actual = null;
             param = null;
             entity = null;
         }
