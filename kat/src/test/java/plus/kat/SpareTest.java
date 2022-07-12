@@ -3,6 +3,9 @@ package plus.kat;
 import org.junit.jupiter.api.Test;
 import plus.kat.anno.Expose;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import static plus.kat.Spare.embed;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,6 +19,21 @@ public class SpareTest {
         assertNotNull(
             embed(User.class)
         );
+    }
+
+    @Test
+    public void test_embed2() {
+        Object[] list = new Object[]{
+            Collections.EMPTY_MAP,
+            Collections.EMPTY_SET,
+            Collections.EMPTY_LIST
+        };
+
+        for (Object o : list) {
+            assertNull(
+                embed(o.getClass())
+            );
+        }
     }
 
     @Test

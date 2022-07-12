@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
@@ -495,7 +496,7 @@ public interface Spare<K> extends Coder<K> {
             switch (name.charAt(0)) {
                 case 'j': {
                     if (name.startsWith("java.")) {
-                        return invoke$java(
+                        return onJava(
                             name, klass
                         );
                     }
@@ -558,10 +559,17 @@ public interface Spare<K> extends Coder<K> {
          * @throws NullPointerException If the specified {@code klass} is null
          */
         @SuppressWarnings("unchecked")
-        public <T> Spare<T> invoke$java(
+        public <T> Spare<T> onJava(
             @NotNull String name,
             @NotNull Class<T> klass
         ) {
+            // filter internal class
+            int d = name.indexOf('$', 6);
+            if (d != -1) {
+                return null;
+            }
+
+            // lookup the appropriate spare
             Spare<?> spare;
             switch (name.charAt(5)) {
                 // java.net
@@ -579,7 +587,9 @@ public interface Spare<K> extends Coder<K> {
                 }
                 // java.time
                 case 't': {
-                    if (klass == LocalDate.class) {
+                    if (klass == Instant.class) {
+                        spare = InstantSpare.INSTANCE;
+                    } else if (klass == LocalDate.class) {
                         spare = LocalDateSpare.INSTANCE;
                     } else {
                         return null;

@@ -14,6 +14,7 @@ import plus.kat.reflex.ArrayType;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -274,6 +275,17 @@ public class SpareTest {
 
         URI u0 = spare.read("$(https://kat.plus/user.kat)");
         assertEquals("URI(https://kat.plus/user.kat)", Kat.encode(u0));
+    }
+
+    @Test
+    public void test_Instant_read() {
+        InstantSpare spare = InstantSpare.INSTANCE;
+
+        Instant i0 = spare.read("$(1645540424)");
+        assertEquals("Instant(1645540424000)", Kat.encode(i0));
+
+        Instant i1 = spare.read("$(1645540424000)");
+        assertEquals("Instant(1645540424000)", Kat.encode(i1));
     }
 
     static class Hook {
