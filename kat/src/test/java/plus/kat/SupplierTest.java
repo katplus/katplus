@@ -58,11 +58,7 @@ public class SupplierTest {
             );
 
             assertNotNull(map);
-            assertTrue(
-                klass.isAssignableFrom(
-                    map.getClass()
-                )
-            );
+            assertTrue(klass.isInstance(map));
             assertEquals(1, map.get("id"));
             assertEquals("kat", map.get("tag"));
         }
@@ -91,11 +87,7 @@ public class SupplierTest {
             );
 
             assertNotNull(set);
-            assertTrue(
-                klass.isAssignableFrom(
-                    set.getClass()
-                )
-            );
+            assertTrue(klass.isInstance(set));
             assertTrue(set.contains("1"));
             assertTrue(set.contains("kat"));
             assertFalse(set.contains("plus"));
@@ -124,11 +116,7 @@ public class SupplierTest {
             );
 
             assertNotNull(list);
-            assertTrue(
-                klass.isAssignableFrom(
-                    list.getClass()
-                )
-            );
+            assertTrue(klass.isInstance(list));
             assertEquals(1, list.get(0));
             assertEquals("kat", list.get(1));
         }
@@ -155,11 +143,7 @@ public class SupplierTest {
             );
 
             assertNotNull(iterable);
-            assertTrue(
-                klass.isAssignableFrom(
-                    iterable.getClass()
-                )
-            );
+            assertTrue(klass.isInstance(iterable));
 
             Iterator<?> it = iterable.iterator();
 

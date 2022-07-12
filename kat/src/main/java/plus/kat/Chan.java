@@ -462,6 +462,12 @@ public class Chan implements Flag {
             );
         }
 
+        if (value instanceof Iterable) {
+            return coding(
+                alias, IterableSpare.INSTANCE, value
+            );
+        }
+
         return coding(alias);
     }
 
