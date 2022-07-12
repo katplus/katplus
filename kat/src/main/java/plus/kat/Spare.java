@@ -364,12 +364,24 @@ public interface Spare<K> extends Coder<K> {
      * @throws NullPointerException If the specified {@code klass} is null
      */
     @Nullable
+    @SuppressWarnings("unchecked")
     static <T> Spare<T> lookup(
         @NotNull Class<T> klass
     ) {
-        return Cluster.INS.lookup(
-            klass, Impl.INS
-        );
+        Cluster c = Cluster.INS;
+        Spare<?> spare = c.get(klass);
+
+        if (spare != null) {
+            return (Spare<T>) spare;
+        }
+
+        if (klass.isArray()) {
+            return (Spare<T>) c.get(
+                Object[].class
+            );
+        }
+
+        return null;
     }
 
     /**
@@ -409,14 +421,12 @@ public interface Spare<K> extends Coder<K> {
             INS.put(Character.class, CharSpare.INSTANCE);
             INS.put(byte[].class, ByteArraySpare.INSTANCE);
             INS.put(Object[].class, ArraySpare.INSTANCE);
-            INS.put(BigInteger.class, BigIntegerSpare.INSTANCE);
-            INS.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
-            INS.put(Iterable.class, IterableSpare.INSTANCE);
             INS.put(Map.class, MapSpare.INSTANCE);
             INS.put(Set.class, SetSpare.INSTANCE);
             INS.put(List.class, ListSpare.INSTANCE);
-            INS.put(Date.class, DateSpare.INSTANCE);
-            INS.put(UUID.class, UUIDSpare.INSTANCE);
+            INS.put(Iterable.class, IterableSpare.INSTANCE);
+            INS.put(BigInteger.class, BigIntegerSpare.INSTANCE);
+            INS.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
         }
 
         /**
@@ -436,30 +446,8 @@ public interface Spare<K> extends Coder<K> {
                 return (Spare<T>) spare;
             }
 
-            return invoke(
-                klass, false, supplier
-            );
-        }
-
-        /**
-         * Lookup {@link Spare} of the specified {@link Class}
-         *
-         * @throws NullPointerException If the specified {@code klass} is null
-         */
-        @Nullable
-        @SuppressWarnings("unchecked")
-        public <T> Spare<T> lookup(
-            @NotNull Class<T> klass,
-            @NotNull Supplier supplier
-        ) {
-            Spare<?> spare = get(klass);
-
-            if (spare != null) {
-                return (Spare<T>) spare;
-            }
-
-            return invoke(
-                klass, true, supplier
+            return this.invoke(
+                klass, supplier
             );
         }
 
@@ -472,7 +460,6 @@ public interface Spare<K> extends Coder<K> {
         @SuppressWarnings({"unchecked", "rawtypes"})
         public <T> Spare<T> invoke(
             @NotNull Class<T> klass,
-            @NotNull boolean lookup,
             @NotNull Supplier supplier
         ) {
             if (klass.isArray()) {
@@ -484,11 +471,7 @@ public interface Spare<K> extends Coder<K> {
             Embed embed = klass
                 .getAnnotation(Embed.class);
 
-            if (embed == null) {
-                if (lookup) {
-                    return null;
-                }
-            } else {
+            if (embed != null) {
                 Class<? extends Spare>
                     with = embed.with();
 
@@ -610,7 +593,11 @@ public interface Spare<K> extends Coder<K> {
                     switch (name.lastIndexOf('.')) {
                         // java.util.
                         case 9: {
-                            if (klass == BitSet.class) {
+                            if (klass == Date.class) {
+                                spare = DateSpare.INSTANCE;
+                            } else if (klass == UUID.class) {
+                                spare = UUIDSpare.INSTANCE;
+                            } else if (klass == BitSet.class) {
                                 spare = BitSetSpare.INSTANCE;
                             } else if (klass == Currency.class) {
                                 spare = CurrencySpare.INSTANCE;
