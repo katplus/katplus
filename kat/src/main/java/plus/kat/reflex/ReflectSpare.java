@@ -286,23 +286,37 @@ public class ReflectSpare<E> extends AspectSpare<E> {
                 continue;
             }
 
-            ch = key.charAt(i);
-            if (ch < 'A' || 'Z' < ch) {
+            byte[] name;
+            char c1 = key.charAt(i++);
+            if (c1 < 'A' || 'Z' < c1) {
                 continue;
             }
 
-            byte[] k = new byte[l - i];
-            k[0] = (byte) (ch + 0x20);
+            if (i == l) {
+                name = new byte[]{
+                    (byte) (c1 + 0x20)
+                };
+            } else {
+                // See: java.beans.Introspector#decapitalize(String)
+                char c2 = key.charAt(i);
+                if (c2 < 'A' || 'Z' < c2) {
+                    c1 += 0x20;
+                }
 
-            for (int o = 1; ++i < l; ) {
-                k[o++] = (byte) key.charAt(i);
+                name = new byte[l - i + 1];
+                name[0] = (byte) c1;
+                name[1] = (byte) c2;
+
+                for (int k = 2; ++i < l; ) {
+                    name[k++] = (byte) key.charAt(i);
+                }
             }
 
             method1 = new Method1<>(
                 method, expose, supplier
             );
 
-            Alias alias = new Alias(k);
+            Alias alias = new Alias(name);
             if (count == 0) {
                 // register getter
                 addGetter(

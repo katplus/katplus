@@ -3,6 +3,8 @@ package plus.kat.reflex;
 import org.junit.jupiter.api.Test;
 
 import plus.kat.Event;
+import plus.kat.Json;
+import plus.kat.Kat;
 import plus.kat.Supplier;
 
 import plus.kat.anno.Embed;
@@ -56,6 +58,42 @@ public class ReflexTest {
         assertEquals(1, author.id);
         assertEquals("kat", author.tag);
         assertEquals("kraity", author.name);
+    }
+
+    @Test
+    public void test3() {
+        Supplier supplier = Supplier.ins();
+
+        Bean bean = supplier.read(
+            Bean.class, Event.ascii(
+                "{:a(1):URL(kat.plus)}"
+            )
+        );
+
+        assertNotNull(bean);
+        assertEquals(1, bean.a);
+        assertEquals("kat.plus", bean.url);
+    }
+
+    static class Bean {
+        private int a;
+        private String url;
+
+        public void setA(int a) {
+            this.a = a;
+        }
+
+        public int getA() {
+            return a;
+        }
+
+        public void setURL(String url) {
+            this.url = url;
+        }
+
+        public String getURL() {
+            return url;
+        }
     }
 
     static class User {
