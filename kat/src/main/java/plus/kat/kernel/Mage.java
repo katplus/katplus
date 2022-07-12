@@ -122,10 +122,6 @@ public class Mage implements Solver {
                     }
 
                     switch (b) {
-                        case '"': {
-                            escape(alias, r);
-                            continue;
-                        }
                         case ':': {
                             break Alias;
                         }
@@ -135,6 +131,11 @@ public class Mage implements Solver {
                         case '}': {
                             bundle(p, true);
                             break Alias;
+                        }
+                        case '"':
+                        case '\'': {
+                            escape(alias, b, r);
+                            continue;
                         }
                         default: {
                             throw new UnexpectedCrash(
@@ -188,8 +189,9 @@ public class Mage implements Solver {
                         accept(p, $);
                         continue;
                     }
-                    case '"': {
-                        escape(value, r);
+                    case '"':
+                    case '\'': {
+                        escape(value, b, r);
                         accept(p, $s);
                         continue Boot;
                     }
@@ -323,11 +325,12 @@ public class Mage implements Solver {
 
     protected void escape(
         Chain c,
+        byte e,
         Reader r
     ) throws IOCrash {
         while (r.also()) {
             byte b = r.read();
-            if (b == '"') {
+            if (b == e) {
                 return;
             }
 

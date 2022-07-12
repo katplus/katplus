@@ -91,6 +91,22 @@ public class JsonTest {
     }
 
     @Test
+    public void test_parse2() {
+        Supplier supplier = Supplier.ins();
+
+        User user = supplier.parse(
+            User.class, Event.ascii(
+                "{'id':1,'name':'kraity','disabled':true}"
+            )
+        );
+
+        assertNotNull(user);
+        assertEquals(1, user.id);
+        assertTrue(user.blocked);
+        assertEquals("kraity", user.name);
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     public void test_decode() {
         List<Object> data = Json.decode(
