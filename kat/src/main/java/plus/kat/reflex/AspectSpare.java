@@ -26,24 +26,25 @@ import plus.kat.entity.*;
 import plus.kat.utils.Casting;
 import plus.kat.utils.KatMap;
 
+import java.lang.reflect.*;
 import java.util.Map;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implements Sketch<E> {
+public abstract class AspectSpare<K> extends KatMap<Object, Setter<K, ?>> implements Sketch<K> {
 
-    protected final Class<E> klass;
+    protected final Class<K> klass;
     protected final CharSequence space;
 
     protected Supplier supplier;
     protected int flags;
-    protected Node<E> head, tail;
+    protected Node<K> head, tail;
 
     protected AspectSpare(
         @Nullable Embed embed,
-        @NotNull Class<E> klass,
+        @NotNull Class<K> klass,
         @NotNull Supplier supplier
     ) {
         this.klass = klass;
@@ -52,9 +53,15 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
             flags = embed.claim();
         }
 
-        this.onHandle();
-        this.onFields();
-        this.onMethods();
+        this.onFields(
+            klass.getDeclaredFields()
+        );
+        this.onMethods(
+            klass.getDeclaredMethods()
+        );
+        this.onConstructors(
+            klass.getDeclaredConstructors()
+        );
 
         this.space = supplier.register(
             embed, klass, this
@@ -82,12 +89,12 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
 
     @NotNull
     @Override
-    public Class<E> getType() {
+    public Class<K> getType() {
         return klass;
     }
 
     @Override
-    public E cast(
+    public K cast(
         @Nullable Object data
     ) {
         return cast(
@@ -98,7 +105,7 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
-    public E cast(
+    public K cast(
         @NotNull Supplier supplier,
         @Nullable Object data
     ) {
@@ -108,7 +115,7 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
 
         Class<?> clazz = data.getClass();
         if (klass.isAssignableFrom(clazz)) {
-            return (E) data;
+            return (K) data;
         }
 
         if (data instanceof Map) try {
@@ -116,7 +123,7 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
             Map<?, ?> map = (Map<?, ?>) data;
 
             // create ins
-            E entity = apply(
+            K entity = apply(
                 Alias.EMPTY
             );
 
@@ -133,7 +140,7 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
                 }
 
                 // try lookup
-                Setter<E, ?> setter = get(key);
+                Setter<K, ?> setter = get(key);
                 if (setter == null) {
                     continue;
                 }
@@ -169,7 +176,7 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
     }
 
     @Override
-    public E read(
+    public K read(
         @NotNull Flag flag,
         @NotNull Value value
     ) throws IOCrash {
@@ -186,7 +193,7 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOCrash {
-        Node<E> node = head;
+        Node<K> node = head;
         while (node != null) {
             chan.set(
                 node.key, node.getCoder(), node.onApply(value)
@@ -197,7 +204,7 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
 
     @Override
     @Nullable
-    public Setter<E, ?> setter(
+    public Setter<K, ?> setter(
         @NotNull int index,
         @NotNull Alias alias
     ) {
@@ -208,7 +215,7 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
 
     protected void addSetter(
         @NotNull Object key,
-        @NotNull Setter<E, ?> setter
+        @NotNull Setter<K, ?> setter
     ) {
         this.put(
             key, setter
@@ -217,7 +224,7 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
 
     protected void addGetter(
         @NotNull CharSequence key,
-        @NotNull Node<E> node
+        @NotNull Node<K> node
     ) {
         node.key = key;
         int hash = node.getHash();
@@ -228,8 +235,8 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
             tail.next = node;
             tail = node;
         } else {
-            Node<E> m = head;
-            Node<E> n = null;
+            Node<K> m = head;
+            Node<K> n = null;
 
             int wgt;
             while (true) {
@@ -263,15 +270,30 @@ public abstract class AspectSpare<E> extends KatMap<Object, Setter<E, ?>> implem
         }
     }
 
-    protected void onHandle() {
+    /**
+     * @param fields the specified {@link Field} collection
+     */
+    protected void onFields(
+        @NotNull Field[] fields
+    ) {
         // Nothing
     }
 
-    protected void onFields() {
+    /**
+     * @param methods the specified {@link Method} collection
+     */
+    protected void onMethods(
+        @NotNull Method[] methods
+    ) {
         // Nothing
     }
 
-    protected void onMethods() {
+    /**
+     * @param constructors the specified {@link Constructor} collection
+     */
+    protected void onConstructors(
+        @NotNull Constructor<?>[] constructors
+    ) {
         // Nothing
     }
 

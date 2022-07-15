@@ -32,16 +32,16 @@ import plus.kat.utils.KatMap;
  * @author kraity
  * @since 0.0.2
  */
-public class ReflectSpare<E> extends AspectSpare<E> {
+public class ReflectSpare<T> extends AspectSpare<T> {
 
-    private Constructor<E> builder;
+    private Constructor<T> builder;
     private KatMap<Object, Param1> params;
 
     /**
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
      */
     public ReflectSpare(
-        @NotNull Class<E> klass,
+        @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
         this(klass.getAnnotation(Embed.class), klass, supplier);
@@ -52,7 +52,7 @@ public class ReflectSpare<E> extends AspectSpare<E> {
      */
     public ReflectSpare(
         @Nullable Embed embed,
-        @NotNull Class<E> klass,
+        @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
         super(embed, klass, supplier);
@@ -60,7 +60,7 @@ public class ReflectSpare<E> extends AspectSpare<E> {
 
     @Override
     @Nullable
-    public E apply(
+    public T apply(
         @NotNull Alias alias
     ) throws Crash {
         try {
@@ -71,7 +71,7 @@ public class ReflectSpare<E> extends AspectSpare<E> {
     }
 
     @Override
-    public Builder<E> getBuilder(
+    public Builder<T> getBuilder(
         @Nullable Type type
     ) {
         if (params == null) {
@@ -80,87 +80,24 @@ public class ReflectSpare<E> extends AspectSpare<E> {
         return new Builder1<>(this);
     }
 
-    private void register(
-        @NotNull Constructor<?> b,
-        @NotNull Supplier supplier
+    /**
+     * @param fields the specified {@link Field} collection
+     */
+    @Override
+    protected void onFields(
+        @NotNull Field[] fields
     ) {
-        Parameter[] ps = null;
-        params = new KatMap<>();
-
-        Class<?>[] cs = b.getParameterTypes();
-        Type[] ts = b.getGenericParameterTypes();
-        Annotation[][] as = b.getParameterAnnotations();
-
-        for (int i = 0; i < cs.length; i++) {
-            Format format = null;
-            Expose expose = null;
-            for (Annotation a : as[i]) {
-                Class<?> at = a.annotationType();
-                if (at == Expose.class) {
-                    expose = (Expose) a;
-                } else if (at == Format.class) {
-                    format = (Format) a;
-                }
-            }
-
-            Coder<?> c = Reflex.lookup(
-                cs[i], expose, format, supplier
-            );
-
-            Param1 param =
-                new Param1(
-                    i, c, ts[i], cs[i]
-                );
-
-            if (expose == null) {
-                if (ps == null) {
-                    ps = b.getParameters();
-                }
-                params.put(
-                    ps[i].getName(), param
-                );
-            } else {
-                String[] keys = expose.value();
-                for (int k = 0; k < keys.length; k++) {
-                    params.put(
-                        keys[k], k == 0 ? param : param.clone()
-                    );
-                }
-            }
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    protected void onHandle() {
-        Constructor<?>[] a =
-            klass.getDeclaredConstructors();
-        Constructor<?> b = a[0];
-        for (int i = 1; i < a.length; i++) {
-            if (b.getParameterCount() <
-                a[i].getParameterCount()) {
-                b = a[i];
-            }
-        }
-
-        b.setAccessible(true);
-        builder = (Constructor<E>) b;
-        if (b.getParameterCount() != 0) {
-            register(b, supplier);
-        }
-    }
-
-    @Override
-    protected void onFields() {
         boolean direct = (flags & Embed.DIRECT) != 0;
-        for (Field field : klass.getDeclaredFields()) {
+        for (Field field : fields) {
             Expose expose = field
                 .getAnnotation(
                     Expose.class
                 );
-            if (expose == null) continue;
+            if (expose == null) {
+                continue;
+            }
 
-            Field1<E> field1 =
+            Field1<T> field1 =
                 new Field1<>(
                     field, expose, supplier
                 );
@@ -198,18 +135,23 @@ public class ReflectSpare<E> extends AspectSpare<E> {
         }
     }
 
+    /**
+     * @param methods the specified {@link Method} collection
+     */
     @Override
-    protected void onMethods() {
+    protected void onMethods(
+        @NotNull Method[] methods
+    ) {
         boolean sealed = (flags & Embed.SEALED) != 0;
         boolean direct = (flags & Embed.DIRECT) != 0;
 
-        for (Method method : klass.getDeclaredMethods()) {
+        for (Method method : methods) {
             int count = method.getParameterCount();
             if (count > 1) {
                 continue;
             }
 
-            Method1<E> method1;
+            Method1<T> method1;
             Expose expose = method
                 .getAnnotation(
                     Expose.class
@@ -221,8 +163,12 @@ public class ReflectSpare<E> extends AspectSpare<E> {
                     continue;
                 }
 
+                // its modifier
+                int mod = method.getModifiers();
+
                 // check its modifier
-                if ((method.getModifiers() & Modifier.PUBLIC) == 0) {
+                if ((mod & Modifier.PUBLIC) == 0 ||
+                    (mod & Modifier.STATIC) != 0) {
                     continue;
                 }
             } else {
@@ -338,6 +284,79 @@ public class ReflectSpare<E> extends AspectSpare<E> {
     }
 
     /**
+     * @param constructors the specified {@link Constructor} collection
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    protected void onConstructors(
+        @NotNull Constructor<?>[] constructors
+    ) {
+        Constructor<?> c = constructors[0];
+        for (int i = 1; i < constructors.length; i++) {
+            if (c.getParameterCount() <
+                constructors[i].getParameterCount()) {
+                c = constructors[i];
+            }
+        }
+
+        c.setAccessible(true);
+        builder = (Constructor<T>) c;
+        if (c.getParameterCount() != 0) {
+            register(c, supplier);
+        }
+    }
+
+    private void register(
+        @NotNull Constructor<?> b,
+        @NotNull Supplier supplier
+    ) {
+        Parameter[] ps = null;
+        params = new KatMap<>();
+
+        Class<?>[] cs = b.getParameterTypes();
+        Type[] ts = b.getGenericParameterTypes();
+        Annotation[][] as = b.getParameterAnnotations();
+
+        for (int i = 0; i < cs.length; i++) {
+            Format format = null;
+            Expose expose = null;
+            for (Annotation a : as[i]) {
+                Class<?> at = a.annotationType();
+                if (at == Expose.class) {
+                    expose = (Expose) a;
+                } else if (at == Format.class) {
+                    format = (Format) a;
+                }
+            }
+
+            Coder<?> c = Reflex.lookup(
+                cs[i], expose, format, supplier
+            );
+
+            Param1 param =
+                new Param1(
+                    i, c, ts[i], cs[i]
+                );
+
+            if (expose == null) {
+                if (ps == null) {
+                    ps = b.getParameters();
+                }
+                params.put(
+                    ps[i].getName(), param
+                );
+            } else {
+                String[] keys = expose.value();
+                for (int k = 0; k < keys.length; k++) {
+                    params.put(
+                        keys[k], k == 0 ? param : param.clone()
+                    );
+                }
+            }
+        }
+    }
+
+    /**
      * @author kraity
      * @since 0.0.2
      */
@@ -366,7 +385,7 @@ public class ReflectSpare<E> extends AspectSpare<E> {
             Supplier supplier
         ) {
             super(expose == null
-                ? 0 : expose.index()
+                ? -1 : expose.index()
             );
             this.field = field;
             field.setAccessible(true);
@@ -484,7 +503,7 @@ public class ReflectSpare<E> extends AspectSpare<E> {
             Supplier supplier
         ) {
             super(expose == null
-                ? 0 : expose.index()
+                ? -1 : expose.index()
             );
             switch (method.getParameterCount()) {
                 case 0: {
