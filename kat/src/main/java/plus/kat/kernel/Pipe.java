@@ -28,7 +28,7 @@ public interface Pipe {
     /**
      * @throws IOCrash If an I/O error occurs
      */
-    boolean create(
+    boolean attach(
         @NotNull Space space,
         @NotNull Alias alias
     ) throws IOCrash;
@@ -45,5 +45,5 @@ public interface Pipe {
     /**
      * @throws IOCrash If an I/O error occurs
      */
-    boolean bundle() throws IOCrash;
+    boolean detach() throws IOCrash;
 }

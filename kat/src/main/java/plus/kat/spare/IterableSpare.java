@@ -186,7 +186,7 @@ public class IterableSpare implements Spare<Iterable> {
         }
 
         @Override
-        public void create(
+        public void onCreate(
             @NotNull Alias alias
         ) throws Crash, IOCrash {
             // array
@@ -236,7 +236,7 @@ public class IterableSpare implements Spare<Iterable> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public void accept(
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -261,14 +261,19 @@ public class IterableSpare implements Spare<Iterable> {
             }
         }
 
-        @Nullable
         @Override
-        public Iterable bundle() {
-            return entity;
+        @SuppressWarnings("unchecked")
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            entity.add(
+                child.getResult()
+            );
         }
 
         @Override
-        public Builder<?> observe(
+        public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -286,18 +291,14 @@ public class IterableSpare implements Spare<Iterable> {
             return spare.getBuilder(param);
         }
 
+        @Nullable
         @Override
-        @SuppressWarnings("unchecked")
-        public void dispose(
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            entity.add(
-                child.bundle()
-            );
+        public Iterable getResult() {
+            return entity;
         }
 
         @Override
-        public void close() {
+        public void onDestroy() {
             raw = null;
             v = null;
             actual = null;

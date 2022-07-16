@@ -572,7 +572,7 @@ public class Event<T> implements Flag {
      * @since 0.0.2
      */
     @Nullable
-    public Object getBundle(
+    public Object getResult(
         @NotNull Space space,
         @NotNull Alias alias,
         @NotNull Value value

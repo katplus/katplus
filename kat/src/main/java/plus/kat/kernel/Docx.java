@@ -94,7 +94,7 @@ public class Docx implements Solver {
                             if (d != GT) {
                                 continue;
                             }
-                            p.bundle();
+                            p.detach();
                             v.clean();
                             continue Boot;
                         }
@@ -125,7 +125,7 @@ public class Docx implements Solver {
                 }
                 default: {
                     if (a.isNotEmpty()) {
-                        if (p.create($M, a)) {
+                        if (p.attach($M, a)) {
                             a.clean();
                         } else {
                             a.clean();
@@ -157,7 +157,7 @@ public class Docx implements Solver {
                             continue;
                         }
 
-                        if (p.create($M, a)) {
+                        if (p.attach($M, a)) {
                             a.clean();
                             collate(
                                 a, v, p, r
@@ -198,7 +198,7 @@ public class Docx implements Solver {
             if (b == SLASH) {
                 b = r.next();
                 if (b == GT) {
-                    p.bundle();
+                    p.detach();
                     break;
                 }
                 throw new UnexpectedCrash(

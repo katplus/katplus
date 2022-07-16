@@ -163,7 +163,7 @@ public class SetSpare implements Spare<Set> {
         }
 
         @Override
-        public void create(
+        public void onCreate(
             @NotNull Alias alias
         ) throws Crash, IOCrash {
             Type raw = type;
@@ -215,7 +215,7 @@ public class SetSpare implements Spare<Set> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public void accept(
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -240,14 +240,19 @@ public class SetSpare implements Spare<Set> {
             }
         }
 
-        @Nullable
         @Override
-        public Set bundle() {
-            return entity;
+        @SuppressWarnings("unchecked")
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            entity.add(
+                child.getResult()
+            );
         }
 
         @Override
-        public Builder<?> observe(
+        public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -265,18 +270,14 @@ public class SetSpare implements Spare<Set> {
             return spare.getBuilder(param);
         }
 
+        @Nullable
         @Override
-        @SuppressWarnings("unchecked")
-        public void dispose(
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            entity.add(
-                child.bundle()
-            );
+        public Set getResult() {
+            return entity;
         }
 
         @Override
-        public void close() {
+        public void onDestroy() {
             type = null;
             v = null;
             param = null;

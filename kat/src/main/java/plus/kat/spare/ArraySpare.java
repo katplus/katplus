@@ -147,7 +147,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void create(
+        public void onCreate(
             @NotNull Alias alias
         ) throws Crash, IOCrash {
             v = supplier.lookup(klass);
@@ -165,7 +165,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void accept(
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -180,34 +180,20 @@ public class ArraySpare implements Spare<Object> {
             );
         }
 
-        @Nullable
         @Override
-        public Object bundle() {
-            if (length == size) {
-                return list;
-            }
-
-            Object ary = Array.newInstance(klass, size);
-            //noinspection SuspiciousSystemArraycopy
-            System.arraycopy(
-                list, 0, ary, 0, size
-            );
-            return ary;
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            // NOOP
         }
 
         @Override
-        public Builder<?> observe(
+        public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
             return null;
-        }
-
-        @Override
-        public void dispose(
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            // NOOP
         }
 
         /**
@@ -237,8 +223,23 @@ public class ArraySpare implements Spare<Object> {
             list = make;
         }
 
+        @Nullable
         @Override
-        public void close() {
+        public Object getResult() {
+            if (length == size) {
+                return list;
+            }
+
+            Object ary = Array.newInstance(klass, size);
+            //noinspection SuspiciousSystemArraycopy
+            System.arraycopy(
+                list, 0, ary, 0, size
+            );
+            return ary;
+        }
+
+        @Override
+        public void onDestroy() {
             list = null;
             v = null;
             klass = null;
@@ -258,7 +259,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void create(
+        public void onCreate(
             @NotNull Alias alias
         ) throws Crash, IOCrash {
             if (type instanceof Class) {
@@ -300,7 +301,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void accept(
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -331,7 +332,20 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public Builder<?> observe(
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) {
+            if (length == size) {
+                enlarge();
+            }
+            Array.set(
+                list, size++, child.getResult()
+            );
+        }
+
+        @Override
+        public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -351,20 +365,8 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void dispose(
-            @NotNull Builder<?> child
-        ) {
-            if (length == size) {
-                enlarge();
-            }
-            Array.set(
-                list, size++, child.bundle()
-            );
-        }
-
-        @Override
-        public void close() {
-            super.close();
+        public void onDestroy() {
+            super.onDestroy();
             type = null;
         }
     }
@@ -382,7 +384,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void create(
+        public void onCreate(
             @NotNull Alias alias
         ) throws Crash, IOCrash {
             size = 0;
@@ -390,7 +392,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void accept(
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -411,12 +413,15 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public Object[] bundle() {
-            return list;
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) {
+            list[size - 1] = child.getResult();
         }
 
         @Override
-        public Builder<?> observe(
+        public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -435,13 +440,6 @@ public class ArraySpare implements Spare<Object> {
             }
 
             return spare.getBuilder(type);
-        }
-
-        @Override
-        public void dispose(
-            @NotNull Builder<?> child
-        ) {
-            list[size - 1] = child.bundle();
         }
 
         /**
@@ -467,7 +465,12 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public void close() {
+        public Object[] getResult() {
+            return list;
+        }
+
+        @Override
+        public void onDestroy() {
             list = null;
             types = null;
         }

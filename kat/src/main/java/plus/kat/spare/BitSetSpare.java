@@ -121,14 +121,14 @@ public class BitSetSpare implements Spare<BitSet> {
         protected BitSet entity;
 
         @Override
-        public void create(
+        public void onCreate(
             @NotNull Alias alias
         ) {
             entity = new BitSet();
         }
 
         @Override
-        public void accept(
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -139,14 +139,16 @@ public class BitSetSpare implements Spare<BitSet> {
             }
         }
 
-        @Nullable
         @Override
-        public BitSet bundle() {
-            return entity;
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            // NOOP
         }
 
         @Override
-        public Builder<?> observe(
+        public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOCrash {
@@ -155,15 +157,14 @@ public class BitSetSpare implements Spare<BitSet> {
             );
         }
 
+        @Nullable
         @Override
-        public void dispose(
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            // NOOP
+        public BitSet getResult() {
+            return entity;
         }
 
         @Override
-        public void close() {
+        public void onDestroy() {
             entity = null;
         }
     }

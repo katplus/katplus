@@ -136,7 +136,7 @@ public class MapSpare implements Spare<Map> {
         }
 
         @Override
-        public void create(
+        public void onCreate(
             @NotNull Alias alias
         ) throws Crash, IOCrash {
             Type raw = type;
@@ -221,7 +221,7 @@ public class MapSpare implements Spare<Map> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public void accept(
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -259,14 +259,29 @@ public class MapSpare implements Spare<Map> {
             }
         }
 
-        @Nullable
         @Override
-        public Map bundle() {
-            return entity;
+        @SuppressWarnings("unchecked")
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            if (k == null) {
+                entity.put(
+                    alias.toString(),
+                    child.getResult()
+                );
+            } else {
+                entity.put(
+                    k.read(
+                        flag, alias
+                    ),
+                    child.getResult()
+                );
+            }
         }
 
         @Override
-        public Builder<?> observe(
+        public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -284,30 +299,14 @@ public class MapSpare implements Spare<Map> {
             return spare.getBuilder(param);
         }
 
+        @Nullable
         @Override
-        @SuppressWarnings("unchecked")
-        public void dispose(
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            Alias alias =
-                child.alias();
-            if (k == null) {
-                entity.put(
-                    alias.toString(),
-                    child.bundle()
-                );
-            } else {
-                entity.put(
-                    k.read(
-                        flag, alias
-                    ),
-                    child.bundle()
-                );
-            }
+        public Map getResult() {
+            return entity;
         }
 
         @Override
-        public void close() {
+        public void onDestroy() {
             type = null;
             k = null;
             v = null;

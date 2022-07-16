@@ -80,7 +80,7 @@ public interface Sketch<K> extends Spare<K> {
         }
 
         @Override
-        public void create(
+        public void onCreate(
             @NotNull Alias alias
         ) throws Crash, IOCrash {
             // get an instance
@@ -94,8 +94,16 @@ public interface Sketch<K> extends Spare<K> {
             }
         }
 
+        public void onAccept(
+            @Nullable Object value
+        ) throws IOCrash {
+            setter.onAccept(
+                entity, value
+            );
+        }
+
         @Override
-        public void accept(
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -112,7 +120,7 @@ public interface Sketch<K> extends Spare<K> {
             Coder<?> coder = setter.getCoder();
 
             if (coder != null) {
-                dispose(
+                onAccept(
                     coder.read(
                         flag, value
                     )
@@ -129,7 +137,7 @@ public interface Sketch<K> extends Spare<K> {
                 spare = supplier.lookup(space);
 
                 if (spare != null) {
-                    dispose(
+                    onAccept(
                         spare.read(
                             flag, value
                         )
@@ -141,7 +149,7 @@ public interface Sketch<K> extends Spare<K> {
 
                 // skip if null
                 if (spare != null) {
-                    dispose(
+                    onAccept(
                         spare.read(
                             flag, value
                         )
@@ -155,7 +163,7 @@ public interface Sketch<K> extends Spare<K> {
                 // skip if null
                 if (spare != null &&
                     spare.accept(klass)) {
-                    dispose(
+                    onAccept(
                         spare.read(
                             flag, value
                         )
@@ -164,14 +172,18 @@ public interface Sketch<K> extends Spare<K> {
             }
         }
 
-        @Nullable
         @Override
-        public K bundle() {
-            return entity;
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            setter.onAccept(
+                entity, child.getResult()
+            );
         }
 
         @Nullable
-        public Builder<?> observe(
+        public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOCrash {
@@ -232,25 +244,14 @@ public interface Sketch<K> extends Spare<K> {
             return null;
         }
 
-        public void dispose(
-            @Nullable Object value
-        ) throws IOCrash {
-            setter.onAccept(
-                entity, value
-            );
+        @Nullable
+        @Override
+        public K getResult() {
+            return entity;
         }
 
         @Override
-        public void dispose(
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            setter.onAccept(
-                entity, child.bundle()
-            );
-        }
-
-        @Override
-        public void close() {
+        public void onDestroy() {
             entity = null;
             index = -1;
             setter = null;

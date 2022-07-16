@@ -40,32 +40,49 @@ public abstract class Builder<K> {
     /**
      * @throws IOCrash If an I/O error occurs
      */
-    final void create(
-        @NotNull Alias alias,
-        @NotNull Event<?> event,
-        @NotNull Builder<?> parent
+    final void onAttach(
+        @NotNull Alias a,
+        @NotNull Event<?> e,
+        @NotNull Builder<?> b
     ) throws Crash, IOCrash {
-        this.alias = alias;
-        this.parent = parent;
-        this.flag = event.getFlag();
-        this.supplier = event.getSupplier();
-        this.create(alias);
+        alias = a;
+        parent = b;
+        flag = e.getFlag();
+        supplier = e.getSupplier();
+        onCreate(a);
     }
 
     /**
      * @throws IOCrash If an I/O error occurs
      */
-    public abstract void create(
+    public abstract void onCreate(
         @NotNull Alias alias
     ) throws Crash, IOCrash;
 
     /**
      * @throws IOCrash If an I/O error occurs
      */
-    public abstract void accept(
+    public abstract void onAccept(
         @NotNull Space space,
         @NotNull Alias alias,
         @NotNull Value value
+    ) throws IOCrash;
+
+    /**
+     * @throws IOCrash If an I/O error occurs
+     */
+    public abstract void onAccept(
+        @NotNull Alias alias,
+        @NotNull Builder<?> child
+    ) throws IOCrash;
+
+    /**
+     * Create a branch of this {@link Builder}
+     */
+    @Nullable
+    public abstract Builder<?> getBuilder(
+        @NotNull Space space,
+        @NotNull Alias alias
     ) throws IOCrash;
 
     /**
@@ -75,29 +92,18 @@ public abstract class Builder<K> {
      * when implementing this method, make sure that the {@link K} returned each time is the same
      */
     @Nullable
-    public abstract K bundle();
+    public abstract K getResult();
 
     /**
-     * Create a branch of this {@link Builder}
+     * Close the resources of this {@link Builder}
      */
-    @Nullable
-    public abstract Builder<?> observe(
-        @NotNull Space space,
-        @NotNull Alias alias
-    ) throws IOCrash;
-
-    /**
-     * @throws IOCrash If an I/O error occurs
-     */
-    public abstract void dispose(
-        @NotNull Builder<?> child
-    ) throws IOCrash;
+    public abstract void onDestroy();
 
     /**
      * Returns the alias of this {@link Builder}
      */
     @Nullable
-    public final Alias alias() {
+    public final Alias getAlias() {
         return alias;
     }
 
@@ -110,15 +116,10 @@ public abstract class Builder<K> {
     }
 
     /**
-     * Close the resources of this {@link Builder}
-     */
-    public abstract void close();
-
-    /**
      * Destroy the resources of this {@link Builder}
      */
-    final void destroy() {
-        this.close();
+    final void onDetach() {
+        onDestroy();
         alias = null;
         flag = null;
         parent = null;

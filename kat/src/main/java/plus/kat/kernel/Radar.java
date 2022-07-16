@@ -106,7 +106,7 @@ public class Radar implements Solver {
                     }
                     switch (b) {
                         case '{': {
-                            if (p.create(s, a)) {
+                            if (p.attach(s, a)) {
                                 s.clean();
                             } else {
                                 s.clean();
@@ -133,7 +133,7 @@ public class Radar implements Solver {
                         }
                         case '}': {
                             if (s.isEmpty()) {
-                                if (p.bundle()) {
+                                if (p.detach()) {
                                     continue;
                                 } else {
                                     break Radar;
@@ -169,7 +169,7 @@ public class Radar implements Solver {
                     switch (b) {
                         case '{': {
                             event = SPACE;
-                            if (p.create(s, a)) {
+                            if (p.attach(s, a)) {
                                 s.clean();
                                 a.clean();
                             } else {

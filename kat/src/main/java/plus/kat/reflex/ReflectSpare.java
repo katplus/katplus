@@ -659,7 +659,7 @@ public class ReflectSpare<T> extends AspectSpare<T> {
         }
 
         @Override
-        public void create(
+        public void onCreate(
             @NotNull Alias alias
         ) {
             a = reflex.params;
@@ -668,7 +668,28 @@ public class ReflectSpare<T> extends AspectSpare<T> {
         }
 
         @Override
-        public void accept(
+        public void onAccept(
+            @Nullable Object value
+        ) throws IOCrash {
+            if (entity != null) {
+                setter.onAccept(
+                    entity, value
+                );
+            } else {
+                Cache<K> c = new Cache<>();
+                c.value = value;
+                c.setter = setter;
+
+                if (cache == null) {
+                    cache = c;
+                } else {
+                    cache.next = c;
+                }
+            }
+        }
+
+        @Override
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -706,13 +727,33 @@ public class ReflectSpare<T> extends AspectSpare<T> {
                 }
             }
 
-            super.accept(
+            super.onAccept(
                 space, alias, value
             );
         }
 
         @Override
-        public Builder<?> observe(
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            if (entity != null) {
+                setter.onAccept(
+                    entity, child.getResult()
+                );
+            } else if (param == null) {
+                onAccept(
+                    child.getResult()
+                );
+            } else {
+                params[param.index] = child.getResult();
+                param = null;
+                embark();
+            }
+        }
+
+        @Override
+        public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOCrash {
@@ -739,49 +780,9 @@ public class ReflectSpare<T> extends AspectSpare<T> {
                 }
             }
 
-            return super.observe(
+            return super.getBuilder(
                 space, alias
             );
-        }
-
-        @Override
-        public void dispose(
-            @Nullable Object value
-        ) throws IOCrash {
-            if (entity != null) {
-                setter.onAccept(
-                    entity, value
-                );
-            } else {
-                Cache<K> c = new Cache<>();
-                c.value = value;
-                c.setter = setter;
-
-                if (cache == null) {
-                    cache = c;
-                } else {
-                    cache.next = c;
-                }
-            }
-        }
-
-        @Override
-        public void dispose(
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            if (entity != null) {
-                setter.onAccept(
-                    entity, child.bundle()
-                );
-            } else if (param == null) {
-                dispose(
-                    child.bundle()
-                );
-            } else {
-                params[param.index] = child.bundle();
-                param = null;
-                embark();
-            }
         }
 
         static class Cache<K> {
@@ -808,8 +809,8 @@ public class ReflectSpare<T> extends AspectSpare<T> {
         }
 
         @Override
-        public void close() {
-            super.close();
+        public void onDestroy() {
+            super.onDestroy();
             a = null;
             c = null;
             param = null;

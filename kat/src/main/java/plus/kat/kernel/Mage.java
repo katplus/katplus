@@ -252,9 +252,7 @@ public class Mage implements Solver {
         }
 
         if (mark) {
-            if (p.create(
-                $M, alias
-            )) {
+            if (p.attach($M, alias)) {
                 mask <<= 1;
                 data |= mask;
                 mutable = true;
@@ -264,9 +262,7 @@ public class Mage implements Solver {
                 );
             }
         } else {
-            if (p.create(
-                $L, alias
-            )) {
+            if (p.attach($L, alias)) {
                 mask <<= 1;
                 mutable = false;
             } else {
@@ -294,7 +290,7 @@ public class Mage implements Solver {
         boolean m
     ) throws IOCrash {
         if (mutable == m) {
-            p.bundle();
+            p.detach();
             mask >>>= 1;
             mutable = (data & mask) != 0L;
         } else {

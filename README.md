@@ -519,14 +519,14 @@ class AuthorBuilder extends Builder<User> {
     private User user;
 
     @Override
-    public void create(
+    public void onCreate(
         Alias alias
     ) throws Crash, IOCrash {
         user = new User();
     }
 
     @Override
-    public void accept(
+    public void onAccept(
         Space space,
         Alias alias,
         Value value
@@ -551,12 +551,20 @@ class AuthorBuilder extends Builder<User> {
     }
 
     @Override
-    public User bundle() {
-        return user;
+    public void onAccept(
+        Alias alias,
+        Builder<?> child
+    ) throws IOCrash {
+        // check key
+        if (alias.is("collaborator")) {
+            user.setCollaborator(
+                (User) child.getResult()
+            );
+        }
     }
 
     @Override
-    public Builder<?> observe(
+    public Builder<?> getBuilder(
         Space space,
         Alias alias
     ) throws IOCrash {
@@ -577,21 +585,12 @@ class AuthorBuilder extends Builder<User> {
     }
 
     @Override
-    public void dispose(
-        Builder<?> child
-    ) throws IOCrash {
-        Alias alias = child.alias();
-
-        // check key
-        if (alias.is("collaborator")) {
-            user.setCollaborator(
-                (User) child.bundle()
-            );
-        }
+    public User getResult() {
+        return user;
     }
 
     @Override
-    public void close() {
+    public void onDestroy() {
         user = null;
     }
 }

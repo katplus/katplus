@@ -95,14 +95,14 @@ public class CrashSpare implements Spare<Crash> {
         private String message;
 
         @Override
-        public void create(
+        public void onCreate(
             @NotNull Alias alias
         ) {
             // NOOP
         }
 
         @Override
-        public void accept(
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -118,9 +118,25 @@ public class CrashSpare implements Spare<Crash> {
             }
         }
 
+        @Override
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            // NOOP
+        }
+
+        @Override
+        public Builder<?> getBuilder(
+            @NotNull Space space,
+            @NotNull Alias alias
+        ) {
+            return null;
+        }
+
         @Nullable
         @Override
-        public Crash bundle() {
+        public Crash getResult() {
             if (entity != null) {
                 return entity;
             }
@@ -128,22 +144,7 @@ public class CrashSpare implements Spare<Crash> {
         }
 
         @Override
-        public Builder<?> observe(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) {
-            return null;
-        }
-
-        @Override
-        public void dispose(
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            // NOOP
-        }
-
-        @Override
-        public void close() {
+        public void onDestroy() {
             entity = null;
             code = 0;
             message = null;

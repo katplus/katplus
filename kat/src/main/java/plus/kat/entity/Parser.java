@@ -41,7 +41,7 @@ public class Parser implements Pipe {
     protected Object bundle;
     protected int depth, range;
 
-    protected Event<?> event;
+    protected Event<?> target;
     protected Builder<?> active;
 
     /**
@@ -106,7 +106,7 @@ public class Parser implements Pipe {
             return null;
         }
 
-        this.event = event;
+        this.target = event;
         this.range = event.getRange();
 
         try {
@@ -123,7 +123,7 @@ public class Parser implements Pipe {
             active = null;
             for (; t != null; t = k) {
                 k = t.getParent();
-                t.destroy();
+                t.onDetach();
             }
         }
 
@@ -199,7 +199,7 @@ public class Parser implements Pipe {
      * @throws IOCrash If an I/O error occurs
      */
     @Override
-    public boolean create(
+    public boolean attach(
         @NotNull Space space,
         @NotNull Alias alias
     ) throws IOCrash {
@@ -213,11 +213,11 @@ public class Parser implements Pipe {
         Builder<?> child, parent = active;
 
         if (depth != 0) {
-            child = active.observe(
+            child = active.getBuilder(
                 space, name
             );
         } else {
-            child = event.getBuilder(
+            child = target.getBuilder(
                 space, name
             );
         }
@@ -227,11 +227,11 @@ public class Parser implements Pipe {
         }
 
         try {
-            child.create(
-                name, event, parent
+            child.onAttach(
+                name, target, parent
             );
-            active = child;
             ++depth;
+            active = child;
             return true;
         } catch (Crash e) {
             return false;
@@ -248,11 +248,11 @@ public class Parser implements Pipe {
         @NotNull Value value
     ) throws IOCrash {
         if (depth != 0) {
-            active.accept(
+            active.onAccept(
                 space, alias, value
             );
         } else {
-            bundle = event.getBundle(
+            bundle = target.getResult(
                 space, alias.copy(), value
             );
         }
@@ -262,7 +262,7 @@ public class Parser implements Pipe {
      * @throws IOCrash If an I/O error occurs
      */
     @Override
-    public boolean bundle()
+    public boolean detach()
         throws IOCrash {
         if (--depth < 0) {
             throw new OutOfRangeCrash(
@@ -275,14 +275,16 @@ public class Parser implements Pipe {
 
         try {
             if (depth != 0) {
-                active.dispose(child);
+                active.onAccept(
+                    child.getAlias(), child
+                );
                 return true;
             } else {
-                bundle = child.bundle();
+                bundle = child.getResult();
                 return false;
             }
         } finally {
-            child.destroy();
+            child.onDetach();
         }
     }
 
