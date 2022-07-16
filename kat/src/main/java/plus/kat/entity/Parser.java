@@ -114,7 +114,7 @@ public class Parser implements Pipe {
                 this, reader
             );
         } catch (Exception e) {
-            event.onCrash(e);
+            event.onError(e);
         } finally {
             coder.clear();
             reader.close();

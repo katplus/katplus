@@ -432,8 +432,9 @@ public class Event<T> implements Flag {
      * If this {@link Event} does not have {@code type}
      *
      * @param type the specified type may be used
+     * @since 0.0.2
      */
-    public void expect(
+    public void prepare(
         @Nullable Type type
     ) {
         if (this.type == null) {
@@ -442,11 +443,26 @@ public class Event<T> implements Flag {
     }
 
     /**
+     * Use the specified {@link Supplier}
+     * If this {@link Event} does not have {@code supplier}
+     *
+     * @param supplier the specified supplier
+     * @since 0.0.2
+     */
+    public void prepare(
+        @Nullable Supplier supplier
+    ) {
+        if (this.supplier == null) {
+            this.supplier = supplier;
+        }
+    }
+
+    /**
      * Captures exception
      *
      * @param e the crash
      */
-    public void onCrash(
+    public void onError(
         @NotNull Exception e
     ) {
         // Nothing

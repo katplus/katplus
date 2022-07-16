@@ -472,7 +472,7 @@ public interface Supplier {
         }
 
         event.with(this);
-        event.expect(type);
+        event.prepare(type);
 
         return spare.solve(job, event);
     }
@@ -498,7 +498,7 @@ public interface Supplier {
         }
 
         event.with(this);
-        event.expect(klass);
+        event.prepare(klass);
 
         return spare.solve(job, event);
     }
