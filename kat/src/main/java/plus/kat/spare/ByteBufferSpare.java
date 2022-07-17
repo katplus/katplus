@@ -24,20 +24,28 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 
 import java.lang.reflect.Type;
+import java.nio.ByteBuffer;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.2
  */
-public class ByteArrayCoder implements Coder<byte[]> {
+public class ByteBufferSpare implements Spare<ByteBuffer> {
 
-    public static final ByteArrayCoder
-        INSTANCE = new ByteArrayCoder();
+    public static final ByteBufferSpare
+        INSTANCE = new ByteBufferSpare();
 
     @NotNull
     @Override
     public Space getSpace() {
         return Space.$s;
+    }
+
+    @Override
+    public boolean accept(
+        @NotNull Class<?> klass
+    ) {
+        return klass.isAssignableFrom(ByteBuffer.class);
     }
 
     @Nullable
@@ -46,9 +54,15 @@ public class ByteArrayCoder implements Coder<byte[]> {
         return null;
     }
 
+    @NotNull
+    @Override
+    public Class<ByteBuffer> getType() {
+        return ByteBuffer.class;
+    }
+
     @Nullable
     @Override
-    public Builder<byte[]> getBuilder(
+    public Builder<ByteBuffer> getBuilder(
         @Nullable Type type
     ) {
         return null;
@@ -56,11 +70,26 @@ public class ByteArrayCoder implements Coder<byte[]> {
 
     @Nullable
     @Override
-    public byte[] read(
+    public ByteBuffer cast(
+        @NotNull Supplier supplier,
+        @Nullable Object data
+    ) {
+        if (data instanceof ByteBuffer) {
+            return (ByteBuffer) data;
+        }
+
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public ByteBuffer read(
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.copyBytes();
+        return ByteBuffer.wrap(
+            value.copyBytes()
+        );
     }
 
     @Override
@@ -68,8 +97,19 @@ public class ByteArrayCoder implements Coder<byte[]> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        flow.addData(
-            (byte[]) value
-        );
+        ByteBuffer buf = (ByteBuffer) value;
+        if (buf.hasArray()) {
+            flow.addData(
+                buf.array()
+            );
+        } else {
+            int i = buf.position();
+            int o = i + buf.limit();
+            while (i < o) {
+                flow.addData(
+                    buf.get(i++)
+                );
+            }
+        }
     }
 }

@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
@@ -447,6 +448,12 @@ public interface Spare<K> extends Coder<K> {
                 return (Spare<T>) spare;
             }
 
+            if (klass.isArray()) {
+                return (Spare<T>) get(
+                    Object[].class
+                );
+            }
+
             return this.invoke(
                 klass, supplier
             );
@@ -463,34 +470,6 @@ public interface Spare<K> extends Coder<K> {
             @NotNull Class<T> klass,
             @NotNull Supplier supplier
         ) {
-            if (klass.isArray()) {
-                return (Spare<T>) get(
-                    Object[].class
-                );
-            }
-
-            Embed embed = klass
-                .getAnnotation(Embed.class);
-
-            if (embed != null) {
-                Class<? extends Spare>
-                    with = embed.with();
-
-                if (with != Spare.class) {
-                    // static inject
-                    // and double-checking
-                    Spare<?> spare = get(klass);
-
-                    if (spare != null) {
-                        return (Spare<T>) spare;
-                    }
-
-                    if (!with.isInterface()) {
-                        return Reflex.apply(with);
-                    }
-                }
-            }
-
             // filter platform type
             String name = klass.getName();
             switch (name.charAt(0)) {
@@ -524,6 +503,28 @@ public interface Spare<K> extends Coder<K> {
                         return null;
                     }
                     break;
+                }
+            }
+
+            Embed embed = klass
+                .getAnnotation(Embed.class);
+
+            if (embed != null) {
+                Class<? extends Spare>
+                    with = embed.with();
+
+                if (with != Spare.class) {
+                    // static inject
+                    // and double-checking
+                    Spare<?> spare = get(klass);
+
+                    if (spare != null) {
+                        return (Spare<T>) spare;
+                    }
+
+                    if (!with.isInterface()) {
+                        return Reflex.apply(with);
+                    }
                 }
             }
 
@@ -572,12 +573,15 @@ public interface Spare<K> extends Coder<K> {
             // lookup the appropriate spare
             Spare<?> spare;
             switch (name.charAt(5)) {
+                // java.nio
                 // java.net
                 case 'n': {
                     if (klass == URI.class) {
                         spare = URISpare.INSTANCE;
                     } else if (klass == URL.class) {
                         spare = URLSpare.INSTANCE;
+                    } else if (ByteBuffer.class.isAssignableFrom(klass)) {
+                        spare = ByteBufferSpare.INSTANCE;
                     } else {
                         return null;
                     }

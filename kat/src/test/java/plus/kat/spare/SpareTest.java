@@ -14,6 +14,7 @@ import plus.kat.reflex.ArrayType;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
@@ -286,6 +287,15 @@ public class SpareTest {
 
         Instant i1 = spare.read("$(1645540424000)");
         assertEquals("Instant(1645540424000)", Kat.encode(i1));
+    }
+
+    @Test
+    public void test_ByteBuffer_read() {
+        ByteBufferSpare spare = ByteBufferSpare.INSTANCE;
+
+        ByteBuffer buf = spare.read("$(0123456789)");
+        assertEquals("0123456789", new String(buf.array()));
+        assertEquals("s(0123456789)", Kat.encode(buf));
     }
 
     static class Hook {
