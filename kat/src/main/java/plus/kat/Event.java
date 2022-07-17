@@ -469,6 +469,42 @@ public class Event<T> implements Flag {
     }
 
     /**
+     * Returns the specified {@link Coder} being used
+     *
+     * @throws IOCrash If the specified coder was not found
+     * @since 0.0.2
+     */
+    @NotNull
+    public Coder<?> getCoder(
+        @NotNull Space space,
+        @NotNull Alias alias
+    ) throws IOCrash {
+        this.alias = alias;
+        if (spare != null) {
+            return spare;
+        }
+
+        Coder<?> coder;
+        Supplier supplier = getSupplier();
+
+        if (type == null) {
+            coder = supplier.lookup(space);
+        } else {
+            return Reflex.lookup(
+                type, supplier
+            );
+        }
+
+        if (coder != null) {
+            return coder;
+        }
+
+        throw new UnexpectedCrash(
+            "Unexpectedly, the specified coder was not found"
+        );
+    }
+
+    /**
      * Sets the alias of this {@link Event}
      *
      * @param alias the specified alias
@@ -564,77 +600,6 @@ public class Event<T> implements Flag {
     public Supplier getSupplier() {
         Supplier s = supplier;
         return s != null ? s : INS;
-    }
-
-    /**
-     * Returns the result of the {@link Value}
-     *
-     * @since 0.0.2
-     */
-    @Nullable
-    public Object getResult(
-        @NotNull Space space,
-        @NotNull Alias alias,
-        @NotNull Value value
-    ) throws IOCrash {
-        this.alias = alias;
-        if (spare != null) {
-            return spare.read(
-                getFlag(), value
-            );
-        }
-
-        Spare<?> spare;
-        Supplier supplier = getSupplier();
-
-        if (type == null) {
-            spare = supplier.lookup(space);
-        } else {
-            spare = Reflex.lookup(
-                type, supplier
-            );
-        }
-
-        if (spare == null) {
-            return null;
-        }
-
-        return spare.read(
-            getFlag(), value
-        );
-    }
-
-    /**
-     * Returns the specified {@link Builder} being used
-     *
-     * @since 0.0.2
-     */
-    @Nullable
-    public Builder<?> getBuilder(
-        @NotNull Space space,
-        @NotNull Alias alias
-    ) throws IOCrash {
-        this.alias = alias;
-        if (spare != null) {
-            return spare.getBuilder(type);
-        }
-
-        Spare<?> spare;
-        Supplier supplier = getSupplier();
-
-        if (type == null) {
-            spare = supplier.lookup(space);
-        } else {
-            spare = Reflex.lookup(
-                type, supplier
-            );
-        }
-
-        if (spare == null) {
-            return null;
-        }
-
-        return spare.getBuilder(type);
     }
 
     /**

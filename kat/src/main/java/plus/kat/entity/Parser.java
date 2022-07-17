@@ -217,8 +217,10 @@ public class Parser implements Pipe {
                 space, name
             );
         } else {
-            child = target.getBuilder(
+            child = target.getCoder(
                 space, name
+            ).getBuilder(
+                target.getType()
             );
         }
 
@@ -252,8 +254,10 @@ public class Parser implements Pipe {
                 space, alias, value
             );
         } else {
-            bundle = target.getResult(
-                space, alias.copy(), value
+            bundle = target.getCoder(
+                space, alias.copy()
+            ).read(
+                target.getFlag(), value
             );
         }
     }
