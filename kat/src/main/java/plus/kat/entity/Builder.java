@@ -45,11 +45,17 @@ public abstract class Builder<K> {
         @NotNull Event<?> e,
         @NotNull Builder<?> b
     ) throws Crash, IOCrash {
-        alias = a;
-        parent = b;
-        flag = e.getFlag();
-        supplier = e.getSupplier();
-        onCreate(a);
+        if (parent == null) {
+            alias = a;
+            parent = b;
+            flag = e.getFlag();
+            supplier = e.getSupplier();
+            onCreate(a);
+        } else {
+            throw new UnexpectedCrash(
+                "Unexpectedly, this Builder is already working"
+            );
+        }
     }
 
     /**
