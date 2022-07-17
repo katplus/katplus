@@ -104,6 +104,16 @@ public interface Sketch<K> extends Spare<K> {
 
         @Override
         public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            setter.onAccept(
+                entity, child.getResult()
+            );
+        }
+
+        @Override
+        public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -170,16 +180,6 @@ public interface Sketch<K> extends Spare<K> {
                     );
                 }
             }
-        }
-
-        @Override
-        public void onAccept(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            setter.onAccept(
-                entity, child.getResult()
-            );
         }
 
         @Nullable

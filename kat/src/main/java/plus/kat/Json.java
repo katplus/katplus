@@ -118,14 +118,14 @@ public class Json extends Chan {
     }
 
     /**
-     * @param entry the specified {@code entry}
+     * @param action the specified {@code action}
      */
     public Json(
-        @Nullable Entry entry
+        @Nullable Action action
     ) {
         this();
         try {
-            set(null, entry);
+            set(null, action);
         } catch (Exception e) {
             // Nothing
         }
@@ -198,7 +198,7 @@ public class Json extends Chan {
     }
 
     /**
-     * Serializes the specified {@code alias} and {@code entry} at the current hierarchy
+     * Serializes the specified {@code alias} and {@code action} at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
@@ -206,15 +206,15 @@ public class Json extends Chan {
     @Override
     public boolean set(
         @Nullable CharSequence alias,
-        @Nullable Entry entry
+        @Nullable Action action
     ) throws IOCrash {
-        if (entry != null) {
+        if (action != null) {
             flow.addComma();
             if (alias != null) {
                 flow.addAlias(alias);
             }
             flow.leftBrace();
-            entry.accept(this);
+            action.accept(this);
             flow.rightBrace();
             return true;
         }
@@ -222,7 +222,7 @@ public class Json extends Chan {
     }
 
     /**
-     * Serializes the specified {@code alias}, {@code space} and {@code entry} at the current hierarchy
+     * Serializes the specified {@code alias}, {@code space} and {@code action} at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
@@ -231,10 +231,10 @@ public class Json extends Chan {
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable CharSequence space,
-        @Nullable Entry entry
+        @Nullable Action action
     ) throws IOCrash {
         return set(
-            alias, entry
+            alias, action
         );
     }
 

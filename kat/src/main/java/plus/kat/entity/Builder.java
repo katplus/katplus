@@ -69,17 +69,17 @@ public abstract class Builder<K> {
      * @throws IOCrash If an I/O error occurs
      */
     public abstract void onAccept(
-        @NotNull Space space,
         @NotNull Alias alias,
-        @NotNull Value value
+        @NotNull Builder<?> child
     ) throws IOCrash;
 
     /**
      * @throws IOCrash If an I/O error occurs
      */
     public abstract void onAccept(
+        @NotNull Space space,
         @NotNull Alias alias,
-        @NotNull Builder<?> child
+        @NotNull Value value
     ) throws IOCrash;
 
     /**

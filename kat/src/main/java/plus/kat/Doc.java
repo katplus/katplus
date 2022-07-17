@@ -151,15 +151,15 @@ public class Doc extends Chan {
 
     /**
      * @param alias the alias
-     * @param entry the specified {@code entry}
+     * @param action the specified {@code action}
      */
     public Doc(
         @Nullable CharSequence alias,
-        @Nullable Entry entry
+        @Nullable Action action
     ) {
         this();
         try {
-            set(alias, entry);
+            set(alias, action);
         } catch (Exception e) {
             // Nothing
         }
@@ -168,15 +168,15 @@ public class Doc extends Chan {
     /**
      * @param flags the flags
      * @param alias the alias
-     * @param entry the specified {@code entry}
+     * @param action the specified {@code action}
      */
     public Doc(
         @Nullable CharSequence alias,
-        @Nullable Entry entry, long flags
+        @Nullable Action action, long flags
     ) {
         this(flags);
         try {
-            set(alias, entry);
+            set(alias, action);
         } catch (Exception e) {
             // Nothing
         }
@@ -249,7 +249,7 @@ public class Doc extends Chan {
     }
 
     /**
-     * Serializes the specified {@code alias} and {@code entry} at the current hierarchy
+     * Serializes the specified {@code alias} and {@code action} at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
@@ -257,14 +257,14 @@ public class Doc extends Chan {
     @Override
     public boolean set(
         @Nullable CharSequence alias,
-        @Nullable Entry entry
+        @Nullable Action action
     ) throws IOCrash {
         if (alias != null) {
             flow.leftAlias(
                 alias, Boolean.TRUE
             );
-            if (entry != null) {
-                entry.accept(this);
+            if (action != null) {
+                action.accept(this);
             }
             flow.rightAlias(
                 alias, Boolean.TRUE
@@ -275,7 +275,7 @@ public class Doc extends Chan {
     }
 
     /**
-     * Serializes the specified {@code alias}, {@code space} and {@code entry} at the current hierarchy
+     * Serializes the specified {@code alias}, {@code space} and {@code action} at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
@@ -284,7 +284,7 @@ public class Doc extends Chan {
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable CharSequence space,
-        @Nullable Entry entry
+        @Nullable Action action
     ) throws IOCrash {
         if (alias == null)
             if ((alias = space) == null)
@@ -292,8 +292,8 @@ public class Doc extends Chan {
         flow.leftAlias(
             alias, Boolean.TRUE
         );
-        if (entry != null) {
-            entry.accept(this);
+        if (action != null) {
+            action.accept(this);
         }
         flow.rightAlias(
             alias, Boolean.TRUE

@@ -158,48 +158,48 @@ public class Chan implements Flag {
     }
 
     /**
-     * @param entry the specified {@code entry}
+     * @param action the specified {@code action}
      */
     public Chan(
-        @Nullable Entry entry
+        @Nullable Action action
     ) {
         this();
         try {
-            set(null, entry);
+            set(null, action);
         } catch (Exception e) {
             // Nothing
         }
     }
 
     /**
-     * @param space the space
-     * @param entry the specified {@code entry}
+     * @param space  the space
+     * @param action the specified {@code action}
      */
     public Chan(
         @Nullable CharSequence space,
-        @Nullable Entry entry
+        @Nullable Action action
     ) {
         this();
         try {
-            set(null, space, entry);
+            set(null, space, action);
         } catch (Exception e) {
             // Nothing
         }
     }
 
     /**
-     * @param alias the alias
-     * @param space the space
-     * @param entry the specified {@code entry}
+     * @param alias  the alias
+     * @param space  the space
+     * @param action the specified {@code action}
      */
     public Chan(
         @Nullable CharSequence space,
         @Nullable CharSequence alias,
-        @Nullable Entry entry
+        @Nullable Action action
     ) {
         this();
         try {
-            set(alias, space, entry);
+            set(alias, space, action);
         } catch (Exception e) {
             // Nothing
         }
@@ -273,10 +273,10 @@ public class Chan implements Flag {
 
     /**
      * @author kraity
-     * @since 0.0.1
+     * @since 0.0.2
      */
     @FunctionalInterface
-    public interface Entry {
+    public interface Action {
         /**
          * @throws IOCrash If an I/O error occurs
          */
@@ -338,20 +338,20 @@ public class Chan implements Flag {
     }
 
     /**
-     * Serializes the specified {@code alias} and {@code entry} at the current hierarchy
+     * Serializes the specified {@code alias} and {@code action} at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
      */
     public boolean set(
         @Nullable CharSequence alias,
-        @Nullable Entry entry
+        @Nullable Action action
     ) throws IOCrash {
-        if (entry != null) {
+        if (action != null) {
             flow.addSpace($M);
             flow.addAlias(alias);
             flow.leftBrace();
-            entry.accept(this);
+            action.accept(this);
             flow.rightBrace();
             return true;
         }
@@ -359,7 +359,7 @@ public class Chan implements Flag {
     }
 
     /**
-     * Serializes the specified {@code alias}, {@code space} and {@code entry} at the current hierarchy
+     * Serializes the specified {@code alias}, {@code space} and {@code action} at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
@@ -367,15 +367,15 @@ public class Chan implements Flag {
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable CharSequence space,
-        @Nullable Entry entry
+        @Nullable Action action
     ) throws IOCrash {
-        if (entry != null) {
+        if (action != null) {
             flow.addSpace(
                 space == null ? $M : space
             );
             flow.addAlias(alias);
             flow.leftBrace();
-            entry.accept(this);
+            action.accept(this);
             flow.rightBrace();
             return true;
         }

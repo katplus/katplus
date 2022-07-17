@@ -527,6 +527,19 @@ class AuthorBuilder extends Builder<User> {
 
     @Override
     public void onAccept(
+        Alias alias,
+        Builder<?> child
+    ) throws IOCrash {
+        // check key
+        if (alias.is("collaborator")) {
+            user.setCollaborator(
+                (User) child.getResult()
+            );
+        }
+    }
+
+    @Override
+    public void onAccept(
         Space space,
         Alias alias,
         Value value
@@ -546,19 +559,6 @@ class AuthorBuilder extends Builder<User> {
         else if (alias.is("blocked")) {
             user.setBlocked(
                 value.toBoolean()
-            );
-        }
-    }
-
-    @Override
-    public void onAccept(
-        Alias alias,
-        Builder<?> child
-    ) throws IOCrash {
-        // check key
-        if (alias.is("collaborator")) {
-            user.setCollaborator(
-                (User) child.getResult()
             );
         }
     }
