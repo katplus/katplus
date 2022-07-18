@@ -22,7 +22,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.spare.*;
 import plus.kat.entity.*;
 import plus.kat.reflex.*;
-import plus.kat.utils.*;
+import plus.kat.utils.Config;
 
 import java.lang.reflect.Type;
 import java.util.concurrent.*;
