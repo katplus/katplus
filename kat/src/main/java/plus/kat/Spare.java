@@ -34,9 +34,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.*;
 
 import static plus.kat.Supplier.Impl;
 
@@ -307,7 +305,7 @@ public interface Spare<K> extends Coder<K> {
     static <T> Spare<T> embed(
         @NotNull Class<T> klass
     ) {
-        return Cluster.INS.embed(
+        return Cluster.INS.load(
             klass, Impl.INS
         );
     }
@@ -377,12 +375,6 @@ public interface Spare<K> extends Coder<K> {
             return (Spare<T>) spare;
         }
 
-        if (klass.isArray()) {
-            return (Spare<T>) c.get(
-                Object[].class
-            );
-        }
-
         return null;
     }
 
@@ -390,16 +382,44 @@ public interface Spare<K> extends Coder<K> {
      * @author kraity
      * @since 0.0.1
      */
-    class Cluster extends ConcurrentHashMap<Type, Spare<?>> {
+    class Cluster extends ConcurrentHashMap<Type, Spare<?>> implements Module {
         /**
          * default cluster
          */
         static final Cluster INS = new Cluster();
 
+        /**
+         * default modules
+         */
+        protected final Module[] modules;
+
         public Cluster() {
             super(Config.get(
                 "kat.spare.capacity", 32
             ));
+
+            Loader<Module> loader =
+                new Loader<>(Module.class);
+
+            try {
+                loader.load(
+                    Config.get(
+                        "kat.spare.module",
+                        "plus.kat.spare.Module"
+                    )
+                );
+
+                int size = loader.size();
+                modules = new Module[size + 1];
+
+                int i = 0;
+                while (loader.hasNext()) {
+                    modules[i++] = loader.next();
+                }
+                modules[i] = this;
+            } catch (Exception e) {
+                throw new Error(e);
+            }
         }
 
         static {
@@ -438,7 +458,7 @@ public interface Spare<K> extends Coder<K> {
          */
         @Nullable
         @SuppressWarnings("unchecked")
-        public <T> Spare<T> embed(
+        public <T> Spare<T> load(
             @NotNull Class<T> klass,
             @NotNull Supplier supplier
         ) {
@@ -448,15 +468,17 @@ public interface Spare<K> extends Coder<K> {
                 return (Spare<T>) spare;
             }
 
-            if (klass.isArray()) {
-                return (Spare<T>) get(
-                    Object[].class
+            for (Module m : modules) {
+                spare = m.lookup(
+                    klass, supplier
                 );
+
+                if (spare != null) {
+                    return (Spare<T>) spare;
+                }
             }
 
-            return this.invoke(
-                klass, supplier
-            );
+            return null;
         }
 
         /**
@@ -466,10 +488,15 @@ public interface Spare<K> extends Coder<K> {
          */
         @Nullable
         @SuppressWarnings({"unchecked", "rawtypes"})
-        public <T> Spare<T> invoke(
-            @NotNull Class<T> klass,
+        public Spare<?> lookup(
+            @NotNull Class<?> klass,
             @NotNull Supplier supplier
         ) {
+            Spare<?> spare;
+            if (klass.isArray()) {
+                return ArraySpare.INSTANCE;
+            }
+
             // filter platform type
             String name = klass.getName();
             switch (name.charAt(0)) {
@@ -516,10 +543,10 @@ public interface Spare<K> extends Coder<K> {
                 if (with != Spare.class) {
                     // static inject
                     // and double-checking
-                    Spare<?> spare = get(klass);
+                    spare = get(klass);
 
                     if (spare != null) {
-                        return (Spare<T>) spare;
+                        return spare;
                     }
 
                     if (!with.isInterface()) {
@@ -532,7 +559,6 @@ public interface Spare<K> extends Coder<K> {
                 return null;
             }
 
-            Spare<T> spare;
             if (klass.isEnum()) {
                 put(klass, spare =
                     new EnumSpare(
@@ -559,10 +585,9 @@ public interface Spare<K> extends Coder<K> {
          *
          * @throws NullPointerException If the specified {@code klass} is null
          */
-        @SuppressWarnings("unchecked")
-        public <T> Spare<T> onJava(
+        public Spare<?> onJava(
             @NotNull String name,
-            @NotNull Class<T> klass
+            @NotNull Class<?> klass
         ) {
             // filter internal class
             int d = name.indexOf('$', 6);
@@ -586,8 +611,10 @@ public interface Spare<K> extends Coder<K> {
                         return null;
                     }
 
-                    this.put(klass, spare);
-                    return (Spare<T>) spare;
+                    this.put(
+                        klass, spare
+                    );
+                    return spare;
                 }
                 // java.time
                 case 't': {
@@ -599,8 +626,10 @@ public interface Spare<K> extends Coder<K> {
                         return null;
                     }
 
-                    this.put(klass, spare);
-                    return (Spare<T>) spare;
+                    this.put(
+                        klass, spare
+                    );
+                    return spare;
                 }
                 // java.util
                 case 'u': {
@@ -627,8 +656,10 @@ public interface Spare<K> extends Coder<K> {
                                 return null;
                             }
 
-                            this.put(klass, spare);
-                            return (Spare<T>) spare;
+                            this.put(
+                                klass, spare
+                            );
+                            return spare;
                         }
                         // java.util.concurrent.
                         case 20: {
@@ -642,8 +673,10 @@ public interface Spare<K> extends Coder<K> {
                                 return null;
                             }
 
-                            this.put(klass, spare);
-                            return (Spare<T>) spare;
+                            this.put(
+                                klass, spare
+                            );
+                            return spare;
                         }
                         // java.util.concurrent.atomic.
                         case 27: {
@@ -657,8 +690,10 @@ public interface Spare<K> extends Coder<K> {
                                 return null;
                             }
 
-                            this.put(klass, spare);
-                            return (Spare<T>) spare;
+                            this.put(
+                                klass, spare
+                            );
+                            return spare;
                         }
                         default: {
                             return null;

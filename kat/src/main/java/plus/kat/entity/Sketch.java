@@ -155,7 +155,7 @@ public interface Sketch<K> extends Spare<K> {
                 }
             } else {
                 // specified spare
-                spare = supplier.embed(klass);
+                spare = supplier.lookup(klass);
 
                 // skip if null
                 if (spare != null) {
@@ -220,7 +220,7 @@ public interface Sketch<K> extends Spare<K> {
                 }
             } else {
                 // specified spare
-                spare = supplier.embed(klass);
+                spare = supplier.lookup(klass);
 
                 // skip if null
                 if (spare != null) {

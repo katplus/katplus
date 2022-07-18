@@ -709,7 +709,7 @@ public class ReflectSpare<T> extends AspectSpare<T> {
                             );
                     } else {
                         // specified spare
-                        coder = supplier.embed(
+                        coder = supplier.lookup(
                             param.klass
                         );
 
@@ -767,7 +767,7 @@ public class ReflectSpare<T> extends AspectSpare<T> {
 
                     if (coder == null) {
                         // specified spare
-                        coder = supplier.embed(
+                        coder = supplier.lookup(
                             param.klass
                         );
 

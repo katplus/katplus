@@ -94,7 +94,7 @@ public class Reflex {
                 return null;
             }
 
-            return supplier.embed(
+            return supplier.lookup(
                 (Class<?>) type
             );
         }
@@ -112,7 +112,7 @@ public class Reflex {
 
         if (type instanceof ParameterizedType) {
             ParameterizedType p = (ParameterizedType) type;
-            return supplier.embed(
+            return supplier.lookup(
                 (Class<?>) p.getRawType()
             );
         }
@@ -121,7 +121,7 @@ public class Reflex {
             WildcardType w = (WildcardType) type;
             type = w.getUpperBounds()[0];
             if (type != Object.class) {
-                return supplier.embed(
+                return supplier.lookup(
                     (Class<?>) type
                 );
             }
@@ -129,7 +129,7 @@ public class Reflex {
             if (bounds.length != 0) {
                 type = bounds[0];
                 if (type != Object.class) {
-                    return supplier.embed(
+                    return supplier.lookup(
                         (Class<?>) type
                     );
                 }
@@ -143,7 +143,7 @@ public class Reflex {
             if (bounds.length != 0) {
                 type = bounds[0];
                 if (type != Object.class) {
-                    return supplier.embed(
+                    return supplier.lookup(
                         (Class<?>) type
                     );
                 }
@@ -152,13 +152,13 @@ public class Reflex {
         }
 
         if (type instanceof ArrayType) {
-            return supplier.embed(
+            return supplier.lookup(
                 Object[].class
             );
         }
 
         if (type instanceof GenericArrayType) {
-            return supplier.embed(
+            return supplier.lookup(
                 Object[].class
             );
         }

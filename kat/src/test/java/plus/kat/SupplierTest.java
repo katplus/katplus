@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author kraity
  */
+@SuppressWarnings("unchecked")
 public class SupplierTest {
 
     @Test

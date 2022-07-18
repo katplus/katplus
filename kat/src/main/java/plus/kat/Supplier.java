@@ -36,35 +36,6 @@ import static plus.kat.Spare.Cluster;
  */
 public interface Supplier {
     /**
-     * Returns the {@link Spare} of {@link Class}
-     *
-     * @param klass specify the type of embedding
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
-     * @see Spare#embed(Class)
-     */
-    @Nullable
-    default <T> Spare<T> embed(
-        @NotNull Class<T> klass
-    ) {
-        return Cluster.INS.embed(klass, this);
-    }
-
-    /**
-     * Returns the {@link Spare} of {@link Type}
-     *
-     * @param type specify the type of embedding
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code type} is null
-     */
-    @Nullable
-    default Spare<?> embed(
-        @NotNull Type type
-    ) {
-        return Reflex.lookup(type, this);
-    }
-
-    /**
      * Register the {@link Spare} of {@link Class}
      * and returns the previous value associated with {@code klass}
      *
@@ -144,7 +115,7 @@ public interface Supplier {
     default <T> Spare<T> lookup(
         @NotNull Class<T> klass
     ) {
-        return Cluster.INS.embed(klass, this);
+        return Cluster.INS.load(klass, this);
     }
 
     /**
@@ -218,7 +189,7 @@ public interface Supplier {
         @NotNull Class<E> klass,
         @NotNull Object data
     ) {
-        Spare<E> spare = embed(klass);
+        Spare<E> spare = lookup(klass);
 
         if (spare == null) {
             return null;
@@ -491,7 +462,7 @@ public interface Supplier {
         @NotNull Job job,
         @NotNull Event<T> event
     ) {
-        Spare<E> spare = embed(klass);
+        Spare<E> spare = lookup(klass);
 
         if (spare == null) {
             return null;

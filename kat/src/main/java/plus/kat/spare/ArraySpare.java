@@ -264,15 +264,13 @@ public class ArraySpare implements Spare<Object> {
         ) throws Crash, IOCrash {
             if (type instanceof Class) {
                 if (type != Object.class) {
-                    v = supplier.embed(
-                        klass = (Class<?>) type
-                    );
+                    klass = (Class<?>) type;
+                    v = supplier.lookup(klass);
                 }
             } else if (type instanceof ParameterizedType) {
                 ParameterizedType p = (ParameterizedType) type;
-                v = supplier.embed(
-                    klass = (Class<?>) p.getRawType()
-                );
+                klass = (Class<?>) p.getRawType();
+                v = supplier.lookup(klass);
             } else {
                 throw new Crash(
                     "Can't lookup the Spare of '" + type + "'", false
@@ -453,7 +451,7 @@ public class ArraySpare implements Spare<Object> {
                 if (type == Object.class) {
                     return supplier.lookup(space);
                 } else {
-                    return supplier.embed(
+                    return supplier.lookup(
                         (Class<?>) type
                     );
                 }

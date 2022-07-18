@@ -262,7 +262,7 @@ public class KatTest {
     public void test_relation() {
         Supplier supplier =
             Supplier.ins();
-        supplier.embed(User.class);
+        supplier.lookup(User.class);
 
         User u1 = supplier.read(
             "plus.kat.entity.User", new Event<>(
