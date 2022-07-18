@@ -99,8 +99,7 @@ public interface Supplier {
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      */
-    @Nullable
-    Spare<?> lookup(
+    @Nullable <T> Spare<T> lookup(
         @NotNull CharSequence klass
     );
 
@@ -112,12 +111,9 @@ public interface Supplier {
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#lookup(Class)
      */
-    @Nullable
-    default <T> Spare<T> lookup(
+    @Nullable <T> Spare<T> lookup(
         @NotNull Class<T> klass
-    ) {
-        return Cluster.INS.load(klass, this);
-    }
+    );
 
     /**
      * Activate an instance of {@link Coder}
@@ -206,13 +202,11 @@ public interface Supplier {
      * @see Spare#cast(Supplier, Object)
      */
     @Nullable
-    @SuppressWarnings("unchecked")
     default <E> E cast(
         @NotNull CharSequence klass,
         @NotNull Object data
     ) {
-        Spare<E> spare =
-            (Spare<E>) lookup(klass);
+        Spare<E> spare = lookup(klass);
 
         if (spare == null) {
             return null;
@@ -404,14 +398,12 @@ public interface Supplier {
      * @since 0.0.2
      */
     @Nullable
-    @SuppressWarnings("unchecked")
     default <T> T solve(
         @NotNull CharSequence klass,
         @NotNull Job job,
         @NotNull Event<T> event
     ) {
-        Spare<T> spare =
-            (Spare<T>) lookup(klass);
+        Spare<T> spare = lookup(klass);
 
         if (spare == null) {
             return null;
@@ -543,7 +535,7 @@ public interface Supplier {
             INS.put(EMPTY, ObjectSpare.INSTANCE);
         }
 
-        public Impl() {
+        private Impl() {
             super(Config.get(
                 "kat.supplier.capacity", 24
             ));
@@ -575,17 +567,25 @@ public interface Supplier {
         }
 
         @Override
-        public Spare<?> lookup(
-            CharSequence klass
-        ) {
-            return get(klass);
-        }
-
-        @Override
         public Spare<?> revoke(
             @NotNull CharSequence klass
         ) {
             return remove(klass);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> Spare<T> lookup(
+            CharSequence klass
+        ) {
+            return (Spare<T>) get(klass);
+        }
+
+        @Override
+        public <T> Spare<T> lookup(
+            Class<T> klass
+        ) {
+            return Cluster.INS.load(klass, this);
         }
     }
 
@@ -603,7 +603,7 @@ public interface Supplier {
             INS.put(ByteArrayCoder.class, ByteArrayCoder.INSTANCE);
         }
 
-        public Plug() {
+        private Plug() {
             super(Config.get(
                 "kat.coder.capacity", 8
             ));

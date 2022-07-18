@@ -351,12 +351,7 @@ public interface Spare<K> extends Coder<K> {
          */
         static final Cluster INS = new Cluster();
 
-        /**
-         * default providers
-         */
-        protected final Provider[] providers;
-
-        public Cluster() {
+        private Cluster() {
             super(Config.get(
                 "kat.spare.capacity", 32
             ));
@@ -415,6 +410,11 @@ public interface Spare<K> extends Coder<K> {
         }
 
         /**
+         * spare providers
+         */
+        final Provider[] providers;
+
+        /**
          * Embeds {@link Spare} of the specified {@link Class}
          *
          * @throws NullPointerException If the specified {@code klass} is null
@@ -432,9 +432,13 @@ public interface Spare<K> extends Coder<K> {
             }
 
             for (Provider p : providers) {
-                spare = p.lookup(
-                    klass, supplier
-                );
+                try {
+                    spare = p.lookup(
+                        klass, supplier
+                    );
+                } catch (Exception e) {
+                    continue;
+                }
 
                 if (spare != null) {
                     return (Spare<T>) spare;
