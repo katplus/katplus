@@ -15,46 +15,28 @@
  */
 package plus.kat.entity;
 
-import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import java.lang.reflect.Type;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.2
  */
-@FunctionalInterface
-public interface Setter<K, V> {
+public interface Param {
     /**
-     * @param it  the entity
-     * @param val the value of entity
+     * Returns the {@link Class} of {@link Param}
      */
-    void accept(
-        @NotNull K it,
-        @Nullable V val
-    );
+    @Nullable
+    Class<?> getKlass();
 
     /**
-     * @param it  the entity
-     * @param val the value of entity
+     * Returns the index of {@link Param}
      */
-    @SuppressWarnings("unchecked")
-    default void onAccept(
-        @NotNull K it,
-        @Nullable Object val
-    ) {
-        try {
-            accept(
-                it, (V) val
-            );
-        } catch (Exception e) {
-            // nothing
-        }
-    }
+    int getIndex();
 
     /**
-     * Returns the {@link Coder} of {@link K}
+     * Returns the {@link Coder} of {@link Param}
      */
     @Nullable
     default Coder<?> getCoder() {
@@ -62,18 +44,10 @@ public interface Setter<K, V> {
     }
 
     /**
-     * Returns the {@link Type} of {@link K}
+     * Returns the {@link Type} of {@link Param}
      */
     @Nullable
     default Type getType() {
         return getKlass();
-    }
-
-    /**
-     * Returns the {@link Class} of {@link K}
-     */
-    @Nullable
-    default Class<?> getKlass() {
-        return null;
     }
 }

@@ -32,10 +32,11 @@ import plus.kat.utils.KatMap;
  * @author kraity
  * @since 0.0.2
  */
-public class ReflectSpare<T> extends AspectSpare<T> {
+public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
 
     private Constructor<T> builder;
-    private KatMap<Object, Param1> params;
+    private int args;
+    private KatMap<Object, Param> params;
 
     /**
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
@@ -71,13 +72,39 @@ public class ReflectSpare<T> extends AspectSpare<T> {
     }
 
     @Override
+    @Nullable
+    public T apply(
+        @NotNull Alias alias,
+        @NotNull Object... params
+    ) throws Crash {
+        try {
+            return builder.newInstance(params);
+        } catch (Exception e) {
+            throw new Crash(e);
+        }
+    }
+
+    @Override
+    public Param param(
+        @NotNull int index,
+        @NotNull Alias alias
+    ) {
+        if (params == null) {
+            return null;
+        }
+        return params.get(alias);
+    }
+
+    @Override
     public Builder<T> getBuilder(
         @Nullable Type type
     ) {
         if (params == null) {
             return new Builder0<>(this);
         }
-        return new Builder1<>(this);
+        return new Builder1<>(
+            this, new Object[args]
+        );
     }
 
     /**
@@ -300,8 +327,10 @@ public class ReflectSpare<T> extends AspectSpare<T> {
         }
 
         c.setAccessible(true);
+        args = c.getParameterCount();
         builder = (Constructor<T>) c;
-        if (c.getParameterCount() != 0) {
+
+        if (args != 0) {
             register(c, supplier);
         }
     }
@@ -353,6 +382,57 @@ public class ReflectSpare<T> extends AspectSpare<T> {
                     );
                 }
             }
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    static class Param1 extends
+        KatMap.Entry<String, Param1> implements Param {
+
+        final int index;
+        final Coder<?> coder;
+        final Type type;
+        final Class<?> klass;
+
+        public Param1(
+            int index, Coder<?> coder,
+            Type type, Class<?> klass
+        ) {
+            super(0);
+            this.index = index;
+            this.coder = coder;
+            this.type = type;
+            this.klass = klass;
+        }
+
+        @Override
+        public Class<?> getKlass() {
+            return klass;
+        }
+
+        @Override
+        public int getIndex() {
+            return index;
+        }
+
+        @Override
+        public Type getType() {
+            return type;
+        }
+
+        @Override
+        public Coder<?> getCoder() {
+            return coder;
+        }
+
+        @Override
+        public Param1 clone() {
+            return new Param1(
+                index, coder, type, klass
+            );
         }
     }
 
@@ -601,222 +681,6 @@ public class ReflectSpare<T> extends AspectSpare<T> {
         @Override
         public Method1<K> clone() {
             return new Method1<>(this);
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.2
-     */
-    static class Param1 extends
-        KatMap.Entry<String, Param1> {
-
-        final int index;
-        final Coder<?> coder;
-        final Type type;
-        final Class<?> klass;
-
-        public Param1(
-            int index, Coder<?> coder,
-            Type type, Class<?> klass
-        ) {
-            super(0);
-            this.index = index;
-            this.coder = coder;
-            this.type = type;
-            this.klass = klass;
-        }
-
-        @Override
-        public Param1 clone() {
-            return new Param1(
-                index, coder, type, klass
-            );
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.2
-     */
-    static class Builder1<K> extends Builder0<K> {
-
-        private Object[] params;
-        private Constructor<K> c;
-
-        private int count;
-        private Param1 param;
-        private Cache<K> cache;
-
-        private ReflectSpare<K> reflex;
-        private KatMap<Object, Param1> a;
-
-        public Builder1(
-            @NotNull ReflectSpare<K> reflex
-        ) {
-            super(reflex);
-            this.reflex = reflex;
-        }
-
-        @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) {
-            a = reflex.params;
-            c = reflex.builder;
-            params = new Object[c.getParameterCount()];
-        }
-
-        @Override
-        public void onAccept(
-            @Nullable Object value
-        ) throws IOCrash {
-            if (entity != null) {
-                setter.onAccept(
-                    entity, value
-                );
-            } else {
-                Cache<K> c = new Cache<>();
-                c.value = value;
-                c.setter = setter;
-
-                if (cache == null) {
-                    cache = c;
-                } else {
-                    cache.next = c;
-                }
-            }
-        }
-
-        @Override
-        public void onAccept(
-            @NotNull Space space,
-            @NotNull Alias alias,
-            @NotNull Value value
-        ) throws IOCrash {
-            if (entity == null) {
-                Param1 param = a.get(alias);
-                if (param != null) {
-                    ++index; // increment
-
-                    // specified coder
-                    Coder<?> coder = param.coder;
-
-                    if (coder != null) {
-                        params[param.index] =
-                            coder.read(
-                                flag, value
-                            );
-                    } else {
-                        // specified spare
-                        coder = supplier.lookup(
-                            param.klass
-                        );
-
-                        // skip if null
-                        if (coder != null) {
-                            params[param.index] =
-                                coder.read(
-                                    flag, value
-                                );
-                        }
-                    }
-
-                    embark();
-                    return;
-                }
-            }
-
-            super.onAccept(
-                space, alias, value
-            );
-        }
-
-        @Override
-        public void onAccept(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            if (entity != null) {
-                setter.onAccept(
-                    entity, child.getResult()
-                );
-            } else if (param == null) {
-                onAccept(
-                    child.getResult()
-                );
-            } else {
-                params[param.index] = child.getResult();
-                param = null;
-                embark();
-            }
-        }
-
-        @Override
-        public Builder<?> getBuilder(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) throws IOCrash {
-            if (entity == null) {
-                param = a.get(alias);
-                if (param != null) {
-                    ++index; // increment
-
-                    // specified coder
-                    Coder<?> coder = param.coder;
-
-                    if (coder == null) {
-                        // specified spare
-                        coder = supplier.lookup(
-                            param.klass
-                        );
-
-                        if (coder == null) {
-                            return null;
-                        }
-                    }
-
-                    return coder.getBuilder(param.type);
-                }
-            }
-
-            return super.getBuilder(
-                space, alias
-            );
-        }
-
-        static class Cache<K> {
-            Object value;
-            Cache<K> next;
-            Setter<K, ?> setter;
-        }
-
-        private void embark()
-            throws IOCrash {
-            if (++count == params.length) {
-                try {
-                    entity = c.newInstance(params);
-                    while (cache != null) {
-                        cache.setter.onAccept(
-                            entity, cache.value
-                        );
-                        cache = cache.next;
-                    }
-                } catch (Exception e) {
-                    throw new IOCrash(e);
-                }
-            }
-        }
-
-        @Override
-        public void onDestroy() {
-            super.onDestroy();
-            a = null;
-            c = null;
-            param = null;
-            cache = null;
-            params = null;
-            reflex = null;
         }
     }
 }

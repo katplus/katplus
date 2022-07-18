@@ -18,38 +18,22 @@ package plus.kat.entity;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.chain.*;
+import plus.kat.crash.*;
+
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.2
  */
 @FunctionalInterface
-public interface Getter<K, V> {
+public interface Maker<K> {
     /**
-     * @param it the entity
+     * @param alias the alias of entity
+     * @throws Crash If a failure occurs
      */
     @Nullable
-    V apply(
-        @NotNull K it
-    );
-
-    /**
-     * @param it the entity
-     */
-    @Nullable
-    @SuppressWarnings("unchecked")
-    default V onApply(
-        @NotNull Object it
-    ) {
-        return apply(
-            (K) it
-        );
-    }
-
-    /**
-     * Returns the {@link Coder} of {@link K}
-     */
-    @Nullable
-    default Coder<?> getCoder() {
-        return null;
-    }
+    K apply(
+        @NotNull Alias alias,
+        @NotNull Object... params
+    ) throws Crash;
 }
