@@ -24,7 +24,7 @@ public class InputStreamReaderTest {
     @Test
     public void test_kat() throws Exception {
         Spare<User> spare = Spare
-            .embed(User.class);
+            .lookup(User.class);
 
         User user = spare.read(
             Event.file(
@@ -40,7 +40,7 @@ public class InputStreamReaderTest {
     @Test
     public void test_json() throws Exception {
         Spare<User> spare = Spare
-            .embed(User.class);
+            .lookup(User.class);
 
         User user = spare.parse(
             Event.file(
@@ -56,7 +56,7 @@ public class InputStreamReaderTest {
     @Test
     public void test_xml() throws Exception {
         Spare<User> spare = Spare
-            .embed(User.class);
+            .lookup(User.class);
 
         User user = spare.down(
             Event.file(

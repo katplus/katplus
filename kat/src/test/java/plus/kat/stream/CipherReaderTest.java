@@ -54,7 +54,7 @@ public class CipherReaderTest {
         );
 
         Spare<User> spare = Spare
-            .embed(User.class);
+            .lookup(User.class);
 
         User user = spare.read(
             new Event<>(input, cipher)
@@ -121,7 +121,7 @@ public class CipherReaderTest {
         cipher.init(Cipher.DECRYPT_MODE, priKey);
 
         Spare<User> spare = Spare
-            .embed(User.class);
+            .lookup(User.class);
 
         User user = spare.read(
             new Event<>(input, cipher)

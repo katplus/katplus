@@ -22,10 +22,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.spare.*;
 import plus.kat.entity.*;
 import plus.kat.reflex.*;
-import plus.kat.spare.Module;
-import plus.kat.utils.Casting;
-import plus.kat.utils.Config;
-import plus.kat.utils.Loader;
+import plus.kat.utils.*;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -297,23 +294,6 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Embeds the {@link Spare} of {@link Class}
-     * If there is no cache, try to create a {@link Spare}
-     *
-     * @param klass specify the type of embedding
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
-     */
-    @Nullable
-    static <T> Spare<T> embed(
-        @NotNull Class<T> klass
-    ) {
-        return Cluster.INS.load(
-            klass, Impl.INS
-        );
-    }
-
-    /**
      * Register the {@link Spare} of {@link Class}
      *
      * @param klass specify the type of embedding
@@ -322,9 +302,9 @@ public interface Spare<K> extends Coder<K> {
      * @throws NullPointerException If the specified {@code klass} is null
      */
     @Nullable
-    static <T> Spare<?> embed(
-        @NotNull Class<T> klass,
-        @NotNull Spare<? super T> spare
+    static Spare<?> embed(
+        @NotNull Class<?> klass,
+        @NotNull Spare<?> spare
     ) {
         return Cluster.INS.put(
             klass, spare
@@ -332,94 +312,74 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Removes the {@code type} and returns the previous value associated with {@code type}
+     * Removes the {@code klass} and returns the previous value associated with {@code type}
      *
-     * @param type specify the type of revoking
+     * @param klass specify the type of revoking
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code type} is null
      */
     @Nullable
     static Spare<?> revoke(
-        @NotNull Type type
+        @NotNull Class<?> klass
     ) {
-        return Cluster.INS.remove(type);
+        return Cluster.INS.remove(klass);
     }
 
     /**
-     * Lookup the {@link Spare} of {@link Type}
-     *
-     * @param type specify the type of lookup
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code type} is null
-     */
-    @Nullable
-    static Spare<?> lookup(
-        @NotNull Type type
-    ) {
-        return Cluster.INS.get(type);
-    }
-
-    /**
-     * Lookup the {@link Spare} of {@link Class}
+     * Returns the {@link Spare} of {@link Class}
      *
      * @param klass specify the type of lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      */
     @Nullable
-    @SuppressWarnings("unchecked")
     static <T> Spare<T> lookup(
         @NotNull Class<T> klass
     ) {
-        Cluster c = Cluster.INS;
-        Spare<?> spare = c.get(klass);
-
-        if (spare != null) {
-            return (Spare<T>) spare;
-        }
-
-        return null;
+        return Cluster.INS.load(
+            klass, Impl.INS
+        );
     }
 
     /**
      * @author kraity
      * @since 0.0.1
      */
-    class Cluster extends ConcurrentHashMap<Type, Spare<?>> implements Module {
+    class Cluster extends ConcurrentHashMap<Type, Spare<?>> implements Provider {
         /**
          * default cluster
          */
         static final Cluster INS = new Cluster();
 
         /**
-         * default modules
+         * default providers
          */
-        protected final Module[] modules;
+        protected final Provider[] providers;
 
         public Cluster() {
             super(Config.get(
                 "kat.spare.capacity", 32
             ));
 
-            Loader<Module> loader =
-                new Loader<>(Module.class);
+            Loader<Provider> loader =
+                new Loader<>(Provider.class);
 
             try {
                 loader.load(
                     Config.get(
-                        "kat.spare.module",
-                        "plus.kat.spare.Module"
+                        "kat.spare.provider",
+                        "plus.kat.spare.Provider"
                     )
                 );
 
                 int size = loader.size();
-                modules = new Module[size + 1];
+                providers = new Provider[size + 1];
 
                 int i = 0;
                 while (loader.hasNext()) {
-                    modules[i++] = loader.next();
+                    providers[i++] = loader.next();
                 }
-                modules[i] = this;
+                providers[i] = this;
             } catch (Exception e) {
                 throw new Error(e);
             }
@@ -471,8 +431,8 @@ public interface Spare<K> extends Coder<K> {
                 return (Spare<T>) spare;
             }
 
-            for (Module m : modules) {
-                spare = m.lookup(
+            for (Provider p : providers) {
+                spare = p.lookup(
                     klass, supplier
                 );
 

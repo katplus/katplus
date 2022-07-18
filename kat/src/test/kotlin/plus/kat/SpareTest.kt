@@ -8,7 +8,7 @@ class SpareKtTest {
     @Test
     fun test_toJson() {
         assertNotNull(
-            embed(User::class)
+            lookup(User::class)
         )
     }
 

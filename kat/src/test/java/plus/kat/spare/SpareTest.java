@@ -65,7 +65,7 @@ public class SpareTest {
     @Test
     public void test_date() {
         Spare<Role> spare =
-            Spare.embed(Role.class);
+            Spare.lookup(Role.class);
 
         Role role = spare.read(
             new Event<>(
@@ -171,7 +171,7 @@ public class SpareTest {
 
     @Test
     public void test_enum_cast() {
-        Spare<Meta> spare = Spare.embed(Meta.class);
+        Spare<Meta> spare = Spare.lookup(Meta.class);
 
         assertEquals(Meta.KAT, spare.cast(0));
         assertEquals(Meta.KAT, spare.cast("KAT"));

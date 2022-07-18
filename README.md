@@ -157,7 +157,7 @@ Java:
 
 ```java
 // register User
-Spare<User> spare = Spare.embed(User.class);
+Spare<User> spare = Spare.lookup(User.class);
 
 // kat
 User user = spare.read(
@@ -350,7 +350,7 @@ Use package name:
 Supplier supplier = Supplier.ins();
 
 // register User
-supplier.embed(User.class);
+supplier.lookup(User.class);
 
 // cast
 User user = supplier.cast(

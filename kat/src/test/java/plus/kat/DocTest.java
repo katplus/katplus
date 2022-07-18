@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static plus.kat.Spare.embed;
+import static plus.kat.Spare.lookup;
 
 public class DocTest {
 
@@ -60,7 +60,7 @@ public class DocTest {
 
     @Test
     public void test_markup() {
-        embed(User.class);
+        lookup(User.class);
 
         User user = new User();
         user.id = 1;
@@ -79,7 +79,7 @@ public class DocTest {
     @Test
     public void test_parse() {
         Spare<Article> spare =
-            embed(Article.class);
+            lookup(Article.class);
 
         String text = "<plus.kat.article><title>mark</title><author><id>1</id><name>kraity</name><blocked>false</blocked></author><extra><date>2022-22-22</date></extra></plus.kat.article>";
 

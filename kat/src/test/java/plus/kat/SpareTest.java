@@ -3,10 +3,9 @@ package plus.kat;
 import org.junit.jupiter.api.Test;
 import plus.kat.anno.Expose;
 
-import java.util.Collection;
 import java.util.Collections;
 
-import static plus.kat.Spare.embed;
+import static plus.kat.Spare.lookup;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -17,7 +16,7 @@ public class SpareTest {
     @Test
     public void test_embed() {
         assertNotNull(
-            embed(User.class)
+            lookup(User.class)
         );
     }
 
@@ -31,7 +30,7 @@ public class SpareTest {
 
         for (Object o : list) {
             assertNull(
-                embed(o.getClass())
+                lookup(o.getClass())
             );
         }
     }
@@ -39,7 +38,7 @@ public class SpareTest {
     @Test
     public void test_casting() {
         Spare<User> spare =
-            embed(User.class);
+            lookup(User.class);
 
         User user = spare.cast(
             "   ${$:id(1)$:name(kraity)}   "

@@ -20,7 +20,7 @@ public class CoderTest {
     @Test
     public void test() {
         Spare<Note> spare =
-            Spare.embed(Note.class);
+            Spare.lookup(Note.class);
 
         Note note = spare.read(
             Event.ascii(

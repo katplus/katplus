@@ -24,7 +24,7 @@ import plus.kat.*;
  * @author kraity
  * @since 0.0.2
  */
-public interface Module {
+public interface Provider {
     /**
      * Returns {@link Spare} of the specified {@link Class}
      *

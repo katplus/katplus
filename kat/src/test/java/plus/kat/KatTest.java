@@ -7,7 +7,7 @@ import plus.kat.anno.Expose;
 
 import java.util.*;
 
-import static plus.kat.Spare.embed;
+import static plus.kat.Spare.lookup;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class KatTest {
@@ -68,7 +68,7 @@ public class KatTest {
 
     @Test
     public void test_decode2() {
-        embed(User.class);
+        lookup(User.class);
         HashMap<String, User> map = Kat.decode(
             Map.class, new Event<>(
                 "M{plus.kat.entity.User:user{i:id(1)s:name(kraity)b:blocked(1)}}"
@@ -84,7 +84,7 @@ public class KatTest {
     @Test
     public void test_decode_string() {
         Spare<String> spare =
-            embed(String.class);
+            lookup(String.class);
 
         String plain = "hello world";
         String cipher = "s(hello world)";
@@ -100,7 +100,7 @@ public class KatTest {
     @Test
     public void test_decode_integer() {
         Spare<Integer> spare =
-            embed(Integer.class);
+            lookup(Integer.class);
 
         int plain = 123456789;
         String cipher = "i(123456789)";
@@ -116,7 +116,7 @@ public class KatTest {
     @Test
     public void test_decode_long() {
         Spare<Long> spare =
-            embed(Long.class);
+            lookup(Long.class);
 
         long plain = 123456789;
         String cipher = "l(123456789)";
@@ -132,7 +132,7 @@ public class KatTest {
     @Test
     public void test_write() {
         Spare<User> spare =
-            embed(User.class);
+            lookup(User.class);
 
         String text = "plus.kat.entity.User{i:id(1)s:name(kraity)b:blocked(1)}";
 
@@ -217,7 +217,7 @@ public class KatTest {
         map.put("list", "${i(123)i(456)}");
 
         Spare<Util> spare =
-            embed(Util.class);
+            lookup(Util.class);
 
         Util u = spare.cast(map);
 
@@ -293,7 +293,7 @@ public class KatTest {
     @Test
     public void test_member_cast_2() {
         Spare<User> spare =
-            embed(User.class);
+            lookup(User.class);
 
         User u1 = spare.cast(
             "${$:id(1)$:name(kraity)$:blocked(1)}"
@@ -320,7 +320,7 @@ public class KatTest {
     @Test
     public void test_enum() {
         Spare<State> spare =
-            embed(State.class);
+            lookup(State.class);
 
         assertEquals(State.OPEN, spare.read("State(OPEN)"));
         assertEquals(State.SELF, spare.read("State(SELF)"));
@@ -341,7 +341,7 @@ public class KatTest {
     @Test
     public void test_reflect() {
         Spare<Note> spare =
-            embed(Note.class);
+            lookup(Note.class);
 
         String text = "plus.kat.entity.Note{i:id(1)s:title(KAT+)B:cipher(S0FUKw==)A:meta{A{i(8)i(16)}A{i(32)}}A:tags{s(kat)}State:state(OPEN)f:version(0.1)l:created(1645539742000)b:deleted(1)L:authors{plus.kat.entity.User{i:id(1)s:name(kraity)b:blocked(1)}}}";
         Note note = spare.read(

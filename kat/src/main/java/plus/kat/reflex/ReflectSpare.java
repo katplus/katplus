@@ -329,7 +329,7 @@ public class ReflectSpare<T> extends AspectSpare<T> {
                 }
             }
 
-            Coder<?> c = Reflex.lookup(
+            Coder<?> c = Reflex.activate(
                 cs[i], expose, format, supplier
             );
 
@@ -396,7 +396,7 @@ public class ReflectSpare<T> extends AspectSpare<T> {
 
             Format format = field
                 .getAnnotation(Format.class);
-            this.coder = Reflex.lookup(
+            this.coder = Reflex.activate(
                 klass, expose, format, supplier
             );
         }
@@ -528,7 +528,7 @@ public class ReflectSpare<T> extends AspectSpare<T> {
 
             Format format = method
                 .getAnnotation(Format.class);
-            this.coder = Reflex.lookup(
+            this.coder = Reflex.activate(
                 klass, expose, format, supplier
             );
         }

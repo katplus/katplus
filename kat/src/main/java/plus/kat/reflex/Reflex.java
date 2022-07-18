@@ -53,35 +53,6 @@ public class Reflex {
     }
 
     /**
-     * @since 0.0.2
-     */
-    @Nullable
-    @SuppressWarnings("unchecked")
-    public static Coder<?> lookup(
-        @NotNull Class<?> klass,
-        @Nullable Expose expose,
-        @Nullable Format format,
-        @NotNull Supplier supplier
-    ) {
-        if (format != null) {
-            if (klass == Date.class) {
-                return new DateSpare(format);
-            } else if (klass == LocalDate.class) {
-                return LocalDateSpare.of(format);
-            }
-        } else if (expose != null) {
-            Class<?> with = expose.with();
-            if (with != Coder.class) {
-                return supplier.activate(
-                    (Class<Coder<Object>>) with
-                );
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @since 0.0.1
      */
     @Nullable
@@ -161,6 +132,32 @@ public class Reflex {
             return supplier.lookup(
                 Object[].class
             );
+        }
+
+        return null;
+    }
+
+    /**
+     * @since 0.0.2
+     */
+    @Nullable
+    public static Coder<?> activate(
+        @NotNull Class<?> klass,
+        @Nullable Expose expose,
+        @Nullable Format format,
+        @NotNull Supplier supplier
+    ) {
+        if (format != null) {
+            if (klass == Date.class) {
+                return new DateSpare(format);
+            } else if (klass == LocalDate.class) {
+                return LocalDateSpare.of(format);
+            }
+        } else if (expose != null) {
+            Class<?> with = expose.with();
+            if (with != Coder.class) {
+                return supplier.activate(with);
+            }
         }
 
         return null;

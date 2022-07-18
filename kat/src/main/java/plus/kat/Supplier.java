@@ -22,7 +22,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.spare.*;
 import plus.kat.entity.*;
 import plus.kat.reflex.*;
-import plus.kat.utils.Config;
+import plus.kat.utils.*;
 
 import java.lang.reflect.Type;
 import java.util.concurrent.*;
@@ -43,12 +43,26 @@ public interface Supplier {
      * @param spare specify the {@code spare} of {@code klass}
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
+     * @see Spare#embed(Class, Spare)
      * @since 0.0.2
      */
     @Nullable
     Spare<?> embed(
         @NotNull Class<?> klass,
         @NotNull Spare<?> spare
+    );
+
+    /**
+     * Removes the {@code type} and returns the previous value associated with {@code type}
+     *
+     * @param klass specify the klass of revoking
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code type} is null
+     * @see Spare#revoke(Class)
+     */
+    @Nullable
+    Spare<?> revoke(
+        @NotNull Class<?> klass
     );
 
     /**
@@ -76,19 +90,6 @@ public interface Supplier {
     @Nullable
     Spare<?> revoke(
         @NotNull CharSequence klass
-    );
-
-    /**
-     * Removes the {@code type} and returns the previous value associated with {@code type}
-     *
-     * @param klass specify the klass of revoking
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code type} is null
-     * @see Spare#revoke(Type)
-     */
-    @Nullable
-    Spare<?> revoke(
-        @NotNull Class<?> klass
     );
 
     /**
@@ -127,9 +128,9 @@ public interface Supplier {
      */
     @Nullable
     default <T> Coder<T> activate(
-        @NotNull Class<? extends Coder<T>> klass
+        @NotNull Class<?> klass
     ) {
-        return Plug.INS.apply(klass);
+        return Plug.INS.load(klass);
     }
 
     /**
@@ -141,9 +142,9 @@ public interface Supplier {
      * @throws NullPointerException If the specified {@code klass} is null
      */
     @Nullable
-    default <T> Coder<?> activate(
-        @NotNull Class<? extends Coder<T>> klass,
-        @NotNull Coder<? super T> coder
+    default Coder<?> activate(
+        @NotNull Class<?> klass,
+        @NotNull Coder<?> coder
     ) {
         return Plug.INS.put(klass, coder);
     }
@@ -157,7 +158,7 @@ public interface Supplier {
      */
     @Nullable
     default Coder<?> deactivate(
-        @NotNull Class<? extends Coder<?>> klass
+        @NotNull Class<?> klass
     ) {
         return Plug.INS.remove(klass);
     }
@@ -592,7 +593,7 @@ public interface Supplier {
      * @author kraity
      * @since 0.0.1
      */
-    class Plug extends ConcurrentHashMap<Class<? extends Coder<?>>, Coder<?>> {
+    class Plug extends ConcurrentHashMap<Class<?>, Coder<?>> {
         /**
          * default cluster
          */
@@ -615,8 +616,8 @@ public interface Supplier {
          */
         @Nullable
         @SuppressWarnings("unchecked")
-        public <T> Coder<T> apply(
-            @NotNull Class<? extends Coder<T>> klass
+        public <T> Coder<T> load(
+            @NotNull Class<?> klass
         ) {
             Coder<?> coder = get(klass);
 
@@ -628,35 +629,11 @@ public interface Supplier {
                 return null;
             }
 
-            return Reflex.apply(klass);
-        }
-
-        /**
-         * Apply an instance of the specified {@link Coder}
-         *
-         * @throws NullPointerException If the specified {@code klass} is null
-         */
-        @Nullable
-        @SuppressWarnings("unchecked")
-        public <T> Coder<T> embed(
-            @NotNull Class<? extends Coder<T>> klass
-        ) {
-            Coder<?> coder = get(klass);
-
-            if (coder == null) {
-                if (klass.isInterface()) {
-                    return null;
-                }
-
-                coder = Reflex.apply(klass);
-                if (coder != null) {
-                    this.put(
-                        klass, coder
-                    );
-                }
+            if (!Coder.class.isAssignableFrom(klass)) {
+                return null;
             }
 
-            return (Coder<T>) coder;
+            return Reflex.apply(klass);
         }
     }
 }

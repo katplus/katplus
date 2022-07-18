@@ -25,9 +25,9 @@ import kotlin.reflect.KClass
  */
 @Nullable
 @Suppress("HasPlatformType")
-fun <T : Any> embed(
+fun <T : Any> lookup(
     klass: KClass<T>
-) = Spare.embed(
+) = Spare.lookup(
     klass.java
 )
 
