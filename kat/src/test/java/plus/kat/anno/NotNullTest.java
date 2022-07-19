@@ -19,13 +19,14 @@ public class NotNullTest {
 
         User user = supplier.read(
             User.class, new Event<>(
-                "${$:date()}"
+                "${$:date()$:time()}"
             )
         );
 
         assertNotNull(user);
         assertNotNull(user.date);
         assertEquals(1645539742000L, user.date.getTime());
+        assertEquals(1645539742000L, user.time.getTime());
     }
 
     @Embed("User")
@@ -33,5 +34,19 @@ public class NotNullTest {
         @NotNull
         @Expose("date")
         private Date date = new Date(1645539742000L);
+
+        private Date time = new Date(1645539742000L);
+
+        @NotNull
+        @Expose("time")
+        public void setTime(
+            Date time
+        ) {
+            this.time = time;
+        }
+
+        public Date getTime() {
+            return time;
+        }
     }
 }

@@ -517,7 +517,7 @@ public interface Spare<K> extends Coder<K> {
                     }
 
                     if (!with.isInterface()) {
-                        return Reflex.apply(with);
+                        return Reflect.apply(with);
                     }
                 }
             }

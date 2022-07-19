@@ -27,8 +27,8 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
-import plus.kat.reflex.*;
 import plus.kat.utils.Casting;
+import plus.kat.utils.Reflect;
 
 /**
  * @author kraity
@@ -144,10 +144,10 @@ public class MapSpare implements Spare<Map> {
                 ParameterizedType p = (ParameterizedType) type;
                 raw = p.getRawType();
                 Type[] ary = p.getActualTypeArguments();
-                k = Reflex.lookup(
+                k = Reflect.lookup(
                     ary[0], supplier
                 );
-                v = Reflex.lookup(
+                v = Reflect.lookup(
                     param = ary[1], supplier
                 );
             }

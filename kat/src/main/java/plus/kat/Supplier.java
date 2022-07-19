@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.spare.*;
 import plus.kat.entity.*;
-import plus.kat.reflex.*;
 import plus.kat.utils.*;
 
 import java.lang.reflect.Type;
@@ -429,7 +428,7 @@ public interface Supplier {
         @NotNull Event<T> event
     ) {
         Spare<T> spare = (Spare<T>)
-            Reflex.lookup(type, this);
+            Reflect.lookup(type, this);
 
         if (spare == null) {
             return null;
@@ -633,7 +632,7 @@ public interface Supplier {
                 return null;
             }
 
-            return Reflex.apply(klass);
+            return Reflect.apply(klass);
         }
     }
 }

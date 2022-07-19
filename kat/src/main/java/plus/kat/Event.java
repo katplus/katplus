@@ -28,10 +28,10 @@ import javax.crypto.Cipher;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
-import plus.kat.reflex.*;
 import plus.kat.stream.*;
 import plus.kat.stream.Reader;
 import plus.kat.stream.InputStreamReader;
+import plus.kat.utils.Reflect;
 
 import static plus.kat.Supplier.Impl.INS;
 
@@ -490,7 +490,7 @@ public class Event<T> implements Flag {
         if (type == null) {
             coder = supplier.lookup(space);
         } else {
-            return Reflex.lookup(
+            return Reflect.lookup(
                 type, supplier
             );
         }

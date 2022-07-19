@@ -3,7 +3,7 @@
 KAT+ 一个轻量级的 **KAT** + **XML** + **JSON** 库
 
 - 兼容 **Kotlin**
-- 兼容 **Android**
+- 兼容 **Android 8+**
 
 # 1. 使用准备
 

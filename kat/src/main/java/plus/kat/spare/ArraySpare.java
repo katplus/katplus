@@ -29,6 +29,7 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.Casting;
+import plus.kat.utils.Reflect;
 
 /**
  * @author kraity
@@ -456,7 +457,7 @@ public class ArraySpare implements Spare<Object> {
                     );
                 }
             } else {
-                return Reflex.lookup(
+                return Reflect.lookup(
                     type, supplier
                 );
             }

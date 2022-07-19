@@ -27,8 +27,8 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
-import plus.kat.reflex.*;
 import plus.kat.utils.Casting;
+import plus.kat.utils.Reflect;
 
 /**
  * @author kraity
@@ -228,7 +228,7 @@ public class IterableSpare implements Spare<Iterable> {
             // spare
             if (actual != null) {
                 param = actual.getActualTypeArguments()[0];
-                v = Reflex.lookup(
+                v = Reflect.lookup(
                     param, supplier
                 );
             }

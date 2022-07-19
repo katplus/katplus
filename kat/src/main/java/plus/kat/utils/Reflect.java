@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.reflex;
+package plus.kat.utils;
 
 import plus.kat.anno.Expose;
 import plus.kat.anno.Format;
@@ -24,6 +24,7 @@ import plus.kat.*;
 import plus.kat.spare.*;
 import plus.kat.chain.*;
 import plus.kat.entity.*;
+import plus.kat.reflex.*;
 
 import java.lang.reflect.*;
 import java.time.LocalDate;
@@ -31,9 +32,9 @@ import java.util.Date;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.2
  */
-public class Reflex {
+public class Reflect {
     /**
      * @since 0.0.2
      */

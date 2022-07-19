@@ -38,9 +38,11 @@ public abstract class AspectSpare<K> extends KatMap<Object, Setter<K, ?>> implem
     protected final Class<K> klass;
     protected final CharSequence space;
 
+    protected int flags, args;
     protected Supplier supplier;
-    protected int flags;
+
     protected Node<K> head, tail;
+    protected KatMap<Object, Param> params;
 
     protected AspectSpare(
         @Nullable Embed embed,
@@ -53,17 +55,17 @@ public abstract class AspectSpare<K> extends KatMap<Object, Setter<K, ?>> implem
             flags = embed.claim();
         }
 
-        this.onFields(
+        onFields(
             klass.getDeclaredFields()
         );
-        this.onMethods(
+        onMethods(
             klass.getDeclaredMethods()
         );
-        this.onConstructors(
+        onConstructors(
             klass.getDeclaredConstructors()
         );
 
-        this.space = supplier.register(
+        space = supplier.register(
             embed, klass, this
         );
     }
@@ -200,6 +202,29 @@ public abstract class AspectSpare<K> extends KatMap<Object, Setter<K, ?>> implem
             );
             node = node.next;
         }
+    }
+
+    @Override
+    public Builder<K> getBuilder(
+        @Nullable Type type
+    ) {
+        if (params == null) {
+            return new Builder0<>(this);
+        }
+        return new Builder1<>(
+            this, new Object[args]
+        );
+    }
+
+    @Override
+    public Param param(
+        @NotNull int index,
+        @NotNull Alias alias
+    ) {
+        if (params == null) {
+            return null;
+        }
+        return params.get(alias);
     }
 
     @Override

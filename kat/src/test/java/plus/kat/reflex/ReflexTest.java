@@ -57,7 +57,8 @@ public class ReflexTest {
         assertEquals(1, author.id);
         assertEquals("kat", author.tag);
         assertEquals("kraity", author.name);
-        assertEquals("Author{s:tag(kat)s:meta(plus)}", Kat.encode(author));
+        assertEquals("Author{s:tag(kat)}", Kat.encode(author));
+        assertNotEquals("Author{s:tag(kat)s:meta(plus)}", Kat.encode(author));
     }
 
     @Test

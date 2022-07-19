@@ -19,6 +19,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import java.lang.annotation.*;
+import java.lang.invoke.*;
 import java.lang.reflect.*;
 
 import plus.kat.*;
@@ -27,6 +28,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.utils.KatMap;
+import plus.kat.utils.Reflect;
 
 /**
  * @author kraity
@@ -34,9 +36,11 @@ import plus.kat.utils.KatMap;
  */
 public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
 
+    static final MethodHandles.Lookup
+        lookup = MethodHandles.lookup();
+
+    private MethodHandle handle;
     private Constructor<T> builder;
-    private int args;
-    private KatMap<Object, Param> params;
 
     /**
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
@@ -61,12 +65,13 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
 
     @Override
     @Nullable
+    @SuppressWarnings("unchecked")
     public T apply(
         @NotNull Alias alias
     ) throws Crash {
         try {
-            return builder.newInstance();
-        } catch (Exception e) {
+            return (T) handle.invoke();
+        } catch (Throwable e) {
             throw new Crash(e);
         }
     }
@@ -79,32 +84,9 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
     ) throws Crash {
         try {
             return builder.newInstance(params);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new Crash(e);
         }
-    }
-
-    @Override
-    public Param param(
-        @NotNull int index,
-        @NotNull Alias alias
-    ) {
-        if (params == null) {
-            return null;
-        }
-        return params.get(alias);
-    }
-
-    @Override
-    public Builder<T> getBuilder(
-        @Nullable Type type
-    ) {
-        if (params == null) {
-            return new Builder0<>(this);
-        }
-        return new Builder1<>(
-            this, new Object[args]
-        );
     }
 
     /**
@@ -116,6 +98,14 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
     ) {
         boolean direct = (flags & Embed.DIRECT) != 0;
         for (Field field : fields) {
+            // its modifier
+            int mod = field.getModifiers();
+
+            // check its modifier
+            if ((mod & Modifier.STATIC) != 0) {
+                continue;
+            }
+
             Expose expose = field
                 .getAnnotation(
                     Expose.class
@@ -124,38 +114,42 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
                 continue;
             }
 
-            Field1<T> field1 =
-                new Field1<>(
+            Handle<T> handle;
+            try {
+                handle = new Handle<>(
                     field, expose, supplier
                 );
+            } catch (Throwable e) {
+                continue;
+            }
 
-            int h = field1.getHash();
+            int k = handle.getHash();
             // check use index
-            if (direct && h > -1) put(
-                h, field1.clone()
-            );
+            if (direct && k > -1) {
+                put(k, handle.clone());
+            }
 
             String[] keys = expose.value();
             if (keys.length == 0) {
                 String name = field.getName();
                 if (expose.export()) {
                     // register getter
-                    addGetter(name, field1);
+                    addGetter(name, handle);
                     // register setter
-                    put(name, field1.clone());
+                    put(name, handle.clone());
                 } else put(
-                    name, field1
+                    name, handle
                 );
             } else {
                 // register only the first alias
                 if (expose.export()) {
-                    addGetter(keys[0], field1);
+                    addGetter(keys[0], handle);
                 }
 
                 for (String alias : keys) {
                     // check empty
                     if (!alias.isEmpty()) put(
-                        alias, field1.clone()
+                        alias, handle.clone()
                     );
                 }
             }
@@ -173,12 +167,21 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
         boolean direct = (flags & Embed.DIRECT) != 0;
 
         for (Method method : methods) {
-            int count = method.getParameterCount();
+            int count = method.
+                getParameterCount();
             if (count > 1) {
                 continue;
             }
 
-            Method1<T> method1;
+            // its modifier
+            int mod = method.getModifiers();
+
+            // check its modifier
+            if ((mod & Modifier.STATIC) != 0) {
+                continue;
+            }
+
+            Handle<T> handle;
             Expose expose = method
                 .getAnnotation(
                     Expose.class
@@ -190,40 +193,40 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
                     continue;
                 }
 
-                // its modifier
-                int mod = method.getModifiers();
-
                 // check its modifier
-                if ((mod & Modifier.PUBLIC) == 0 ||
-                    (mod & Modifier.STATIC) != 0) {
+                if ((mod & Modifier.PUBLIC) == 0) {
                     continue;
                 }
             } else {
                 String[] keys = expose.value();
                 if (keys.length != 0) {
-                    method1 = new Method1<>(
-                        method, expose, supplier
-                    );
+                    try {
+                        handle = new Handle<>(
+                            method, expose, supplier
+                        );
+                    } catch (Throwable e) {
+                        continue;
+                    }
 
                     if (count != 0) {
-                        int h = method1.getHash();
+                        int k = handle.getHash();
                         // check use index
-                        if (direct && h >= 0) {
+                        if (direct && k >= 0) {
                             // register setter
-                            put(h, method1);
+                            put(k, handle);
                         }
 
                         for (String alias : keys) {
                             // check empty
                             if (!alias.isEmpty()) put(
-                                alias, method1.clone()
+                                alias, handle.clone()
                             );
                         }
                     } else {
                         // register all aliases
                         for (int i = 0; i < keys.length; i++) {
                             addGetter(
-                                keys[i], i == 0 ? method1 : method1.clone()
+                                keys[i], i == 0 ? handle : handle.clone()
                             );
                         }
                     }
@@ -285,26 +288,30 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
                 }
             }
 
-            method1 = new Method1<>(
-                method, expose, supplier
-            );
+            try {
+                handle = new Handle<>(
+                    method, expose, supplier
+                );
+            } catch (Throwable e) {
+                continue;
+            }
 
             Alias alias = new Alias(name);
             if (count == 0) {
                 // register getter
                 addGetter(
-                    alias, method1
+                    alias, handle
                 );
             } else {
                 // register setter
-                put(alias, method1);
+                put(alias, handle);
 
                 // check use index
                 if (direct && expose != null) {
-                    int h = expose.index();
-                    if (h >= 0) put(
-                        h, method1.clone()
-                    );
+                    int k = expose.index();
+                    if (k >= 0) {
+                        put(k, handle.clone());
+                    }
                 }
             }
         }
@@ -318,68 +325,68 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
     protected void onConstructors(
         @NotNull Constructor<?>[] constructors
     ) {
-        Constructor<?> c = constructors[0];
+        Constructor<?> b = constructors[0];
         for (int i = 1; i < constructors.length; i++) {
-            if (c.getParameterCount() <
-                constructors[i].getParameterCount()) {
-                c = constructors[i];
+            Constructor<?> c = constructors[i];
+            if (b.getParameterCount() <
+                c.getParameterCount()) {
+                b = c;
             }
         }
 
-        c.setAccessible(true);
-        args = c.getParameterCount();
-        builder = (Constructor<T>) c;
+        args = b.getParameterCount();
+        b.setAccessible(true);
+        builder = (Constructor<T>) b;
 
-        if (args != 0) {
-            register(c, supplier);
-        }
-    }
-
-    private void register(
-        @NotNull Constructor<?> b,
-        @NotNull Supplier supplier
-    ) {
-        Parameter[] ps = null;
-        params = new KatMap<>();
-
-        Class<?>[] cs = b.getParameterTypes();
-        Type[] ts = b.getGenericParameterTypes();
-        Annotation[][] as = b.getParameterAnnotations();
-
-        for (int i = 0; i < cs.length; i++) {
-            Format format = null;
-            Expose expose = null;
-            for (Annotation a : as[i]) {
-                Class<?> at = a.annotationType();
-                if (at == Expose.class) {
-                    expose = (Expose) a;
-                } else if (at == Format.class) {
-                    format = (Format) a;
-                }
+        if (args == 0) {
+            try {
+                handle = lookup.
+                    unreflectConstructor(b);
+            } catch (Throwable e) {
+                // Nothing
             }
+        } else {
+            Parameter[] ps = null;
+            params = new KatMap<>();
 
-            Coder<?> c = Reflex.activate(
-                cs[i], expose, format, supplier
-            );
+            Class<?>[] cs = b.getParameterTypes();
+            Type[] ts = b.getGenericParameterTypes();
+            Annotation[][] as = b.getParameterAnnotations();
 
-            Param1 param =
-                new Param1(
-                    i, c, ts[i], cs[i]
-                );
-
-            if (expose == null) {
-                if (ps == null) {
-                    ps = b.getParameters();
+            for (int i = 0; i < cs.length; i++) {
+                Format format = null;
+                Expose expose = null;
+                for (Annotation a : as[i]) {
+                    Class<?> at = a.annotationType();
+                    if (at == Expose.class) {
+                        expose = (Expose) a;
+                    } else if (at == Format.class) {
+                        format = (Format) a;
+                    }
                 }
-                params.put(
-                    ps[i].getName(), param
+
+                Coder<?> c = Reflect.activate(
+                    cs[i], expose, format, supplier
                 );
-            } else {
-                String[] keys = expose.value();
-                for (int k = 0; k < keys.length; k++) {
+
+                Arg arg = new Arg(
+                    cs[i], ts[i], i, c
+                );
+
+                if (expose == null) {
+                    if (ps == null) {
+                        ps = b.getParameters();
+                    }
                     params.put(
-                        keys[k], k == 0 ? param : param.clone()
+                        ps[i].getName(), arg
                     );
+                } else {
+                    String[] keys = expose.value();
+                    for (int k = 0; k < keys.length; k++) {
+                        params.put(
+                            keys[k], k == 0 ? arg : arg.clone()
+                        );
+                    }
                 }
             }
         }
@@ -389,23 +396,25 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
      * @author kraity
      * @since 0.0.2
      */
-    static class Param1 extends
-        KatMap.Entry<String, Param1> implements Param {
+    static class Arg extends
+        Entry<String, Param> implements Param {
 
+        final Class<?> klass;
+        final Type type;
         final int index;
         final Coder<?> coder;
-        final Type type;
-        final Class<?> klass;
 
-        public Param1(
-            int index, Coder<?> coder,
-            Type type, Class<?> klass
+        public Arg(
+            Class<?> klass,
+            Type type,
+            int index,
+            Coder<?> coder
         ) {
             super(0);
+            this.klass = klass;
+            this.type = type;
             this.index = index;
             this.coder = coder;
-            this.type = type;
-            this.klass = klass;
         }
 
         @Override
@@ -429,9 +438,9 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
         }
 
         @Override
-        public Param1 clone() {
-            return new Param1(
-                index, coder, type, klass
+        public Arg clone() {
+            return new Arg(
+                klass, type, index, coder
             );
         }
     }
@@ -440,201 +449,110 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
      * @author kraity
      * @since 0.0.2
      */
-    static class Field1<K> extends Node<K>
+    static class Handle<K> extends Node<K>
         implements Setter<K, Object>, Getter<K, Object> {
 
-        final Field field;
-        final Coder<?> coder;
-        final Type type;
         final Class<?> klass;
+        final Type type;
+        final Coder<?> coder;
         final boolean nullable;
+        final MethodHandle setter;
+        final MethodHandle getter;
 
-        public Field1(
-            Field1<?> field
+        public Handle(
+            Handle<?> handle
         ) {
-            this.field = field.field;
-            this.coder = field.coder;
-            this.type = field.type;
-            this.klass = field.klass;
-            this.nullable = field.nullable;
+            this.klass = handle.klass;
+            this.type = handle.type;
+            this.coder = handle.coder;
+            this.setter = handle.setter;
+            this.getter = handle.getter;
+            this.nullable = handle.nullable;
         }
 
-        public Field1(
+        public Handle(
             Field field,
             Expose expose,
             Supplier supplier
-        ) {
+        ) throws IllegalAccessException {
             super(expose == null
                 ? -1 : expose.index()
             );
-            this.field = field;
-            field.setAccessible(true);
 
-            this.klass = field.getType();
-            this.type = field.getGenericType();
-            this.nullable = field.getAnnotation(NotNull.class) == null;
+            klass = field.getType();
+            type = field.getGenericType();
+
+            field.setAccessible(true);
+            setter = lookup.unreflectSetter(field);
+            getter = lookup.unreflectGetter(field);
+            nullable = field.getAnnotation(NotNull.class) == null;
 
             Format format = field
                 .getAnnotation(Format.class);
-            this.coder = Reflex.activate(
+            coder = Reflect.activate(
                 klass, expose, format, supplier
             );
         }
 
-        @Override
-        @Nullable
-        public Object apply(
-            @NotNull K it
-        ) {
-            try {
-                return field.get(it);
-            } catch (Exception e) {
-                // nothing
-            }
-            return null;
-        }
-
-        @Override
-        @Nullable
-        public Object onApply(
-            @NotNull Object it
-        ) {
-            try {
-                return field.get(it);
-            } catch (Exception e) {
-                // nothing
-            }
-            return null;
-        }
-
-        @Override
-        public void accept(
-            @NotNull K it,
-            @Nullable Object val
-        ) {
-            if (val != null || nullable) {
-                try {
-                    field.set(it, val);
-                } catch (Exception e) {
-                    // nothing
-                }
-            }
-        }
-
-        @Override
-        public void onAccept(
-            @NotNull K it,
-            @Nullable Object val
-        ) {
-            if (val != null || nullable) {
-                try {
-                    field.set(it, val);
-                } catch (Exception e) {
-                    // nothing
-                }
-            }
-        }
-
-        @Override
-        public Coder<?> getCoder() {
-            return coder;
-        }
-
-        @Override
-        public Type getType() {
-            return type;
-        }
-
-        @Override
-        public Class<?> getKlass() {
-            return klass;
-        }
-
-        @Override
-        public Field1<K> clone() {
-            return new Field1<>(this);
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.2
-     */
-    static class Method1<K> extends Node<K>
-        implements Setter<K, Object>, Getter<K, Object> {
-
-        final Method method;
-        final Coder<?> coder;
-        final Type type;
-        final Class<?> klass;
-
-        public Method1(
-            Method1<?> method
-        ) {
-            this.coder = method.coder;
-            this.type = method.type;
-            this.klass = method.klass;
-            this.method = method.method;
-        }
-
-        public Method1(
+        public Handle(
             Method method,
             Expose expose,
             Supplier supplier
-        ) {
+        ) throws IllegalAccessException {
             super(expose == null
                 ? -1 : expose.index()
             );
+
             switch (method.getParameterCount()) {
                 case 0: {
-                    this.klass = method.getReturnType();
-                    this.type = klass;
+                    type = klass = method.getReturnType();
                     break;
                 }
                 case 1: {
-                    this.klass = method.getParameterTypes()[0];
-                    this.type = method.getGenericParameterTypes()[0];
+                    klass = method.getParameterTypes()[0];
+                    type = method.getGenericParameterTypes()[0];
                     break;
                 }
                 default: {
                     throw new NullPointerException(
-                        "Unexpectedly the parameter length of '" + method.getName() + "' is greater than '1'"
+                        "Unexpectedly, the parameter length of '" + method.getName() + "' is greater than '1'"
                     );
                 }
             }
 
-            this.method = method;
             method.setAccessible(true);
+            getter = setter = lookup.unreflect(method);
+            nullable = method.getAnnotation(NotNull.class) == null;
 
             Format format = method
                 .getAnnotation(Format.class);
-            this.coder = Reflex.activate(
+            coder = Reflect.activate(
                 klass, expose, format, supplier
             );
         }
 
-        @Override
         @Nullable
+        @Override
         public Object apply(
             @NotNull K it
         ) {
             try {
-                return method.invoke(it);
-            } catch (Exception e) {
-                // nothing
+                return getter.invoke(it);
+            } catch (Throwable e) {
+                // Nothing
             }
             return null;
         }
 
-        @Override
         @Nullable
+        @Override
         public Object onApply(
             @NotNull Object it
         ) {
             try {
-                return method.invoke(it);
-            } catch (Exception e) {
-                // nothing
+                return getter.invoke(it);
+            } catch (Throwable e) {
+                // Nothing
             }
             return null;
         }
@@ -644,10 +562,12 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
             @NotNull K it,
             @Nullable Object val
         ) {
-            try {
-                method.invoke(it, val);
-            } catch (Exception e) {
-                // nothing
+            if (val != null || nullable) {
+                try {
+                    setter.invoke(it, val);
+                } catch (Throwable e) {
+                    // Nothing
+                }
             }
         }
 
@@ -656,10 +576,12 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
             @NotNull K it,
             @Nullable Object val
         ) {
-            try {
-                method.invoke(it, val);
-            } catch (Exception e) {
-                // nothing
+            if (val != null || nullable) {
+                try {
+                    setter.invoke(it, val);
+                } catch (Throwable e) {
+                    // Nothing
+                }
             }
         }
 
@@ -679,8 +601,8 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
         }
 
         @Override
-        public Method1<K> clone() {
-            return new Method1<>(this);
+        public Handle<K> clone() {
+            return new Handle<>(this);
         }
     }
 }
