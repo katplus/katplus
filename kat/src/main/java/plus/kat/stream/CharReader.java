@@ -17,6 +17,8 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
+import static plus.kat.stream.Reader.Bucket.INS;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -24,21 +26,26 @@ import plus.kat.anno.NotNull;
 public class CharReader implements Reader {
 
     private int index;
-    private int range;
     private int offset;
 
-    private final int length;
+    private int begin;
+    private final int end;
+
     private byte[] cache;
     private CharSequence value;
 
     public CharReader(
         @NotNull CharSequence data
     ) {
-        range = 16;
-        index = 16;
+        if (data == null) {
+            throw new NullPointerException();
+        }
+
         value = data;
-        cache = new byte[16];
-        length = data.length();
+        end = data.length();
+        cache = INS.alloc(this, 64);
+        index = cache.length;
+        offset = cache.length;
     }
 
     /**
@@ -47,18 +54,24 @@ public class CharReader implements Reader {
     public CharReader(
         @NotNull CharSequence data, int index, int length
     ) {
+        if (data == null) {
+            throw new NullPointerException();
+        }
+
+        int end = index + length;
         if (index < 0 ||
-            index >= length ||
-            length > data.length()
+            end <= index ||
+            end > data.length()
         ) {
             throw new IndexOutOfBoundsException();
         }
 
         this.value = data;
-        this.index = 16;
-        this.range = 16;
-        this.cache = new byte[16];
-        this.length = length;
+        this.begin = index;
+        this.end = end;
+        this.cache = INS.alloc(this, 64);
+        this.index = cache.length;
+        this.offset = cache.length;
     }
 
     @Override
@@ -68,13 +81,13 @@ public class CharReader implements Reader {
 
     @Override
     public boolean also() {
-        if (index < range) {
+        if (index < offset) {
             return true;
         }
 
-        if (range > 0) {
-            range = read(cache);
-            if (range > 0) {
+        if (offset > 0) {
+            offset = read(cache);
+            if (offset > 0) {
                 index = 0;
                 return true;
             }
@@ -87,9 +100,9 @@ public class CharReader implements Reader {
         @NotNull byte[] buf
     ) {
         int i = 0, l = buf.length;
-        for (; i < l && offset < length; offset++) {
+        for (; i < l && begin < end; begin++) {
             // get char
-            char c = value.charAt(offset);
+            char c = value.charAt(begin);
 
             // U+0000 ~ U+007F
             if (c < 0x80) {
@@ -107,12 +120,12 @@ public class CharReader implements Reader {
             // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
             else if (c >= 0xD800 && c <= 0xDFFF) {
                 if (i + 4 > l) break;
-                if (++offset >= length) {
+                if (++begin >= end) {
                     buf[i++] = '?';
                     break;
                 }
 
-                char d = value.charAt(offset);
+                char d = value.charAt(begin);
                 if (d < 0xDC00 || d > 0xDFFF) {
                     buf[i++] = '?';
                     continue;
@@ -139,7 +152,10 @@ public class CharReader implements Reader {
 
     @Override
     public void close() {
-        range = 0;
+        INS.revert(
+            this, cache
+        );
+        offset = 0;
         value = null;
         cache = null;
     }

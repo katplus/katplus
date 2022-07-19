@@ -19,8 +19,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import java.io.*;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.net.*;
 import java.nio.file.Path;
 import javax.crypto.Cipher;
@@ -615,16 +614,16 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * @throws IndexOutOfBoundsException If the index and the range are out of range
+     * @throws IndexOutOfBoundsException If the index and the length are out of range
      * @see CharAsciiReader#CharAsciiReader(CharSequence, int, int)
      */
     @NotNull
     public static <T> Event<T> ascii(
-        @NotNull CharSequence data, int index, int range
+        @NotNull CharSequence data, int index, int length
     ) {
         return new Event<>(
             new CharAsciiReader(
-                data, index, range
+                data, index, length
             )
         );
     }

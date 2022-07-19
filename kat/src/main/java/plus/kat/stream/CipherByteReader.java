@@ -28,10 +28,10 @@ import javax.crypto.Cipher;
 public class CipherByteReader implements Reader {
 
     private int index;
-    private int range;
-
-    private int length;
     private int offset;
+
+    private int begin;
+    private int end;
     private byte[] value;
 
     private byte[] cache;
@@ -41,30 +41,50 @@ public class CipherByteReader implements Reader {
      * @throws NullPointerException If the specified {@code data} or {@code cipher} is null
      */
     public CipherByteReader(
-        @NotNull byte[] data, @NotNull Cipher cipher
+        @NotNull byte[] data,
+        @NotNull Cipher cipher
     ) {
-        this(data, data.length, cipher, 32);
-    }
-
-    /**
-     * @throws NullPointerException      If the specified {@code data} or {@code cipher} is null
-     * @throws IndexOutOfBoundsException If the index and the range are out of range
-     */
-    public CipherByteReader(
-        @NotNull byte[] data, int length, @NotNull Cipher cipher, int range
-    ) {
-        if (range < 16) {
-            throw new IndexOutOfBoundsException();
-        }
-
-        if (data == null || cipher == null) {
+        if (data == null ||
+            cipher == null) {
             throw new NullPointerException();
         }
 
         this.value = data;
-        this.range = range;
-        this.length = length;
         this.cipher = cipher;
+        this.end = data.length;
+        this.index = data.length;
+        this.offset = data.length;
+    }
+
+    /**
+     * @throws NullPointerException      If the specified {@code data} or {@code cipher} is null
+     * @throws IndexOutOfBoundsException If the index and the length are out of range
+     */
+    public CipherByteReader(
+        @NotNull byte[] data,
+        int index,
+        int length,
+        @NotNull Cipher cipher
+    ) {
+        if (data == null ||
+            cipher == null) {
+            throw new NullPointerException();
+        }
+
+        int offset = index + length;
+        if (index < 0 ||
+            offset <= index ||
+            offset > data.length
+        ) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        this.value = data;
+        this.cipher = cipher;
+        this.begin = index;
+        this.end = offset;
+        this.index = data.length;
+        this.offset = data.length;
     }
 
     @Override
@@ -74,13 +94,13 @@ public class CipherByteReader implements Reader {
 
     @Override
     public boolean also() throws IOCrash {
-        if (index < range) {
+        if (index < offset) {
             return true;
         }
 
-        if (range > 0) try {
-            range = read(value);
-            if (range > 0) {
+        if (offset > 0) try {
+            offset = read(value);
+            if (offset > 0) {
                 index = 0;
                 return true;
             }
@@ -94,12 +114,12 @@ public class CipherByteReader implements Reader {
     private int read(
         @NotNull byte[] buf
     ) {
-        int more = length - offset;
+        int more = end - begin;
         if (more > 0) {
-            if (more > range) {
-                more = range;
+            if (more > offset) {
+                more = offset;
             }
-            offset += more;
+            begin += more;
             cache = cipher.update(
                 buf, 0, more
             );
@@ -124,13 +144,13 @@ public class CipherByteReader implements Reader {
         value = null;
         cache = null;
 
-        if (range != -1) try {
+        if (offset != -1) try {
             cipher.doFinal();
         } catch (Exception e) {
             // NOOP
         } finally {
-            range = 0;
-            length = 0;
+            end = 0;
+            offset = 0;
             cipher = null;
         }
     }

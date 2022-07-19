@@ -21,6 +21,8 @@ import plus.kat.crash.*;
 
 import java.io.InputStream;
 
+import static plus.kat.stream.Reader.Bucket.INS;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -28,7 +30,7 @@ import java.io.InputStream;
 public class InputStreamReader implements Reader {
 
     private int index;
-    private int range;
+    private int offset;
 
     private byte[] cache;
     private InputStream value;
@@ -36,27 +38,14 @@ public class InputStreamReader implements Reader {
     public InputStreamReader(
         @NotNull InputStream data
     ) {
-        this(data, 16);
-    }
-
-    /**
-     * @throws IndexOutOfBoundsException If the range is less than {@code 4}
-     */
-    public InputStreamReader(
-        @NotNull InputStream data, int range
-    ) {
         if (data == null) {
             throw new NullPointerException();
         }
 
-        if (range < 4) {
-            throw new IndexOutOfBoundsException();
-        }
-
         this.value = data;
-        this.index = range;
-        this.range = range;
-        this.cache = new byte[range];
+        this.cache = INS.alloc(this);
+        this.index = cache.length;
+        this.offset = cache.length;
     }
 
     @Override
@@ -66,16 +55,16 @@ public class InputStreamReader implements Reader {
 
     @Override
     public boolean also() throws IOCrash {
-        if (index < range) {
+        if (index < offset) {
             return true;
         }
 
-        if (range > 0) try {
-            range = value.read(
+        if (offset > 0) try {
+            offset = value.read(
                 cache, 0, cache.length
             );
 
-            if (range > 0) {
+            if (offset > 0) {
                 index = 0;
                 return true;
             }
@@ -89,11 +78,14 @@ public class InputStreamReader implements Reader {
     @Override
     public void close() {
         try {
+            INS.revert(
+                this, cache
+            );
             value.close();
         } catch (Exception e) {
             // NOOP
         } finally {
-            range = 0;
+            offset = 0;
             cache = null;
             value = null;
         }

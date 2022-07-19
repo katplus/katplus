@@ -22,6 +22,8 @@ import plus.kat.crash.*;
 import javax.crypto.Cipher;
 import java.io.InputStream;
 
+import static plus.kat.stream.Reader.Bucket.INS;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -29,7 +31,7 @@ import java.io.InputStream;
 public class CipherStreamReader implements Reader {
 
     private int index;
-    private int range;
+    private int offset;
 
     private byte[] cache;
     private byte[] buffer;
@@ -41,28 +43,16 @@ public class CipherStreamReader implements Reader {
         @NotNull InputStream data,
         @NotNull Cipher cipher
     ) {
-        this(data, cipher, 64);
-    }
-
-    /**
-     * @throws IndexOutOfBoundsException If the range is less than {@code 32}
-     */
-    public CipherStreamReader(
-        @NotNull InputStream data, @NotNull Cipher cipher, int range
-    ) {
-        if (data == null) {
+        if (data == null ||
+            cipher == null) {
             throw new NullPointerException();
         }
 
-        if (range < 32) {
-            throw new IndexOutOfBoundsException();
-        }
-
         this.value = data;
-        this.index = range;
-        this.range = range;
         this.cipher = cipher;
-        this.buffer = new byte[range];
+        this.buffer = INS.alloc(this);
+        this.index = buffer.length;
+        this.offset = buffer.length;
     }
 
     @Override
@@ -72,13 +62,13 @@ public class CipherStreamReader implements Reader {
 
     @Override
     public boolean also() throws IOCrash {
-        if (index < range) {
+        if (index < offset) {
             return true;
         }
 
-        if (range > 0) try {
-            range = read(buffer);
-            if (range > 0) {
+        if (offset > 0) try {
+            offset = read(buffer);
+            if (offset > 0) {
                 index = 0;
                 return true;
             }
@@ -116,14 +106,17 @@ public class CipherStreamReader implements Reader {
     @Override
     public void close() {
         try {
+            INS.revert(
+                this, buffer
+            );
             value.close();
-            if (range != -1) {
+            if (offset != -1) {
                 cipher.doFinal();
             }
         } catch (Exception e) {
             // NOOP
         } finally {
-            range = 0;
+            offset = 0;
             cache = null;
             value = null;
             cipher = null;

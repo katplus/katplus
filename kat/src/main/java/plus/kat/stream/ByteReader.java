@@ -26,7 +26,7 @@ import plus.kat.chain.*;
 public class ByteReader implements Reader {
 
     private int index;
-    private int length;
+    private int offset;
     private byte[] value;
 
     /**
@@ -35,8 +35,12 @@ public class ByteReader implements Reader {
     public ByteReader(
         @NotNull byte[] data
     ) {
+        if (data == null) {
+            throw new NullPointerException();
+        }
+
         this.value = data;
-        this.length = data.length;
+        this.offset = data.length;
     }
 
     /**
@@ -51,22 +55,26 @@ public class ByteReader implements Reader {
 
     /**
      * @throws NullPointerException      If the specified {@code data} is null
-     * @throws IndexOutOfBoundsException If the index and the range are out of range
+     * @throws IndexOutOfBoundsException If the index and the length are out of range
      */
     public ByteReader(
         @NotNull byte[] data, int index, int length
     ) {
+        if (data == null) {
+            throw new NullPointerException();
+        }
+
+        int offset = index + length;
         if (index < 0 ||
-            index >= data.length ||
-            length <= index ||
-            length > data.length
+            offset <= index ||
+            offset > data.length
         ) {
             throw new IndexOutOfBoundsException();
         }
 
         this.value = data;
         this.index = index;
-        this.length = length;
+        this.offset = offset;
     }
 
     @Override
@@ -76,12 +84,12 @@ public class ByteReader implements Reader {
 
     @Override
     public boolean also() {
-        return index < length;
+        return index < offset;
     }
 
     @Override
     public void close() {
         value = null;
-        length = 0;
+        offset = 0;
     }
 }

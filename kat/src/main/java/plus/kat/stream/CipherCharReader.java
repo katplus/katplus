@@ -21,6 +21,8 @@ import plus.kat.crash.*;
 
 import javax.crypto.Cipher;
 
+import static plus.kat.stream.Reader.Bucket.INS;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -28,39 +30,60 @@ import javax.crypto.Cipher;
 public class CipherCharReader implements Reader {
 
     private int index;
-    private int range;
     private int offset;
+
+    private int begin;
+    private final int end;
 
     private byte[] cache;
     private byte[] buffer;
 
     private Cipher cipher;
-    private final int length;
     private CharSequence value;
 
     public CipherCharReader(
         @NotNull CharSequence data,
         @NotNull Cipher cipher
     ) {
-        this(data, cipher, 64);
+        if (data == null ||
+            cipher == null) {
+            throw new NullPointerException();
+        }
+
+        this.value = data;
+        this.cipher = cipher;
+        this.end = data.length();
+        this.buffer = INS.alloc(this, 64);
+        this.index = buffer.length;
+        this.offset = buffer.length;
     }
 
-    /**
-     * @throws IndexOutOfBoundsException If the range is less than {@code 32}
-     */
     public CipherCharReader(
-        @NotNull CharSequence data, @NotNull Cipher cipher, int range
+        @NotNull CharSequence data,
+        int index,
+        int length,
+        @NotNull Cipher cipher
     ) {
-        if (range < 32) {
+        if (data == null ||
+            cipher == null) {
+            throw new NullPointerException();
+        }
+
+        int offset = index + length;
+        if (index < 0 ||
+            offset <= index ||
+            offset > data.length()
+        ) {
             throw new IndexOutOfBoundsException();
         }
 
         this.value = data;
-        this.index = range;
-        this.range = range;
         this.cipher = cipher;
-        this.buffer = new byte[range];
-        this.length = data.length();
+        this.begin = index;
+        this.end = offset;
+        this.buffer = INS.alloc(this, 64);
+        this.index = buffer.length;
+        this.offset = buffer.length;
     }
 
     @Override
@@ -70,13 +93,13 @@ public class CipherCharReader implements Reader {
 
     @Override
     public boolean also() throws IOCrash {
-        if (index < range) {
+        if (index < offset) {
             return true;
         }
 
-        if (range > 0) {
-            range = read(buffer);
-            if (range > 0) {
+        if (offset > 0) {
+            offset = read(buffer);
+            if (offset > 0) {
                 index = 0;
                 return true;
             }
@@ -89,8 +112,8 @@ public class CipherCharReader implements Reader {
         @NotNull byte[] buf
     ) {
         int i = 0, l = buf.length;
-        for (; i < l && offset < length; offset++) {
-            buf[i++] = (byte) value.charAt(offset);
+        for (; i < l && begin < end; begin++) {
+            buf[i++] = (byte) value.charAt(begin);
         }
 
         if (i > 0) {
@@ -115,16 +138,19 @@ public class CipherCharReader implements Reader {
 
     @Override
     public void close() {
+        INS.revert(
+            this, buffer
+        );
         value = null;
         cache = null;
         buffer = null;
 
-        if (range != -1) try {
+        if (offset != -1) try {
             cipher.doFinal();
         } catch (Exception e) {
             // NOOP
         } finally {
-            range = 0;
+            offset = 0;
             cipher = null;
         }
     }

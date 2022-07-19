@@ -15,7 +15,13 @@
  */
 package plus.kat.stream;
 
+import plus.kat.anno.NotNull;
+import plus.kat.anno.Nullable;
+
 import plus.kat.crash.*;
+import plus.kat.utils.Config;
+
+import java.util.concurrent.atomic.*;
 
 /**
  * @author kraity
@@ -56,5 +62,73 @@ public interface Reader {
      */
     default void close() {
         // nothing
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    class Bucket extends AtomicReferenceArray<byte[]> {
+
+        static final int SIZE, SCALE;
+
+        static {
+            SIZE = Config.get(
+                "kat.reader.size", 4
+            );
+            SCALE = Config.get(
+                "kat.reader.scale", 1024 * 4
+            );
+        }
+
+        static final Bucket
+            INS = new Bucket();
+
+        private Bucket() {
+            super(SIZE);
+        }
+
+        @NotNull
+        public byte[] alloc(
+            @NotNull Reader r
+        ) {
+            return alloc(
+                r, SCALE
+            );
+        }
+
+        @NotNull
+        public byte[] alloc(
+            @NotNull Reader r,
+            @NotNull int scale
+        ) {
+            int h = r.hashCode();
+            h = h ^ (h >> 16);
+
+            byte[] it = getAndSet(
+                h % SIZE, null
+            );
+
+            if (it != null) {
+                return it;
+            }
+
+            return new byte[scale];
+        }
+
+        public void revert(
+            @NotNull Reader r,
+            @Nullable byte[] it
+        ) {
+            if (it != null &&
+                it.length >= SCALE) {
+                int h = r.hashCode();
+                h = h ^ (h >> 16);
+
+                this.set(
+                    h % SIZE, it
+                );
+            }
+        }
     }
 }

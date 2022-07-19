@@ -24,33 +24,41 @@ import plus.kat.anno.NotNull;
 public class CharAsciiReader implements Reader {
 
     private int index;
-    private int range;
+    private int offset;
     private CharSequence value;
 
     public CharAsciiReader(
         @NotNull CharSequence data
     ) {
+        if (data == null) {
+            throw new NullPointerException();
+        }
+
         this.value = data;
-        this.range = data.length();
+        this.offset = data.length();
     }
 
     /**
-     * @throws IndexOutOfBoundsException If the index and the range are out of range
+     * @throws IndexOutOfBoundsException If the index and the length are out of range
      */
     public CharAsciiReader(
-        @NotNull CharSequence data, int index, int range
+        @NotNull CharSequence data, int index, int length
     ) {
+        if (data == null) {
+            throw new NullPointerException();
+        }
+
+        int offset = index + length;
         if (index < 0 ||
-            index >= data.length() ||
-            range <= index ||
-            range > data.length()
+            offset <= index ||
+            offset > data.length()
         ) {
             throw new IndexOutOfBoundsException();
         }
 
         this.value = data;
         this.index = index;
-        this.range = range;
+        this.offset = offset;
     }
 
     @Override
@@ -60,12 +68,12 @@ public class CharAsciiReader implements Reader {
 
     @Override
     public boolean also() {
-        return index < range;
+        return index < offset;
     }
 
     @Override
     public void close() {
-        range = 0;
+        offset = 0;
         value = null;
     }
 }
