@@ -197,9 +197,12 @@ public abstract class AspectSpare<K> extends KatMap<Object, Setter<K, ?>> implem
     ) throws IOCrash {
         Node<K> node = head;
         while (node != null) {
-            chan.set(
-                node.key, node.getCoder(), node.onApply(value)
-            );
+            Object val = node.onApply(value);
+            if (val != null || node.nullable) {
+                chan.set(
+                    node.key, node.getCoder(), val
+                );
+            }
             node = node.next;
         }
     }
@@ -332,6 +335,7 @@ public abstract class AspectSpare<K> extends KatMap<Object, Setter<K, ?>> implem
 
         Node<E> next;
         CharSequence key;
+        boolean nullable;
 
         public Node() {
             super(0);

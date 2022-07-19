@@ -455,7 +455,6 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
         final Class<?> klass;
         final Type type;
         final Coder<?> coder;
-        final boolean nullable;
         final MethodHandle setter;
         final MethodHandle getter;
 
