@@ -96,7 +96,9 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
     protected void onFields(
         @NotNull Field[] fields
     ) {
+        boolean sealed = (flags & Embed.SEALED) != 0;
         boolean direct = (flags & Embed.DIRECT) != 0;
+
         for (Field field : fields) {
             // its modifier
             int mod = field.getModifiers();
@@ -110,8 +112,17 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
                 .getAnnotation(
                     Expose.class
                 );
+
             if (expose == null) {
-                continue;
+                // check flag
+                if (sealed) {
+                    continue;
+                }
+
+                // check its modifier
+                if ((mod & Modifier.PUBLIC) == 0) {
+                    continue;
+                }
             }
 
             Handle<T> handle;
@@ -123,34 +134,58 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
                 continue;
             }
 
+            if (expose == null) {
+                String name = field.getName();
+                // register getter
+                addGetter(
+                    name, handle
+                );
+
+                // register setter
+                put(
+                    name, handle.clone()
+                );
+                continue;
+            }
+
             int k = handle.getHash();
             // check use index
             if (direct && k > -1) {
-                put(k, handle.clone());
+                put(
+                    k, handle.clone()
+                );
             }
 
             String[] keys = expose.value();
             if (keys.length == 0) {
                 String name = field.getName();
                 if (expose.export()) {
-                    // register getter
-                    addGetter(name, handle);
-                    // register setter
-                    put(name, handle.clone());
-                } else put(
-                    name, handle
-                );
+                    addGetter(
+                        name, handle
+                    );
+                    put(
+                        name, handle.clone()
+                    );
+                } else {
+                    put(
+                        name, handle
+                    );
+                }
             } else {
                 // register only the first alias
                 if (expose.export()) {
-                    addGetter(keys[0], handle);
+                    addGetter(
+                        keys[0], handle
+                    );
                 }
 
                 for (String alias : keys) {
                     // check empty
-                    if (!alias.isEmpty()) put(
-                        alias, handle.clone()
-                    );
+                    if (!alias.isEmpty()) {
+                        put(
+                            alias, handle.clone()
+                        );
+                    }
                 }
             }
         }

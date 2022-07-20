@@ -17,8 +17,6 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import static plus.kat.stream.Reader.Bucket.INS;
-
 /**
  * @author kraity
  * @since 0.0.1
@@ -43,7 +41,7 @@ public class CharReader implements Reader {
 
         value = data;
         end = data.length();
-        cache = INS.alloc(this, 64);
+        cache = new byte[64];
         index = cache.length;
         offset = cache.length;
     }
@@ -69,7 +67,7 @@ public class CharReader implements Reader {
         this.value = data;
         this.begin = index;
         this.end = end;
-        this.cache = INS.alloc(this, 64);
+        this.cache = new byte[64];
         this.index = cache.length;
         this.offset = cache.length;
     }
@@ -152,9 +150,6 @@ public class CharReader implements Reader {
 
     @Override
     public void close() {
-        INS.revert(
-            this, cache
-        );
         offset = 0;
         value = null;
         cache = null;

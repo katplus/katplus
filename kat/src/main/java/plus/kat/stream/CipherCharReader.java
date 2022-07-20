@@ -21,8 +21,6 @@ import plus.kat.crash.*;
 
 import javax.crypto.Cipher;
 
-import static plus.kat.stream.Reader.Bucket.INS;
-
 /**
  * @author kraity
  * @since 0.0.1
@@ -53,7 +51,7 @@ public class CipherCharReader implements Reader {
         this.value = data;
         this.cipher = cipher;
         this.end = data.length();
-        this.buffer = INS.alloc(this, 64);
+        this.buffer = new byte[64];
         this.index = buffer.length;
         this.offset = buffer.length;
     }
@@ -81,7 +79,7 @@ public class CipherCharReader implements Reader {
         this.cipher = cipher;
         this.begin = index;
         this.end = offset;
-        this.buffer = INS.alloc(this, 64);
+        this.buffer = new byte[64];
         this.index = buffer.length;
         this.offset = buffer.length;
     }
@@ -138,9 +136,6 @@ public class CipherCharReader implements Reader {
 
     @Override
     public void close() {
-        INS.revert(
-            this, buffer
-        );
         value = null;
         cache = null;
         buffer = null;

@@ -92,16 +92,6 @@ public interface Reader {
         public byte[] alloc(
             @NotNull Reader r
         ) {
-            return alloc(
-                r, SCALE
-            );
-        }
-
-        @NotNull
-        public byte[] alloc(
-            @NotNull Reader r,
-            @NotNull int scale
-        ) {
             int h = r.hashCode();
             h = h ^ (h >> 16);
 
@@ -113,7 +103,7 @@ public interface Reader {
                 return it;
             }
 
-            return new byte[scale];
+            return new byte[SCALE];
         }
 
         public void revert(

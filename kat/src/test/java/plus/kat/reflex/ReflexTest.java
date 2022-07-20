@@ -3,7 +3,6 @@ package plus.kat.reflex;
 import org.junit.jupiter.api.Test;
 
 import plus.kat.Event;
-import plus.kat.Json;
 import plus.kat.Kat;
 import plus.kat.Supplier;
 
@@ -51,7 +50,7 @@ public class ReflexTest {
 
         Author author = supplier.read(
             Author.class, Event.ascii(
-                "Author{$:id(1)$:tag(kat)$:name(kraity)}"
+                "Author{$:id(1)$:tag(kat)$:name(kraity)$:mark(down)}"
             )
         );
 
@@ -59,8 +58,8 @@ public class ReflexTest {
         assertEquals(1, author.id);
         assertEquals("kat", author.tag);
         assertEquals("kraity", author.name);
-        assertEquals("Author{s:tag(kat)}", Kat.encode(author));
-        assertNotEquals("Author{s:tag(kat)s:meta(plus)}", Kat.encode(author));
+        assertEquals("Author{s:tag(kat)s:mark(down)}", Kat.encode(author));
+        assertNotEquals("Author{s:tag(kat)s:mark(down)s:meta(plus)}", Kat.encode(author));
     }
 
     @Test
@@ -196,6 +195,8 @@ public class ReflexTest {
 
         @Expose("tag")
         private String tag;
+
+        public String mark;
 
         @Expose("meta")
         static String meta = "plus";

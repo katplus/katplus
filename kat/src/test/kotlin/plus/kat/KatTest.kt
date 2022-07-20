@@ -64,6 +64,7 @@ class KatKtTest {
 
         assertEquals(1, user.id)
         assertEquals("kraity", user.name)
+        assertEquals("User{i:id(1)s:name(kraity)b:blocked(0)}", supplier.write(user).toString())
     }
 
     @Test
