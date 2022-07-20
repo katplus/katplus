@@ -141,23 +141,6 @@ public class Event<T> implements Flag {
     /**
      * For example
      * <pre>{@code
-     *   Paper data = ...;
-     *   Event<User> event = new Event<>(data);
-     * }</pre>
-     *
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see ByteReader#ByteReader(Paper)
-     */
-    public Event(
-        @NotNull Paper data
-    ) {
-        this(Event.class);
-        reader = new ByteReader(data);
-    }
-
-    /**
-     * For example
-     * <pre>{@code
      *   byte[] data = ...;
      *   Event<User> event = new Event<>(data);
      * }</pre>

@@ -50,12 +50,17 @@ public class ChanBuf {
         @NotNull Paper flow
     ) {
         int length = flow.length();
-        byte[] src = flow.getSource();
-
         if (length == 0) {
             return Unpooled.EMPTY_BUFFER;
         }
 
+        if (!flow.isShared()) {
+            return Unpooled.wrappedBuffer(
+                flow.copyBytes()
+            );
+        }
+
+        byte[] src = flow.getValue();
         if (length == src.length) {
             return Unpooled.wrappedBuffer(src);
         }

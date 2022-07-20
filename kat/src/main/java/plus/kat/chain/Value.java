@@ -91,6 +91,17 @@ public class Value extends Chain {
     }
 
     /**
+     * Returns {@code true} if, and only if, internal {@code byte[]} can be shared
+     *
+     * @see Chain#getValue()
+     * @since 0.0.2
+     */
+    @Override
+    public boolean isShared() {
+        return bucket == null;
+    }
+
+    /**
      * Returns a {@link Value} of this {@link Value}
      *
      * @param start the start index, inclusive

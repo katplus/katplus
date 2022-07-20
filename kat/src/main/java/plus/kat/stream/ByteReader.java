@@ -17,8 +17,6 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.chain.*;
-
 /**
  * @author kraity
  * @since 0.0.1
@@ -41,16 +39,6 @@ public class ByteReader implements Reader {
 
         this.value = data;
         this.offset = data.length;
-    }
-
-    /**
-     * @throws NullPointerException      If the specified {@code data} is null
-     * @throws IndexOutOfBoundsException If the index and the range are out of range
-     */
-    public ByteReader(
-        @NotNull Paper data
-    ) {
-        this(data.getSource(), 0, data.length());
     }
 
     /**

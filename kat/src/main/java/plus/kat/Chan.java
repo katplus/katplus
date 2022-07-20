@@ -557,11 +557,23 @@ public class Chan implements Flag {
     }
 
     /**
+     * close the internal {@link Paper}
+     *
+     * @see Paper#close()
+     * @since 0.0.2
+     */
+    public void closeFlow() {
+        flow.close();
+    }
+
+    /**
      * Returns a serialized string of {@link Flow}
+     *
+     * @see Paper#closePaper()
      */
     @Override
     public String toString() {
-        return flow.toString();
+        return flow.closePaper();
     }
 
     /**

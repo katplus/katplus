@@ -50,7 +50,7 @@ public class CipherStreamReader implements Reader {
 
         this.value = data;
         this.cipher = cipher;
-        this.buffer = INS.alloc(this);
+        this.buffer = INS.alloc();
         this.index = buffer.length;
         this.offset = buffer.length;
     }
@@ -107,7 +107,7 @@ public class CipherStreamReader implements Reader {
     public void close() {
         try {
             INS.revert(
-                this, buffer
+                buffer
             );
             value.close();
             if (offset != -1) {

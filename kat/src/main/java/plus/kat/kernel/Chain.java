@@ -19,9 +19,11 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import javax.crypto.*;
+import java.io.*;
 import java.security.*;
 import java.nio.charset.Charset;
 
+import plus.kat.crash.*;
 import plus.kat.stream.*;
 
 import static plus.kat.stream.Binary.*;
@@ -717,6 +719,17 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns {@code true} if, and only if, internal {@code byte[]} can be shared
+     *
+     * @see Chain#getValue()
+     * @see Chain#copyBytes()
+     * @since 0.0.2
+     */
+    public boolean isShared() {
+        return false;
+    }
+
+    /**
      * Only supports ASCII code comparison
      *
      * @param c the prefix
@@ -1105,6 +1118,23 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns the internal {@code byte[]}
+     *
+     * @throws RunCrash If the internal value cannot be shared
+     * @since 0.0.2
+     */
+    @NotNull
+    public byte[] getValue() {
+        if (isShared()) {
+            return value;
+        }
+
+        throw new RunCrash(
+            "Unexpectedly, the internal value cannot be shared"
+        );
+    }
+
+    /**
      * copy the internal UTF-8 {@code byte[]} to {@code char[]}
      *
      * @since 0.0.2 supports UTF-8
@@ -1231,6 +1261,32 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
         System.arraycopy(
             value, start, output, offset, length
+        );
+    }
+
+    /**
+     * @see OutputStream#write(byte[], int, int)
+     * @since 0.0.2
+     */
+    public void update(
+        @NotNull OutputStream s
+    ) throws IOException {
+        s.write(
+            value, 0, count
+        );
+    }
+
+    /**
+     * @param o offset
+     * @param l length
+     * @see OutputStream#write(byte[], int, int)
+     * @since 0.0.2
+     */
+    public void update(
+        @NotNull OutputStream s, int o, int l
+    ) throws IOException {
+        s.write(
+            value, o, l
         );
     }
 

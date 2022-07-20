@@ -186,12 +186,15 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             }
         }
 
-        chan.set(null, data);
-        Paper flow = chan.getFlow();
-
-        output.getBody().write(
-            flow.getSource(), 0, flow.length()
+        chan.set(
+            null, data
         );
+
+        Paper flow = chan.getFlow();
+        flow.update(
+            output.getBody()
+        );
+        chan.closeFlow();
     }
 
     @Override

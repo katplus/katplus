@@ -89,14 +89,12 @@ public interface Reader {
         }
 
         @NotNull
-        public byte[] alloc(
-            @NotNull Reader r
-        ) {
-            int h = r.hashCode();
-            h = h ^ (h >> 16);
+        public byte[] alloc() {
+            Thread th = Thread.currentThread();
+            int tr = th.hashCode() & 0xFFFFFF;
 
             byte[] it = getAndSet(
-                h % SIZE, null
+                tr % SIZE, null
             );
 
             if (it != null) {
@@ -107,16 +105,14 @@ public interface Reader {
         }
 
         public void revert(
-            @NotNull Reader r,
             @Nullable byte[] it
         ) {
-            if (it != null &&
-                it.length >= SCALE) {
-                int h = r.hashCode();
-                h = h ^ (h >> 16);
+            if (it != null && it.length >= SCALE) {
+                Thread th = Thread.currentThread();
+                int tr = th.hashCode() & 0xFFFFFF;
 
                 this.set(
-                    h % SIZE, it
+                    tr % SIZE, it
                 );
             }
         }

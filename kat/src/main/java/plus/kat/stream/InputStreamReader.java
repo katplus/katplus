@@ -43,7 +43,7 @@ public class InputStreamReader implements Reader {
         }
 
         this.value = data;
-        this.cache = INS.alloc(this);
+        this.cache = INS.alloc();
         this.index = cache.length;
         this.offset = cache.length;
     }
@@ -79,7 +79,7 @@ public class InputStreamReader implements Reader {
     public void close() {
         try {
             INS.revert(
-                this, cache
+                cache
             );
             value.close();
         } catch (Exception e) {

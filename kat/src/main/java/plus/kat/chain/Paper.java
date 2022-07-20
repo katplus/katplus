@@ -21,6 +21,9 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
+import plus.kat.utils.Config;
+
+import java.util.concurrent.atomic.*;
 
 import static plus.kat.stream.Binary.*;
 
@@ -36,7 +39,7 @@ public class Paper extends Value implements Flow {
      * default
      */
     public Paper() {
-        super();
+        super($Bucket.INS);
     }
 
     /**
@@ -54,7 +57,7 @@ public class Paper extends Value implements Flow {
     public Paper(
         long flags
     ) {
-        super();
+        super($Bucket.INS);
         this.flags = flags;
     }
 
@@ -107,54 +110,6 @@ public class Paper extends Value implements Flow {
         long flag
     ) {
         return (flags & flag) != 0;
-    }
-
-    /**
-     * clean this {@link Paper}
-     *
-     * @see Chain#clean()
-     */
-    public void clean() {
-        super.clean();
-    }
-
-    /**
-     * clear this {@link Paper}
-     *
-     * @see Chain#clear()
-     */
-    @Override
-    public void clear() {
-        super.clear();
-    }
-
-    /**
-     * close this {@link Paper}
-     *
-     * @see Chain#close()
-     */
-    @Override
-    public void close() {
-        super.close();
-    }
-
-    /**
-     * Set the specified source
-     */
-    public void setSource(
-        @Nullable byte[] src
-    ) {
-        hash = 0;
-        count = 0;
-        value = src != null ? src : EMPTY_BYTES;
-    }
-
-    /**
-     * Returns the internal byte array of {@link Paper}
-     */
-    @NotNull
-    public byte[] getSource() {
-        return value;
     }
 
     /**
@@ -795,6 +750,162 @@ public class Paper extends Value implements Flow {
                 value[count++] = upper((c >> 4) & 0x0F);
                 value[count++] = upper(c & 0x0F);
             }
+        }
+    }
+
+    /**
+     * clean this {@link Paper}
+     *
+     * @since 0.0.2
+     */
+    public void clean() {
+        hash = 0;
+        count = 0;
+    }
+
+    /**
+     * clear this {@link Paper}
+     *
+     * @since 0.0.2
+     */
+    public void clear() {
+        this.clean();
+        if (bucket == null) {
+            value = EMPTY_BYTES;
+        } else {
+            value = bucket.revert(value);
+        }
+    }
+
+    /**
+     * close this {@link Paper}
+     *
+     * @since 0.0.2
+     */
+    @Override
+    public void close() {
+        this.clean();
+        Bucket bt = bucket;
+        if (bt != null) {
+            if (value.length != 0) {
+                bt.push(value);
+            }
+        }
+        value = EMPTY_BYTES;
+    }
+
+    /**
+     * Close this {@link Paper} and returns the {@code byte[]} of this {@link Paper} as a {@link String}
+     *
+     * @since 0.0.2
+     */
+    @NotNull
+    public String closePaper() {
+        String text;
+        if (count == 0) {
+            text = "";
+            this.close();
+        } else {
+            char[] ch = Convert
+                .toCharArray(
+                    value, 0, count
+                );
+            this.close();
+            text = new String(ch);
+        }
+        return text;
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    private static class $Bucket extends AtomicReferenceArray<byte[]> implements Bucket {
+
+        private static final int SIZE, GROUP, SCALE;
+
+        static {
+            SIZE = Config.get(
+                "kat.paper.size", 4
+            );
+            GROUP = Config.get(
+                "kat.paper.group", 4
+            );
+            SCALE = Config.get(
+                "kat.paper.scale", 1024
+            );
+        }
+
+        private static final $Bucket
+            INS = new $Bucket();
+
+        private $Bucket() {
+            super(SIZE * GROUP);
+        }
+
+        @NotNull
+        @Override
+        public byte[] alloc(
+            @NotNull byte[] it, int len, int min
+        ) {
+            byte[] data;
+            int i = min / SCALE;
+
+            Thread th = Thread.currentThread();
+            int tr = th.hashCode() & 0xFFFFFF;
+
+            if (i >= GROUP) {
+                data = new byte[(i + 1) * SCALE - 1];
+            } else {
+                data = getAndSet(
+                    i * GROUP + tr % SIZE, null
+                );
+                if (data == null ||
+                    data.length < min) {
+                    data = new byte[(i + 1) * SCALE - 1];
+                }
+            }
+
+            if (it.length != 0) {
+                System.arraycopy(
+                    it, 0, data, 0, len
+                );
+
+                i = it.length / SCALE;
+                if (i < GROUP) {
+                    set(
+                        i * GROUP + tr % SIZE, it
+                    );
+                }
+            }
+
+            return data;
+        }
+
+        @Override
+        public void push(
+            @NotNull byte[] it
+        ) {
+            int i = it.length / SCALE;
+            if (i < GROUP) {
+                Thread th = Thread.currentThread();
+                int tr = th.hashCode() & 0xFFFFFF;
+
+                set(
+                    i * GROUP + tr % SIZE, it
+                );
+            }
+        }
+
+        @Nullable
+        @Override
+        public byte[] revert(
+            @NotNull byte[] it
+        ) {
+            if (it.length != 0) {
+                push(it);
+            }
+            return Chain.EMPTY_BYTES;
         }
     }
 }
