@@ -522,11 +522,13 @@ public interface Spare<K> extends Coder<K> {
                 }
             }
 
-            if (klass.isInterface()) {
+            if (klass.isInterface() ||
+                Kat.class.isAssignableFrom(klass)) {
                 return null;
             }
 
-            if (klass.isEnum()) {
+            Class<?> sc = klass.getSuperclass();
+            if (sc == Enum.class) {
                 put(klass, spare =
                     new EnumSpare(
                         klass, embed, supplier

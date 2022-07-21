@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
+import plus.kat.crash.Crash;
 
 import java.util.*;
 
@@ -44,6 +45,11 @@ public class KatTest {
 
     @Test
     public void test_encode1() {
+        assertEquals(
+            "E{i:c(403)s:m(error)}", Kat.encode(
+                new Crash("error", 403)
+            )
+        );
         assertEquals(
             "f(0x42F6E979)", Kat.encode(
                 123.456F, Flag.FLOAT_AS_BITMAP

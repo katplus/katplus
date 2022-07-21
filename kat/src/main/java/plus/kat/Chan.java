@@ -305,31 +305,10 @@ public class Chan implements Flag {
         // get spare specified
         Spare<?> spare = supplier.lookup(klass);
 
-        if (spare != null) {
-            return coding(
-                alias, spare, value
-            );
-        }
-
-        if (value instanceof Kat) {
-            return coding(
-                alias, (Kat) value
-            );
-        }
-
-        if (!klass.isArray()) {
+        if (spare == null) {
             return coding(
                 alias, value
             );
-        }
-
-        // get spare specified
-        spare = supplier.lookup(
-            Object[].class
-        );
-
-        if (spare == null) {
-            return false;
         }
 
         return coding(
@@ -444,6 +423,12 @@ public class Chan implements Flag {
         @Nullable CharSequence alias,
         @NotNull Object value
     ) throws IOCrash {
+        if (value instanceof Kat) {
+            return coding(
+                alias, (Kat) value
+            );
+        }
+
         if (value instanceof Map) {
             return coding(
                 alias, MapSpare.INSTANCE, value
