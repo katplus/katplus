@@ -360,20 +360,29 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
     protected void onConstructors(
         @NotNull Constructor<?>[] constructors
     ) {
-        Constructor<?> b = constructors[0];
+        Constructor<?> $ = null,
+            b = constructors[0];
         for (int i = 1; i < constructors.length; i++) {
             Constructor<?> c = constructors[i];
             if (b.getParameterCount() <
                 c.getParameterCount()) {
+                $ = b;
                 b = c;
+            } else if ($ == null) {
+                $ = c;
+            } else {
+                if ($.getParameterCount() <
+                    c.getParameterCount()) {
+                    $ = c;
+                }
             }
         }
 
-        args = b.getParameterCount();
         b.setAccessible(true);
         builder = (Constructor<T>) b;
 
-        if (args == 0) {
+        int count = b.getParameterCount();
+        if (count == 0) {
             try {
                 handle = lookup.
                     unreflectConstructor(b);
@@ -384,11 +393,21 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
             Parameter[] ps = null;
             params = new KatMap<>();
 
-            Class<?>[] cs = b.getParameterTypes();
+            args = b.getParameterTypes();
+            if ($ != null) {
+                int i = $.getParameterCount();
+                if (i + 2 == count && args[i] == int.class &&
+                    "kotlin.jvm.internal.DefaultConstructorMarker".equals(args[i + 1].getName())) {
+                    marker = true;
+                    b = $;
+                    args = $.getParameterTypes();
+                }
+            }
+
             Type[] ts = b.getGenericParameterTypes();
             Annotation[][] as = b.getParameterAnnotations();
 
-            for (int i = 0; i < cs.length; i++) {
+            for (int i = 0; i < args.length; i++) {
                 Format format = null;
                 Expose expose = null;
                 for (Annotation a : as[i]) {
@@ -401,11 +420,11 @@ public class ReflectSpare<T> extends AspectSpare<T> implements Maker<T> {
                 }
 
                 Coder<?> c = Reflect.activate(
-                    cs[i], expose, format, supplier
+                    args[i], expose, format, supplier
                 );
 
                 Arg arg = new Arg(
-                    cs[i], ts[i], i, c
+                    args[i], ts[i], i, c
                 );
 
                 if (expose == null) {

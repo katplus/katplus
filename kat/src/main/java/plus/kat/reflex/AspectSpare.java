@@ -38,10 +38,12 @@ public abstract class AspectSpare<K> extends KatMap<Object, Setter<K, ?>> implem
     protected final Class<K> klass;
     protected final CharSequence space;
 
-    protected int flags, args;
+    protected int flags;
+    protected boolean marker;
     protected Supplier supplier;
 
     protected Node<K> head, tail;
+    protected Class<?>[] args;
     protected KatMap<Object, Param> params;
 
     protected AspectSpare(
@@ -214,9 +216,7 @@ public abstract class AspectSpare<K> extends KatMap<Object, Setter<K, ?>> implem
         if (params == null) {
             return new Builder0<>(this);
         }
-        return new Builder1<>(
-            this, new Object[args]
-        );
+        return new Builder1<>(this);
     }
 
     @Override
@@ -345,6 +345,250 @@ public abstract class AspectSpare<K> extends KatMap<Object, Setter<K, ?>> implem
             int hash
         ) {
             super(hash);
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    public static class Builder1<K> extends Builder0<K> {
+
+        protected int count;
+        protected boolean marker;
+
+        protected Param param;
+        protected Cache<K> cache;
+
+        protected Object[] data;
+        protected Class<?>[] params;
+
+        public Builder1(
+            @NotNull AspectSpare<K> aspect
+        ) {
+            super(aspect);
+            this.params = aspect.args;
+            this.marker = aspect.marker;
+        }
+
+        @Override
+        public void onCreate(
+            @NotNull Alias alias
+        ) {
+            int size = params.length;
+            if (marker) {
+                size += 2;
+            }
+            data = new Object[size];
+        }
+
+        @Override
+        public void onAccept(
+            @Nullable Object value
+        ) throws IOCrash {
+            if (entity != null) {
+                setter.onAccept(
+                    entity, value
+                );
+            } else {
+                Cache<K> c = new Cache<>();
+                c.value = value;
+                c.setter = setter;
+
+                if (cache == null) {
+                    cache = c;
+                } else {
+                    cache.next = c;
+                }
+            }
+        }
+
+        @Override
+        public void onAccept(
+            @NotNull Space space,
+            @NotNull Alias alias,
+            @NotNull Value value
+        ) throws IOCrash {
+            if (entity == null) {
+                Param param = sketch.param(
+                    index, alias
+                );
+                if (param != null) {
+                    // increment
+                    ++this.index;
+
+                    // specified coder
+                    int i = param.getIndex();
+                    Coder<?> coder = param.getCoder();
+
+                    if (coder != null) {
+                        data[i] = coder.read(
+                            flag, value
+                        );
+                    } else {
+                        // specified spare
+                        coder = supplier.lookup(
+                            param.getKlass()
+                        );
+
+                        // skip if null
+                        if (coder != null) {
+                            data[i] = coder.read(
+                                flag, value
+                            );
+                        }
+                    }
+
+                    if (params.length == ++count) {
+                        this.embark();
+                    }
+                    return;
+                }
+            }
+
+            super.onAccept(
+                space, alias, value
+            );
+        }
+
+        @Override
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            if (entity != null) {
+                setter.onAccept(
+                    entity, child.getResult()
+                );
+            } else if (param == null) {
+                onAccept(
+                    child.getResult()
+                );
+            } else {
+                int i = param.getIndex();
+                param = null;
+                data[i] = child.getResult();
+                if (params.length == ++count) {
+                    this.embark();
+                }
+            }
+        }
+
+        @Override
+        public Builder<?> getBuilder(
+            @NotNull Space space,
+            @NotNull Alias alias
+        ) throws IOCrash {
+            if (entity == null) {
+                param = sketch.param(
+                    index, alias
+                );
+                if (param != null) {
+                    // increment
+                    ++this.index;
+
+                    // specified coder
+                    Coder<?> coder = param.getCoder();
+
+                    // skip if null
+                    if (coder == null) {
+                        // specified spare
+                        coder = supplier.lookup(
+                            param.getKlass()
+                        );
+
+                        // skip if null
+                        if (coder == null) {
+                            return null;
+                        }
+                    }
+
+                    return coder.getBuilder(
+                        param.getType()
+                    );
+                }
+            }
+
+            return super.getBuilder(
+                space, alias
+            );
+        }
+
+        /**
+         * @author kraity
+         * @since 0.0.2
+         */
+        static class Cache<K> {
+            Object value;
+            Cache<K> next;
+            Setter<K, ?> setter;
+        }
+
+        private void embark()
+            throws IOCrash {
+            if (marker) {
+                int i = 0, flag = 0;
+                for (; i < params.length; i++) {
+                    if (data[i] == null) {
+                        flag |= (1 << i);
+                        Class<?> c = params[i];
+                        if (c.isPrimitive()) {
+                            if (c == int.class) {
+                                data[i] = 0;
+                            } else if (c == long.class) {
+                                data[i] = 0L;
+                            } else if (c == float.class) {
+                                data[i] = 0F;
+                            } else if (c == double.class) {
+                                data[i] = 0D;
+                            } else if (c == boolean.class) {
+                                data[i] = false;
+                            } else if (c == byte.class) {
+                                data[i] = (byte) 0;
+                            } else if (c == char.class) {
+                                data[i] = (char) 0;
+                            } else if (c == short.class) {
+                                data[i] = (short) 0;
+                            }
+                        }
+                    }
+                }
+                data[i] = flag;
+            }
+
+            try {
+                entity = sketch.apply(
+                    getAlias(), data
+                );
+                while (cache != null) {
+                    cache.setter.onAccept(
+                        entity, cache.value
+                    );
+                    cache = cache.next;
+                }
+            } catch (Exception e) {
+                throw new IOCrash(e);
+            }
+        }
+
+        @Override
+        public K getResult() {
+            if (marker) {
+                try {
+                    embark();
+                } catch (IOCrash e) {
+                    return null;
+                }
+            }
+            return entity;
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            data = null;
+            cache = null;
+            param = null;
         }
     }
 }
