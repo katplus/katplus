@@ -425,90 +425,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares the internal UTF-8 {@code byte[]} and specified {@code char[]}
-     *
-     * @param ch the {@code char[]} to compare this {@link Chain} against
-     * @since 0.0.2
-     */
-    public boolean is(
-        @Nullable char[] ch
-    ) {
-        if (ch == null) {
-            return false;
-        }
-
-        int l = count;
-        int r = ch.length;
-
-        int i = 0, j = 0;
-        byte[] it = value;
-
-        for (; i < l && j < r; j++) {
-            // get char
-            char c = ch[j];
-
-            // U+0000 ~ U+007F
-            if (c < 0x80) {
-                if (it[i++] != (byte) c) {
-                    return false;
-                }
-            }
-
-            // U+0080 ~ U+07FF
-            else if (c < 0x800) {
-                if (i + 2 > l) {
-                    return false;
-                }
-
-                if (it[i++] != (byte) ((c >> 6) | 0xC0) ||
-                    it[i++] != (byte) ((c & 0x3F) | 0x80)) {
-                    return false;
-                }
-            }
-
-            // U+10000 ~ U+10FFFF
-            // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-            else if (c >= 0xD800 && c <= 0xDFFF) {
-                if (i + 4 > l) {
-                    return false;
-                }
-
-                if (++j >= r) {
-                    return false;
-                }
-
-                char d = ch[j];
-                if (d < 0xDC00 || d > 0xDFFF) {
-                    return false;
-                }
-
-                int u = (c << 10) + d - 0x35F_DC00;
-                if (it[i++] != (byte) ((u >> 18) | 0xF0) ||
-                    it[i++] != (byte) (((u >> 12) & 0x3F) | 0x80) ||
-                    it[i++] != (byte) (((u >> 6) & 0x3F) | 0x80) ||
-                    it[i++] != (byte) ((u & 0x3F) | 0x80)) {
-                    return false;
-                }
-            }
-
-            // U+0800 ~ U+FFFF
-            else {
-                if (i + 3 > l) {
-                    return false;
-                }
-
-                if (it[i++] != (byte) ((c >> 12) | 0xE0) ||
-                    it[i++] != (byte) (((c >> 6) & 0x3F) | 0x80) ||
-                    it[i++] != (byte) ((c & 0x3F) | 0x80)) {
-                    return false;
-                }
-            }
-        }
-
-        return i == l && j == r;
-    }
-
-    /**
      * Compares the internal UTF-8 {@code byte[]} and specified {@link CharSequence}
      *
      * @param ch the {@link CharSequence} to compare this {@link Chain} against
@@ -1142,7 +1058,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     @NotNull
     public char[] copyChars() {
         if (count != 0) {
-            return Convert.toCharArray(
+            return Strings.toChars(
                 value, 0, count
             );
         }
@@ -1168,7 +1084,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         }
 
         if (length != 0) {
-            return Convert.toCharArray(
+            return Strings.toChars(
                 value, start, end
             );
         }
@@ -1619,8 +1535,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     @NotNull
     @SuppressWarnings("deprecation")
     public String string(int b) {
-        int l;
-        if ((l = count - b) <= 0) {
+        int l = count - b;
+        if (l <= 0) {
             return "";
         }
         return new String(
@@ -1658,9 +1574,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         }
 
         return new String(
-            Convert.toCharArray(
-                value, 0, count
-            )
+            value, 0, count, UTF_8
         );
     }
 
@@ -1675,14 +1589,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     public String toString(
         int b, int e
     ) {
-        if (e <= b || e > count) {
+        int l = e - b;
+        if (l <= 0 || e > count) {
             return "";
         }
 
         return new String(
-            Convert.toCharArray(
-                value, b, e
-            )
+            value, b, l, UTF_8
         );
     }
 
@@ -1699,16 +1612,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return "";
         }
 
-        if (c != UTF_8) {
-            return new String(
-                value, 0, count, c
-            );
-        }
-
         return new String(
-            Convert.toCharArray(
-                value, 0, count
-            )
+            value, 0, count, c
         );
     }
 
@@ -1729,16 +1634,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return "";
         }
 
-        if (c != UTF_8) {
-            return new String(
-                value, b, l, c
-            );
-        }
-
         return new String(
-            Convert.toCharArray(
-                value, b, e
-            )
+            value, b, l, c
         );
     }
 
@@ -1772,9 +1669,15 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     protected void chain(
         byte b
     ) {
-        grow(count + 1);
-        hash = 0;
-        value[count++] = b;
+        byte[] it = value;
+        if (count != it.length) {
+            hash = 0;
+            it[count++] = b;
+        } else {
+            grow(count + 1);
+            hash = 0;
+            value[count++] = b;
+        }
     }
 
     /**

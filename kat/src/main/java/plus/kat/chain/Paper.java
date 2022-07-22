@@ -26,6 +26,7 @@ import plus.kat.utils.Config;
 import java.util.concurrent.atomic.*;
 
 import static plus.kat.stream.Binary.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author kraity
@@ -804,15 +805,12 @@ public class Paper extends Value implements Flow {
         String text;
         if (count == 0) {
             text = "";
-            this.close();
         } else {
-            char[] ch = Convert
-                .toCharArray(
-                    value, 0, count
-                );
-            this.close();
-            text = new String(ch);
+            text = new String(
+                value, 0, count, UTF_8
+            );
         }
+        close();
         return text;
     }
 
