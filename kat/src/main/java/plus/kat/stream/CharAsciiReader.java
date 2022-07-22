@@ -16,6 +16,8 @@
 package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
+import plus.kat.crash.IOCrash;
+import plus.kat.crash.UnexpectedCrash;
 
 /**
  * @author kraity
@@ -62,13 +64,24 @@ public class CharAsciiReader implements Reader {
     }
 
     @Override
+    public boolean also() {
+        return index < offset;
+    }
+
+    @Override
     public byte read() {
         return (byte) value.charAt(index++);
     }
 
     @Override
-    public boolean also() {
-        return index < offset;
+    public byte next() throws IOCrash {
+        if (index < offset) {
+            return (byte) value.charAt(index++);
+        }
+
+        throw new UnexpectedCrash(
+            "Unexpectedly, no readable byte"
+        );
     }
 
     @Override

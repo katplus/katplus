@@ -17,6 +17,8 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
+import plus.kat.crash.*;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -66,13 +68,24 @@ public class ByteReader implements Reader {
     }
 
     @Override
+    public boolean also() {
+        return index < offset;
+    }
+
+    @Override
     public byte read() {
         return value[index++];
     }
 
     @Override
-    public boolean also() {
-        return index < offset;
+    public byte next() throws IOCrash {
+        if (index < offset) {
+            return value[index++];
+        }
+
+        throw new UnexpectedCrash(
+            "Unexpectedly, no readable byte"
+        );
     }
 
     @Override

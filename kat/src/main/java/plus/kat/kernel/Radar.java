@@ -159,8 +159,8 @@ public class Radar implements Solver {
                 break Radar;
             }
             case ALIAS: {
-                do {
-                    byte b = r.read();
+                while (true) {
+                    byte b = r.next();
                     if (b <= 0x20) {
                         throw new UnexpectedCrash(
                             "Unexpectedly, byte '" + b + "' <= 32 in alias"
@@ -199,14 +199,11 @@ public class Radar implements Solver {
                             a.chain(b);
                         }
                     }
-                } while (
-                    r.also()
-                );
-                break Radar;
+                }
             }
             case VALUE: {
-                do {
-                    byte b = r.read();
+                while (true) {
+                    byte b = r.next();
                     switch (b) {
                         case '^': {
                             escape(v, r);
@@ -231,10 +228,7 @@ public class Radar implements Solver {
                             v.chain(b);
                         }
                     }
-                } while (
-                    r.also()
-                );
-                break Radar;
+                }
             }
         }
     }
@@ -280,8 +274,8 @@ public class Radar implements Solver {
     protected void explain(
         @NotNull Reader r
     ) throws IOCrash {
-        while (r.also()) {
-            switch (r.read()) {
+        while (true) {
+            switch (r.next()) {
                 case '#':
                 case '\r':
                 case '\n': {
@@ -298,8 +292,8 @@ public class Radar implements Solver {
         @NotNull Reader r
     ) throws IOCrash {
         int i = 0;
-        while (r.also()) {
-            switch (r.read()) {
+        while (true) {
+            switch (r.next()) {
                 case '{': {
                     i++;
                     continue;

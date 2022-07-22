@@ -49,11 +49,6 @@ public class InputStreamReader implements Reader {
     }
 
     @Override
-    public byte read() {
-        return cache[index++];
-    }
-
-    @Override
     public boolean also() throws IOCrash {
         if (index < offset) {
             return true;
@@ -73,6 +68,35 @@ public class InputStreamReader implements Reader {
         }
 
         return false;
+    }
+
+    @Override
+    public byte read() {
+        return cache[index++];
+    }
+
+    @Override
+    public byte next() throws IOCrash {
+        if (index < offset) {
+            return cache[index++];
+        }
+
+        if (offset > 0) try {
+            offset = value.read(
+                cache, 0, cache.length
+            );
+
+            if (offset > 0) {
+                index = 0;
+                return cache[index++];
+            }
+        } catch (Exception e) {
+            throw new IOCrash(e);
+        }
+
+        throw new UnexpectedCrash(
+            "Unexpectedly, no readable byte"
+        );
     }
 
     @Override

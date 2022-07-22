@@ -17,6 +17,8 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
+import plus.kat.crash.*;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -73,11 +75,6 @@ public class CharReader implements Reader {
     }
 
     @Override
-    public byte read() {
-        return cache[index++];
-    }
-
-    @Override
     public boolean also() {
         if (index < offset) {
             return true;
@@ -92,6 +89,30 @@ public class CharReader implements Reader {
         }
 
         return false;
+    }
+
+    @Override
+    public byte read() {
+        return cache[index++];
+    }
+
+    @Override
+    public byte next() throws IOCrash {
+        if (index < offset) {
+            return cache[index++];
+        }
+
+        if (offset > 0) {
+            offset = read(cache);
+            if (offset > 0) {
+                index = 0;
+                return cache[index++];
+            }
+        }
+
+        throw new UnexpectedCrash(
+            "Unexpectedly, no readable byte"
+        );
     }
 
     private int read(

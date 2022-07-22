@@ -324,10 +324,10 @@ public class Mage implements Solver {
         byte e,
         Reader r
     ) throws IOCrash {
-        while (r.also()) {
-            byte b = r.read();
+        while (true) {
+            byte b = r.next();
             if (b == e) {
-                return;
+                break;
             }
 
             if (b != '\\') {
@@ -335,12 +335,7 @@ public class Mage implements Solver {
                 continue;
             }
 
-            if (r.also()) {
-                b = r.read();
-            } else {
-                return;
-            }
-
+            b = r.next();
             switch (b) {
                 case 'r': {
                     b = '\r';
@@ -367,8 +362,8 @@ public class Mage implements Solver {
         byte a,
         Reader r
     ) throws IOCrash {
-        while (r.also()) {
-            byte b = r.read();
+        while (true) {
+            byte b = r.next();
             if (a == b) {
                 break;
             }
@@ -387,15 +382,13 @@ public class Mage implements Solver {
                 }
                 case '"': {
                     Drop:
-                    while (r.also()) {
-                        switch (r.read()) {
+                    while (true) {
+                        switch (r.next()) {
                             case '"': {
                                 break Drop;
                             }
                             case '\\': {
-                                if (r.also()) {
-                                    r.read();
-                                }
+                                r.next();
                             }
                         }
                     }
