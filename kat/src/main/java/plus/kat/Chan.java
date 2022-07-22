@@ -288,6 +288,12 @@ public class Chan implements Flag {
     /**
      * Serializes the specified {@code alias} and {@code value} at the current hierarchy
      *
+     * <pre>{@code
+     *  Chan chan = ...
+     *  chan.set("id", 1);
+     *  chan.set("name", "kraity");
+     * }</pre>
+     *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
      */
@@ -319,6 +325,18 @@ public class Chan implements Flag {
     /**
      * Serializes the specified {@code alias} and {@code action} at the current hierarchy
      *
+     * <pre>{@code
+     *  Chan chan = ...
+     *  chan.set("user", c0 -> {
+     *     c0.set("id", 1);
+     *     c0.set("name", "kraity");
+     *     c0.set("meta", c1 -> {
+     *         c1.set("id", 1);
+     *         c1.set("tag", "kat");
+     *     });
+     *  });
+     * }</pre>
+     *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
      */
@@ -339,6 +357,14 @@ public class Chan implements Flag {
 
     /**
      * Serializes the specified {@code alias}, {@code space} and {@code action} at the current hierarchy
+     *
+     * <pre>{@code
+     *  Chan chan = ...
+     *  chan.set("me", "User", c0 -> {
+     *     c0.set("id", 1);
+     *     c0.set("name", "kraity");
+     *  });
+     * }</pre>
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
@@ -363,6 +389,15 @@ public class Chan implements Flag {
 
     /**
      * Serializes the specified {@code alias}, {@code coder} and {@code value} at the current hierarchy
+     *
+     * <pre>{@code
+     *  Coder<Integer> c1 = ...
+     *  Coder<String> c2 = ...
+     *
+     *  Chan chan = ...
+     *  chan.set("id", c1, 1);
+     *  chan.set("name", c2, "kraity");
+     * }</pre>
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
@@ -535,6 +570,21 @@ public class Chan implements Flag {
 
     /**
      * Returns the internal {@link Paper}
+     *
+     * <pre>{@code
+     *   Chan chan = ...
+     *   Paper flow = chan.getFlow();
+     *
+     *   // case 1
+     *   String text = flow.toString();
+     *
+     *   // case 2
+     *   OutputStream out = ...
+     *   flow.update(out);
+     *
+     *   // finally close the flow
+     *   chan.closeFlow() // flow.close();
+     * }</pre>
      */
     @Nullable
     public Paper getFlow() {
@@ -552,7 +602,13 @@ public class Chan implements Flag {
     }
 
     /**
-     * Returns a serialized string of {@link Flow}
+     * Returns a serialized string of {@link Flow}.
+     * Automatically close this {@link Flow} when calling
+     *
+     * <pre>{@code
+     *   Chan chan = ...
+     *   String text = chan.toString();
+     * }</pre>
      *
      * @see Paper#closePaper()
      */
