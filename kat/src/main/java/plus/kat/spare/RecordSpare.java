@@ -29,7 +29,7 @@ import java.lang.reflect.*;
  * @author kraity
  * @since 0.0.2
  */
-public class RecordSpare<T> extends SuperSpare<T, Param> implements Spare<T> {
+public class RecordSpare<T> extends SuperSpare<T, Param> implements Sketch<T> {
 
     private int width;
     private Constructor<T> ctor;
@@ -80,10 +80,10 @@ public class RecordSpare<T> extends SuperSpare<T, Param> implements Spare<T> {
             if (e2 != null) {
                 String[] keys = e2.value();
                 if (keys.length == 0) {
-                    addGetter(name, handle);
+                    getter(name, handle);
                 } else {
                     for (int i = 0; i < keys.length; i++) {
-                        addGetter(
+                        getter(
                             keys[i], i == 0 ? handle : handle.clone()
                         );
                     }
@@ -102,14 +102,14 @@ public class RecordSpare<T> extends SuperSpare<T, Param> implements Spare<T> {
                 String[] keys = e1.value();
                 if (keys.length == 0) {
                     put(name, edge);
-                    addGetter(name, handle);
+                    getter(name, handle);
                 } else {
                     put(keys[0], edge);
-                    addGetter(keys[0], handle);
+                    getter(keys[0], handle);
                 }
             } else {
                 put(name, edge);
-                addGetter(name, handle);
+                getter(name, handle);
             }
         }
 
@@ -132,10 +132,39 @@ public class RecordSpare<T> extends SuperSpare<T, Param> implements Spare<T> {
     }
 
     @Override
+    public T apply(
+        @NotNull Alias alias
+    ) throws Crash {
+        return null;
+    }
+
+    @Override
+    public T apply(
+        @NotNull Alias alias,
+        @NotNull Object... params
+    ) throws Crash {
+        try {
+            return ctor.newInstance(params);
+        } catch (Exception e) {
+            throw new Crash(e);
+        }
+    }
+
+    @Override
+    public Param param(
+        @NotNull int index,
+        @NotNull Alias alias
+    ) {
+        return get(alias);
+    }
+
+    @Override
     public Builder<T> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder0<>(this);
+        return new Builder1<>(
+            this, new Object[width]
+        );
     }
 
     /**
@@ -146,7 +175,6 @@ public class RecordSpare<T> extends SuperSpare<T, Param> implements Spare<T> {
 
         final Method method;
         final Class<?> klass;
-        final Coder<?> coder;
 
         public Handle(
             Handle<?> handle
@@ -162,9 +190,7 @@ public class RecordSpare<T> extends SuperSpare<T, Param> implements Spare<T> {
             Expose expose,
             Supplier supplier
         ) {
-            super(expose == null
-                ? -1 : expose.index()
-            );
+            super(expose);
             klass = method.getReturnType();
             nullable = method.getAnnotation(NotNull.class) == null;
 
@@ -202,11 +228,6 @@ public class RecordSpare<T> extends SuperSpare<T, Param> implements Spare<T> {
             return null;
         }
 
-        @Override
-        public Coder<?> getCoder() {
-            return coder;
-        }
-
         public Class<?> getKlass() {
             return klass;
         }
@@ -214,127 +235,6 @@ public class RecordSpare<T> extends SuperSpare<T, Param> implements Spare<T> {
         @Override
         public Handle<K> clone() {
             return new Handle<>(this);
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.2
-     */
-    public static class Builder0<K> extends Builder<K> {
-
-        private K entity;
-        private Object[] data;
-
-        private Param param;
-        private RecordSpare<K> spare;
-
-        public Builder0(
-            @NotNull RecordSpare<K> spare
-        ) {
-            this.spare = spare;
-        }
-
-        @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) throws Crash, IOCrash {
-            data = new Object[spare.width];
-        }
-
-        @Override
-        public void onAccept(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) throws IOCrash {
-            int i = param.getIndex();
-            param = null;
-            data[i] = child.getResult();
-        }
-
-        @Override
-        public void onAccept(
-            @NotNull Space space,
-            @NotNull Alias alias,
-            @NotNull Value value
-        ) throws IOCrash {
-            Param param = spare.get(alias);
-            if (param != null) {
-                // specified coder
-                int i = param.getIndex();
-                Coder<?> coder = param.getCoder();
-
-                if (coder != null) {
-                    data[i] = coder.read(
-                        flag, value
-                    );
-                } else {
-                    // specified spare
-                    coder = supplier.lookup(
-                        param.getKlass()
-                    );
-
-                    // skip if null
-                    if (coder != null) {
-                        data[i] = coder.read(
-                            flag, value
-                        );
-                    }
-                }
-            }
-        }
-
-        @Nullable
-        @Override
-        public Builder<?> getBuilder(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) throws IOCrash {
-            param = spare.get(alias);
-            if (param == null) {
-                return null;
-            }
-
-            // specified coder
-            Coder<?> coder = param.getCoder();
-
-            // skip if null
-            if (coder == null) {
-                // specified spare
-                coder = supplier.lookup(
-                    param.getKlass()
-                );
-
-                // skip if null
-                if (coder == null) {
-                    return null;
-                }
-            }
-
-            return coder.getBuilder(
-                param.getType()
-            );
-        }
-
-        @Nullable
-        @Override
-        public K getResult() {
-            if (entity == null) {
-                try {
-                    entity = spare.ctor
-                        .newInstance(data);
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-            return entity;
-        }
-
-        @Override
-        public void onDestroy() {
-            data = null;
-            param = null;
-            spare = null;
         }
     }
 }

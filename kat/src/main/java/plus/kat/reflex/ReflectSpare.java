@@ -163,7 +163,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         if (params == null) {
             return new Builder0<>(this);
         }
-        return new Builder1<>(this);
+        return new Builder2<>(this);
     }
 
     @Override
@@ -235,7 +235,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             if (expose == null) {
                 String name = field.getName();
                 // register getter
-                addGetter(
+                getter(
                     name, handle
                 );
 
@@ -258,7 +258,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             if (keys.length == 0) {
                 String name = field.getName();
                 if (expose.export()) {
-                    addGetter(
+                    getter(
                         name, handle
                     );
                     put(
@@ -272,7 +272,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             } else {
                 // register only the first alias
                 if (expose.export()) {
-                    addGetter(
+                    getter(
                         keys[0], handle
                     );
                 }
@@ -357,7 +357,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     } else {
                         // register all aliases
                         for (int i = 0; i < keys.length; i++) {
-                            addGetter(
+                            getter(
                                 keys[i], i == 0 ? handle : handle.clone()
                             );
                         }
@@ -431,7 +431,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             Alias alias = new Alias(name);
             if (count == 0) {
                 // register getter
-                addGetter(
+                getter(
                     alias, handle
                 );
             } else {
@@ -548,12 +548,12 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
      * @author kraity
      * @since 0.0.2
      */
-    static class Handle<K> extends Node<K>
-        implements Setter<K, Object>, Getter<K, Object> {
+    static class Handle<K>
+        extends Node<K>
+        implements Setter<K, Object> {
 
         final Class<?> klass;
         final Type type;
-        final Coder<?> coder;
         final MethodHandle setter;
         final MethodHandle getter;
 
@@ -573,10 +573,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             Expose expose,
             Supplier supplier
         ) throws IllegalAccessException {
-            super(expose == null
-                ? -1 : expose.index()
-            );
-
+            super(expose);
             klass = field.getType();
             type = field.getGenericType();
 
@@ -597,10 +594,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             Expose expose,
             Supplier supplier
         ) throws IllegalAccessException {
-            super(expose == null
-                ? -1 : expose.index()
-            );
-
+            super(expose);
             switch (method.getParameterCount()) {
                 case 0: {
                     type = klass = method.getReturnType();
@@ -684,11 +678,6 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         }
 
         @Override
-        public Coder<?> getCoder() {
-            return coder;
-        }
-
-        @Override
         public Type getType() {
             return type;
         }
@@ -708,7 +697,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
      * @author kraity
      * @since 0.0.2
      */
-    public static class Builder1<K> extends Builder0<K> {
+    public static class Builder2<K> extends Builder0<K> {
 
         protected int count;
         protected boolean marker;
@@ -719,7 +708,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         protected Object[] data;
         protected Class<?>[] params;
 
-        public Builder1(
+        public Builder2(
             @NotNull ReflectSpare<K> spare
         ) {
             super(spare);

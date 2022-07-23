@@ -16,6 +16,7 @@
 package plus.kat.spare;
 
 import plus.kat.anno.Embed;
+import plus.kat.anno.Expose;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
@@ -60,6 +61,13 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         space = supplier.register(
             embed, klass, this
         );
+    }
+
+    /**
+     * Initialize the build job
+     */
+    protected void initialize() {
+        // Nothing
     }
 
     @NotNull
@@ -159,7 +167,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
             Object val = node.onApply(value);
             if (val != null || node.nullable) {
                 chan.set(
-                    node.key, node.getCoder(), val
+                    node.key, node.coder, val
                 );
             }
             node = node.next;
@@ -167,26 +175,9 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
     }
 
     /**
-     * Initialize the build job
-     */
-    protected void initialize() {
-        // Nothing
-    }
-
-    /**
-     * @param setter the specified {@link Setter}
-     */
-    protected void addSetter(
-        @NotNull Object key,
-        @NotNull Setter<T, ?> setter
-    ) {
-        // Nothing
-    }
-
-    /**
      * @param getter the specified {@link Getter}
      */
-    protected void addGetter(
+    protected void getter(
         @NotNull CharSequence key,
         @NotNull Node<T> getter
     ) {
@@ -242,8 +233,10 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         extends Entry<E, Node<E>>
         implements Getter<E, Object> {
 
-        protected Node<E> next;
-        protected CharSequence key;
+        private Node<E> next;
+        private CharSequence key;
+
+        protected Coder<?> coder;
         protected boolean nullable;
 
         protected Node() {
@@ -258,14 +251,40 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         ) {
             super(hash);
         }
+
+        /**
+         * @param expose the specified {@link Expose}
+         */
+        protected Node(
+            Expose expose
+        ) {
+            super(expose == null
+                ? -1 : expose.index()
+            );
+        }
+
+        /**
+         * Returns a clone of this {@link Node}
+         */
+        @Override
+        public abstract Node<E> clone();
+
+        /**
+         * Returns the {@link Coder} of {@link Node}
+         */
+        @Override
+        public Coder<?> getCoder() {
+            return coder;
+        }
     }
 
     /**
      * @author kraity
      * @since 0.0.2
      */
-    public static class Edge extends
-        Entry<Object, Param> implements Param {
+    public static class Edge
+        extends Entry<Object, Edge>
+        implements Param {
 
         private Type type;
         private Class<?> klass;
@@ -283,7 +302,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         public Edge(
             @NotNull Edge edge
         ) {
-            this();
+            super(0);
             type = edge.type;
             klass = edge.klass;
             coder = edge.coder;

@@ -42,19 +42,23 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
      * @param alias the alias of param
      */
     @Nullable
-    Param param(
+    default Param param(
         @NotNull int index,
         @NotNull Alias alias
-    );
+    ) {
+        return null;
+    }
 
     /**
      * @param alias the alias of setter
      */
     @Nullable
-    Setter<K, ?> setter(
+    default Setter<K, ?> setter(
         @NotNull int index,
         @NotNull Alias alias
-    );
+    ) {
+        return null;
+    }
 
     /**
      * Returns a {@link Builder} of {@link K}
@@ -261,10 +265,196 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
 
         @Override
         public void onDestroy() {
-            entity = null;
             index = -1;
             setter = null;
-            sketch = null;
+            entity = null;
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    class Builder1<K> extends Builder<K> {
+
+        protected K entity;
+        protected int index = -1;
+
+        protected Param param;
+        protected Object[] data;
+        protected Sketch<K> sketch;
+
+        public Builder1(
+            @NotNull Sketch<K> sketch,
+            @NotNull Object[] data
+        ) {
+            this.data = data;
+            this.sketch = sketch;
+        }
+
+        @Override
+        public void onCreate(
+            @NotNull Alias alias
+        ) throws Crash, IOCrash {
+            // Nothing
+        }
+
+        @Override
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOCrash {
+            int i = param.getIndex();
+            param = null;
+            data[i] = child.getResult();
+        }
+
+        @Override
+        public void onAccept(
+            @NotNull Space space,
+            @NotNull Alias alias,
+            @NotNull Value value
+        ) throws IOCrash {
+            param = sketch.param(
+                ++index, alias
+            );
+
+            if (param == null) {
+                return;
+            }
+
+            // specified coder
+            int i = param.getIndex();
+            Coder<?> coder = param.getCoder();
+
+            if (coder != null) {
+                data[i] = coder.read(
+                    flag, value
+                );
+                return;
+            }
+
+            Spare<?> spare;
+            Class<?> klass = param.getKlass();
+
+            // lookup
+            if (klass == null) {
+                // specified spare
+                spare = supplier.lookup(space);
+
+                if (spare != null) {
+                    data[i] = spare.read(
+                        flag, value
+                    );
+                }
+            } else {
+                // specified spare
+                spare = supplier.lookup(klass);
+
+                // skip if null
+                if (spare != null) {
+                    data[i] = spare.read(
+                        flag, value
+                    );
+                    return;
+                }
+
+                // specified spare
+                spare = supplier.lookup(space);
+
+                // skip if null
+                if (spare != null &&
+                    spare.accept(klass)) {
+                    data[i] = spare.read(
+                        flag, value
+                    );
+                }
+            }
+        }
+
+        @Nullable
+        @Override
+        public Builder<?> getBuilder(
+            @NotNull Space space,
+            @NotNull Alias alias
+        ) throws IOCrash {
+            param = sketch.param(
+                ++index, alias
+            );
+
+            if (param == null) {
+                return null;
+            }
+
+            // specified coder
+            Coder<?> coder = param.getCoder();
+
+            if (coder != null) {
+                return coder.getBuilder(
+                    param.getType()
+                );
+            }
+
+            Spare<?> spare;
+            Class<?> klass = param.getKlass();
+
+            // lookup
+            if (klass == null) {
+                // specified spare
+                spare = supplier.lookup(space);
+
+                // skip if null
+                if (spare != null) {
+                    return spare.getBuilder(
+                        param.getType()
+                    );
+                }
+            } else {
+                // specified spare
+                spare = supplier.lookup(klass);
+
+                // skip if null
+                if (spare != null) {
+                    return spare.getBuilder(
+                        param.getType()
+                    );
+                }
+
+                // specified spare
+                spare = supplier.lookup(space);
+
+                // skip if null
+                if (spare != null &&
+                    spare.accept(klass)) {
+                    return spare.getBuilder(
+                        param.getType()
+                    );
+                }
+            }
+
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public K getResult() {
+            if (entity == null) {
+                try {
+                    entity = sketch.apply(
+                        getAlias(), data
+                    );
+                } catch (Crash e) {
+                    return null;
+                }
+            }
+            return entity;
+        }
+
+        @Override
+        public void onDestroy() {
+            index = -1;
+            param = null;
+            entity = null;
         }
     }
 }
