@@ -538,11 +538,20 @@ public interface Spare<K> extends Coder<K> {
             }
 
             try {
-                put(klass, spare =
-                    new ReflectSpare<>(
-                        embed, klass, supplier
-                    )
-                );
+                String sn = sc.getName();
+                if (sn.equals("java.lang.Record")) {
+                    put(klass, spare =
+                        new RecordSpare<>(
+                            embed, klass, supplier
+                        )
+                    );
+                } else {
+                    put(klass, spare =
+                        new ReflectSpare<>(
+                            embed, klass, supplier
+                        )
+                    );
+                }
                 return spare;
             } catch (Exception e) {
                 return null;

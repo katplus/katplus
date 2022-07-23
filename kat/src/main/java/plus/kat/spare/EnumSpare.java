@@ -55,7 +55,7 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
             // NOOP
         }
 
-        this.space = supplier.register(
+        space = supplier.register(
             embed, klass, this
         );
     }
