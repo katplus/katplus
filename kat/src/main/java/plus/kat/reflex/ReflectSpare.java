@@ -460,14 +460,14 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             b = constructors[0];
         for (int i = 1; i < constructors.length; i++) {
             Constructor<?> c = constructors[i];
-            if (b.getParameterCount() <
+            if (b.getParameterCount() <=
                 c.getParameterCount()) {
                 $ = b;
                 b = c;
             } else if ($ == null) {
                 $ = c;
             } else {
-                if ($.getParameterCount() <
+                if ($.getParameterCount() <=
                     c.getParameterCount()) {
                     $ = c;
                 }

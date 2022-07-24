@@ -23,6 +23,8 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.utils.Reflect;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
 
 /**
@@ -31,9 +33,15 @@ import java.lang.reflect.*;
  */
 public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
 
+    static final MethodHandles.Lookup
+        lookup = MethodHandles.lookup();
+
     private int width;
     private Constructor<T> ctor;
 
+    /**
+     * @throws RunCrash If an error occurs in the build
+     */
     public RecordSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
@@ -68,7 +76,7 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
                     method, e2 == null ? e1 : e2, supplier
                 );
             } catch (Exception e) {
-                continue;
+                throw new RunCrash(e);
             }
 
             Edge edge = new Edge(width++);
@@ -76,7 +84,25 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
             edge.setType(field.getType());
             edge.setActualType(field.getGenericType());
 
-            if (e2 != null) {
+            if (e2 == null) {
+                if (e1 == null) {
+                    put(name, edge);
+                    getter(name, handle);
+                } else {
+                    String[] keys = e1.value();
+                    if (keys.length == 0) {
+                        put(name, edge);
+                        getter(name, handle);
+                    } else {
+                        getter(keys[0], handle);
+                        for (int i = 0; i < keys.length; i++) {
+                            put(
+                                keys[i], i == 0 ? edge : edge.clone()
+                            );
+                        }
+                    }
+                }
+            } else {
                 String[] keys = e2.value();
                 if (keys.length == 0) {
                     getter(name, handle);
@@ -94,39 +120,41 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
                     if (keys.length == 0) {
                         put(name, edge);
                     } else {
-                        put(keys[0], edge);
+                        for (int i = 0; i < keys.length; i++) {
+                            put(
+                                keys[i], i == 0 ? edge : edge.clone()
+                            );
+                        }
                     }
                 }
-            } else if (e1 != null) {
-                String[] keys = e1.value();
-                if (keys.length == 0) {
-                    put(name, edge);
-                    getter(name, handle);
-                } else {
-                    put(keys[0], edge);
-                    getter(keys[0], handle);
-                }
-            } else {
-                put(name, edge);
-                getter(name, handle);
             }
         }
 
+        Constructor<T> b = null;
         for (Constructor<?> c : klass.getDeclaredConstructors()) {
-            if (ctor == null) {
-                ctor = (Constructor<T>) c;
+            if (b == null) {
+                b = (Constructor<T>) c;
             } else {
-                if (ctor.getParameterCount() <
+                if (b.getParameterCount() <=
                     c.getParameterCount()) {
-                    ctor = (Constructor<T>) c;
+                    b = (Constructor<T>) c;
                 }
             }
         }
 
-        if (width == ctor.getParameterCount()) {
-            ctor.setAccessible(true);
+        if (b == null) {
+            throw new RunCrash(
+                "Unexpectedly, the Constructor of '" + klass + "' is null"
+            );
+        }
+
+        if (width == b.getParameterCount()) {
+            ctor = b;
+            b.setAccessible(true);
         } else {
-            throw new RunCrash();
+            throw new RunCrash(
+                "Unexpectedly, the number of actual and formal parameters differ"
+            );
         }
     }
 
@@ -172,15 +200,15 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
      */
     static class Handle<K> extends Node<K> {
 
-        final Method method;
         final Class<?> klass;
+        final MethodHandle getter;
 
         public Handle(
             Handle<?> handle
         ) {
             this.klass = handle.klass;
             this.coder = handle.coder;
-            this.method = handle.method;
+            this.getter = handle.getter;
             this.nullable = handle.nullable;
         }
 
@@ -188,13 +216,13 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
             Method method,
             Expose expose,
             Supplier supplier
-        ) {
+        ) throws IllegalAccessException {
             super(expose);
             klass = method.getReturnType();
             nullable = method.getAnnotation(NotNull.class) == null;
 
-            this.method = method;
             method.setAccessible(true);
+            getter = lookup.unreflect(method);
 
             Format format = method
                 .getAnnotation(Format.class);
@@ -208,7 +236,7 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
             @NotNull K it
         ) {
             try {
-                return method.invoke(it);
+                return getter.invoke(it);
             } catch (Throwable e) {
                 // Nothing
             }
@@ -220,15 +248,11 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
             @NotNull Object it
         ) {
             try {
-                return method.invoke(it);
+                return getter.invoke(it);
             } catch (Throwable e) {
                 // Nothing
             }
             return null;
-        }
-
-        public Class<?> getKlass() {
-            return klass;
         }
 
         @Override
