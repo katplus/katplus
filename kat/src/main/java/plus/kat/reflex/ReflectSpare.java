@@ -519,8 +519,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     args[i], expose, format, supplier
                 );
 
-                Edge edge = new Edge();
-                edge.setIndex(i);
+                Edge edge = new Edge(i);
                 edge.setCoder(c);
                 edge.setType(ts[i]);
                 edge.setKlass(args[i]);
@@ -697,21 +696,27 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
      * @author kraity
      * @since 0.0.2
      */
-    public static class Builder2<K> extends Builder0<K> {
+    public static class Builder2<K> extends Builder$<K> {
+
+        protected K entity;
+        protected int index = -1;
 
         protected int count;
         protected boolean marker;
 
-        protected Param param;
-        protected Cache<K> cache;
-
         protected Object[] data;
         protected Class<?>[] params;
+
+        protected Param param;
+        protected Setter<K, ?> setter;
+
+        protected Cache<K> cache;
+        protected Sketch<K> sketch;
 
         public Builder2(
             @NotNull ReflectSpare<K> spare
         ) {
-            super(spare);
+            this.sketch = spare;
             this.params = spare.args;
             this.marker = spare.marker;
         }
@@ -729,12 +734,20 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
         @Override
         public void onAccept(
-            @Nullable Object value
+            @NotNull Param $,
+            @NotNull Object value
         ) throws IOCrash {
             if (entity != null) {
                 setter.onAccept(
                     entity, value
                 );
+            } else if (param != null) {
+                int i = param.index();
+                param = null;
+                data[i] = value;
+                if (params.length == ++count) {
+                    this.embark();
+                }
             } else {
                 Cache<K> c = new Cache<>();
                 c.value = value;
@@ -750,71 +763,46 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
         @Override
         public void onAccept(
-            @NotNull Space space,
             @NotNull Alias alias,
-            @NotNull Value value
+            @NotNull Builder<?> child
         ) throws IOCrash {
-            if (entity == null) {
-                Param param = sketch.param(
-                    index, alias
-                );
-                if (param != null) {
-                    // increment
-                    ++this.index;
-
-                    // specified coder
-                    int i = param.getIndex();
-                    Coder<?> coder = param.getCoder();
-
-                    if (coder != null) {
-                        data[i] = coder.read(
-                            flag, value
-                        );
-                    } else {
-                        // specified spare
-                        coder = supplier.lookup(
-                            param.getKlass()
-                        );
-
-                        // skip if null
-                        if (coder != null) {
-                            data[i] = coder.read(
-                                flag, value
-                            );
-                        }
-                    }
-
-                    if (params.length == ++count) {
-                        this.embark();
-                    }
-                    return;
-                }
-            }
-
-            super.onAccept(
-                space, alias, value
+            onAccept(
+                null, child.getResult()
             );
         }
 
         @Override
         public void onAccept(
+            @NotNull Space space,
             @NotNull Alias alias,
-            @NotNull Builder<?> child
+            @NotNull Value value
         ) throws IOCrash {
             if (entity != null) {
-                setter.onAccept(
-                    entity, child.getResult()
+                setter = sketch.setter(
+                    ++index, alias
                 );
-            } else if (param == null) {
-                onAccept(
-                    child.getResult()
-                );
+                if (setter != null) {
+                    onAccept(
+                        space, value, setter
+                    );
+                }
             } else {
-                int i = param.getIndex();
-                param = null;
-                data[i] = child.getResult();
-                if (params.length == ++count) {
-                    this.embark();
+                param = sketch.param(
+                    ++index, alias
+                );
+                if (param != null) {
+                    onAccept(
+                        space, value, param
+                    );
+                } else {
+                    setter = sketch.setter(
+                        index, alias
+                    );
+                    if (setter != null) {
+                        onAccept(
+                            space, value, setter
+                        );
+                    }
                 }
             }
         }
@@ -824,39 +812,36 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOCrash {
-            if (entity == null) {
+            if (entity != null) {
+                setter = sketch.setter(
+                    ++index, alias
+                );
+                if (setter != null) {
+                    return getBuilder(
+                        space, setter
+                    );
+                }
+            } else {
                 param = sketch.param(
-                    index, alias
+                    ++index, alias
                 );
                 if (param != null) {
-                    // increment
-                    ++this.index;
-
-                    // specified coder
-                    Coder<?> coder = param.getCoder();
-
-                    // skip if null
-                    if (coder == null) {
-                        // specified spare
-                        coder = supplier.lookup(
-                            param.getKlass()
-                        );
-
-                        // skip if null
-                        if (coder == null) {
-                            return null;
-                        }
-                    }
-
-                    return coder.getBuilder(
-                        param.getType()
+                    return getBuilder(
+                        space, param
                     );
+                } else {
+                    setter = sketch.setter(
+                        index, alias
+                    );
+                    if (setter != null) {
+                        return getBuilder(
+                            space, setter
+                        );
+                    }
                 }
             }
 
-            return super.getBuilder(
-                space, alias
-            );
+            return null;
         }
 
         /**
@@ -930,10 +915,12 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
         @Override
         public void onDestroy() {
-            super.onDestroy();
+            index = -1;
+            entity = null;
             data = null;
             cache = null;
             param = null;
+            setter = null;
         }
     }
 }

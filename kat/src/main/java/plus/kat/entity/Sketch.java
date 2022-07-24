@@ -75,7 +75,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
      * @author kraity
      * @since 0.0.2
      */
-    class Builder0<K> extends Builder<K> {
+    class Builder0<K> extends Builder$<K> {
 
         protected K entity;
         protected int index = -1;
@@ -107,8 +107,10 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
             }
         }
 
+        @Override
         public void onAccept(
-            @Nullable Object value
+            @NotNull Param param,
+            @NotNull Object value
         ) throws IOCrash {
             setter.onAccept(
                 entity, value
@@ -135,63 +137,10 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
                 ++index, alias
             );
 
-            if (setter == null) {
-                return;
-            }
-
-            // specified coder
-            Coder<?> coder = setter.getCoder();
-
-            if (coder != null) {
+            if (setter != null) {
                 onAccept(
-                    coder.read(
-                        flag, value
-                    )
+                    space, value, setter
                 );
-                return;
-            }
-
-            Spare<?> spare;
-            Class<?> klass = setter.getKlass();
-
-            // lookup
-            if (klass == null) {
-                // specified spare
-                spare = supplier.lookup(space);
-
-                if (spare != null) {
-                    onAccept(
-                        spare.read(
-                            flag, value
-                        )
-                    );
-                }
-            } else {
-                // specified spare
-                spare = supplier.lookup(klass);
-
-                // skip if null
-                if (spare != null) {
-                    onAccept(
-                        spare.read(
-                            flag, value
-                        )
-                    );
-                    return;
-                }
-
-                // specified spare
-                spare = supplier.lookup(space);
-
-                // skip if null
-                if (spare != null &&
-                    spare.accept(klass)) {
-                    onAccept(
-                        spare.read(
-                            flag, value
-                        )
-                    );
-                }
             }
         }
 
@@ -208,53 +157,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
                 return null;
             }
 
-            // specified coder
-            Coder<?> coder = setter.getCoder();
-
-            if (coder != null) {
-                return coder.getBuilder(
-                    setter.getType()
-                );
-            }
-
-            Spare<?> spare;
-            Class<?> klass = setter.getKlass();
-
-            // lookup
-            if (klass == null) {
-                // specified spare
-                spare = supplier.lookup(space);
-
-                // skip if null
-                if (spare != null) {
-                    return spare.getBuilder(
-                        setter.getType()
-                    );
-                }
-            } else {
-                // specified spare
-                spare = supplier.lookup(klass);
-
-                // skip if null
-                if (spare != null) {
-                    return spare.getBuilder(
-                        setter.getType()
-                    );
-                }
-
-                // specified spare
-                spare = supplier.lookup(space);
-
-                // skip if null
-                if (spare != null &&
-                    spare.accept(klass)) {
-                    return spare.getBuilder(
-                        setter.getType()
-                    );
-                }
-            }
-
-            return null;
+            return getBuilder(space, setter);
         }
 
         @Nullable
@@ -275,7 +178,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
      * @author kraity
      * @since 0.0.2
      */
-    class Builder1<K> extends Builder<K> {
+    class Builder1<K> extends Builder$<K> {
 
         protected K entity;
         protected int index = -1;
@@ -301,10 +204,19 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
 
         @Override
         public void onAccept(
+            @NotNull Param param,
+            @NotNull Object value
+        ) throws IOCrash {
+            int i = param.index();
+            data[i] = value;
+        }
+
+        @Override
+        public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOCrash {
-            int i = param.getIndex();
+            int i = param.index();
             param = null;
             data[i] = child.getResult();
         }
@@ -319,56 +231,10 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
                 ++index, alias
             );
 
-            if (param == null) {
-                return;
-            }
-
-            // specified coder
-            int i = param.getIndex();
-            Coder<?> coder = param.getCoder();
-
-            if (coder != null) {
-                data[i] = coder.read(
-                    flag, value
+            if (param != null) {
+                onAccept(
+                    space, value, param
                 );
-                return;
-            }
-
-            Spare<?> spare;
-            Class<?> klass = param.getKlass();
-
-            // lookup
-            if (klass == null) {
-                // specified spare
-                spare = supplier.lookup(space);
-
-                if (spare != null) {
-                    data[i] = spare.read(
-                        flag, value
-                    );
-                }
-            } else {
-                // specified spare
-                spare = supplier.lookup(klass);
-
-                // skip if null
-                if (spare != null) {
-                    data[i] = spare.read(
-                        flag, value
-                    );
-                    return;
-                }
-
-                // specified spare
-                spare = supplier.lookup(space);
-
-                // skip if null
-                if (spare != null &&
-                    spare.accept(klass)) {
-                    data[i] = spare.read(
-                        flag, value
-                    );
-                }
             }
         }
 
@@ -386,6 +252,111 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
                 return null;
             }
 
+            return getBuilder(space, param);
+        }
+
+        @Nullable
+        @Override
+        public K getResult() {
+            if (entity == null) {
+                try {
+                    entity = sketch.apply(
+                        getAlias(), data
+                    );
+                } catch (Crash e) {
+                    return null;
+                }
+            }
+            return entity;
+        }
+
+        @Override
+        public void onDestroy() {
+            index = -1;
+            param = null;
+            entity = null;
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    abstract class Builder$<K> extends Builder<K> {
+
+        public void onAccept(
+            @NotNull Param param,
+            @Nullable Object value
+        ) throws IOCrash {
+            // Nothing
+        }
+
+        public void onAccept(
+            @NotNull Space space,
+            @NotNull Value value,
+            @NotNull Param param
+        ) throws IOCrash {
+            // specified coder
+            Coder<?> coder = param.getCoder();
+
+            if (coder != null) {
+                onAccept(
+                    param, coder.read(
+                        flag, value
+                    )
+                );
+                return;
+            }
+
+            Spare<?> spare;
+            Class<?> klass = param.getKlass();
+
+            // lookup
+            if (klass == null) {
+                // specified spare
+                spare = supplier.lookup(space);
+
+                if (spare != null) {
+                    onAccept(
+                        param, spare.read(
+                            flag, value
+                        )
+                    );
+                }
+            } else {
+                // specified spare
+                spare = supplier.lookup(klass);
+
+                // skip if null
+                if (spare != null) {
+                    onAccept(
+                        param, spare.read(
+                            flag, value
+                        )
+                    );
+                    return;
+                }
+
+                // specified spare
+                spare = supplier.lookup(space);
+
+                // skip if null
+                if (spare != null &&
+                    spare.accept(klass)) {
+                    onAccept(
+                        param, spare.read(
+                            flag, value
+                        )
+                    );
+                }
+            }
+        }
+
+        @Nullable
+        public Builder<?> getBuilder(
+            @NotNull Space space,
+            @NotNull Param param
+        ) throws IOCrash {
             // specified coder
             Coder<?> coder = param.getCoder();
 
@@ -433,28 +404,6 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
             }
 
             return null;
-        }
-
-        @Nullable
-        @Override
-        public K getResult() {
-            if (entity == null) {
-                try {
-                    entity = sketch.apply(
-                        getAlias(), data
-                    );
-                } catch (Crash e) {
-                    return null;
-                }
-            }
-            return entity;
-        }
-
-        @Override
-        public void onDestroy() {
-            index = -1;
-            param = null;
-            entity = null;
         }
     }
 }

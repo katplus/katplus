@@ -33,14 +33,8 @@ public interface Param {
     /**
      * Returns the index of {@link Param}
      */
-    int getIndex();
-
-    /**
-     * Returns the {@link Coder} of {@link Param}
-     */
-    @Nullable
-    default Coder<?> getCoder() {
-        return null;
+    default int index() {
+        return 0;
     }
 
     /**
@@ -49,5 +43,13 @@ public interface Param {
     @Nullable
     default Type getType() {
         return getKlass();
+    }
+
+    /**
+     * Returns the {@link Coder} of {@link Param}
+     */
+    @Nullable
+    default Coder<?> getCoder() {
+        return null;
     }
 }

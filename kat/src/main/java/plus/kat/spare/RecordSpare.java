@@ -71,8 +71,7 @@ public class RecordSpare<T> extends SuperSpare<T, Param> implements Sketch<T> {
                 continue;
             }
 
-            Edge edge = new Edge();
-            edge.setIndex(width++);
+            Edge edge = new Edge(width++);
             edge.setCoder(handle.getCoder());
             edge.setType(field.getGenericType());
             edge.setKlass(field.getType());

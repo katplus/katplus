@@ -25,7 +25,7 @@ import java.lang.reflect.Type;
  * @since 0.0.1
  */
 @FunctionalInterface
-public interface Setter<K, V> {
+public interface Setter<K, V> extends Param {
     /**
      * @param it  the entity
      * @param val the value of entity
@@ -54,10 +54,11 @@ public interface Setter<K, V> {
     }
 
     /**
-     * Returns the {@link Coder} of {@link K}
+     * Returns the {@link Class} of {@link K}
      */
     @Nullable
-    default Coder<?> getCoder() {
+    @Override
+    default Class<?> getKlass() {
         return null;
     }
 
@@ -65,15 +66,17 @@ public interface Setter<K, V> {
      * Returns the {@link Type} of {@link K}
      */
     @Nullable
+    @Override
     default Type getType() {
         return getKlass();
     }
 
     /**
-     * Returns the {@link Class} of {@link K}
+     * Returns the {@link Coder} of {@link K}
      */
     @Nullable
-    default Class<?> getKlass() {
+    @Override
+    default Coder<?> getCoder() {
         return null;
     }
 }
