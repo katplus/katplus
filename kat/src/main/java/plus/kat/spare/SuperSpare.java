@@ -282,9 +282,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
      * @author kraity
      * @since 0.0.2
      */
-    public static class Edge
-        extends Entry<Object, Edge>
-        implements Param {
+    public static class Edge extends Entry<Object, Edge> implements Target {
 
         private Type type;
         private Class<?> klass;
@@ -316,31 +314,14 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
          * Returns the index of {@link Edge}
          */
         @Override
-        public int index() {
+        public int getIndex() {
             return index;
-        }
-
-        /**
-         * @param type the specified {@link Type}
-         */
-        public void setType(
-            Type type
-        ) {
-            this.type = type;
-        }
-
-        /**
-         * Returns the {@link Type} of {@link Edge}
-         */
-        @Override
-        public Type getType() {
-            return type;
         }
 
         /**
          * @param klass the specified {@link Class}
          */
-        public void setKlass(
+        public void setType(
             Class<?> klass
         ) {
             this.klass = klass;
@@ -350,7 +331,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
          * Returns the {@link Class} of {@link Edge}
          */
         @Override
-        public Class<?> getKlass() {
+        public Class<?> getType() {
             return klass;
         }
 
@@ -369,6 +350,23 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         @Override
         public Coder<?> getCoder() {
             return coder;
+        }
+
+        /**
+         * @param type the specified {@link Type}
+         */
+        public void setActualType(
+            Type type
+        ) {
+            this.type = type;
+        }
+
+        /**
+         * Returns the {@link Type} of {@link Edge}
+         */
+        @Override
+        public Type getActualType() {
+            return type;
         }
 
         /**

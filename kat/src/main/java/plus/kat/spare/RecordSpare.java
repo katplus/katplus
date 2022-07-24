@@ -29,7 +29,7 @@ import java.lang.reflect.*;
  * @author kraity
  * @since 0.0.2
  */
-public class RecordSpare<T> extends SuperSpare<T, Param> implements Sketch<T> {
+public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
 
     private int width;
     private Constructor<T> ctor;
@@ -73,8 +73,8 @@ public class RecordSpare<T> extends SuperSpare<T, Param> implements Sketch<T> {
 
             Edge edge = new Edge(width++);
             edge.setCoder(handle.getCoder());
-            edge.setType(field.getGenericType());
-            edge.setKlass(field.getType());
+            edge.setType(field.getType());
+            edge.setActualType(field.getGenericType());
 
             if (e2 != null) {
                 String[] keys = e2.value();
@@ -150,7 +150,7 @@ public class RecordSpare<T> extends SuperSpare<T, Param> implements Sketch<T> {
     }
 
     @Override
-    public Param param(
+    public Target target(
         @NotNull int index,
         @NotNull Alias alias
     ) {

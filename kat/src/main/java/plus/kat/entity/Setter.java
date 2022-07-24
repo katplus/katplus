@@ -18,14 +18,12 @@ package plus.kat.entity;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import java.lang.reflect.Type;
-
 /**
  * @author kraity
  * @since 0.0.1
  */
 @FunctionalInterface
-public interface Setter<K, V> extends Param {
+public interface Setter<K, V> extends Target {
     /**
      * @param it  the entity
      * @param val the value of entity
@@ -58,17 +56,8 @@ public interface Setter<K, V> extends Param {
      */
     @Nullable
     @Override
-    default Class<?> getKlass() {
+    default Class<?> getType() {
         return null;
-    }
-
-    /**
-     * Returns the {@link Type} of {@link K}
-     */
-    @Nullable
-    @Override
-    default Type getType() {
-        return getKlass();
     }
 
     /**

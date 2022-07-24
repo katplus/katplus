@@ -18,7 +18,7 @@ package plus.kat.reflex;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Annotation;
 import java.lang.invoke.*;
 import java.lang.reflect.*;
 import java.util.Map;
@@ -36,7 +36,7 @@ import plus.kat.utils.Reflect;
  * @author kraity
  * @since 0.0.2
  */
-public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Maker<T>, Sketch<T> {
+public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Maker<T>, Worker<T> {
 
     static final MethodHandles.Lookup
         lookup = MethodHandles.lookup();
@@ -46,7 +46,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
     protected boolean marker;
     protected Class<?>[] args;
-    protected KatMap<Object, Param> params;
+    protected KatMap<Object, Target> params;
 
     /**
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
@@ -138,7 +138,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             }
 
             // get class specified
-            Class<?> klass = setter.getKlass();
+            Class<?> klass = setter.getType();
 
             // get spare specified
             Spare<?> spare = supplier.lookup(klass);
@@ -167,7 +167,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
     }
 
     @Override
-    public Param param(
+    public Target target(
         @NotNull int index,
         @NotNull Alias alias
     ) {
@@ -521,8 +521,8 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
                 Edge edge = new Edge(i);
                 edge.setCoder(c);
-                edge.setType(ts[i]);
-                edge.setKlass(args[i]);
+                edge.setType(args[i]);
+                edge.setActualType(ts[i]);
 
                 if (expose == null) {
                     if (ps == null) {
@@ -677,13 +677,13 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         }
 
         @Override
-        public Type getType() {
-            return type;
+        public Class<?> getType() {
+            return klass;
         }
 
         @Override
-        public Class<?> getKlass() {
-            return klass;
+        public Type getActualType() {
+            return type;
         }
 
         @Override
@@ -699,7 +699,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
     public static class Builder2<K> extends Builder$<K> {
 
         protected K entity;
-        protected int index = -1;
+        protected int index;
 
         protected int count;
         protected boolean marker;
@@ -707,16 +707,16 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         protected Object[] data;
         protected Class<?>[] params;
 
-        protected Param param;
+        protected Target target;
         protected Setter<K, ?> setter;
 
         protected Cache<K> cache;
-        protected Sketch<K> sketch;
+        protected Worker<K> worker;
 
         public Builder2(
             @NotNull ReflectSpare<K> spare
         ) {
-            this.sketch = spare;
+            this.worker = spare;
             this.params = spare.args;
             this.marker = spare.marker;
         }
@@ -734,16 +734,16 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
         @Override
         public void onAccept(
-            @NotNull Param $,
+            @NotNull Target tag,
             @NotNull Object value
         ) throws IOCrash {
             if (entity != null) {
                 setter.onAccept(
                     entity, value
                 );
-            } else if (param != null) {
-                int i = param.index();
-                param = null;
+            } else if (target != null) {
+                int i = target.getIndex();
+                target = null;
                 data[i] = value;
                 if (params.length == ++count) {
                     this.embark();
@@ -777,9 +777,10 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOCrash {
+            int i = index++;
             if (entity != null) {
-                setter = sketch.setter(
-                    ++index, alias
+                setter = worker.setter(
+                    i, alias
                 );
                 if (setter != null) {
                     onAccept(
@@ -787,16 +788,16 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     );
                 }
             } else {
-                param = sketch.param(
-                    ++index, alias
+                target = worker.target(
+                    i, alias
                 );
-                if (param != null) {
+                if (target != null) {
                     onAccept(
-                        space, value, param
+                        space, value, target
                     );
                 } else {
-                    setter = sketch.setter(
-                        index, alias
+                    setter = worker.setter(
+                        i, alias
                     );
                     if (setter != null) {
                         onAccept(
@@ -812,9 +813,10 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOCrash {
+            int i = index++;
             if (entity != null) {
-                setter = sketch.setter(
-                    ++index, alias
+                setter = worker.setter(
+                    i, alias
                 );
                 if (setter != null) {
                     return getBuilder(
@@ -822,16 +824,16 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     );
                 }
             } else {
-                param = sketch.param(
-                    ++index, alias
+                target = worker.target(
+                    i, alias
                 );
-                if (param != null) {
+                if (target != null) {
                     return getBuilder(
-                        space, param
+                        space, target
                     );
                 } else {
-                    setter = sketch.setter(
-                        index, alias
+                    setter = worker.setter(
+                        i, alias
                     );
                     if (setter != null) {
                         return getBuilder(
@@ -887,7 +889,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             }
 
             try {
-                entity = sketch.apply(
+                entity = worker.apply(
                     getAlias(), data
                 );
                 while (cache != null) {
@@ -915,12 +917,13 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
         @Override
         public void onDestroy() {
-            index = -1;
-            entity = null;
+            index = 0;
+            count = 0;
             data = null;
             cache = null;
-            param = null;
             setter = null;
+            entity = null;
+            target = null;
         }
     }
 }

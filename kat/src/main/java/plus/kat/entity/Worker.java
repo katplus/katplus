@@ -26,9 +26,9 @@ import java.lang.reflect.Type;
 
 /**
  * @author kraity
- * @since 0.0.2
+ * @since 0.0.1
  */
-public interface Sketch<K> extends Spare<K>, Maker<K> {
+public interface Worker<K> extends Spare<K>, Maker<K> {
     /**
      * @param alias the alias of entity
      * @throws Crash If a failure occurs
@@ -39,10 +39,10 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
     ) throws Crash;
 
     /**
-     * @param alias the alias of param
+     * @param alias the alias of target
      */
     @Nullable
-    default Param param(
+    default Target target(
         @NotNull int index,
         @NotNull Alias alias
     ) {
@@ -78,18 +78,18 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
     class Builder0<K> extends Builder$<K> {
 
         protected K entity;
-        protected int index = -1;
+        protected int index;
 
-        protected Sketch<K> sketch;
+        protected Worker<K> worker;
         protected Setter<K, ?> setter;
 
         /**
          * default
          */
         public Builder0(
-            @NotNull Sketch<K> sketch
+            @NotNull Worker<K> worker
         ) {
-            this.sketch = sketch;
+            this.worker = worker;
         }
 
         @Override
@@ -97,19 +97,19 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias
         ) throws Crash, IOCrash {
             // get an instance
-            entity = sketch.apply(alias);
+            entity = worker.apply(alias);
 
             // check this instance
             if (entity == null) {
                 throw new Crash(
-                    "Entity created through Sketch is null", false
+                    "Entity created through Worker is null", false
                 );
             }
         }
 
         @Override
         public void onAccept(
-            @NotNull Param param,
+            @NotNull Target tag,
             @NotNull Object value
         ) throws IOCrash {
             setter.onAccept(
@@ -133,8 +133,8 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOCrash {
-            setter = sketch.setter(
-                ++index, alias
+            setter = worker.setter(
+                index++, alias
             );
 
             if (setter != null) {
@@ -149,8 +149,8 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOCrash {
-            setter = sketch.setter(
-                ++index, alias
+            setter = worker.setter(
+                index++, alias
             );
 
             if (setter == null) {
@@ -168,9 +168,9 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
 
         @Override
         public void onDestroy() {
-            index = -1;
-            setter = null;
+            index = 0;
             entity = null;
+            setter = null;
         }
     }
 
@@ -181,18 +181,18 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
     class Builder1<K> extends Builder$<K> {
 
         protected K entity;
-        protected int index = -1;
+        protected int index;
 
-        protected Param param;
+        protected Target target;
         protected Object[] data;
-        protected Sketch<K> sketch;
+        protected Worker<K> worker;
 
         public Builder1(
-            @NotNull Sketch<K> sketch,
+            @NotNull Worker<K> worker,
             @NotNull Object[] data
         ) {
             this.data = data;
-            this.sketch = sketch;
+            this.worker = worker;
         }
 
         @Override
@@ -204,10 +204,10 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
 
         @Override
         public void onAccept(
-            @NotNull Param param,
+            @NotNull Target tag,
             @NotNull Object value
         ) throws IOCrash {
-            int i = param.index();
+            int i = tag.getIndex();
             data[i] = value;
         }
 
@@ -216,8 +216,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOCrash {
-            int i = param.index();
-            param = null;
+            int i = target.getIndex();
             data[i] = child.getResult();
         }
 
@@ -227,13 +226,13 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOCrash {
-            param = sketch.param(
-                ++index, alias
+            target = worker.target(
+                index++, alias
             );
 
-            if (param != null) {
+            if (target != null) {
                 onAccept(
-                    space, value, param
+                    space, value, target
                 );
             }
         }
@@ -244,15 +243,15 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOCrash {
-            param = sketch.param(
-                ++index, alias
+            target = worker.target(
+                index++, alias
             );
 
-            if (param == null) {
+            if (target == null) {
                 return null;
             }
 
-            return getBuilder(space, param);
+            return getBuilder(space, target);
         }
 
         @Nullable
@@ -260,7 +259,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
         public K getResult() {
             if (entity == null) {
                 try {
-                    entity = sketch.apply(
+                    entity = worker.apply(
                         getAlias(), data
                     );
                 } catch (Crash e) {
@@ -272,9 +271,9 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
 
         @Override
         public void onDestroy() {
-            index = -1;
-            param = null;
+            index = 0;
             entity = null;
+            target = null;
         }
     }
 
@@ -285,7 +284,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
     abstract class Builder$<K> extends Builder<K> {
 
         public void onAccept(
-            @NotNull Param param,
+            @NotNull Target tag,
             @Nullable Object value
         ) throws IOCrash {
             // Nothing
@@ -294,14 +293,14 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
         public void onAccept(
             @NotNull Space space,
             @NotNull Value value,
-            @NotNull Param param
+            @NotNull Target target
         ) throws IOCrash {
             // specified coder
-            Coder<?> coder = param.getCoder();
+            Coder<?> coder = target.getCoder();
 
             if (coder != null) {
                 onAccept(
-                    param, coder.read(
+                    target, coder.read(
                         flag, value
                     )
                 );
@@ -309,7 +308,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
             }
 
             Spare<?> spare;
-            Class<?> klass = param.getKlass();
+            Class<?> klass = target.getType();
 
             // lookup
             if (klass == null) {
@@ -318,7 +317,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
 
                 if (spare != null) {
                     onAccept(
-                        param, spare.read(
+                        target, spare.read(
                             flag, value
                         )
                     );
@@ -330,7 +329,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
                 // skip if null
                 if (spare != null) {
                     onAccept(
-                        param, spare.read(
+                        target, spare.read(
                             flag, value
                         )
                     );
@@ -344,7 +343,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
                 if (spare != null &&
                     spare.accept(klass)) {
                     onAccept(
-                        param, spare.read(
+                        target, spare.read(
                             flag, value
                         )
                     );
@@ -355,19 +354,19 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
         @Nullable
         public Builder<?> getBuilder(
             @NotNull Space space,
-            @NotNull Param param
+            @NotNull Target target
         ) throws IOCrash {
             // specified coder
-            Coder<?> coder = param.getCoder();
+            Coder<?> coder = target.getCoder();
 
             if (coder != null) {
                 return coder.getBuilder(
-                    param.getType()
+                    target.getActualType()
                 );
             }
 
             Spare<?> spare;
-            Class<?> klass = param.getKlass();
+            Class<?> klass = target.getType();
 
             // lookup
             if (klass == null) {
@@ -377,7 +376,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
                 // skip if null
                 if (spare != null) {
                     return spare.getBuilder(
-                        param.getType()
+                        target.getActualType()
                     );
                 }
             } else {
@@ -387,7 +386,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
                 // skip if null
                 if (spare != null) {
                     return spare.getBuilder(
-                        param.getType()
+                        target.getActualType()
                     );
                 }
 
@@ -398,7 +397,7 @@ public interface Sketch<K> extends Spare<K>, Maker<K> {
                 if (spare != null &&
                     spare.accept(klass)) {
                     return spare.getBuilder(
-                        param.getType()
+                        target.getActualType()
                     );
                 }
             }

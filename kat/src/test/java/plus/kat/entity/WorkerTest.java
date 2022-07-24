@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author kraity
  */
-public class SketchTest {
+public class WorkerTest {
 
     @Test
     public void test() throws NoSuchMethodException {

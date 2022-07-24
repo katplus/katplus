@@ -23,33 +23,31 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.2
  */
-public interface Param {
+public interface Target {
     /**
-     * Returns the {@link Class} of {@link Param}
+     * Returns the {@link Class} of {@link Target}
      */
     @Nullable
-    Class<?> getKlass();
+    Class<?> getType();
 
     /**
-     * Returns the index of {@link Param}
+     * Returns the {@link Coder} of {@link Target}
      */
-    default int index() {
+    @Nullable
+    Coder<?> getCoder();
+
+    /**
+     * Returns the index of {@link Target}
+     */
+    default int getIndex() {
         return 0;
     }
 
     /**
-     * Returns the {@link Type} of {@link Param}
+     * Returns the {@link Type} of {@link Target}
      */
     @Nullable
-    default Type getType() {
-        return getKlass();
-    }
-
-    /**
-     * Returns the {@link Coder} of {@link Param}
-     */
-    @Nullable
-    default Coder<?> getCoder() {
-        return null;
+    default Type getActualType() {
+        return getType();
     }
 }
