@@ -24,17 +24,15 @@ import plus.kat.entity.*;
 import plus.kat.utils.Reflect;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
+
+import static plus.kat.utils.Reflect.lookup;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
 public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
-
-    static final MethodHandles.Lookup
-        lookup = MethodHandles.lookup();
 
     private int width;
     private Constructor<T> ctor;
@@ -54,79 +52,85 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
     @SuppressWarnings("unchecked")
     protected void initialize() {
         for (Field field : klass.getDeclaredFields()) {
-            // its modifier
-            int mod = field.getModifiers();
-
-            // check its modifier
-            if ((mod & Modifier.STATIC) != 0) {
-                continue;
-            }
-
-            Expose e1, e2;
-            e1 = field.getAnnotation(
-                Expose.class
-            );
-
-            Handle<T> handle;
-            String name = field.getName();
             try {
-                Method method = klass.getMethod(name);
-                e2 = method.getAnnotation(Expose.class);
-                handle = new Handle<>(
-                    method, e2 == null ? e1 : e2, supplier
+                int mod = field.getModifiers();
+                if ((mod & Modifier.STATIC) != 0) {
+                    continue;
+                }
+
+                Expose e1 = field
+                    .getAnnotation(
+                        Expose.class
+                    );
+
+                Format f1 = field
+                    .getAnnotation(
+                        Format.class
+                    );
+
+                Edge edge = new Edge(width++);
+                Class<?> type = field.getType();
+                edge.setType(type);
+                edge.setCoder(
+                    Reflect.activate(
+                        type, e1, f1, supplier
+                    )
                 );
-            } catch (Exception e) {
-                throw new RunCrash(e);
-            }
+                edge.setActualType(
+                    field.getGenericType()
+                );
 
-            Edge edge = new Edge(width++);
-            edge.setCoder(handle.getCoder());
-            edge.setType(field.getType());
-            edge.setActualType(field.getGenericType());
-
-            if (e2 == null) {
+                String name = field.getName();
                 if (e1 == null) {
                     put(name, edge);
-                    getter(name, handle);
                 } else {
                     String[] keys = e1.value();
                     if (keys.length == 0) {
                         put(name, edge);
+                    } else {
+                        name = keys[0];
+                        for (int i = 0; i < keys.length; i++) {
+                            put(
+                                keys[i], i == 0 ? edge : edge.clone()
+                            );
+                        }
+                    }
+                    if (!e1.export()) {
+                        continue;
+                    }
+                }
+
+                Handle<T> handle;
+                Method method = klass.getMethod(
+                    field.getName()
+                );
+
+                Expose e2 = method
+                    .getAnnotation(
+                        Expose.class
+                    );
+                if (e2 == null) {
+                    handle = new Handle<>(
+                        method, null, supplier
+                    );
+                    getter(name, handle);
+                } else if (e2.export()) {
+                    handle = new Handle<>(
+                        method, e2, supplier
+                    );
+                    String[] keys = e2.value();
+                    if (keys.length == 0) {
                         getter(name, handle);
                     } else {
-                        getter(keys[0], handle);
                         for (int i = 0; i < keys.length; i++) {
-                            put(
-                                keys[i], i == 0 ? edge : edge.clone()
+                            getter(
+                                keys[i], i == 0 ? handle : handle.clone()
                             );
                         }
                     }
                 }
-            } else {
-                String[] keys = e2.value();
-                if (keys.length == 0) {
-                    getter(name, handle);
-                } else {
-                    for (int i = 0; i < keys.length; i++) {
-                        getter(
-                            keys[i], i == 0 ? handle : handle.clone()
-                        );
-                    }
-                }
-                if (e1 == null) {
-                    put(name, edge);
-                } else {
-                    keys = e1.value();
-                    if (keys.length == 0) {
-                        put(name, edge);
-                    } else {
-                        for (int i = 0; i < keys.length; i++) {
-                            put(
-                                keys[i], i == 0 ? edge : edge.clone()
-                            );
-                        }
-                    }
-                }
+            } catch (Exception e) {
+                throw new RunCrash(e);
             }
         }
 

@@ -32,14 +32,13 @@ import plus.kat.spare.*;
 import plus.kat.utils.KatMap;
 import plus.kat.utils.Reflect;
 
+import static plus.kat.utils.Reflect.lookup;
+
 /**
  * @author kraity
  * @since 0.0.2
  */
 public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Maker<T>, Worker<T> {
-
-    static final MethodHandles.Lookup
-        lookup = MethodHandles.lookup();
 
     private MethodHandle handle;
     private Constructor<T> builder;

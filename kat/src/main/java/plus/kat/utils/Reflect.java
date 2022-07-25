@@ -26,6 +26,7 @@ import plus.kat.chain.*;
 import plus.kat.entity.*;
 import plus.kat.reflex.*;
 
+import java.lang.invoke.*;
 import java.lang.reflect.*;
 import java.time.LocalDate;
 import java.util.Date;
@@ -34,7 +35,11 @@ import java.util.Date;
  * @author kraity
  * @since 0.0.2
  */
-public class Reflect {
+public final class Reflect {
+
+    public static final MethodHandles.Lookup
+        lookup = MethodHandles.lookup();
+
     /**
      * @since 0.0.2
      */
