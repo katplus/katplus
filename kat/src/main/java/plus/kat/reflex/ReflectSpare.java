@@ -501,19 +501,19 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 }
             }
 
-            int i = 0, j = 0;
+            Type[] ts = b.getGenericParameterTypes();
+            Annotation[][] as = b.getParameterAnnotations();
+
+            int i = 0, j = as.length - args.length;
             Class<?> enclosingClass = klass.getEnclosingClass();
+
             if (enclosingClass != null &&
                 (klass.getModifiers() & Modifier.STATIC) == 0) {
                 if (enclosingClass == args[0]) {
                     i++;
-                    j--;
                     owner = enclosingClass;
                 }
             }
-
-            Type[] ts = b.getGenericParameterTypes();
-            Annotation[][] as = b.getParameterAnnotations();
 
             for (; i < args.length; i++) {
                 Format format = null;
