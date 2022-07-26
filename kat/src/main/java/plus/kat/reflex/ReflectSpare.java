@@ -43,7 +43,9 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
     private MethodHandle handle;
     private Constructor<T> builder;
 
+    protected Class<?> owner;
     protected boolean marker;
+
     protected Class<?>[] args;
     protected KatMap<Object, Target> params;
 
@@ -499,13 +501,24 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 }
             }
 
+            int i = 0, j = 0;
+            Class<?> enclosingClass = klass.getEnclosingClass();
+            if (enclosingClass != null &&
+                (klass.getModifiers() & Modifier.STATIC) == 0) {
+                if (enclosingClass == args[0]) {
+                    i++;
+                    j--;
+                    owner = enclosingClass;
+                }
+            }
+
             Type[] ts = b.getGenericParameterTypes();
             Annotation[][] as = b.getParameterAnnotations();
 
-            for (int i = 0; i < args.length; i++) {
+            for (; i < args.length; i++) {
                 Format format = null;
                 Expose expose = null;
-                for (Annotation a : as[i]) {
+                for (Annotation a : as[i + j]) {
                     Class<?> at = a.annotationType();
                     if (at == Expose.class) {
                         expose = (Expose) a;
@@ -700,10 +713,11 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         protected K entity;
         protected int index;
 
+        protected Object[] data;
         protected int count;
         protected boolean marker;
 
-        protected Object[] data;
+        protected Class<?> owner;
         protected Class<?>[] params;
 
         protected Target target;
@@ -716,6 +730,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             @NotNull ReflectSpare<K> spare
         ) {
             this.worker = spare;
+            this.owner = spare.owner;
             this.params = spare.args;
             this.marker = spare.marker;
         }
@@ -723,12 +738,23 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) {
+        ) throws IOCrash {
             int size = params.length;
             if (marker) {
                 size += 2;
             }
             data = new Object[size];
+            if (owner != null) {
+                Object own = getParent()
+                    .getResult();
+                if (own != null) {
+                    data[count++] = own;
+                } else {
+                    throw new UnexpectedCrash(
+                        "Unexpectedly, getParent().getResult() is null"
+                    );
+                }
+            }
         }
 
         @Override
@@ -904,7 +930,8 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
         @Override
         public K getResult() {
-            if (marker && entity == null) {
+            if (entity == null &&
+                (marker || owner != null)) {
                 try {
                     embark();
                 } catch (IOCrash e) {

@@ -3,6 +3,7 @@ package plus.kat.reflex;
 import org.junit.jupiter.api.Test;
 
 import plus.kat.Event;
+import plus.kat.Json;
 import plus.kat.Kat;
 import plus.kat.Supplier;
 
@@ -98,6 +99,75 @@ public class ReflexTest {
 
         tag.id = null;
         assertEquals("Tag{s:name(kat)}", Kat.encode(tag));
+    }
+
+    @Test
+    public void test5() {
+        A a = Kat.decode(
+            A.class, "{:b{:i(1)}:c{:i(2)}:d{:i(3):j(4)}:e{:k(5):f{:m(6)}}}"
+        );
+        assertEquals("{\"b\":{\"i\":1},\"c\":{\"i\":2},\"d\":{\"i\":3,\"j\":4},\"e\":{\"f\":{\"m\":6,\"n\":5},\"k\":5}}", Json.encode(a));
+    }
+
+    static class A {
+        public B b;
+        public C c;
+        public D d;
+        public E e;
+
+        class B {
+            public int i;
+        }
+
+        class C {
+            public int i;
+
+            C(@Expose("i") int i) {
+                this.i = i;
+            }
+        }
+
+        class D {
+            public int i;
+            public int j;
+
+            D(@Expose("i") int i,
+              @Expose("j") int j) {
+                this.i = i;
+                this.j = j;
+            }
+        }
+
+        class E {
+            public F f;
+            private int k;
+
+            E(@Expose("k") int k) {
+                this.k = k;
+            }
+
+            public int getK() {
+                return k;
+            }
+
+            class F {
+                private int m;
+
+                F(@Expose("m") int m) {
+                    this.m = m;
+                }
+
+                @Expose(value = "m", index = 0)
+                public int getM() {
+                    return m;
+                }
+
+                @Expose(value = "n", index = 1)
+                public int getN() {
+                    return E.this.k;
+                }
+            }
+        }
     }
 
     static class Bean {
