@@ -175,6 +175,16 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
     }
 
     /**
+     * @param setter the specified {@link Setter}
+     */
+    protected void setter(
+        @NotNull Object key,
+        @NotNull Setter<T, ?> setter
+    ) {
+        // Nothing
+    }
+
+    /**
      * @param getter the specified {@link Getter}
      */
     protected void getter(
@@ -182,21 +192,18 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         @NotNull Node<T> getter
     ) {
         getter.key = key;
-        int hash = getter.getHash();
         if (tail == null) {
             head = getter;
             tail = getter;
-        } else if (hash < 0) {
+        } else if (getter.index < 0) {
             tail.next = getter;
             tail = getter;
         } else {
             Node<T> m = head;
             Node<T> n = null;
 
-            int wgt;
             while (true) {
-                wgt = m.getHash();
-                if (wgt < 0) {
+                if (m.index < 0) {
                     getter.next = m;
                     if (m == head) {
                         head = getter;
@@ -204,7 +211,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
                     break;
                 }
 
-                if (wgt > hash) {
+                if (m.index > getter.index) {
                     if (n == null) {
                         head = getter;
                     } else {
@@ -234,6 +241,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         implements Getter<E, Object> {
 
         private Node<E> next;
+        private int index;
         private CharSequence key;
 
         protected Coder<?> coder;
@@ -244,12 +252,13 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         }
 
         /**
-         * @param hash the specified {@code hash}
+         * @param index the specified {@code index}
          */
         protected Node(
-            int hash
+            int index
         ) {
-            super(hash);
+            super(0);
+            this.index = index;
         }
 
         /**
@@ -258,16 +267,17 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         protected Node(
             Expose expose
         ) {
-            super(expose == null
-                ? -1 : expose.index()
-            );
+            super(0);
+            this.index = expose == null ? -1 : expose.index();
         }
 
         /**
-         * Returns a clone of this {@link Node}
+         * Returns the index of {@link Target}
          */
         @Override
-        public abstract Node<E> clone();
+        public int getIndex() {
+            return index;
+        }
 
         /**
          * Returns the {@link Coder} of {@link Node}
@@ -276,6 +286,12 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         public Coder<?> getCoder() {
             return coder;
         }
+
+        /**
+         * Returns a clone of this {@link Node}
+         */
+        @Override
+        public abstract Node<E> clone();
     }
 
     /**

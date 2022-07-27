@@ -158,6 +158,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
     }
 
     @Override
+    @Nullable
     public Builder<T> getBuilder(
         @Nullable Type type
     ) {
@@ -168,6 +169,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
     }
 
     @Override
+    @Nullable
     public Target target(
         @NotNull int index,
         @NotNull Alias alias
@@ -187,6 +189,22 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         return get(
             alias.isEmpty() ? index : alias
         );
+    }
+
+    @Override
+    public Setter<T, ?> put(
+        @NotNull Object key,
+        @Nullable Setter<T, ?> val
+    ) {
+        throw new RunCrash();
+    }
+
+    @Override
+    protected void setter(
+        @NotNull Object key,
+        @NotNull Setter<T, ?> setter
+    ) {
+        super.put(key, setter);
     }
 
     /**
@@ -235,24 +253,23 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
             if (expose == null) {
                 String name = field.getName();
-                // register getter
                 getter(
                     name, handle
                 );
-
-                // register setter
-                put(
+                setter(
                     name, handle.clone()
                 );
                 continue;
             }
 
-            int k = handle.getHash();
-            // check use index
-            if (direct && k > -1) {
-                put(
-                    k, handle.clone()
-                );
+            // check whether to use direct index
+            if (direct) {
+                int index = handle.getIndex();
+                if (index > -1) {
+                    setter(
+                        index, handle.clone()
+                    );
+                }
             }
 
             String[] keys = expose.value();
@@ -262,11 +279,11 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     getter(
                         name, handle
                     );
-                    put(
+                    setter(
                         name, handle.clone()
                     );
                 } else {
-                    put(
+                    setter(
                         name, handle
                     );
                 }
@@ -281,7 +298,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 for (String alias : keys) {
                     // check empty
                     if (!alias.isEmpty()) {
-                        put(
+                        setter(
                             alias, handle.clone()
                         );
                     }
@@ -342,18 +359,23 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     }
 
                     if (count != 0) {
-                        int k = handle.getHash();
-                        // check use index
-                        if (direct && k >= 0) {
-                            // register setter
-                            put(k, handle);
+                        // check whether to use direct index
+                        if (direct) {
+                            int index = handle.getIndex();
+                            if (index > -1) {
+                                setter(
+                                    index, handle
+                                );
+                            }
                         }
 
                         for (String alias : keys) {
                             // check empty
-                            if (!alias.isEmpty()) put(
-                                alias, handle.clone()
-                            );
+                            if (!alias.isEmpty()) {
+                                setter(
+                                    alias, handle.clone()
+                                );
+                            }
                         }
                     } else {
                         // register all aliases
@@ -431,19 +453,21 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
             Alias alias = new Alias(name);
             if (count == 0) {
-                // register getter
                 getter(
                     alias, handle
                 );
             } else {
-                // register setter
-                put(alias, handle);
+                setter(
+                    alias, handle
+                );
 
-                // check use index
-                if (direct && expose != null) {
-                    int k = expose.index();
-                    if (k >= 0) {
-                        put(k, handle.clone());
+                // check whether to use direct index
+                if (direct) {
+                    int index = handle.getIndex();
+                    if (index > -1) {
+                        setter(
+                            index, handle.clone()
+                        );
                     }
                 }
             }
@@ -718,7 +742,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         protected boolean marker;
 
         protected Class<?> owner;
-        protected Class<?>[] params;
+        protected Class<?>[] args;
 
         protected Target target;
         protected Setter<K, ?> setter;
@@ -731,15 +755,15 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         ) {
             this.worker = spare;
             this.owner = spare.owner;
-            this.params = spare.args;
+            this.args = spare.args;
             this.marker = spare.marker;
         }
 
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws IOCrash {
-            int size = params.length;
+        ) throws Crash, IOCrash {
+            int size = args.length;
             if (marker) {
                 size += 2;
             }
@@ -749,6 +773,9 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     .getResult();
                 if (own != null) {
                     data[count++] = own;
+                    if (args.length == 1) {
+                        this.embark();
+                    }
                 } else {
                     throw new UnexpectedCrash(
                         "Unexpectedly, getParent().getResult() is null"
@@ -770,8 +797,12 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 int i = target.getIndex();
                 target = null;
                 data[i] = value;
-                if (params.length == ++count) {
-                    this.embark();
+                if (args.length == ++count) {
+                    try {
+                        this.embark();
+                    } catch (Crash e) {
+                        throw new IOCrash(e);
+                    }
                 }
             } else {
                 Cache<K> c = new Cache<>();
@@ -881,14 +912,13 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             Setter<K, ?> setter;
         }
 
-        private void embark()
-            throws IOCrash {
+        private void embark() throws Crash {
             if (marker) {
                 int i = 0, flag = 0;
-                for (; i < params.length; i++) {
+                for (; i < args.length; i++) {
                     if (data[i] == null) {
                         flag |= (1 << i);
-                        Class<?> c = params[i];
+                        Class<?> c = args[i];
                         if (c.isPrimitive()) {
                             if (c == int.class) {
                                 data[i] = 0;
@@ -913,28 +943,23 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 data[i] = flag;
             }
 
-            try {
-                entity = worker.apply(
-                    getAlias(), data
+            entity = worker.apply(
+                getAlias(), data
+            );
+            while (cache != null) {
+                cache.setter.onAccept(
+                    entity, cache.value
                 );
-                while (cache != null) {
-                    cache.setter.onAccept(
-                        entity, cache.value
-                    );
-                    cache = cache.next;
-                }
-            } catch (Exception e) {
-                throw new IOCrash(e);
+                cache = cache.next;
             }
         }
 
         @Override
         public K getResult() {
-            if (entity == null &&
-                (marker || owner != null)) {
+            if (marker && entity == null) {
                 try {
-                    embark();
-                } catch (IOCrash e) {
+                    this.embark();
+                } catch (Exception e) {
                     return null;
                 }
             }

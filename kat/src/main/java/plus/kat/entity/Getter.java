@@ -23,7 +23,7 @@ import plus.kat.anno.Nullable;
  * @since 0.0.1
  */
 @FunctionalInterface
-public interface Getter<K, V> {
+public interface Getter<K, V> extends Target {
     /**
      * @param it the entity
      */
@@ -43,6 +43,15 @@ public interface Getter<K, V> {
         return apply(
             (K) it
         );
+    }
+
+    /**
+     * Returns the {@link Class} of {@link K}
+     */
+    @Nullable
+    @Override
+    default Class<?> getType() {
+        return null;
     }
 
     /**
