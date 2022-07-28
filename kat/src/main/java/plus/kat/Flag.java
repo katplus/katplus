@@ -28,6 +28,7 @@ public interface Flag {
     long ENUM_AS_INDEX = 0x4;
     long FLOAT_AS_BITMAP = 0x8;
     long DATE_AS_TIMESTAMP = 0x16;
+    long INSTANT_AS_TIMESTAMP = 0x32;
 
     /**
      * Read Flags

@@ -24,7 +24,6 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 
@@ -81,7 +80,9 @@ public class InstantSpare extends TemporalSpare<Instant> {
                 return null;
             }
             try {
-                return Instant.parse(d);
+                return Instant.from(
+                    fmt.parse(d)
+                );
             } catch (Exception e) {
                 return null;
             }
@@ -113,8 +114,10 @@ public class InstantSpare extends TemporalSpare<Instant> {
             }
         }
 
-        return Instant.parse(
-            value.toString()
+        return Instant.from(
+            fmt.parse(
+                value.toString()
+            )
         );
     }
 
@@ -123,8 +126,14 @@ public class InstantSpare extends TemporalSpare<Instant> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        flow.addLong(
-            ((Instant) value).toEpochMilli()
-        );
+        if (flow.isFlag(Flag.INSTANT_AS_TIMESTAMP)) {
+            flow.addLong(
+                ((Instant) value).toEpochMilli()
+            );
+        } else {
+            super.write(
+                flow, value
+            );
+        }
     }
 }

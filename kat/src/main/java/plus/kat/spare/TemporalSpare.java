@@ -25,7 +25,7 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 
 import java.lang.reflect.Type;
-import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
@@ -73,6 +73,7 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
         this.klass = klass;
 
         String lang = format.lang();
+        String zone = format.zone();
         String pattern = format.value();
 
         DateTimeFormatter fmt =
@@ -84,11 +85,17 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
             );
         }
 
-        if (lang.isEmpty()) {
+        if (!lang.isEmpty()) {
+            fmt = fmt.withLocale(
+                new Locale(lang)
+            );
+        }
+
+        if (zone.isEmpty()) {
             this.fmt = fmt;
         } else {
-            this.fmt = fmt.withLocale(
-                new Locale(lang)
+            this.fmt = fmt.withZone(
+                ZoneId.of(zone)
             );
         }
     }
