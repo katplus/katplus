@@ -20,41 +20,41 @@ import plus.kat.anno.NotNull;
 
 import plus.kat.crash.*;
 
-import java.time.LocalDate;
+import java.time.LocalTime;
 
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class LocalDateSpare extends TemporalSpare<LocalDate> {
+public class LocalTimeSpare extends TemporalSpare<LocalTime> {
 
-    public static final LocalDateSpare
-        INSTANCE = new LocalDateSpare();
+    public static final LocalTimeSpare
+        INSTANCE = new LocalTimeSpare();
 
-    public LocalDateSpare() {
-        super(LocalDate.class,
-            ISO_LOCAL_DATE
+    public LocalTimeSpare() {
+        super(LocalTime.class,
+            ISO_LOCAL_TIME
         );
     }
 
-    public LocalDateSpare(
+    public LocalTimeSpare(
         @NotNull Format format
     ) {
-        super(LocalDate.class, format);
+        super(LocalTime.class, format);
     }
 
     @Override
     public CharSequence getSpace() {
-        return "LocalDate";
+        return "LocalTime";
     }
 
     @Override
-    public LocalDate cast(
+    public LocalTime cast(
         @NotNull String value
     ) throws IOCrash {
-        return LocalDate.from(
+        return LocalTime.from(
             fmt.parse(value)
         );
     }

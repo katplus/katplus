@@ -15,58 +15,44 @@
  */
 package plus.kat.spare;
 
+import plus.kat.anno.Format;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 
-import java.lang.reflect.Type;
 import java.time.Instant;
+import java.time.LocalDate;
+
+import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class InstantSpare implements Spare<Instant> {
+public class InstantSpare extends TemporalSpare<Instant> {
 
     public static final InstantSpare
         INSTANCE = new InstantSpare();
+
+    public InstantSpare() {
+        super(Instant.class,
+            ISO_INSTANT
+        );
+    }
+
+    public InstantSpare(
+        @NotNull Format format
+    ) {
+        super(Instant.class, format);
+    }
 
     @NotNull
     @Override
     public String getSpace() {
         return "Instant";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> klass
-    ) {
-        return klass == Instant.class
-            || klass == Object.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<Instant> getType() {
-        return Instant.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<Instant> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

@@ -14,6 +14,8 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -348,6 +350,33 @@ public class SpareTest {
         ByteBuffer buf = spare.read("$(0123456789)");
         assertEquals("0123456789", new String(buf.array()));
         assertEquals("s(0123456789)", Kat.encode(buf));
+    }
+
+    @Test
+    public void test_local_date() {
+        LocalDateSpare spare = LocalDateSpare.INSTANCE;
+
+        LocalDate localDate = spare.read("$(2022-02-22)");
+        assertNotNull(localDate);
+        assertEquals("LocalDate(2022-02-22)", Kat.encode(localDate));
+    }
+
+    @Test
+    public void test_local_time() {
+        LocalTimeSpare spare = LocalTimeSpare.INSTANCE;
+
+        LocalTime localTime = spare.read("$(22:22:22.123)");
+        assertNotNull(localTime);
+        assertEquals("LocalTime(22:22:22.123)", Kat.encode(localTime));
+    }
+
+    @Test
+    public void test_local_date_time() {
+        LocalDateTimeSpare spare = LocalDateTimeSpare.INSTANCE;
+
+        LocalDateTime localDateTime = spare.read("$(2022-02-22T22:22:22.123)");
+        assertNotNull(localDateTime);
+        assertEquals("LocalDateTime(2022-02-22T22:22:22.123)", Kat.encode(localDateTime));
     }
 
     static class Hook {

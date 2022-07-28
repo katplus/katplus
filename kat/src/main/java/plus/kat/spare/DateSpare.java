@@ -55,11 +55,11 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
     public DateSpare(
         @NotNull String pattern,
         @NotNull String zone,
-        @NotNull String locale
+        @NotNull String language
     ) {
-        super(pattern, locale.isEmpty() ? Locale.getDefault(Locale.Category.FORMAT) : new Locale(locale));
+        super(pattern, language.isEmpty() ? Locale.getDefault(Locale.Category.FORMAT) : new Locale(language));
         if (!zone.isEmpty()) {
-            setTimeZone(
+            super.setTimeZone(
                 TimeZone.getTimeZone(zone)
             );
         }

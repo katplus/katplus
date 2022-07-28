@@ -30,8 +30,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
@@ -600,6 +599,10 @@ public interface Spare<K> extends Coder<K> {
                         spare = InstantSpare.INSTANCE;
                     } else if (klass == LocalDate.class) {
                         spare = LocalDateSpare.INSTANCE;
+                    } else if (klass == LocalTime.class) {
+                        spare = LocalTimeSpare.INSTANCE;
+                    } else if (klass == LocalDateTime.class) {
+                        spare = LocalDateTimeSpare.INSTANCE;
                     } else {
                         return null;
                     }

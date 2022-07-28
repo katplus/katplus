@@ -46,7 +46,6 @@ public class AtomicBooleanSpare implements Spare<AtomicBoolean> {
         @NotNull Class<?> klass
     ) {
         return klass == AtomicBoolean.class
-            || klass == Number.class
             || klass == Object.class;
     }
 

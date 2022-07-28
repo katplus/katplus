@@ -28,7 +28,10 @@ import plus.kat.reflex.*;
 
 import java.lang.invoke.*;
 import java.lang.reflect.*;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
 /**
@@ -156,8 +159,14 @@ public final class Reflect {
         if (format != null) {
             if (klass == Date.class) {
                 return new DateSpare(format);
+            } else if (klass == Instant.class) {
+                return new InstantSpare(format);
             } else if (klass == LocalDate.class) {
-                return LocalDateSpare.of(format);
+                return new LocalDateSpare(format);
+            } else if (klass == LocalTime.class) {
+                return new LocalTimeSpare(format);
+            } else if (klass == LocalDateTime.class) {
+                return new LocalDateTimeSpare(format);
             }
         } else if (expose != null) {
             Class<?> with = expose.with();
