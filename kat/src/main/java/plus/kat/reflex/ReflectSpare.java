@@ -555,23 +555,23 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     args[i], expose, format, supplier
                 );
 
-                Edge edge = new Edge(i);
-                edge.setCoder(c);
-                edge.setType(args[i]);
-                edge.setActualType(ts[i]);
+                Item item = new Item(i);
+                item.setCoder(c);
+                item.setType(args[i]);
+                item.setActualType(ts[i]);
 
                 if (expose == null) {
                     if (ps == null) {
                         ps = b.getParameters();
                     }
                     params.put(
-                        ps[i].getName(), edge
+                        ps[i].getName(), item
                     );
                 } else {
                     String[] keys = expose.value();
                     for (int k = 0; k < keys.length; k++) {
                         params.put(
-                            keys[k], k == 0 ? edge : edge.clone()
+                            keys[k], k == 0 ? item : item.clone()
                         );
                     }
                 }
@@ -595,12 +595,12 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         public Handle(
             Handle<?> handle
         ) {
+            super(handle);
             this.klass = handle.klass;
             this.type = handle.type;
             this.coder = handle.coder;
             this.setter = handle.setter;
             this.getter = handle.getter;
-            this.nullable = handle.nullable;
         }
 
         public Handle(

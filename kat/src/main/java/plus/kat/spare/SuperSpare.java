@@ -241,15 +241,11 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         implements Getter<E, Object> {
 
         private Node<E> next;
-        private int index;
         private CharSequence key;
 
+        protected final int index;
         protected Coder<?> coder;
         protected boolean nullable;
-
-        protected Node() {
-            super(0);
-        }
 
         /**
          * @param index the specified {@code index}
@@ -259,6 +255,17 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         ) {
             super(0);
             this.index = index;
+        }
+
+        /**
+         * @param node the specified {@link Node}
+         */
+        protected Node(
+            Node<?> node
+        ) {
+            super(0);
+            this.index = node.index;
+            this.nullable = node.nullable;
         }
 
         /**
@@ -298,7 +305,9 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
      * @author kraity
      * @since 0.0.2
      */
-    public static class Edge extends Entry<Object, Edge> implements Target {
+    public static class Item
+        extends Entry<Object, Item>
+        implements Target {
 
         private Type type;
         private Class<?> klass;
@@ -306,7 +315,10 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         private Coder<?> coder;
         private final int index;
 
-        public Edge(
+        /**
+         * @param index the specified {@code index}
+         */
+        public Item(
             int index
         ) {
             super(0);
@@ -314,20 +326,20 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         }
 
         /**
-         * @param edge the specified {@link Edge}
+         * @param item the specified {@link Item}
          */
-        public Edge(
-            @NotNull Edge edge
+        public Item(
+            @NotNull Item item
         ) {
             super(0);
-            type = edge.type;
-            klass = edge.klass;
-            coder = edge.coder;
-            index = edge.index;
+            index = item.index;
+            coder = item.coder;
+            type = item.type;
+            klass = item.klass;
         }
 
         /**
-         * Returns the index of {@link Edge}
+         * Returns the index of {@link Item}
          */
         @Override
         public int getIndex() {
@@ -344,7 +356,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         }
 
         /**
-         * Returns the {@link Class} of {@link Edge}
+         * Returns the {@link Class} of {@link Item}
          */
         @Override
         public Class<?> getType() {
@@ -361,7 +373,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         }
 
         /**
-         * Returns the {@link Coder} of {@link Edge}
+         * Returns the {@link Coder} of {@link Item}
          */
         @Override
         public Coder<?> getCoder() {
@@ -378,7 +390,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         }
 
         /**
-         * Returns the {@link Type} of {@link Edge}
+         * Returns the {@link Type} of {@link Item}
          */
         @Override
         public Type getActualType() {
@@ -386,11 +398,11 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         }
 
         /**
-         * Returns a clone of this {@link Edge}
+         * Returns a clone of this {@link Item}
          */
         @Override
-        public Edge clone() {
-            return new Edge(this);
+        public Item clone() {
+            return new Item(this);
         }
     }
 }

@@ -2,10 +2,7 @@ package plus.kat.spare;
 
 import org.junit.jupiter.api.Test;
 
-import plus.kat.Event;
-import plus.kat.Json;
-import plus.kat.Kat;
-import plus.kat.Spare;
+import plus.kat.*;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 import plus.kat.anno.Format;
@@ -75,6 +72,61 @@ public class SpareTest {
 
         assertNotNull(role);
         assertEquals("Role{Date:now(2022-01-11 11:11:11)Date:last(2022-01-11 22:11:00)Date:time(2022-01-11 11:22:33)Date:date(2022-02-22T22:22:22.222Z)Date:just(03,三月 2022)LocalDate:local(2022-02-22)}", spare.write(role).toString());
+    }
+
+    public static class Art {
+
+        private final int id;
+
+        @Expose("meta")
+        private final String tag;
+
+        private final String name;
+
+        public Art(int id, String tag, String name) {
+            this.id = id;
+            this.tag = tag;
+            this.name = name;
+        }
+
+        public int id() {
+            return id;
+        }
+
+        public String tag() {
+            return "tag->" + tag;
+        }
+
+        @Expose("alias")
+        public String name() {
+            return "name->" + name;
+        }
+    }
+
+    @Test
+    public void test_record() {
+        Spare<Art> spare = new RecordSpare<>(
+            Art.class, Supplier.ins()
+        );
+
+        Art a1 = spare.read(
+            "{:id(1):name(kraity):meta(katplus)}"
+        );
+
+        assertNotNull(a1);
+        assertEquals(1, a1.id);
+        assertEquals("kraity", a1.name);
+        assertEquals("{\"id\":1,\"meta\":\"tag->katplus\",\"alias\":\"name->kraity\"}", spare.serial(a1).toString());
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", 1);
+        map.put("name", "kraity");
+        map.put("kraity", "katplus");
+
+        Art a2 = spare.cast(map);
+        assertNotNull(a2);
+        assertEquals(1, a2.id);
+        assertEquals("kraity", a2.name);
     }
 
     @Embed("Role")

@@ -25,6 +25,7 @@ import plus.kat.utils.Reflect;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.*;
+import java.util.Map;
 
 import static plus.kat.utils.Reflect.lookup;
 
@@ -41,11 +42,99 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
      * @throws RunCrash If an error occurs in the build
      */
     public RecordSpare(
+        @NotNull Class<T> klass,
+        @NotNull Supplier supplier
+    ) {
+        this(klass.getAnnotation(Embed.class), klass, supplier);
+    }
+
+    /**
+     * @throws RunCrash If an error occurs in the build
+     */
+    public RecordSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
         super(embed, klass, supplier);
+    }
+
+    @Override
+    public T apply(
+        @NotNull Alias alias
+    ) throws Crash {
+        return null;
+    }
+
+    @Override
+    public T apply(
+        @NotNull Alias alias,
+        @NotNull Object... params
+    ) throws Crash {
+        try {
+            return ctor.newInstance(params);
+        } catch (Exception e) {
+            throw new Crash(e);
+        }
+    }
+
+    @Override
+    public T cast(
+        @NotNull Supplier supplier,
+        @NotNull Map<?, ?> data
+    ) throws Exception {
+        // parameters
+        Object[] args = new Object[width];
+
+        // foreach
+        for (Map.Entry<?, ?> entry : data.entrySet()) {
+            // key
+            Object key = entry.getKey();
+            if (key == null) {
+                continue;
+            }
+
+            // try lookup
+            Target target = get(key);
+            if (target == null) {
+                continue;
+            }
+
+            // get class specified
+            Class<?> klass = target.getType();
+
+            // get spare specified
+            Spare<?> spare = supplier.lookup(klass);
+            if (spare == null) {
+                continue;
+            }
+
+            int i = target.getIndex();
+            args[i] = spare.cast(
+                entry.getValue()
+            );
+        }
+
+        return apply(
+            Alias.EMPTY, args
+        );
+    }
+
+    @Override
+    public Target target(
+        @NotNull int index,
+        @NotNull Alias alias
+    ) {
+        return get(alias);
+    }
+
+    @Override
+    public Builder<T> getBuilder(
+        @Nullable Type type
+    ) {
+        return new Builder1<>(
+            this, new Object[width]
+        );
     }
 
     @Override
@@ -68,30 +157,30 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
                         Format.class
                     );
 
-                Edge edge = new Edge(width++);
+                Item item = new Item(width++);
                 Class<?> type = field.getType();
-                edge.setType(type);
-                edge.setCoder(
+                item.setType(type);
+                item.setCoder(
                     Reflect.activate(
                         type, e1, f1, supplier
                     )
                 );
-                edge.setActualType(
+                item.setActualType(
                     field.getGenericType()
                 );
 
                 String name = field.getName();
                 if (e1 == null) {
-                    put(name, edge);
+                    put(name, item);
                 } else {
                     String[] keys = e1.value();
                     if (keys.length == 0) {
-                        put(name, edge);
+                        put(name, item);
                     } else {
                         name = keys[0];
                         for (int i = 0; i < keys.length; i++) {
                             put(
-                                keys[i], i == 0 ? edge : edge.clone()
+                                keys[i], i == 0 ? item : item.clone()
                             );
                         }
                     }
@@ -111,7 +200,7 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
                     );
                 if (e2 == null) {
                     handle = new Handle<>(
-                        method, null, supplier
+                        method, e1, supplier
                     );
                     getter(name, handle);
                 } else if (e2.export()) {
@@ -162,42 +251,6 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
         }
     }
 
-    @Override
-    public T apply(
-        @NotNull Alias alias
-    ) throws Crash {
-        return null;
-    }
-
-    @Override
-    public T apply(
-        @NotNull Alias alias,
-        @NotNull Object... params
-    ) throws Crash {
-        try {
-            return ctor.newInstance(params);
-        } catch (Exception e) {
-            throw new Crash(e);
-        }
-    }
-
-    @Override
-    public Target target(
-        @NotNull int index,
-        @NotNull Alias alias
-    ) {
-        return get(alias);
-    }
-
-    @Override
-    public Builder<T> getBuilder(
-        @Nullable Type type
-    ) {
-        return new Builder1<>(
-            this, new Object[width]
-        );
-    }
-
     /**
      * @author kraity
      * @since 0.0.2
@@ -210,10 +263,10 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
         public Handle(
             Handle<?> handle
         ) {
+            super(handle);
             this.klass = handle.klass;
             this.coder = handle.coder;
             this.getter = handle.getter;
-            this.nullable = handle.nullable;
         }
 
         public Handle(
