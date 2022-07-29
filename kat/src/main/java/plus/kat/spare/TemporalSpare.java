@@ -50,17 +50,17 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
     }
 
     protected final Class<K> klass;
-    protected final DateTimeFormatter fmt;
+    protected final DateTimeFormatter formatter;
 
     /**
-     * @param fmt the specified {@link DateTimeFormatter}
+     * @param formatter the specified {@link DateTimeFormatter}
      */
     protected TemporalSpare(
         @NotNull Class<K> klass,
-        @NotNull DateTimeFormatter fmt
+        @NotNull DateTimeFormatter formatter
     ) {
-        this.fmt = fmt;
         this.klass = klass;
+        this.formatter = formatter;
     }
 
     /**
@@ -92,9 +92,9 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
         }
 
         if (zone.isEmpty()) {
-            this.fmt = fmt;
+            formatter = fmt;
         } else {
-            this.fmt = fmt.withZone(
+            formatter = fmt.withZone(
                 ZoneId.of(zone)
             );
         }
@@ -135,12 +135,9 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        StringBuilder builder =
-            new StringBuilder(18);
-        fmt.formatTo(
-            (TemporalAccessor) value, builder
+        formatter.formatTo(
+            (TemporalAccessor) value, flow
         );
-        flow.addData(builder);
     }
 
     @Nullable

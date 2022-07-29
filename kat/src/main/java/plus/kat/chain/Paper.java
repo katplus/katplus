@@ -649,8 +649,7 @@ public class Paper extends Value implements Flow {
 
                     // 110xxx xx : 10xx xxxx
                     grow(count + 6);
-                    hash = 0;
-                    value[count++] = '^';
+                    escape();
                     value[count++] = 'u';
                     value[count++] = '0';
                     value[count++] = upper((b1 >> 4) & 0x01);
@@ -669,8 +668,7 @@ public class Paper extends Value implements Flow {
 
                     // xxxx : 10xxxx xx : 10xx xxxx
                     grow(count + 6);
-                    hash = 0;
-                    value[count++] = '^';
+                    escape();
                     value[count++] = 'u';
                     value[count++] = upper(b1 & 0x0F);
                     value[count++] = upper((b2 >> 2) & 0x0F);
@@ -692,14 +690,13 @@ public class Paper extends Value implements Flow {
                     // 11110x xx : 10x100 00
                     // 1101 10xx xxxx xxxx 1101 11xx xxxx xxxx
                     grow(count + 12);
-                    hash = 0;
-                    value[count++] = '^';
+                    escape();
                     value[count++] = 'u';
                     value[count++] = 'd';
                     value[count++] = upper(0x08 | (b1 & 0x03));
                     value[count++] = upper(((b2 - 0x10 >> 2)) & 0x0F);
                     value[count++] = upper(((b2 & 0x03) << 2) | ((b3 >> 4) & 0x03));
-                    value[count++] = '^';
+                    escape();
                     value[count++] = 'u';
                     value[count++] = 'd';
                     value[count++] = upper(0x0C | ((b3 >> 2) & 0x03));
@@ -743,6 +740,39 @@ public class Paper extends Value implements Flow {
             } else {
                 // xxxx xxxx : xxxx xxxx
                 grow(count + 6);
+                escape();
+                value[count++] = 'u';
+                value[count++] = upper((c >> 12) & 0x0F);
+                value[count++] = upper((c >> 8) & 0x0F);
+                value[count++] = upper((c >> 4) & 0x0F);
+                value[count++] = upper(c & 0x0F);
+            }
+        }
+    }
+
+    @Override
+    public void escape() {
+        grow(count + 1);
+        hash = 0;
+        value[count++] = '\\';
+    }
+
+    /**
+     * @see Paper#addData(byte)
+     * @see Paper#addData(char)
+     */
+    @Override
+    public Appendable append(
+        char c
+    ) {
+        if (isFlag(Flow.UNICODE)) {
+            if (c < 0x80) {
+                addData(
+                    (byte) c
+                );
+            } else {
+                // xxxx xxxx : xxxx xxxx
+                grow(count + 6);
                 hash = 0;
                 value[count++] = '^';
                 value[count++] = 'u';
@@ -751,7 +781,10 @@ public class Paper extends Value implements Flow {
                 value[count++] = upper((c >> 4) & 0x0F);
                 value[count++] = upper(c & 0x0F);
             }
+        } else {
+            addData(c);
         }
+        return this;
     }
 
     /**

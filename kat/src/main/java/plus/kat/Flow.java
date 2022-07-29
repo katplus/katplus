@@ -23,7 +23,7 @@ import plus.kat.crash.*;
  * @author kraity
  * @since 0.0.1
  */
-public interface Flow extends Flag {
+public interface Flow extends Flag, Appendable {
     /**
      * add a byte value to this {@link Flow}
      *
@@ -503,4 +503,72 @@ public interface Flow extends Flag {
     void addText(
         @NotNull CharSequence data, int offset, int length
     ) throws IOCrash;
+
+    /**
+     * add an escape character to this {@link Flow}
+     *
+     * @throws IOCrash If an I/O error occurs
+     * @since 0.0.2
+     */
+    void escape()
+        throws IOCrash;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
+     *
+     * @return this {@link Flow}
+     * @throws IOCrash If an I/O error occurs
+     * @since 0.0.2
+     */
+    @Override
+    Appendable append(
+        char c
+    ) throws IOCrash;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
+     *
+     * @return this {@link Flow}
+     * @throws IOCrash              If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Flow#addData(CharSequence)
+     * @see Flow#addText(CharSequence)
+     * @since 0.0.2
+     */
+    @Override
+    default Appendable append(
+        CharSequence data
+    ) throws IOCrash {
+        if (isFlag(Flow.UNICODE)) {
+            addText(data);
+        } else {
+            addData(data);
+        }
+        return this;
+    }
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
+     *
+     * @return this {@link Flow}
+     * @throws IOCrash              If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Flow#addData(CharSequence, int, int)
+     * @see Flow#addText(CharSequence, int, int)
+     * @since 0.0.2
+     */
+    @Override
+    default Appendable append(
+        CharSequence data, int start, int end
+    ) throws IOCrash {
+        if (isFlag(Flow.UNICODE)) {
+            addText(data, start, end - start);
+        } else {
+            addData(data, start, end - start);
+        }
+        return this;
+    }
 }

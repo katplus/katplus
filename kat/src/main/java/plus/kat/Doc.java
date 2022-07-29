@@ -489,6 +489,19 @@ public class Doc extends Chan {
      * Serialize to {@link Doc} String
      *
      * @param value specify serialized value
+     * @since 0.0.2
+     */
+    @NotNull
+    public static String encode(
+        @Nullable Object value, long flags
+    ) {
+        return new Doc(value, flags).toString();
+    }
+
+    /**
+     * Serialize to {@link Doc} String
+     *
+     * @param value specify serialized value
      */
     @NotNull
     public static String encode(

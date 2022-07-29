@@ -140,6 +140,15 @@ public class DocTest {
         );
     }
 
+    @Test
+    public void test_encode1() {
+        assertEquals(
+            "<s>\\u9646\\u4E4B\\u5C87</s>", Doc.encode(
+                "陆之岇", Flag.UNICODE
+            )
+        );
+    }
+
     @Embed("User")
     static class User {
         @Expose("id")

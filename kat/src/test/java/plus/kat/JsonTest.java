@@ -208,6 +208,15 @@ public class JsonTest {
     }
 
     @Test
+    public void test_encode3() {
+        assertEquals(
+            "\"\\u9646\\u4E4B\\u5C87\"", Json.encode(
+                "陆之岇", Flag.UNICODE
+            )
+        );
+    }
+
+    @Test
     public void test_json_channel() {
         Json chan = new Json(c -> {
             c.set("id", 100001);

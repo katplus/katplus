@@ -686,6 +686,16 @@ public class Chan implements Flag {
         }
 
         /**
+         * Writes escape character
+         */
+        @Override
+        public void escape() {
+            grow(count + 1);
+            hash = 0;
+            value[count++] = '^';
+        }
+
+        /**
          * Writes left paren
          */
         public void leftParen() {

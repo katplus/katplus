@@ -24,6 +24,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 
 import java.time.Instant;
+import java.time.temporal.TemporalAccessor;
 
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 
@@ -81,7 +82,7 @@ public class InstantSpare extends TemporalSpare<Instant> {
             }
             try {
                 return Instant.from(
-                    fmt.parse(d)
+                    formatter.parse(d)
                 );
             } catch (Exception e) {
                 return null;
@@ -115,7 +116,7 @@ public class InstantSpare extends TemporalSpare<Instant> {
         }
 
         return Instant.from(
-            fmt.parse(
+            formatter.parse(
                 value.toString()
             )
         );
@@ -131,8 +132,8 @@ public class InstantSpare extends TemporalSpare<Instant> {
                 ((Instant) value).toEpochMilli()
             );
         } else {
-            super.write(
-                flow, value
+            formatter.formatTo(
+                (TemporalAccessor) value, flow
             );
         }
     }

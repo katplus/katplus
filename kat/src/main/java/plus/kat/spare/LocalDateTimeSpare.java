@@ -55,7 +55,7 @@ public class LocalDateTimeSpare extends TemporalSpare<LocalDateTime> {
         @NotNull String value
     ) throws IOCrash {
         return LocalDateTime.from(
-            fmt.parse(value)
+            formatter.parse(value)
         );
     }
 }

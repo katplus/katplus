@@ -63,6 +63,15 @@ public class KatTest {
     }
 
     @Test
+    public void test_encode2() {
+        assertEquals(
+            "s(^u9646^u4E4B^u5C87)", Kat.encode(
+                "陆之岇", Flag.UNICODE
+            )
+        );
+    }
+
+    @Test
     public void test_decode1() {
         HashMap<String, Object> any = new HashMap<>();
         any.put("name", "kraity");

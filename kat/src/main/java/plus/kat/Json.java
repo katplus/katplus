@@ -467,6 +467,19 @@ public class Json extends Chan {
     }
 
     /**
+     * Serialize to {@link Json} String
+     *
+     * @param value specify serialized value
+     * @since 0.0.2
+     */
+    @NotNull
+    public static String encode(
+        @Nullable Object value, long flags
+    ) {
+        return new Json(value, flags).toString();
+    }
+
+    /**
      * Parse {@link Json} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
