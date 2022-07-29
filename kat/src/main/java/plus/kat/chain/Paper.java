@@ -32,7 +32,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author kraity
  * @since 0.0.1
  */
-public class Paper extends Value implements Flow {
+public abstract class Paper extends Chain implements Flow {
 
     protected long flags;
 
@@ -114,19 +114,14 @@ public class Paper extends Value implements Flow {
     }
 
     /**
-     * Returns a {@link Paper} of this {@link Paper}
+     * Returns {@code true} if, and only if, internal {@code byte[]} can be shared
      *
-     * @param start the start index, inclusive
-     * @param end   the end index, exclusive
+     * @see Chain#getValue()
+     * @since 0.0.2
      */
-    @NotNull
     @Override
-    public Paper subSequence(
-        int start, int end
-    ) {
-        return new Paper(
-            copyBytes(start, end)
-        );
+    public boolean isShared() {
+        return bucket == null;
     }
 
     /**
@@ -136,9 +131,15 @@ public class Paper extends Value implements Flow {
     public void addByte(
         byte b
     ) {
-        grow(count + 1);
-        hash = 0;
-        value[count++] = b;
+        byte[] it = value;
+        if (count != it.length) {
+            hash = 0;
+            it[count++] = b;
+        } else {
+            grow(count + 1);
+            hash = 0;
+            value[count++] = b;
+        }
     }
 
     /**
@@ -148,7 +149,7 @@ public class Paper extends Value implements Flow {
     public void addChar(
         char c
     ) {
-        super.chain(c);
+        chain(c);
     }
 
     /**
@@ -418,9 +419,7 @@ public class Paper extends Value implements Flow {
     public void addBytes(
         @NotNull byte[] data
     ) {
-        super.chain(
-            data, 0, data.length
-        );
+        chain(data, 0, data.length);
     }
 
     /**
@@ -430,9 +429,7 @@ public class Paper extends Value implements Flow {
     public void addBytes(
         @NotNull byte[] data, int i, int l
     ) {
-        super.chain(
-            data, i, l
-        );
+        chain(data, i, l);
     }
 
     /**
@@ -442,18 +439,14 @@ public class Paper extends Value implements Flow {
     public void addChars(
         @NotNull char[] data
     ) {
-        super.chain(
-            data, 0, data.length
-        );
+        chain(data, 0, data.length);
     }
 
     @Override
     public void addChars(
         @NotNull char[] data, int i, int l
     ) {
-        super.chain(
-            data, i, l
-        );
+        chain(data, i, l);
     }
 
     /**
@@ -463,9 +456,7 @@ public class Paper extends Value implements Flow {
     public void addChars(
         @NotNull CharSequence data
     ) {
-        super.chain(
-            data, 0, data.length()
-        );
+        chain(data, 0, data.length());
     }
 
     /**
@@ -475,30 +466,20 @@ public class Paper extends Value implements Flow {
     public void addChars(
         @NotNull CharSequence data, int i, int l
     ) {
-        super.chain(
-            data, i, l
-        );
+        chain(data, i, l);
     }
 
     /**
      * @see Paper#addByte(byte)
      */
     @Override
-    public void addData(
-        byte b
-    ) {
-        addByte(b);
-    }
+    public abstract void addData(byte b);
 
     /**
      * @see Paper#addChar(char)
      */
     @Override
-    public void addData(
-        char c
-    ) {
-        addChar(c);
-    }
+    public abstract void addData(char c);
 
     /**
      * @see Paper#addByte(byte)
@@ -648,8 +629,7 @@ public class Paper extends Value implements Flow {
                     b2 = data[i++];
 
                     // 110xxx xx : 10xx xxxx
-                    grow(count + 6);
-                    escape();
+                    escape(count + 5);
                     value[count++] = 'u';
                     value[count++] = '0';
                     value[count++] = upper((b1 >> 4) & 0x01);
@@ -667,8 +647,7 @@ public class Paper extends Value implements Flow {
                     b3 = data[i++];
 
                     // xxxx : 10xxxx xx : 10xx xxxx
-                    grow(count + 6);
-                    escape();
+                    escape(count + 5);
                     value[count++] = 'u';
                     value[count++] = upper(b1 & 0x0F);
                     value[count++] = upper((b2 >> 2) & 0x0F);
@@ -689,14 +668,13 @@ public class Paper extends Value implements Flow {
                     // 11110x xx : 10xxxx xx : 10xx xx xx : 10xx xxxx
                     // 11110x xx : 10x100 00
                     // 1101 10xx xxxx xxxx 1101 11xx xxxx xxxx
-                    grow(count + 12);
-                    escape();
+                    escape(count + 5);
                     value[count++] = 'u';
                     value[count++] = 'd';
                     value[count++] = upper(0x08 | (b1 & 0x03));
                     value[count++] = upper(((b2 - 0x10 >> 2)) & 0x0F);
                     value[count++] = upper(((b2 & 0x03) << 2) | ((b3 >> 4) & 0x03));
-                    escape();
+                    escape(count + 5);
                     value[count++] = 'u';
                     value[count++] = 'd';
                     value[count++] = upper(0x0C | ((b3 >> 2) & 0x03));
@@ -739,8 +717,7 @@ public class Paper extends Value implements Flow {
                 );
             } else {
                 // xxxx xxxx : xxxx xxxx
-                grow(count + 6);
-                escape();
+                escape(count + 5);
                 value[count++] = 'u';
                 value[count++] = upper((c >> 12) & 0x0F);
                 value[count++] = upper((c >> 8) & 0x0F);
@@ -750,16 +727,10 @@ public class Paper extends Value implements Flow {
         }
     }
 
-    @Override
-    public void escape() {
-        grow(count + 1);
-        hash = 0;
-        value[count++] = '\\';
-    }
-
     /**
      * @see Paper#addData(byte)
      * @see Paper#addData(char)
+     * @since 0.0.2
      */
     @Override
     public Appendable append(
@@ -772,9 +743,7 @@ public class Paper extends Value implements Flow {
                 );
             } else {
                 // xxxx xxxx : xxxx xxxx
-                grow(count + 6);
-                hash = 0;
-                value[count++] = '^';
+                escape(count + 5);
                 value[count++] = 'u';
                 value[count++] = upper((c >> 12) & 0x0F);
                 value[count++] = upper((c >> 8) & 0x0F);
@@ -783,6 +752,40 @@ public class Paper extends Value implements Flow {
             }
         } else {
             addData(c);
+        }
+        return this;
+    }
+
+    /**
+     * @see Flow#addData(CharSequence)
+     * @see Flow#addText(CharSequence)
+     * @since 0.0.2
+     */
+    @Override
+    public Appendable append(
+        CharSequence data
+    ) {
+        if (isFlag(Flow.UNICODE)) {
+            addText(data);
+        } else {
+            addData(data);
+        }
+        return this;
+    }
+
+    /**
+     * @see Flow#addData(CharSequence, int, int)
+     * @see Flow#addText(CharSequence, int, int)
+     * @since 0.0.2
+     */
+    @Override
+    public Appendable append(
+        CharSequence data, int start, int end
+    ) {
+        if (isFlag(Flow.UNICODE)) {
+            addText(data, start, end - start);
+        } else {
+            addData(data, start, end - start);
         }
         return this;
     }
@@ -845,6 +848,24 @@ public class Paper extends Value implements Flow {
         }
         close();
         return text;
+    }
+
+    /**
+     * @see Chain#grow(int)
+     * @since 0.0.2
+     */
+    protected void escape(
+        int min
+    ) {
+        byte[] it = value;
+        if (min < it.length) {
+            hash = 0;
+            it[count++] = '\\';
+        } else {
+            grow(min + 1);
+            hash = 0;
+            value[count++] = '\\';
+        }
     }
 
     /**

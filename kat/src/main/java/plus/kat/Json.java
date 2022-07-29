@@ -641,6 +641,14 @@ public class Json extends Chan {
         }
 
         /**
+         * Returns the job
+         */
+        @Override
+        public Job getJob() {
+            return Job.JSON;
+        }
+
+        /**
          * Writers left brace
          */
         public void leftBrace() {

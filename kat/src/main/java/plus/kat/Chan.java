@@ -686,13 +686,11 @@ public class Chan implements Flag {
         }
 
         /**
-         * Writes escape character
+         * Returns the job
          */
         @Override
-        public void escape() {
-            grow(count + 1);
-            hash = 0;
-            value[count++] = '^';
+        public Job getJob() {
+            return Job.KAT;
         }
 
         /**
@@ -894,6 +892,21 @@ public class Chan implements Flag {
             hash = 0;
             value[count++] = '^';
             value[count++] = b;
+        }
+
+        @Override
+        protected void escape(
+            int min
+        ) {
+            byte[] it = value;
+            if (min < it.length) {
+                hash = 0;
+                it[count++] = '^';
+            } else {
+                grow(min + 1);
+                hash = 0;
+                value[count++] = '^';
+            }
         }
     }
 }

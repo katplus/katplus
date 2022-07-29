@@ -671,6 +671,14 @@ public class Doc extends Chan {
             );
         }
 
+        /**
+         * Returns the job
+         */
+        @Override
+        public Job getJob() {
+            return Job.DOC;
+        }
+
         @Override
         public void addData(
             byte b

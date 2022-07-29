@@ -25,6 +25,15 @@ import plus.kat.crash.*;
  */
 public interface Flow extends Flag, Appendable {
     /**
+     * Returns to the {@link Job} of this flow
+     *
+     * @see Job
+     * @since 0.0.2
+     */
+    @NotNull
+    Job getJob();
+
+    /**
      * add a byte value to this {@link Flow}
      *
      * <pre>{@code
@@ -505,15 +514,6 @@ public interface Flow extends Flag, Appendable {
     ) throws IOCrash;
 
     /**
-     * add an escape character to this {@link Flow}
-     *
-     * @throws IOCrash If an I/O error occurs
-     * @since 0.0.2
-     */
-    void escape()
-        throws IOCrash;
-
-    /**
      * add a data to this {@link Flow} that will be escaped
      * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
      *
@@ -538,16 +538,9 @@ public interface Flow extends Flag, Appendable {
      * @since 0.0.2
      */
     @Override
-    default Appendable append(
+    Appendable append(
         CharSequence data
-    ) throws IOCrash {
-        if (isFlag(Flow.UNICODE)) {
-            addText(data);
-        } else {
-            addData(data);
-        }
-        return this;
-    }
+    ) throws IOCrash;
 
     /**
      * add a data to this {@link Flow} that will be escaped
@@ -561,14 +554,7 @@ public interface Flow extends Flag, Appendable {
      * @since 0.0.2
      */
     @Override
-    default Appendable append(
+    Appendable append(
         CharSequence data, int start, int end
-    ) throws IOCrash {
-        if (isFlag(Flow.UNICODE)) {
-            addText(data, start, end - start);
-        } else {
-            addData(data, start, end - start);
-        }
-        return this;
-    }
+    ) throws IOCrash;
 }
