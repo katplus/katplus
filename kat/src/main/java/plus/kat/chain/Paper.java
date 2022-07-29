@@ -34,6 +34,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class Paper extends Chain implements Flow {
 
+    protected int depth;
     protected long flags;
 
     /**
@@ -44,15 +45,6 @@ public abstract class Paper extends Chain implements Flow {
     }
 
     /**
-     * @param size the initial capacity
-     */
-    public Paper(
-        int size
-    ) {
-        super(size);
-    }
-
-    /**
      * @param flags the specified {@code flags}
      */
     public Paper(
@@ -60,36 +52,7 @@ public abstract class Paper extends Chain implements Flow {
     ) {
         super($Bucket.INS);
         this.flags = flags;
-    }
-
-    /**
-     * @param data the initial byte array
-     */
-    public Paper(
-        @NotNull byte[] data
-    ) {
-        super(data);
-    }
-
-    /**
-     * @param data specify the {@link Chain} to be mirrored
-     */
-    public Paper(
-        @NotNull Chain data
-    ) {
-        super(data);
-    }
-
-    /**
-     * @param data specify the {@link CharSequence} to be mirrored
-     */
-    public Paper(
-        @Nullable CharSequence data
-    ) {
-        super();
-        if (data != null) {
-            addChars(data);
-        }
+        if ((flags & Flow.PRETTY) != 0) ++depth;
     }
 
     /**
@@ -98,7 +61,7 @@ public abstract class Paper extends Chain implements Flow {
     public Paper(
         @Nullable Bucket bucket
     ) {
-        super(bucket);
+        super(bucket == null ? $Bucket.INS : bucket);
     }
 
     /**
@@ -122,6 +85,22 @@ public abstract class Paper extends Chain implements Flow {
     @Override
     public boolean isShared() {
         return bucket == null;
+    }
+
+    /**
+     * Returns a {@link String} of this {@link Paper}
+     *
+     * @param start the start index, inclusive
+     * @param end   the end index, exclusive
+     */
+    @NotNull
+    @Override
+    public String subSequence(
+        int start, int end
+    ) {
+        return toString(
+            start, end
+        );
     }
 
     /**
@@ -404,12 +383,21 @@ public abstract class Paper extends Chain implements Flow {
     public void addBoolean(
         boolean bool
     ) {
-        grow(count + 1);
         if (bool) {
-            value[count++] = '1';
+            grow(count + 4);
+            hash = 0;
+            value[count++] = 't';
+            value[count++] = 'r';
+            value[count++] = 'u';
         } else {
-            value[count++] = '0';
+            grow(count + 5);
+            hash = 0;
+            value[count++] = 'f';
+            value[count++] = 'a';
+            value[count++] = 'l';
+            value[count++] = 's';
         }
+        value[count++] = 'e';
     }
 
     /**
@@ -473,13 +461,42 @@ public abstract class Paper extends Chain implements Flow {
      * @see Paper#addByte(byte)
      */
     @Override
-    public abstract void addData(byte b);
+    public void addData(byte b) {
+        if (record(b)) {
+            byte[] it = value;
+            if (count != it.length) {
+                hash = 0;
+                it[count++] = b;
+            } else {
+                grow(count + 1);
+                hash = 0;
+                value[count++] = b;
+            }
+        }
+    }
 
     /**
      * @see Paper#addChar(char)
      */
     @Override
-    public abstract void addData(char c);
+    public void addData(char c) {
+        if (c >= 0x80) {
+            chain(c);
+        } else {
+            byte b = (byte) c;
+            if (record(b)) {
+                byte[] it = value;
+                if (count != it.length) {
+                    hash = 0;
+                    it[count++] = b;
+                } else {
+                    grow(count + 1);
+                    hash = 0;
+                    value[count++] = b;
+                }
+            }
+        }
+    }
 
     /**
      * @see Paper#addByte(byte)
@@ -492,7 +509,17 @@ public abstract class Paper extends Chain implements Flow {
         grow(count + l);
 
         for (byte b : data) {
-            addData(b);
+            if (record(b)) {
+                byte[] it = value;
+                if (count != it.length) {
+                    hash = 0;
+                    it[count++] = b;
+                } else {
+                    grow(count + 1);
+                    hash = 0;
+                    value[count++] = b;
+                }
+            }
         }
     }
 
@@ -507,7 +534,18 @@ public abstract class Paper extends Chain implements Flow {
         grow(count + l);
 
         for (int o = i; o < k; o++) {
-            addData(data[o]);
+            byte b = data[o];
+            if (record(b)) {
+                byte[] it = value;
+                if (count != it.length) {
+                    hash = 0;
+                    it[count++] = b;
+                } else {
+                    grow(count + 1);
+                    hash = 0;
+                    value[count++] = b;
+                }
+            }
         }
     }
 
@@ -538,9 +576,18 @@ public abstract class Paper extends Chain implements Flow {
 
             // U+0000 ~ U+007F
             if (c < 0x80) {
-                addData(
-                    (byte) c
-                );
+                byte b = (byte) c;
+                if (record(b)) {
+                    byte[] it = value;
+                    if (count != it.length) {
+                        hash = 0;
+                        it[count++] = b;
+                    } else {
+                        grow(count + 1);
+                        hash = 0;
+                        value[count++] = b;
+                    }
+                }
             }
 
             // U+0080 ~ U+07FF
@@ -618,7 +665,17 @@ public abstract class Paper extends Chain implements Flow {
             // U+0000 ~ U+007F
             // 0xxxxxxx
             if (b1 >= 0) {
-                addData(b1);
+                if (record(b1)) {
+                    byte[] it = value;
+                    if (count != it.length) {
+                        hash = 0;
+                        it[count++] = b1;
+                    } else {
+                        grow(count + 1);
+                        hash = 0;
+                        value[count++] = b1;
+                    }
+                }
                 continue;
             }
 
@@ -712,9 +769,18 @@ public abstract class Paper extends Chain implements Flow {
 
             // U+0000 ~ U+007F
             if (c < 0x80) {
-                addData(
-                    (byte) c
-                );
+                byte b = (byte) c;
+                if (record(b)) {
+                    byte[] it = value;
+                    if (count != it.length) {
+                        hash = 0;
+                        it[count++] = b;
+                    } else {
+                        grow(count + 1);
+                        hash = 0;
+                        value[count++] = b;
+                    }
+                }
             } else {
                 // xxxx xxxx : xxxx xxxx
                 escape(count + 5);
@@ -738,9 +804,8 @@ public abstract class Paper extends Chain implements Flow {
     ) {
         if (isFlag(Flow.UNICODE)) {
             if (c < 0x80) {
-                addData(
-                    (byte) c
-                );
+                byte b = (byte) c;
+                if (record(b)) chain(b);
             } else {
                 // xxxx xxxx : xxxx xxxx
                 escape(count + 5);
@@ -751,7 +816,8 @@ public abstract class Paper extends Chain implements Flow {
                 value[count++] = upper(c & 0x0F);
             }
         } else {
-            addData(c);
+            byte b = (byte) c;
+            if (record(b)) chain(c);
         }
         return this;
     }
@@ -851,7 +917,6 @@ public abstract class Paper extends Chain implements Flow {
     }
 
     /**
-     * @see Chain#grow(int)
      * @since 0.0.2
      */
     protected void escape(
@@ -866,6 +931,41 @@ public abstract class Paper extends Chain implements Flow {
             hash = 0;
             value[count++] = '\\';
         }
+    }
+
+    /**
+     * @since 0.0.2
+     */
+    protected boolean record(
+        byte data
+    ) {
+        switch (data) {
+            case '\r': {
+                data = 'r';
+                break;
+            }
+            case '\n': {
+                data = 'n';
+                break;
+            }
+            case '\t': {
+                data = 't';
+                break;
+            }
+            case '"':
+            case '\\': {
+                break;
+            }
+            default: {
+                return true;
+            }
+        }
+
+        grow(count + 2);
+        hash = 0;
+        value[count++] = '\\';
+        value[count++] = data;
+        return false;
     }
 
     /**

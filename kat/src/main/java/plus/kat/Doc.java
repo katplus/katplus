@@ -608,23 +608,11 @@ public class Doc extends Chan {
      * @since 0.0.1
      */
     public static class Flow extends Paper {
-
-        protected int depth;
-
         /**
          * default
          */
         public Flow() {
             super();
-        }
-
-        /**
-         * @param size the initial capacity
-         */
-        public Flow(
-            int size
-        ) {
-            super(size);
         }
 
         /**
@@ -634,16 +622,6 @@ public class Doc extends Chan {
             long flags
         ) {
             super(flags);
-            if (isFlag(Flag.PRETTY)) ++depth;
-        }
-
-        /**
-         * @param data the initial byte array
-         */
-        public Flow(
-            @NotNull byte[] data
-        ) {
-            super(data);
         }
 
         /**
@@ -656,121 +634,11 @@ public class Doc extends Chan {
         }
 
         /**
-         * Returns a {@link Flow} of this {@link Flow}
-         *
-         * @param start the start index, inclusive
-         * @param end   the end index, exclusive
-         */
-        @NotNull
-        @Override
-        public Flow subSequence(
-            int start, int end
-        ) {
-            return new Flow(
-                copyBytes(start, end)
-            );
-        }
-
-        /**
          * Returns the job
          */
         @Override
         public Job getJob() {
             return Job.DOC;
-        }
-
-        @Override
-        public void addData(
-            byte b
-        ) {
-            switch (b) {
-                case '<': {
-                    grow(count + 4);
-                    value[count++] = '&';
-                    value[count++] = 'l';
-                    value[count++] = 't';
-                    value[count++] = ';';
-                    break;
-                }
-                case '>': {
-                    grow(count + 4);
-                    value[count++] = '&';
-                    value[count++] = 'g';
-                    value[count++] = 't';
-                    value[count++] = ';';
-                    break;
-                }
-                case '&': {
-                    grow(count + 5);
-                    value[count++] = '&';
-                    value[count++] = 'a';
-                    value[count++] = 'm';
-                    value[count++] = 'p';
-                    value[count++] = ';';
-                    break;
-                }
-                default: {
-                    grow(count + 1);
-                    value[count++] = b;
-                }
-            }
-        }
-
-        @Override
-        public void addBoolean(
-            boolean bool
-        ) {
-            if (bool) {
-                grow(count + 4);
-                hash = 0;
-                value[count++] = 't';
-                value[count++] = 'r';
-                value[count++] = 'u';
-            } else {
-                grow(count + 5);
-                hash = 0;
-                value[count++] = 'f';
-                value[count++] = 'a';
-                value[count++] = 'l';
-                value[count++] = 's';
-            }
-            value[count++] = 'e';
-        }
-
-        @Override
-        public void addData(
-            char c
-        ) {
-            switch (c) {
-                case '<': {
-                    grow(count + 4);
-                    value[count++] = '&';
-                    value[count++] = 'l';
-                    value[count++] = 't';
-                    value[count++] = ';';
-                    break;
-                }
-                case '>': {
-                    grow(count + 4);
-                    value[count++] = '&';
-                    value[count++] = 'g';
-                    value[count++] = 't';
-                    value[count++] = ';';
-                    break;
-                }
-                case '&': {
-                    grow(count + 5);
-                    value[count++] = '&';
-                    value[count++] = 'a';
-                    value[count++] = 'm';
-                    value[count++] = 'p';
-                    value[count++] = ';';
-                    break;
-                }
-                default: {
-                    addChar(c);
-                }
-            }
         }
 
         /**
@@ -853,6 +721,45 @@ public class Doc extends Chan {
             }
 
             value[count++] = '>';
+        }
+
+        @Override
+        protected boolean record(
+            byte data
+        ) {
+            switch (data) {
+                case '<': {
+                    grow(count + 4);
+                    hash = 0;
+                    value[count++] = '&';
+                    value[count++] = 'l';
+                    value[count++] = 't';
+                    value[count++] = ';';
+                    return false;
+                }
+                case '>': {
+                    grow(count + 4);
+                    hash = 0;
+                    value[count++] = '&';
+                    value[count++] = 'g';
+                    value[count++] = 't';
+                    value[count++] = ';';
+                    return false;
+                }
+                case '&': {
+                    grow(count + 5);
+                    hash = 0;
+                    value[count++] = '&';
+                    value[count++] = 'a';
+                    value[count++] = 'm';
+                    value[count++] = 'p';
+                    value[count++] = ';';
+                    return false;
+                }
+                default: {
+                    return true;
+                }
+            }
         }
     }
 }

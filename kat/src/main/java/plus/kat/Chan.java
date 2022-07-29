@@ -622,23 +622,11 @@ public class Chan implements Flag {
      * @since 0.0.1
      */
     public static class Flow extends Paper {
-
-        protected int depth;
-
         /**
          * default
          */
         public Flow() {
             super();
-        }
-
-        /**
-         * @param size the initial capacity
-         */
-        public Flow(
-            int size
-        ) {
-            super(size);
         }
 
         /**
@@ -648,16 +636,6 @@ public class Chan implements Flag {
             long flags
         ) {
             super(flags);
-            if (isFlag(Flag.PRETTY)) ++depth;
-        }
-
-        /**
-         * @param data the initial byte array
-         */
-        public Flow(
-            @NotNull byte[] data
-        ) {
-            super(data);
         }
 
         /**
@@ -667,22 +645,6 @@ public class Chan implements Flag {
             @Nullable Bucket bucket
         ) {
             super(bucket);
-        }
-
-        /**
-         * Returns a {@link Flow} of this {@link Flow}
-         *
-         * @param start the start index, inclusive
-         * @param end   the end index, exclusive
-         */
-        @NotNull
-        @Override
-        public Flow subSequence(
-            int start, int end
-        ) {
-            return new Flow(
-                copyBytes(start, end)
-            );
         }
 
         /**
@@ -697,24 +659,27 @@ public class Chan implements Flag {
          * Writes left paren
          */
         public void leftParen() {
-            grow(count + 1);
-            value[count++] = '(';
+            addByte(
+                (byte) '('
+            );
         }
 
         /**
          * Writes right paren
          */
         public void rightParen() {
-            grow(count + 1);
-            value[count++] = ')';
+            addByte(
+                (byte) ')'
+            );
         }
 
         /**
          * Writes left Brace
          */
         public void leftBrace() {
-            grow(count + 1);
-            value[count++] = '{';
+            addByte(
+                (byte) '{'
+            );
             if (depth != 0) ++depth;
         }
 
@@ -723,7 +688,9 @@ public class Chan implements Flag {
          */
         public void rightBrace() {
             if (depth == 0) {
-                grow(count + 1);
+                addByte(
+                    (byte) '}'
+                );
             } else {
                 int range = --depth;
                 if (range != 1) {
@@ -737,45 +704,8 @@ public class Chan implements Flag {
                     grow(count + 2);
                     value[count++] = '\n';
                 }
-            }
-            value[count++] = '}';
-        }
-
-        @Override
-        public void addData(byte b) {
-            switch (b) {
-                case '^':
-                case '(':
-                case ')': {
-                    grow(count + 2);
-                    hash = 0;
-                    value[count++] = '^';
-                    value[count++] = b;
-                    break;
-                }
-                default: {
-                    grow(count + 1);
-                    hash = 0;
-                    value[count++] = b;
-                }
-            }
-        }
-
-        @Override
-        public void addData(char c) {
-            switch (c) {
-                case '^':
-                case '(':
-                case ')': {
-                    grow(count + 2);
-                    hash = 0;
-                    value[count++] = '^';
-                    value[count++] = (byte) c;
-                    break;
-                }
-                default: {
-                    addChar(c);
-                }
+                hash = 0;
+                value[count++] = '}';
             }
         }
 
@@ -812,7 +742,7 @@ public class Chan implements Flag {
 
                     byte b = (byte) d;
                     if (b <= 0x20) {
-                        addSpecial(b);
+                        slash(b);
                     } else {
                         if (Space.esc(b)) {
                             grow(count + 2);
@@ -849,7 +779,7 @@ public class Chan implements Flag {
 
                 byte b = (byte) d;
                 if (b <= 0x20) {
-                    addSpecial(b);
+                    slash(b);
                 } else {
                     if (Alias.esc(b)) {
                         grow(count + 2);
@@ -862,10 +792,24 @@ public class Chan implements Flag {
             }
         }
 
+        @Override
+        public void addBoolean(
+            boolean bool
+        ) {
+            grow(count + 1);
+            if (bool) {
+                value[count++] = '1';
+            } else {
+                value[count++] = '0';
+            }
+        }
+
         /**
          * Writes special byte value
          */
-        public void addSpecial(byte b) {
+        protected void slash(
+            byte b
+        ) {
             switch (b) {
                 case ' ': {
                     b = 's';
@@ -907,6 +851,24 @@ public class Chan implements Flag {
                 hash = 0;
                 value[count++] = '^';
             }
+        }
+
+        @Override
+        protected boolean record(
+            byte data
+        ) {
+            switch (data) {
+                case '^':
+                case '(':
+                case ')': {
+                    grow(count + 2);
+                    hash = 0;
+                    value[count++] = '^';
+                    value[count++] = data;
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

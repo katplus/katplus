@@ -577,7 +577,6 @@ public class Json extends Chan {
      */
     public static class Flow extends Paper {
 
-        protected int depth;
         protected boolean comma;
 
         /**
@@ -588,31 +587,12 @@ public class Json extends Chan {
         }
 
         /**
-         * @param size the initial capacity
-         */
-        public Flow(
-            int size
-        ) {
-            super(size);
-        }
-
-        /**
          * @param flags the specified {@code flags}
          */
         public Flow(
             long flags
         ) {
             super(flags);
-            if (isFlag(Flag.PRETTY)) ++depth;
-        }
-
-        /**
-         * @param data the initial byte array
-         */
-        public Flow(
-            @NotNull byte[] data
-        ) {
-            super(data);
         }
 
         /**
@@ -622,22 +602,6 @@ public class Json extends Chan {
             @Nullable Bucket bucket
         ) {
             super(bucket);
-        }
-
-        /**
-         * Returns a {@link Flow} of this {@link Flow}
-         *
-         * @param start the start index, inclusive
-         * @param end   the end index, exclusive
-         */
-        @NotNull
-        @Override
-        public Flow subSequence(
-            int start, int end
-        ) {
-            return new Flow(
-                copyBytes(start, end)
-            );
         }
 
         /**
@@ -652,8 +616,9 @@ public class Json extends Chan {
          * Writers left brace
          */
         public void leftBrace() {
-            grow(count + 1);
-            value[count++] = '{';
+            addByte(
+                (byte) '{'
+            );
             comma = false;
             if (depth != 0) ++depth;
         }
@@ -663,7 +628,9 @@ public class Json extends Chan {
          */
         public void rightBrace() {
             if (depth == 0) {
-                grow(count + 1);
+                addByte(
+                    (byte) '}'
+                );
             } else {
                 if (--depth != 1) {
                     grow(count + depth * 2);
@@ -676,16 +643,17 @@ public class Json extends Chan {
                     grow(count + 2);
                     value[count++] = '\n';
                 }
+                value[count++] = '}';
             }
-            value[count++] = '}';
         }
 
         /**
          * Writers left bracket
          */
         public void leftBracket() {
-            grow(count + 1);
-            value[count++] = '[';
+            addByte(
+                (byte) '['
+            );
             comma = false;
             if (depth != 0) ++depth;
         }
@@ -695,7 +663,9 @@ public class Json extends Chan {
          */
         public void rightBracket() {
             if (depth == 0) {
-                grow(count + 1);
+                addByte(
+                    (byte) ']'
+                );
             } else {
                 if (--depth != 1) {
                     grow(count + depth * 2);
@@ -708,8 +678,8 @@ public class Json extends Chan {
                     grow(count + 2);
                     value[count++] = '\n';
                 }
+                value[count++] = ']';
             }
-            value[count++] = ']';
         }
 
         /**
@@ -728,8 +698,9 @@ public class Json extends Chan {
          * Writes quote
          */
         public void addQuote() {
-            grow(count + 1);
-            value[count++] = '"';
+            addByte(
+                (byte) '"'
+            );
         }
 
         /**
@@ -737,101 +708,12 @@ public class Json extends Chan {
          */
         public void addComma() {
             if (comma) {
-                grow(count + 1);
-                value[count++] = ',';
+                addByte(
+                    (byte) ','
+                );
             } else {
                 comma = true;
             }
-        }
-
-        @Override
-        public void addBoolean(
-            boolean bool
-        ) {
-            if (bool) {
-                grow(count + 4);
-                hash = 0;
-                value[count++] = 't';
-                value[count++] = 'r';
-                value[count++] = 'u';
-            } else {
-                grow(count + 5);
-                hash = 0;
-                value[count++] = 'f';
-                value[count++] = 'a';
-                value[count++] = 'l';
-                value[count++] = 's';
-            }
-            value[count++] = 'e';
-        }
-
-        @Override
-        public void addData(
-            byte b
-        ) {
-            switch (b) {
-                case '\r': {
-                    b = 'r';
-                    break;
-                }
-                case '\n': {
-                    b = 'n';
-                    break;
-                }
-                case '\t': {
-                    b = 't';
-                    break;
-                }
-                case '"':
-                case '\\': {
-                    break;
-                }
-                default: {
-                    addByte(b);
-                    return;
-                }
-            }
-
-            grow(count + 2);
-            value[count++] = '\\';
-            value[count++] = b;
-        }
-
-        @Override
-        public void addData(
-            char c
-        ) {
-            byte b;
-            switch (c) {
-                case '"': {
-                    b = '"';
-                    break;
-                }
-                case '\r': {
-                    b = 'r';
-                    break;
-                }
-                case '\n': {
-                    b = 'n';
-                    break;
-                }
-                case '\t': {
-                    b = 't';
-                    break;
-                }
-                case '\\': {
-                    b = '\\';
-                    break;
-                }
-                default: {
-                    addChar(c);
-                    return;
-                }
-            }
-
-            grow(count + 2);
-            value[count++] = '\\';
-            value[count++] = b;
         }
 
         /**
