@@ -15,7 +15,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
@@ -23,7 +23,7 @@ Gradle:
 
 ```groovy
 dependencies {
-    implementation 'plus.kat:kat:0.0.1'
+    implementation 'plus.kat:kat:0.0.2'
 }
 ```
 
@@ -31,7 +31,7 @@ Kotlin Gradle:
 
 ```kotlin
 dependencies {
-    implementation("plus.kat:kat:0.0.1")
+    implementation("plus.kat:kat:0.0.2")
 }
 ```
 

@@ -6,7 +6,7 @@
     <parent>
         <artifactId>kat-parent</artifactId>
         <groupId>plus.kat</groupId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.2</version>
     </parent>
 
     <artifactId>kat-spring</artifactId>
