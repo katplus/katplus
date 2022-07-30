@@ -1742,9 +1742,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     protected void chain(
         @NotNull char[] c, int i, int l
     ) {
+        int k = i + l;
         grow(count + l);
 
-        while (i < l) {
+        while (i < k) {
             // get char
             char d = c[i++];
 
@@ -1766,7 +1767,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             // U+10000 ~ U+10FFFF
             // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
             else if (d >= 0xD800 && d <= 0xDFFF) {
-                if (i >= l) {
+                if (i >= k) {
                     grow(count + 1);
                     hash = 0;
                     value[count++] = '?';
@@ -1807,9 +1808,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     protected void chain(
         @NotNull CharSequence c, int i, int l
     ) {
+        int k = i + l;
         grow(count + l);
 
-        while (i < l) {
+        while (i < k) {
             // get char
             char d = c.charAt(i++);
 
@@ -1831,7 +1833,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             // U+10000 ~ U+10FFFF
             // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
             else if (d >= 0xD800 && d <= 0xDFFF) {
-                if (i >= l) {
+                if (i >= k) {
                     grow(count + 1);
                     hash = 0;
                     value[count++] = '?';

@@ -133,7 +133,7 @@ public class CurrencySpare implements Spare<Currency> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        flow.addText(
+        flow.text(
             value.toString()
         );
     }

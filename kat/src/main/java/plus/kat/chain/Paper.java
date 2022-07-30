@@ -427,14 +427,22 @@ public abstract class Paper extends Chain implements Flow {
     public void addChars(
         @NotNull char[] data
     ) {
-        chain(data, 0, data.length);
+        int l = data.length;
+        if (l != 0) {
+            chain(data, 0, l);
+        }
     }
 
+    /**
+     * @param data the specified char array
+     */
     @Override
     public void addChars(
         @NotNull char[] data, int i, int l
     ) {
-        chain(data, i, l);
+        if (l != 0) {
+            chain(data, i, l);
+        }
     }
 
     /**
@@ -444,7 +452,10 @@ public abstract class Paper extends Chain implements Flow {
     public void addChars(
         @NotNull CharSequence data
     ) {
-        chain(data, 0, data.length());
+        int l = data.length();
+        if (l != 0) {
+            chain(data, 0, l);
+        }
     }
 
     /**
@@ -454,14 +465,13 @@ public abstract class Paper extends Chain implements Flow {
     public void addChars(
         @NotNull CharSequence data, int i, int l
     ) {
-        chain(data, i, l);
+        if (l != 0) {
+            chain(data, i, l);
+        }
     }
 
-    /**
-     * @see Paper#addByte(byte)
-     */
     @Override
-    public void addData(byte b) {
+    public void emit(byte b) {
         if (record(b)) {
             byte[] it = value;
             if (count != it.length) {
@@ -475,11 +485,8 @@ public abstract class Paper extends Chain implements Flow {
         }
     }
 
-    /**
-     * @see Paper#addChar(char)
-     */
     @Override
-    public void addData(char c) {
+    public void emit(char c) {
         if (c >= 0x80) {
             chain(c);
         } else {
@@ -498,11 +505,8 @@ public abstract class Paper extends Chain implements Flow {
         }
     }
 
-    /**
-     * @see Paper#addByte(byte)
-     */
     @Override
-    public void addData(
+    public void emit(
         @NotNull byte[] data
     ) {
         int l = data.length;
@@ -523,18 +527,15 @@ public abstract class Paper extends Chain implements Flow {
         }
     }
 
-    /**
-     * @see Paper#addByte(byte)
-     */
     @Override
-    public void addData(
+    public void emit(
         @NotNull byte[] data, int i, int l
     ) {
         int k = i + l;
         grow(count + l);
 
-        for (int o = i; o < k; o++) {
-            byte b = data[o];
+        for (; i < k; i++) {
+            byte b = data[i];
             if (record(b)) {
                 byte[] it = value;
                 if (count != it.length) {
@@ -549,28 +550,24 @@ public abstract class Paper extends Chain implements Flow {
         }
     }
 
-    /**
-     * @see Paper#addData(CharSequence, int, int)
-     */
     @Override
-    public void addData(
+    public void emit(
         @NotNull CharSequence data
     ) {
-        addData(
-            data, 0, data.length()
-        );
+        int l = data.length();
+        if (l != 0) {
+            emit(data, 0, l);
+        }
     }
 
-    /**
-     * @see Paper#addByte(byte)
-     */
     @Override
-    public void addData(
+    public void emit(
         @NotNull CharSequence data, int i, int l
     ) {
+        int k = i + l;
         grow(count + l);
 
-        while (i < l) {
+        while (i < k) {
             // get char
             char c = data.charAt(i++);
 
@@ -601,7 +598,7 @@ public abstract class Paper extends Chain implements Flow {
             // U+10000 ~ U+10FFFF
             // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
             else if (c >= 0xD800 && c <= 0xDFFF) {
-                if (i >= l) {
+                if (i >= k) {
                     grow(count + 1);
                     hash = 0;
                     value[count++] = '?';
@@ -636,29 +633,54 @@ public abstract class Paper extends Chain implements Flow {
         }
     }
 
-    /**
-     * @see Paper#addText(byte[], int, int)
-     */
     @Override
-    public void addText(
-        @NotNull byte[] data
+    public void text(
+        char c
     ) {
-        addText(
-            data, 0, data.length
-        );
+        // U+0000 ~ U+007F
+        if (c < 0x80) {
+            byte b = (byte) c;
+            if (record(b)) {
+                byte[] it = value;
+                if (count != it.length) {
+                    hash = 0;
+                    it[count++] = b;
+                } else {
+                    grow(count + 1);
+                    hash = 0;
+                    value[count++] = b;
+                }
+            }
+        } else {
+            // xxxx xxxx : xxxx xxxx
+            escape(count + 5);
+            value[count++] = 'u';
+            value[count++] = upper((c >> 12) & 0x0F);
+            value[count++] = upper((c >> 8) & 0x0F);
+            value[count++] = upper((c >> 4) & 0x0F);
+            value[count++] = upper(c & 0x0F);
+        }
     }
 
-    /**
-     * @see Paper#addByte(byte)
-     */
     @Override
-    public void addText(
+    public void text(
+        @NotNull byte[] data
+    ) {
+        int l = data.length;
+        if (l != 0) {
+            text(data, 0, l);
+        }
+    }
+
+    @Override
+    public void text(
         @NotNull byte[] data, int i, int l
     ) {
+        int k = i + l;
         grow(count + l);
 
         byte b1, b2, b3, b4;
-        while (i < l) {
+        while (i < k) {
             // get byte
             b1 = data[i++];
 
@@ -682,7 +704,7 @@ public abstract class Paper extends Chain implements Flow {
             // U+0080 ~ U+07FF
             // 110xxxxx 10xxxxxx
             if ((b1 >> 5) == -2) {
-                if (i < l) {
+                if (i < k) {
                     b2 = data[i++];
 
                     // 110xxx xx : 10xx xxxx
@@ -699,7 +721,7 @@ public abstract class Paper extends Chain implements Flow {
             // U+0800 ~ U+FFFF
             // 1110xxxx 10xxxxxx 10xxxxxx
             if ((b1 >> 4) == -2) {
-                if (i + 1 < l) {
+                if (i + 1 < k) {
                     b2 = data[i++];
                     b3 = data[i++];
 
@@ -717,7 +739,7 @@ public abstract class Paper extends Chain implements Flow {
             // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
             // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
             if ((b1 >> 3) == -2) {
-                if (i + 2 < l) {
+                if (i + 2 < k) {
                     b2 = data[i++];
                     b3 = data[i++];
                     b4 = data[i++];
@@ -742,28 +764,24 @@ public abstract class Paper extends Chain implements Flow {
         }
     }
 
-    /**
-     * @see Paper#addText(CharSequence, int, int)
-     */
     @Override
-    public void addText(
+    public void text(
         @NotNull CharSequence data
     ) {
-        addText(
-            data, 0, data.length()
-        );
+        int l = data.length();
+        if (l != 0) {
+            text(data, 0, l);
+        }
     }
 
-    /**
-     * @see Paper#addByte(byte)
-     */
     @Override
-    public void addText(
+    public void text(
         @NotNull CharSequence data, int i, int l
     ) {
+        int k = i + l;
         grow(count + l);
 
-        while (i < l) {
+        while (i < k) {
             // get char
             char c = data.charAt(i++);
 
@@ -794,64 +812,52 @@ public abstract class Paper extends Chain implements Flow {
     }
 
     /**
-     * @see Paper#addData(byte)
-     * @see Paper#addData(char)
      * @since 0.0.2
      */
     @Override
-    public Appendable append(
+    public Paper append(
         char c
     ) {
         if (isFlag(Flow.UNICODE)) {
-            if (c < 0x80) {
-                byte b = (byte) c;
-                if (record(b)) chain(b);
-            } else {
-                // xxxx xxxx : xxxx xxxx
-                escape(count + 5);
-                value[count++] = 'u';
-                value[count++] = upper((c >> 12) & 0x0F);
-                value[count++] = upper((c >> 8) & 0x0F);
-                value[count++] = upper((c >> 4) & 0x0F);
-                value[count++] = upper(c & 0x0F);
-            }
+            this.text(c);
         } else {
-            byte b = (byte) c;
-            if (record(b)) chain(c);
+            this.emit(c);
         }
         return this;
     }
 
     /**
-     * @see Flow#addData(CharSequence)
-     * @see Flow#addText(CharSequence)
      * @since 0.0.2
      */
     @Override
-    public Appendable append(
+    public Paper append(
         CharSequence data
     ) {
-        if (isFlag(Flow.UNICODE)) {
-            addText(data);
-        } else {
-            addData(data);
+        int len = data.length();
+        if (len != 0) {
+            if (isFlag(Flow.UNICODE)) {
+                text(data, 0, len);
+            } else {
+                emit(data, 0, len);
+            }
         }
         return this;
     }
 
     /**
-     * @see Flow#addData(CharSequence, int, int)
-     * @see Flow#addText(CharSequence, int, int)
      * @since 0.0.2
      */
     @Override
-    public Appendable append(
+    public Paper append(
         CharSequence data, int start, int end
     ) {
-        if (isFlag(Flow.UNICODE)) {
-            addText(data, start, end - start);
-        } else {
-            addData(data, start, end - start);
+        int len = end - start;
+        if (len != 0) {
+            if (isFlag(Flow.UNICODE)) {
+                text(data, start, len);
+            } else {
+                emit(data, start, len);
+            }
         }
         return this;
     }

@@ -244,11 +244,11 @@ public class ObjectSpare implements Spare<Object> {
             }
         } else {
             if (flow.isFlag(Flag.UNICODE)) {
-                flow.addText(
+                flow.text(
                     value.toString()
                 );
             } else {
-                flow.addData(
+                flow.emit(
                     value.toString()
                 );
             }

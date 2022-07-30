@@ -131,7 +131,7 @@ public class URISpare implements Spare<URI> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        flow.addData(
+        flow.emit(
             ((URI) value).toASCIIString()
         );
     }

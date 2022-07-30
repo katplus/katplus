@@ -674,7 +674,7 @@ public class Doc extends Chan {
                 if (d >= 0x80) {
                     addChar(d);
                 } else {
-                    addData((byte) d);
+                    emit((byte) d);
                 }
             }
 
@@ -716,7 +716,7 @@ public class Doc extends Chan {
                 if (d >= 0x80) {
                     addChar(d);
                 } else {
-                    addData((byte) d);
+                    emit((byte) d);
                 }
             }
 

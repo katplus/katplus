@@ -451,15 +451,15 @@ class StatusCoder implements Coder<String> {
     ) throws IOCrash {
         switch ((String) value) {
             case "open": {
-                flow.addData("PUBLISH");
+                flow.emit("PUBLISH");
                 break;
             }
             case "self": {
-                flow.addData("PRIVATE");
+                flow.emit("PRIVATE");
                 break;
             }
             default: {
-                flow.addData("UNKNOWN");
+                flow.emit("UNKNOWN");
             }
         }
     }

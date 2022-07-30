@@ -120,7 +120,7 @@ public class LocaleSpare implements Spare<Locale> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        flow.addText(
+        flow.text(
             value.toString()
         );
     }

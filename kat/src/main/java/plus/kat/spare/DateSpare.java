@@ -170,7 +170,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
             );
         } else {
             synchronized (this) {
-                flow.addData(
+                flow.emit(
                     format(date)
                 );
             }

@@ -85,9 +85,9 @@ public class CoderTest {
         ) throws IOCrash {
             String val = value.toString();
             if (val.equals("open")) {
-                flow.addData("OPEN");
+                flow.emit("OPEN");
             } else {
-                flow.addData("NULL");
+                flow.emit("NULL");
             }
         }
     }

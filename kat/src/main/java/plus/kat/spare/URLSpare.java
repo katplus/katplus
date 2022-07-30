@@ -131,7 +131,7 @@ public class URLSpare implements Spare<URL> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        flow.addText(
+        flow.text(
             ((URL) value).toExternalForm()
         );
     }

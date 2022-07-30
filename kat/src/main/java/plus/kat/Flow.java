@@ -371,18 +371,18 @@ public interface Flow extends Flag, Appendable {
      *   Flow flow = ...
      *
      *   // kat
-     *   flow.addData((byte) '^'); // escape: ^^
-     *   flow.addData((byte) 'k'); // not escaped
+     *   flow.emit((byte) '^'); // escape: ^^
+     *   flow.emit((byte) 'k'); // not escaped
      *
      *   // json
-     *   flow.addData((byte) '"'); // escape: \"
-     *   flow.addData((byte) '\'); // escape: \\
-     *   flow.addData((byte) 'k'); // not escaped
+     *   flow.emit((byte) '"'); // escape: \"
+     *   flow.emit((byte) '\'); // escape: \\
+     *   flow.emit((byte) 'k'); // not escaped
      * }</pre>
      *
      * @throws IOCrash If an I/O error occurs
      */
-    void addData(
+    void emit(
         byte b
     ) throws IOCrash;
 
@@ -394,18 +394,18 @@ public interface Flow extends Flag, Appendable {
      *   Flow flow = ...
      *
      *   // kat
-     *   flow.addData('^'); // escape: ^^
-     *   flow.addData('k'); // not escaped
+     *   flow.emit('^'); // escape: ^^
+     *   flow.emit('k'); // not escaped
      *
      *   // json
-     *   flow.addData('"'); // escape: \"
-     *   flow.addData('\'); // escape: \\
-     *   flow.addData('k'); // not escaped
+     *   flow.emit('"'); // escape: \"
+     *   flow.emit('\'); // escape: \\
+     *   flow.emit('k'); // not escaped
      * }</pre>
      *
      * @throws IOCrash If an I/O error occurs
      */
-    void addData(
+    void emit(
         char c
     ) throws IOCrash;
 
@@ -415,10 +415,8 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOCrash              If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
-     * @see Flow#addData(byte)
-     * @see Flow#addBytes(byte[])
      */
-    void addData(
+    void emit(
         @NotNull byte[] data
     ) throws IOCrash;
 
@@ -428,10 +426,8 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOCrash              If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
-     * @see Flow#addData(byte)
-     * @see Flow#addBytes(byte[], int, int)
      */
-    void addData(
+    void emit(
         @NotNull byte[] data, int offset, int length
     ) throws IOCrash;
 
@@ -441,10 +437,8 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOCrash              If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
-     * @see Flow#addChar(char)
-     * @see Flow#addChars(CharSequence)
      */
-    void addData(
+    void emit(
         @NotNull CharSequence data
     ) throws IOCrash;
 
@@ -454,10 +448,8 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOCrash              If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
-     * @see Flow#addChar(char)
-     * @see Flow#addChars(CharSequence, int, int)
      */
-    void addData(
+    void emit(
         @NotNull CharSequence data, int offset, int length
     ) throws IOCrash;
 
@@ -467,10 +459,19 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOCrash              If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
-     * @see Flow#addData(byte)
-     * @see Flow#addBytes(byte[])
      */
-    void addText(
+    void text(
+        char data
+    ) throws IOCrash;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
+     *
+     * @throws IOCrash              If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     */
+    void text(
         @NotNull byte[] data
     ) throws IOCrash;
 
@@ -480,10 +481,8 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOCrash              If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
-     * @see Flow#addData(byte)
-     * @see Flow#addBytes(byte[], int, int)
      */
-    void addText(
+    void text(
         @NotNull byte[] data, int offset, int length
     ) throws IOCrash;
 
@@ -493,10 +492,8 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOCrash              If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
-     * @see Flow#addData(char)
-     * @see Flow#addChars(char[])
      */
-    void addText(
+    void text(
         @NotNull CharSequence data
     ) throws IOCrash;
 
@@ -506,10 +503,8 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOCrash              If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
-     * @see Flow#addData(char)
-     * @see Flow#addChars(char[], int, int)
      */
-    void addText(
+    void text(
         @NotNull CharSequence data, int offset, int length
     ) throws IOCrash;
 
@@ -522,7 +517,7 @@ public interface Flow extends Flag, Appendable {
      * @since 0.0.2
      */
     @Override
-    Appendable append(
+    Flow append(
         char c
     ) throws IOCrash;
 
@@ -533,12 +528,10 @@ public interface Flow extends Flag, Appendable {
      * @return this {@link Flow}
      * @throws IOCrash              If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
-     * @see Flow#addData(CharSequence)
-     * @see Flow#addText(CharSequence)
      * @since 0.0.2
      */
     @Override
-    Appendable append(
+    Flow append(
         CharSequence data
     ) throws IOCrash;
 
@@ -549,12 +542,10 @@ public interface Flow extends Flag, Appendable {
      * @return this {@link Flow}
      * @throws IOCrash              If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
-     * @see Flow#addData(CharSequence, int, int)
-     * @see Flow#addText(CharSequence, int, int)
      * @since 0.0.2
      */
     @Override
-    Appendable append(
+    Flow append(
         CharSequence data, int start, int end
     ) throws IOCrash;
 }

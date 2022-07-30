@@ -199,7 +199,7 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
                 ((Enum<?>) value).ordinal()
             );
         } else {
-            flow.addText(
+            flow.text(
                 ((Enum<?>) value).name()
             );
         }

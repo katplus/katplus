@@ -99,14 +99,14 @@ public class ByteBufferSpare implements Spare<ByteBuffer> {
     ) throws IOCrash {
         ByteBuffer buf = (ByteBuffer) value;
         if (buf.hasArray()) {
-            flow.addData(
+            flow.emit(
                 buf.array()
             );
         } else {
             int i = buf.position();
             int o = i + buf.limit();
             while (i < o) {
-                flow.addData(
+                flow.emit(
                     buf.get(i++)
                 );
             }

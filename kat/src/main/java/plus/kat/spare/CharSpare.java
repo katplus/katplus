@@ -120,7 +120,7 @@ public class CharSpare implements Spare<Character> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        flow.addData(
+        flow.emit(
             (char) value
         );
     }

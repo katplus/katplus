@@ -68,7 +68,7 @@ public class ByteArrayCoder implements Coder<byte[]> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        flow.addData(
+        flow.emit(
             (byte[]) value
         );
     }
