@@ -18,7 +18,7 @@ package plus.kat.netty;
 import plus.kat.anno.NotNull;
 
 import plus.kat.Chan;
-import plus.kat.chain.Paper;
+import plus.kat.kernel.Chain;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -29,7 +29,7 @@ import io.netty.buffer.Unpooled;
  */
 public class ChanBuf {
     /**
-     * @see ChanBuf#wrappedBuffer(Paper)
+     * @see ChanBuf#wrappedBuffer(Chain)
      * @since 0.0.2
      */
     @NotNull
@@ -47,20 +47,20 @@ public class ChanBuf {
      */
     @NotNull
     public static ByteBuf wrappedBuffer(
-        @NotNull Paper flow
+        @NotNull Chain chain
     ) {
-        int length = flow.length();
+        int length = chain.length();
         if (length == 0) {
             return Unpooled.EMPTY_BUFFER;
         }
 
-        if (!flow.isShared()) {
+        if (!chain.isShared()) {
             return Unpooled.wrappedBuffer(
-                flow.copyBytes()
+                chain.copyBytes()
             );
         }
 
-        byte[] src = flow.getValue();
+        byte[] src = chain.getValue();
         if (length == src.length) {
             return Unpooled.wrappedBuffer(src);
         }

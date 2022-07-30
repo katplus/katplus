@@ -1051,6 +1051,61 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * @param index the start index
+     * @param dst   the specified {@code dst}
+     * @since 0.0.3
+     */
+    public int getBytes(
+        int index, byte[] dst
+    ) {
+        int length = count - index;
+        if (length <= 0) {
+            return -1;
+        }
+
+        if (length > dst.length) {
+            length = dst.length;
+        }
+
+        System.arraycopy(
+            value, index, dst, 0, length
+        );
+        return length;
+    }
+
+    /**
+     * @param index the start index
+     * @param dst   the specified {@code dst}
+     * @since 0.0.3
+     */
+    public int getBytes(
+        int index, byte[] dst, int dstIndex, int length
+    ) {
+        int len = count - index;
+        if (len <= 0) {
+            return -1;
+        }
+
+        int cap = dst.length - dstIndex;
+        if (cap <= 0) {
+            return 0;
+        }
+
+        if (cap < length) {
+            length = cap;
+        }
+
+        if (len < length) {
+            length = len;
+        }
+
+        System.arraycopy(
+            value, index, dst, dstIndex, length
+        );
+        return length;
+    }
+
+    /**
      * copy the internal UTF-8 {@code byte[]} to {@code char[]}
      *
      * @since 0.0.2 supports UTF-8
@@ -1133,51 +1188,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         }
 
         return EMPTY_BYTES;
-    }
-
-    /**
-     * @param output the specified {@code output}
-     * @param offset the start index
-     */
-    public void copyBytes(
-        byte[] output, int offset
-    ) {
-        if (output.length - offset < count) {
-            throw new IndexOutOfBoundsException(
-                "Output capacity " + output.length + " less than " + count
-            );
-        }
-
-        System.arraycopy(
-            value, 0, output, offset, count
-        );
-    }
-
-    /**
-     * @param start  the start index of this {@link Chain}
-     * @param end    the end index of this {@link Chain}
-     * @param output the specified {@code output}
-     * @param offset the start index of {@code output}
-     */
-    public void copyBytes(
-        int start, int end, byte[] output, int offset
-    ) {
-        int length = end - start;
-        if (start < 0 || length < 0 || end >= count) {
-            throw new IndexOutOfBoundsException(
-                "Index start " + start + " < 0 or end >= start or end " + end + " >= " + count
-            );
-        }
-
-        if (output.length - offset < length) {
-            throw new IndexOutOfBoundsException(
-                "Output capacity " + output.length + " less than " + length
-            );
-        }
-
-        System.arraycopy(
-            value, start, output, offset, length
-        );
     }
 
     /**

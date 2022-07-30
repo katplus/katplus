@@ -122,4 +122,42 @@ public class ChainTest {
         assertEquals(s.compareTo("kat.plus+"), v.compareTo("kat.plus+"));
         assertEquals(s.compareTo("+kat.plus+"), v.compareTo("+kat.plus+"));
     }
+
+    @Test
+    public void test_getBytes() {
+        Value value = new Value(
+            "See the License for the specific language governing permissions and limitations under the License."
+        );
+        assertTrue(value.length() < 127);
+
+        String s1 = "See the License for the specific language";
+        byte[] b1 = new byte[s1.length()];
+        assertEquals(s1.length(), value.getBytes(0, b1));
+        assertEquals(s1, new String(b1));
+
+        String s2 = "License for the specific language";
+        byte[] b2 = new byte[s2.length()];
+        assertEquals(s2.length(), value.getBytes(8, b2));
+        assertEquals(s2, new String(b2));
+        assertEquals(-1, value.getBytes(128, b2));
+
+        // specific language governing permissions
+        int length = 16;
+        byte[] b3 = new byte[length];
+
+        assertEquals(8, value.getBytes(24, b3, 0, 8));
+        assertEquals("specific", new String(b3, 0, 8));
+
+        assertEquals(8, value.getBytes(33, b3, 8, 8));
+        assertEquals("language", new String(b3, 8, 8));
+        assertEquals("specificlanguage", new String(b3, 0, 16));
+
+        assertEquals(14, value.getBytes(33, b3, 2, 32));
+        assertEquals("language gover", new String(b3, 2, 14));
+        assertEquals("splanguage gover", new String(b3, 0, 16));
+
+        assertEquals(-1, value.getBytes(128, b3, 0, 8));
+        assertEquals(0, value.getBytes(12, b3, 0, 0));
+        assertEquals(length, value.getBytes(12, b3, 0, 128));
+    }
 }
