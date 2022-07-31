@@ -356,8 +356,8 @@ public interface Spare<K> extends Coder<K> {
                 "kat.spare.capacity", 32
             ));
 
-            Loader<Provider> loader =
-                new Loader<>(Provider.class);
+            KatLoader<Provider> loader =
+                new KatLoader<>(Provider.class);
 
             try {
                 loader.load(

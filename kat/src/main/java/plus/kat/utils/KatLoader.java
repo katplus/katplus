@@ -26,9 +26,9 @@ import java.util.Iterator;
 
 /**
  * @author kraity
- * @since 0.0.2
+ * @since 0.0.3
  */
-public class Loader<T> extends Chain implements Iterator<T> {
+public class KatLoader<T> extends Chain implements Iterator<T> {
 
     private static final String
         PREFIX = "META-INF/services/";
@@ -39,7 +39,7 @@ public class Loader<T> extends Chain implements Iterator<T> {
     protected final Class<T> service;
     protected final ClassLoader classLoader;
 
-    public Loader(
+    public KatLoader(
         Class<T> klass
     ) {
         Thread thread = Thread.currentThread();
@@ -83,6 +83,7 @@ public class Loader<T> extends Chain implements Iterator<T> {
         while (configs.hasMoreElements()) {
             URL url = configs.nextElement();
             try (InputStream in = url.openStream()) {
+                int mark = 0;
                 while (true) {
                     int i = in.read();
                     if (i == -1) {
@@ -99,21 +100,63 @@ public class Loader<T> extends Chain implements Iterator<T> {
                         value[count++] = (byte) i;
                     } else if (tail() != '\n') {
                         grow(count + 1);
-                        size++;
                         hash = 0;
                         value[count++] = '\n';
+                        if (allow(mark)) {
+                            size++;
+                            mark = count;
+                        } else {
+                            count = mark;
+                        }
                     }
                 }
 
                 int i = count - 1;
                 if (i > 0 && value[i] != '\n') {
                     grow(count + 1);
-                    size++;
                     hash = 0;
                     value[count++] = '\n';
+                    if (allow(mark)) {
+                        size++;
+                    } else {
+                        count = mark;
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * @since 0.0.3
+     */
+    private boolean allow(
+        int mark
+    ) {
+        if (mark == 0) {
+            return true;
+        }
+
+        byte[] it = value;
+        byte fir = it[mark];
+
+        int len = count - mark;
+        int lim = mark - len;
+
+        for (int o = 0; o <= lim; o++) {
+            if (it[o] != fir) {
+                continue;
+            }
+
+            int o1 = o, o2 = mark;
+            while (++o2 < count) {
+                if (it[++o1] != it[o2]) break;
+            }
+            if (o2 == count) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -178,7 +221,7 @@ public class Loader<T> extends Chain implements Iterator<T> {
      * Unsupported
      */
     @Override
-    public Loader<T> subSequence(
+    public KatLoader<T> subSequence(
         int start, int end
     ) {
         throw new RunCrash(
