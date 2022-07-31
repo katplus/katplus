@@ -26,7 +26,7 @@ import plus.kat.*;
  */
 public interface Provider {
     /**
-     * Returns {@link Spare} of the specified {@link Class}
+     * Returns {@link Spare} of the specified {@code klass}
      *
      * @throws NullPointerException If the specified {@code klass} is null
      */
@@ -35,4 +35,18 @@ public interface Provider {
         @NotNull Class<?> klass,
         @NotNull Supplier supplier
     );
+
+    /**
+     * Returns {@link Spare} of the specified {@code klass}
+     *
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @since 0.0.3
+     */
+    @Nullable
+    default Spare<?> lookup(
+        @NotNull String klass,
+        @NotNull Supplier supplier
+    ) {
+        return null;
+    }
 }

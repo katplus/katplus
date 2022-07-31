@@ -448,7 +448,7 @@ public interface Spare<K> extends Coder<K> {
         }
 
         /**
-         * Returns {@link Spare} of the specified {@link Class}
+         * Returns {@link Spare} of the specified {@code klass}
          *
          * @throws NullPointerException If the specified {@code klass} is null
          */
@@ -555,6 +555,34 @@ public interface Spare<K> extends Coder<K> {
             } catch (Exception e) {
                 return null;
             }
+        }
+
+        /**
+         * Returns {@link Spare} of the specified {@code klass}
+         *
+         * @throws NullPointerException If the specified {@code klass} is null
+         */
+        @Nullable
+        public Spare<?> lookup(
+            @NotNull String name,
+            @NotNull Supplier supplier
+        ) {
+            if (name.startsWith("java.")) {
+                try {
+                    Spare<?> spare = load(
+                        Class.forName(name), supplier
+                    );
+                    if (spare != null) {
+                        Impl.INS.put(
+                            name, spare
+                        );
+                    }
+                    return spare;
+                } catch (Exception e) {
+                    // Nothing
+                }
+            }
+            return null;
         }
 
         /**

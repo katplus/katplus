@@ -16,6 +16,23 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SupplierTest {
 
     @Test
+    public void test_embed1() {
+        String[] list = new String[]{
+            "java.util.Map",
+            "java.util.Set",
+            "java.util.List",
+            "java.lang.Object"
+        };
+
+        Supplier supplier = Supplier.ins();
+        for (String o : list) {
+            assertNotNull(
+                supplier.lookup(o)
+            );
+        }
+    }
+
+    @Test
     public void test() {
         Supplier supplier = Supplier.ins();
 

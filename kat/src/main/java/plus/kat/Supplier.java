@@ -577,7 +577,30 @@ public interface Supplier {
         public <T> Spare<T> lookup(
             CharSequence klass
         ) {
-            return (Spare<T>) get(klass);
+            Spare<?> spare = get(klass);
+
+            if (spare != null) {
+                return (Spare<T>) spare;
+            }
+
+            Cluster ins = Cluster.INS;
+            String name = klass.toString();
+
+            for (Provider p : ins.providers) {
+                try {
+                    spare = p.lookup(
+                        name, this
+                    );
+                } catch (Exception e) {
+                    continue;
+                }
+
+                if (spare != null) {
+                    return (Spare<T>) spare;
+                }
+            }
+
+            return null;
         }
 
         @Override
