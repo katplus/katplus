@@ -68,7 +68,7 @@ Event<User> event = new Event<>(
 );
 ```
 
-### 1.2.1 Spring
+### 1.2.2 Spring
 
 Maven:
 

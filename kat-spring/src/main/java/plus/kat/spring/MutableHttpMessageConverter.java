@@ -20,9 +20,10 @@ import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.*;
+import org.springframework.util.Assert;
 
 import plus.kat.*;
-import plus.kat.chain.Paper;
+import plus.kat.chain.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -35,8 +36,11 @@ import java.util.List;
  */
 public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConverter<Object> {
 
-    protected Job job;
+    protected final Job job;
     protected Supplier supplier;
+
+    protected KatConfig config =
+        KatConfig.INSTANCE;
     protected MediaType[] mediaTypes;
 
     /**
@@ -59,12 +63,15 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         Supplier supplier
     ) {
         super();
+        Assert.notNull(job, "Job must not be null");
+        Assert.notNull(supplier, "Supplier must not be null");
+
         this.supplier = supplier;
         switch (this.job = job) {
             case KAT: {
                 mediaTypes = new MediaType[]{
-                    new MediaType("text", "kat"),
-                    new MediaType("application", "kat")
+                    MediaTypes.TEXT_KAT,
+                    MediaTypes.APPLICATION_KAT
                 };
                 break;
             }
@@ -126,6 +133,8 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         return supplier.solve(
             clazz, job, new Event<>(
                 in.getBody()
+            ).with(
+                config.getReadFlags()
             )
         );
     }
@@ -138,6 +147,8 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         return supplier.solve(
             clazz, job, new Event<>(
                 in.getBody()
+            ).with(
+                config.getReadFlags()
             )
         );
     }
@@ -168,15 +179,21 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         Chan chan;
         switch (job) {
             case KAT: {
-                chan = new Chan(supplier);
+                chan = new Chan(
+                    config.getWriteFlags(), supplier
+                );
                 break;
             }
             case DOC: {
-                chan = new Doc(supplier);
+                chan = new Doc(
+                    config.getWriteFlags(), supplier
+                );
                 break;
             }
             case JSON: {
-                chan = new Json(supplier);
+                chan = new Json(
+                    config.getWriteFlags(), supplier
+                );
                 break;
             }
             default: {
@@ -195,6 +212,37 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             output.getBody()
         );
         chan.closeFlow();
+    }
+
+    /**
+     * Set {@link KatConfig} of {@link MutableHttpMessageConverter}
+     *
+     * @param config the specified {@code config}
+     * @since 0.0.3
+     */
+    public void setConfig(
+        KatConfig config
+    ) {
+        Assert.notNull(config, "KatConfig must not be null");
+        this.config = config;
+    }
+
+    /**
+     * Returns the {@link KatConfig} of {@link MutableHttpMessageConverter}
+     *
+     * @since 0.0.3
+     */
+    public KatConfig getConfig() {
+        return config;
+    }
+
+    @Override
+    public void setSupportedMediaTypes(
+        List<MediaType> types
+    ) {
+        mediaTypes = types.toArray(
+            new MediaType[types.size()]
+        );
     }
 
     @Override
