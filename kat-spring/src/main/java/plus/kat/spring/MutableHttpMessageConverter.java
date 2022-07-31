@@ -39,8 +39,9 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     protected final Job job;
     protected Supplier supplier;
 
-    protected KatConfig config =
-        KatConfig.INSTANCE;
+    protected long readFlags;
+    protected long writeFlags;
+
     protected MediaType[] mediaTypes;
 
     /**
@@ -134,7 +135,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             clazz, job, new Event<>(
                 in.getBody()
             ).with(
-                config.getReadFlags()
+                readFlags
             )
         );
     }
@@ -148,7 +149,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             clazz, job, new Event<>(
                 in.getBody()
             ).with(
-                config.getReadFlags()
+                readFlags
             )
         );
     }
@@ -180,19 +181,19 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         switch (job) {
             case KAT: {
                 chan = new Chan(
-                    config.getWriteFlags(), supplier
+                    writeFlags, supplier
                 );
                 break;
             }
             case DOC: {
                 chan = new Doc(
-                    config.getWriteFlags(), supplier
+                    writeFlags, supplier
                 );
                 break;
             }
             case JSON: {
                 chan = new Json(
-                    config.getWriteFlags(), supplier
+                    writeFlags, supplier
                 );
                 break;
             }
@@ -215,27 +216,8 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     }
 
     /**
-     * Set {@link KatConfig} of {@link MutableHttpMessageConverter}
-     *
-     * @param config the specified {@code config}
      * @since 0.0.3
      */
-    public void setConfig(
-        KatConfig config
-    ) {
-        Assert.notNull(config, "KatConfig must not be null");
-        this.config = config;
-    }
-
-    /**
-     * Returns the {@link KatConfig} of {@link MutableHttpMessageConverter}
-     *
-     * @since 0.0.3
-     */
-    public KatConfig getConfig() {
-        return config;
-    }
-
     @Override
     public void setSupportedMediaTypes(
         List<MediaType> types
@@ -248,5 +230,71 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     @Override
     public List<MediaType> getSupportedMediaTypes() {
         return Arrays.asList(mediaTypes);
+    }
+
+    /**
+     * add the {@code flag} on the basis of {@code readFlags}
+     *
+     * @param flag the specified {@code flag}
+     * @since 0.0.3
+     */
+    public void readFlag(
+        long flag
+    ) {
+        readFlags |= flag;
+    }
+
+    /**
+     * Overwrite {@code readFlags} over the specified {@code flags}
+     *
+     * @param flags the specified {@code flags}
+     * @since 0.0.3
+     */
+    public void setReadFlags(
+        long flags
+    ) {
+        readFlags = flags;
+    }
+
+    /**
+     * Returns the {@code ReadFlags} of {@link MutableHttpMessageConverter}
+     *
+     * @since 0.0.3
+     */
+    public long getReadFlags() {
+        return readFlags;
+    }
+
+    /**
+     * add the {@code flag} on the basis of {@code writeFlags}
+     *
+     * @param flag the specified {@code flag}
+     * @since 0.0.3
+     */
+    public void writeFlag(
+        long flag
+    ) {
+        writeFlags |= flag;
+    }
+
+    /**
+     * Overwrite {@code writeFlags} over the specified {@code flags}
+     *
+     * @param flags the specified {@code flags}
+     * @since 0.0.3
+     */
+    public void setWriteFlags(
+        long flags
+    ) {
+        writeFlags = flags;
+    }
+
+    /**
+     * Returns the {@code WriteFlags} of {@link MutableHttpMessageConverter}
+     *
+     * @since 0.0.3
+     */
+    public long getWriteFlags() {
+        return writeFlags;
     }
 }
