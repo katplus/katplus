@@ -19,6 +19,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
+import plus.kat.crash.*;
 
 /**
  * @author kraity
@@ -28,6 +29,7 @@ public interface Provider {
     /**
      * Returns {@link Spare} of the specified {@code klass}
      *
+     * @throws RunCrash             The Provider signals to interrupt subsequent lookup
      * @throws NullPointerException If the specified {@code klass} is null
      */
     @Nullable
@@ -39,6 +41,7 @@ public interface Provider {
     /**
      * Returns {@link Spare} of the specified {@code klass}
      *
+     * @throws RunCrash             The Provider signals to interrupt subsequent lookup
      * @throws NullPointerException If the specified {@code klass} is null
      * @since 0.0.3
      */

@@ -19,6 +19,7 @@ import plus.kat.anno.Embed;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.crash.RunCrash;
 import plus.kat.spare.*;
 import plus.kat.entity.*;
 import plus.kat.reflex.*;
@@ -435,6 +436,8 @@ public interface Spare<K> extends Coder<K> {
                     spare = p.lookup(
                         klass, supplier
                     );
+                } catch (RunCrash e) {
+                    return null;
                 } catch (Exception e) {
                     continue;
                 }
@@ -450,6 +453,7 @@ public interface Spare<K> extends Coder<K> {
         /**
          * Returns {@link Spare} of the specified {@code klass}
          *
+         * @throws RunCrash             The Provider signals to interrupt subsequent lookup
          * @throws NullPointerException If the specified {@code klass} is null
          */
         @Nullable
@@ -560,6 +564,7 @@ public interface Spare<K> extends Coder<K> {
         /**
          * Returns {@link Spare} of the specified {@code klass}
          *
+         * @throws RunCrash             The Provider signals to interrupt subsequent lookup
          * @throws NullPointerException If the specified {@code klass} is null
          */
         @Nullable

@@ -19,6 +19,7 @@ import plus.kat.anno.Embed;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.crash.RunCrash;
 import plus.kat.spare.*;
 import plus.kat.entity.*;
 import plus.kat.utils.*;
@@ -591,6 +592,8 @@ public interface Supplier {
                     spare = p.lookup(
                         name, this
                     );
+                } catch (RunCrash e) {
+                    return null;
                 } catch (Exception e) {
                     continue;
                 }
