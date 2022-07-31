@@ -1674,6 +1674,55 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * @param in the specified {@link InputStream}
+     * @since 0.0.3
+     */
+    protected void chain(
+        @NotNull InputStream in
+    ) {
+        try {
+            chain(in, 128);
+        } catch (Exception e) {
+            // Nothing
+        } finally {
+            try {
+                in.close();
+            } catch (Exception e) {
+                // Nothing
+            }
+        }
+    }
+
+    /**
+     * @param in the specified {@link InputStream}
+     * @since 0.0.3
+     */
+    protected void chain(
+        @NotNull InputStream in, int range
+    ) throws IOException {
+        int cap, length;
+        byte[] it = value;
+
+        while (true) {
+            cap = it.length - count;
+            if (cap < range) {
+                grow(count + range);
+                it = value;
+                cap = it.length - count;
+            }
+
+            length = in.read(
+                it, count, cap
+            );
+
+            if (length == -1) {
+                break;
+            }
+            count += length;
+        }
+    }
+
+    /**
      * @param b the specified byte value
      */
     protected void chain(

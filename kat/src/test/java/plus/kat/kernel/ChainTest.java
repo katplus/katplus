@@ -3,9 +3,12 @@ package plus.kat.kernel;
 import org.junit.jupiter.api.Test;
 import plus.kat.chain.Value;
 
+import java.io.ByteArrayInputStream;
+import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ChainTest {
 
@@ -159,5 +162,31 @@ public class ChainTest {
         assertEquals(-1, value.getBytes(128, b3, 0, 8));
         assertEquals(0, value.getBytes(12, b3, 0, 0));
         assertEquals(length, value.getBytes(12, b3, 0, 128));
+    }
+
+    @Test
+    public void test_InputStream() {
+        Value v1 = new Value();
+        v1.add(
+            new ByteArrayInputStream(
+                "kat.plus".getBytes(UTF_8)
+            )
+        );
+        assertEquals("kat.plus", v1.toString());
+
+        for (int i = 0; i < 128; i++) {
+            v1.add(".kat.plus");
+        }
+        Value v2 = new Value();
+        v2.add(
+            new ByteArrayInputStream(
+                v1.getValue(), 0, v1.length()
+            )
+        );
+
+        String s1 = v1.toString();
+        String s2 = v2.toString();
+        assertEquals(s1.length(), s2.length());
+        assertEquals(s1, s2);
     }
 }

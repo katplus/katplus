@@ -25,6 +25,7 @@ import plus.kat.utils.*;
 
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicReferenceArray;
@@ -183,6 +184,18 @@ public class Value extends Chain {
             chain(
                 c, 0, c.length()
             );
+        }
+    }
+
+    /**
+     * @param in the specified {@link InputStream}
+     * @since 0.0.3
+     */
+    public void add(
+        InputStream in
+    ) {
+        if (in != null) {
+            chain(in);
         }
     }
 
