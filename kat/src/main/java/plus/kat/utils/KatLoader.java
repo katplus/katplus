@@ -42,11 +42,15 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
     public KatLoader(
         Class<T> klass
     ) {
-        Thread thread = Thread.currentThread();
-        ClassLoader cl = thread.getContextClassLoader();
+        this(klass, Thread.currentThread().getContextClassLoader());
+    }
 
+    public KatLoader(
+        Class<T> klass,
+        ClassLoader loader
+    ) {
         service = klass;
-        classLoader = cl != null ? cl : ClassLoader.getSystemClassLoader();
+        classLoader = loader != null ? loader : ClassLoader.getSystemClassLoader();
     }
 
     /**
@@ -102,7 +106,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                         grow(count + 1);
                         hash = 0;
                         value[count++] = '\n';
-                        if (allow(mark)) {
+                        if (permit(mark)) {
                             size++;
                             mark = count;
                         } else {
@@ -116,7 +120,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                     grow(count + 1);
                     hash = 0;
                     value[count++] = '\n';
-                    if (allow(mark)) {
+                    if (permit(mark)) {
                         size++;
                     } else {
                         count = mark;
@@ -124,39 +128,6 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                 }
             }
         }
-    }
-
-    /**
-     * @since 0.0.3
-     */
-    private boolean allow(
-        int mark
-    ) {
-        if (mark == 0) {
-            return true;
-        }
-
-        byte[] it = value;
-        byte fir = it[mark];
-
-        int len = count - mark;
-        int lim = mark - len;
-
-        for (int o = 0; o <= lim; o++) {
-            if (it[o] != fir) {
-                continue;
-            }
-
-            int o1 = o, o2 = mark;
-            while (++o2 < count) {
-                if (it[++o1] != it[o2]) break;
-            }
-            if (o2 == count) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -215,6 +186,39 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
     @Override
     public boolean hasNext() {
         return size != 0;
+    }
+
+    /**
+     * Returns the status of collect permit
+     */
+    protected boolean permit(
+        int mark
+    ) {
+        if (mark == 0) {
+            return true;
+        }
+
+        byte[] it = value;
+        byte fir = it[mark];
+
+        int len = count - mark;
+        int lim = mark - len;
+
+        for (int o = 0; o <= lim; o++) {
+            if (it[o] != fir) {
+                continue;
+            }
+
+            int o1 = o, o2 = mark;
+            while (++o2 < count) {
+                if (it[++o1] != it[o2]) break;
+            }
+            if (o2 == count) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
