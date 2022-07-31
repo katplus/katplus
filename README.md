@@ -35,6 +35,76 @@ dependencies {
 }
 ```
 
+## 1.2 拓展依赖
+
+### 1.2.1 Netty
+
+Maven:
+
+```xml
+<dependency>
+    <groupId>plus.kat</groupId>
+    <artifactId>kat-netty</artifactId>
+    <version>0.0.2</version>
+</dependency>
+```
+
+Java:
+
+```java
+// ByteBuf
+Kat chan = Kat.encode(...);
+Doc chan = Doc.encode(...);
+Json chan = Json.encode(...);
+
+ByteBuf buf = ChanBuf.wrappedBuffer(chan);
+ByteBuf buf = ChanBuf.wrappedBuffer(chan.getFlow());
+ByteBuf buf = ChanBuf.wrappedBuffer(new Value("..."));
+
+// ByteBuf Reader
+ByteBuf buf = ...;
+Event<User> event = new Event<>(
+    new ByteBufReader(buf)
+);
+```
+
+### 1.2.1 Spring
+
+Maven:
+
+```xml
+<dependency>
+    <groupId>plus.kat</groupId>
+    <artifactId>kat-spring</artifactId>
+    <version>0.0.2</version>
+</dependency>
+```
+
+Java:
+
+```java
+@Configuration
+public class Application implements WebMvcConfigurer {
+    @Override
+    public void configureMessageConverters(
+        List<HttpMessageConverter<?>> converters
+    ) {
+        // kat
+        converters.add(
+            new MutableHttpMessageConverter(Job.KAT)
+        );
+        // xml
+        converters.add(
+            new MutableHttpMessageConverter(Job.DOC)
+        );
+        // json
+        converters.add(
+            0, new MutableHttpMessageConverter(Job.JSON)
+        );
+    }
+}
+```
+
 # 2. 简单使用
 
 ### 2.1 **Data** to **Text**
