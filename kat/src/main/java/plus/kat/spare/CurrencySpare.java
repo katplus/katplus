@@ -26,6 +26,8 @@ import plus.kat.entity.*;
 import java.lang.reflect.Type;
 import java.util.Currency;
 
+import static java.util.Currency.getInstance;
+
 /**
  * @author kraity
  * @since 0.0.2
@@ -84,12 +86,14 @@ public class CurrencySpare implements Spare<Currency> {
         }
 
         if (data instanceof CharSequence) {
-            String d = data.toString();
-            if (d.isEmpty()) {
+            CharSequence d = (CharSequence) data;
+            if (d.length() != 3) {
                 return null;
             }
             try {
-                return Currency.getInstance(d);
+                return getInstance(
+                    data.toString()
+                );
             } catch (Exception e) {
                 return null;
             }
@@ -104,12 +108,12 @@ public class CurrencySpare implements Spare<Currency> {
         @NotNull Flag flag,
         @NotNull Alias alias
     ) {
-        if (alias.isEmpty()) {
+        if (alias.length() != 3) {
             return null;
         }
 
-        return Currency.getInstance(
-            alias.toString()
+        return getInstance(
+            alias.string()
         );
     }
 
@@ -119,12 +123,12 @@ public class CurrencySpare implements Spare<Currency> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        if (value.isEmpty()) {
+        if (value.length() != 3) {
             return null;
         }
 
-        return Currency.getInstance(
-            value.toString()
+        return getInstance(
+            value.string()
         );
     }
 
@@ -133,7 +137,7 @@ public class CurrencySpare implements Spare<Currency> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
-        flow.text(
+        flow.emit(
             value.toString()
         );
     }

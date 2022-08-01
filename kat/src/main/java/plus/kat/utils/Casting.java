@@ -60,38 +60,6 @@ public class Casting {
     }
 
     /**
-     * @since 0.0.2
-     */
-    static <K> Event<K> event(
-        CharSequence data,
-        int i, int l,
-        Flag flag, Supplier supplier
-    ) {
-        Event<K> event =
-            new Event<>();
-
-        event.setFlag(flag);
-        event.with(supplier);
-
-        if (data instanceof Chain) {
-            Chain c = (Chain) data;
-            event.with(
-                c.reader(
-                    i, l
-                )
-            );
-        } else {
-            event.with(
-                new CharReader(
-                    data, i, l
-                )
-            );
-        }
-
-        return event;
-    }
-
-    /**
      * Parse {@link CharSequence} and convert result to {@link K}
      *
      * @param supplier the specified {@code supplier}
@@ -102,6 +70,7 @@ public class Casting {
     public static <K> K cast(
         @NotNull Spare<K> spare,
         @Nullable CharSequence text,
+
         @Nullable Flag flag,
         @Nullable Supplier supplier
     ) {
@@ -109,8 +78,8 @@ public class Casting {
             return null;
         }
 
-        int l = text.length();
-        if (l < 2) {
+        int e = text.length();
+        if (e < 2) {
             return null;
         }
 
@@ -124,52 +93,74 @@ public class Casting {
             } else {
                 break;
             }
-        } while (i < l);
+        } while (i < e);
 
         do {
-            c2 = text.charAt(l - 1);
+            c2 = text.charAt(e - 1);
             if (c2 <= 0x20) {
-                l--;
+                e--;
             } else {
                 break;
             }
-        } while (i < l);
+        } while (i < e);
 
-        switch (c2) {
-            case ')': {
-                return spare.read(event(
-                    text, i, l, flag, supplier
-                ));
+        Job job;
+        if (c2 != '}') {
+            // ()
+            if (c2 == ')') {
+                job = Job.KAT;
             }
-            case ']': {
+
+            // []
+            else if (c2 == ']') {
                 if (c1 != '[') {
                     return null;
-                }
-                return spare.parse(event(
-                    text, i, l, flag, supplier
-                ));
-            }
-            case '>': {
-                if (c1 != '<' || l < 8) {
-                    return null;
-                }
-                return spare.down(event(
-                    text, i, l, flag, supplier
-                ));
-            }
-            case '}': {
-                if (c1 != '{') {
-                    return spare.read(event(
-                        text, i, l, flag, supplier
-                    ));
                 } else {
-                    return spare.parse(event(
-                        text, i, l, flag, supplier
-                    ));
+                    job = Job.JSON;
                 }
+            }
+
+            // <>
+            else if (c2 == '>') {
+                if (c1 != '<' || e < 8) {
+                    return null;
+                } else {
+                    job = Job.DOC;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            if (c1 != '{') {
+                job = Job.KAT;
+            } else {
+                char ch = 0;
+                for (int t = i + 1; t < e; t++) {
+                    ch = text.charAt(t);
+                    if (ch > 0x20) {
+                        break;
+                    }
+                }
+                job = ch != '"' ? Job.KAT : Job.JSON;
             }
         }
 
-        return null;
+        Event<K> event;
+        if (text instanceof Chain) {
+            Chain c = (Chain) text;
+            event = new Event<>(
+                flag, c.reader(i, e - i)
+            );
+        } else {
+            event = new Event<>(
+                flag, new CharReader(text, i, e - i)
+            );
+        }
+
+        return spare.solve(
+            job, event.with(
+                supplier
+            )
+        );
     }
 }
