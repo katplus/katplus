@@ -376,31 +376,49 @@ public class Value extends Chain {
      */
     @NotNull
     public BigDecimal toBigDecimal() {
-        try {
-            return new BigDecimal(
-                copyChars()
-            );
-        } catch (Exception e) {
-            return BigDecimal.ZERO;
+        int size = count;
+        if (size != 0) {
+            byte[] it = value;
+            char[] ch = new char[size];
+            while (--size != -1) {
+                ch[size] = (char) (
+                    it[size] & 0xFF
+                );
+            }
+            try {
+                return new BigDecimal(ch);
+            } catch (Exception e) {
+                // Nothing
+            }
         }
+        return BigDecimal.ZERO;
     }
 
     /**
      * Parses this {@link Value} as a {@link BigInteger}
      */
     @NotNull
+    @SuppressWarnings("deprecation")
     public BigInteger toBigInteger() {
-        try {
-            return new BigInteger(
-                string()
-            );
-        } catch (Exception e) {
-            return BigInteger.ZERO;
+        int size = count;
+        if (size != 0) {
+            try {
+                return new BigInteger(
+                    new String(
+                        value, 0, 0, size
+                    )
+                );
+            } catch (Exception e) {
+                // Nothing
+            }
         }
+        return BigInteger.ZERO;
     }
 
     /**
-     * Returns a SecretKeySpec
+     * Returns a SecretKeySpec, please check {@link #length()}
+     *
+     * @throws IllegalArgumentException If the algo is null
      */
     @NotNull
     public SecretKeySpec asSecretKeySpec(
@@ -412,12 +430,14 @@ public class Value extends Chain {
     }
 
     /**
-     * Returns a SecretKeySpec
+     * Returns a SecretKeySpec, please check {@code offset}, {@code algo} and {@code length}
+     *
+     * @throws IllegalArgumentException       If the algo is null or the offset out of range
+     * @throws ArrayIndexOutOfBoundsException If the length is negative
      */
     @NotNull
     public SecretKeySpec asSecretKeySpec(
-        int offset, int length,
-        @NotNull String algo
+        int offset, int length, @NotNull String algo
     ) {
         return new SecretKeySpec(
             value, offset, length, algo
@@ -425,7 +445,7 @@ public class Value extends Chain {
     }
 
     /**
-     * Returns a IvParameterSpec
+     * Returns a IvParameterSpec, please check {@link #length()}
      */
     @NotNull
     public IvParameterSpec asIvParameterSpec() {
@@ -435,7 +455,10 @@ public class Value extends Chain {
     }
 
     /**
-     * Returns a IvParameterSpec
+     * Returns a IvParameterSpec, please check {@code offset} and {@code length}
+     *
+     * @throws IllegalArgumentException       If the offset out of range
+     * @throws ArrayIndexOutOfBoundsException If the length is negative
      */
     @NotNull
     public IvParameterSpec asIvParameterSpec(

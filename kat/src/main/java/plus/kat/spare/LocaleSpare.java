@@ -251,7 +251,7 @@ public class LocaleSpare implements Spare<Locale> {
     /**
      * @since 0.0.3
      */
-    @Nullable
+    @NotNull
     public static Locale lookup(
         @NotNull CharSequence c,
         @NotNull Locale.Category category

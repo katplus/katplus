@@ -107,7 +107,7 @@ public class BigDecimalSpare implements Spare<BigDecimal> {
         if (data instanceof String) {
             try {
                 return new BigDecimal(
-                    data.toString()
+                    (String) data
                 );
             } catch (Exception e) {
                 // nothing

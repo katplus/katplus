@@ -1125,6 +1125,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
+     * @throws IndexOutOfBoundsException If the start is negative or the end out of range
      * @since 0.0.2
      */
     @NotNull
@@ -1167,6 +1168,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
+     * @throws IndexOutOfBoundsException If the start is negative or the end out of range
      */
     @NotNull
     public byte[] copyBytes(
@@ -1191,6 +1193,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Writes to the {@link OutputStream} using the internal {@code byte[]} of this {@link Chain}
+     *
      * @see OutputStream#write(byte[], int, int)
      * @since 0.0.2
      */
@@ -1203,8 +1207,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param o offset
-     * @param l length
+     * Writes to the {@link OutputStream} using the internal {@code byte[]} of this {@link Chain}
+     *
+     * @param o the specified offset
+     * @param l the specified length
+     * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
      * @see OutputStream#write(byte[], int, int)
      * @since 0.0.2
      */
@@ -1217,6 +1224,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Updates the {@link Mac} using the internal {@code byte[]} of this {@link Chain}
+     *
      * @see Mac#update(byte[], int, int)
      */
     public void update(
@@ -1228,8 +1237,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param o offset
-     * @param l length
+     * Updates the {@link Mac} using the internal {@code byte[]} of this {@link Chain}
+     *
+     * @param o the specified offset
+     * @param l the specified length
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see Mac#update(byte[], int, int)
      */
     public void update(
@@ -1241,6 +1253,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Updates the {@link Signature} using the internal {@code byte[]} of this {@link Chain}
+     *
      * @see Signature#update(byte[], int, int)
      */
     public void update(
@@ -1252,8 +1266,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param o offset
-     * @param l length
+     * Updates the {@link Signature} using the internal {@code byte[]} of this {@link Chain}
+     *
+     * @param o the specified offset
+     * @param l the specified length
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see Signature#update(byte[], int, int)
      */
     public void update(
@@ -1265,6 +1282,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Updates the {@link MessageDigest} using the internal {@code byte[]} of this {@link Chain}
+     *
      * @see MessageDigest#update(byte[], int, int)
      */
     public void update(
@@ -1276,8 +1295,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param o offset
-     * @param l length
+     * Updates the {@link MessageDigest} using the internal {@code byte[]} of this {@link Chain}
+     *
+     * @param o the specified offset
+     * @param l the specified length
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see MessageDigest#update(byte[], int, int)
      */
     public void update(
@@ -1289,6 +1311,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Updates the {@link Cipher} using the internal {@code byte[]} of this {@link Chain}
+     *
      * @see Cipher#update(byte[], int, int)
      */
     @Nullable
@@ -1301,8 +1325,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param o offset
-     * @param l length
+     * Updates the {@link Cipher} using the internal {@code byte[]} of this {@link Chain}
+     *
+     * @param o the specified offset
+     * @param l the specified length
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see Cipher#update(byte[], int, int)
      */
     @Nullable
@@ -1315,6 +1342,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Completes the {@link Cipher} using the internal {@code byte[]} of this {@link Chain}
+     *
      * @see Cipher#doFinal(byte[], int, int)
      */
     @Nullable
@@ -1327,8 +1356,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param o offset
-     * @param l length
+     * Completes the {@link Cipher} using the internal {@code byte[]} of this {@link Chain}
+     *
+     * @param o the specified offset
+     * @param l the specified length
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see Cipher#doFinal(byte[], int, int)
      */
     @Nullable
@@ -1341,7 +1373,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns {@code MD5} of this {@link Chain} content
+     * Returns a lowercase {@code MD5} of this {@link Chain}
+     *
+     * @throws IllegalStateException If unsupport the MD5
      */
     @NotNull
     public String digest() {
@@ -1357,6 +1391,12 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns a lowercase message digest of this {@link Chain}
+     *
+     * @param algo the name of the algorithm requested
+     * @throws NoSuchAlgorithmException If no implementation supports the specified algorithm
+     * @see MessageDigest
+     * @see Binary#toLower(byte[])
      * @see Chain#digest(String, int, int)
      */
     @NotNull
@@ -1369,8 +1409,15 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns a lowercase message digest of this {@link Chain}
+     *
      * @param algo the name of the algorithm requested
+     * @param o    the specified offset
+     * @param l    the specified length
+     * @throws IllegalArgumentException If the length out of range
      * @throws NoSuchAlgorithmException If no implementation supports the specified algorithm
+     * @see MessageDigest
+     * @see Binary#toLower(byte[])
      */
     @NotNull
     public String digest(
@@ -1391,7 +1438,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @NotNull
     public byte[] toBase() {
-        return Base64.base().encode(
+        return Base64.REC4648.INS.encode(
             value, 0, count
         );
     }
@@ -1413,7 +1460,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @NotNull
     public byte[] fromBase() {
-        return Base64.base().decode(
+        return Base64.REC4648.INS.decode(
             value, 0, count
         );
     }
@@ -1423,7 +1470,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @NotNull
     public byte[] toSafe() {
-        return Base64.safe().encode(
+        return Base64.RFC4648_SAFE.INS.encode(
             value, 0, count
         );
     }
@@ -1445,7 +1492,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @NotNull
     public byte[] fromSafe() {
-        return Base64.safe().decode(
+        return Base64.RFC4648_SAFE.INS.decode(
             value, 0, count
         );
     }
@@ -1455,7 +1502,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @NotNull
     public byte[] toMime() {
-        return Base64.mime().encode(
+        return Base64.RFC2045.INS.encode(
             value, 0, count
         );
     }
@@ -1477,7 +1524,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @NotNull
     public byte[] fromMime() {
-        return Base64.mime().decode(
+        return Base64.RFC2045.INS.decode(
             value, 0, count
         );
     }
@@ -1497,7 +1544,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns a {@link Reader} of this {@link Chain}
      *
-     * @throws IllegalStateException if the {@code offset} argument is negative
+     * @throws IllegalStateException if the {@code index} argument is negative or the length out of range
      * @see Reader
      */
     @NotNull
@@ -1539,7 +1586,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns an ASCII {@link String} of this {@link Chain}
      *
-     * @param b the beginning index
+     * @param b the beginning index, inclusive
      * @throws IndexOutOfBoundsException if the beginIndex is negative
      */
     @NotNull
@@ -1557,8 +1604,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns an ASCII {@link String} of this {@link Chain}
      *
-     * @param b the beginning index
-     * @param e the ending index
+     * @param b the beginning index, inclusive
+     * @param e the ending index, exclusive
      * @throws IndexOutOfBoundsException if the beginIndex is negative
      */
     @NotNull
@@ -1591,8 +1638,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns the {@code byte[]} of this {@link Chain} as a {@link String}
      *
-     * @param b the beginning index
-     * @param e the ending index
+     * @param b the beginning index, inclusive
+     * @param e the ending index, exclusive
      * @throws IndexOutOfBoundsException if the beginIndex is negative
      */
     @NotNull
@@ -1631,8 +1678,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Returns the {@code byte[]} of this {@link Chain} as a {@link String}
      *
      * @param c charset
-     * @param b the beginning index
-     * @param e the ending index
+     * @param b the beginning index, inclusive
+     * @param e the ending index, exclusive
      * @throws IndexOutOfBoundsException if the beginIndex is negative
      */
     @NotNull
@@ -1695,6 +1742,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     /**
      * @param in the specified {@link InputStream}
+     * @throws IOException If an I/O error occurs
      * @since 0.0.3
      */
     protected void chain(
