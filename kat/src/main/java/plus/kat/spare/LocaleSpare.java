@@ -26,6 +26,9 @@ import plus.kat.entity.*;
 import java.lang.reflect.Type;
 import java.util.Locale;
 
+import static plus.kat.stream.Strings.lowerAt;
+import static plus.kat.stream.Strings.upperAt;
+
 /**
  * @author kraity
  * @since 0.0.2
@@ -136,8 +139,8 @@ public class LocaleSpare implements Spare<Locale> {
             return null;
         }
 
-        char c1 = c.charAt(0);
-        char c2 = c.charAt(1);
+        char c1 = lowerAt(c, 0);
+        char c2 = lowerAt(c, 1);
 
         if (len == 2) {
             if (c1 == 'z' && c2 == 'h') {
@@ -168,8 +171,8 @@ public class LocaleSpare implements Spare<Locale> {
         }
 
         if (len == 5 && c.charAt(2) == '_') {
-            char c3 = c.charAt(3);
-            char c4 = c.charAt(4);
+            char c3 = upperAt(c, 3);
+            char c4 = upperAt(c, 4);
 
             if (c1 == 'z' && c2 == 'h') {
                 if (c3 == 'C' && c4 == 'N') {
@@ -219,32 +222,45 @@ public class LocaleSpare implements Spare<Locale> {
             );
         }
 
-        if (len > 64) {
+        if (len > 32) {
             return null;
         }
 
-        String s = c.toString();
-        int d1 = s.indexOf('_');
+        char[] ch = new char[len];
+        ch[0] = c1;
+        ch[1] = c2;
 
-        if (d1 < 0) {
-            return new Locale(s);
+        char it;
+        int d1 = 0, d2 = 0;
+
+        for (int i = 2; i < len; i++) {
+            ch[i] = it = c.charAt(i);
+            if (it == '_') {
+                if (d1 == 0) {
+                    d1 = i;
+                } else if (d2 == 0) {
+                    d2 = i;
+                }
+            }
         }
 
-        int d2 = s.indexOf(
-            '_', d1 + 1
-        );
-
-        if (d2 < 0) {
+        if (d1 == 0) {
             return new Locale(
-                s.substring(0, d1),
-                s.substring(d1 + 1, len)
+                new String(ch)
+            );
+        }
+
+        if (d2 == 0) {
+            return new Locale(
+                new String(ch, 0, d1),
+                new String(ch, ++d1, len - d1)
             );
         }
 
         return new Locale(
-            s.substring(0, d1),
-            s.substring(d1 + 1, d2),
-            s.substring(d2 + 1, len)
+            new String(ch, 0, d1),
+            new String(ch, ++d1, d2 - d1),
+            new String(ch, ++d2, len - d2)
         );
     }
 

@@ -311,12 +311,24 @@ public class SpareTest {
         assertEquals("zh_CN", spare.read("$(zh_CN)").toString());
         assertEquals("Locale(zh_CN)", Kat.encode(spare.read("$(zh_CN)")));
 
+        assertNull(LocaleSpare.lookup(""));
+        assertNull(LocaleSpare.lookup("A"));
+        assertEquals("ab", LocaleSpare.lookup("AB").toString());
+        assertEquals("abc", LocaleSpare.lookup("ABC").toString());
+        assertEquals("abc_DE", LocaleSpare.lookup("ABC_DE").toString());
+        assertEquals("abc_DE_FGH", LocaleSpare.lookup("ABC_DE_FGH").toString());
+
         for (Field field : Locale.class.getFields()) {
             if (field.getType() == Locale.class) {
                 Locale locale = (Locale) field.get(null);
-                if (locale != Locale.ROOT) {
-                    assertSame(locale, LocaleSpare.lookup(locale.toString()));
+                String text = locale.toString();
+                if (text.isEmpty()) {
+                    continue;
                 }
+
+                assertSame(locale, LocaleSpare.lookup(text));
+                assertSame(locale, LocaleSpare.lookup(text.toLowerCase()));
+                assertSame(locale, LocaleSpare.lookup(text.toUpperCase()));
             }
         }
     }

@@ -23,7 +23,7 @@ import static plus.kat.kernel.Chain.EMPTY_CHARS;
  * @author kraity
  * @since 0.0.2
  */
-public class Strings {
+public final class Strings {
     /**
      * Returns the size of UTF-8 {@code byte[]}.
      * Strictly check UTF-8 code, if illegal returns {@code 0}
@@ -107,6 +107,46 @@ public class Strings {
         }
 
         return size;
+    }
+
+    /**
+     * Converts the char value at the specified index to lowercase
+     *
+     * @param c the specified chars
+     * @param i the index of the char value to be returned
+     * @throws IndexOutOfBoundsException if the index argument is negative or out of range
+     * @see CharSequence#charAt(int)
+     * @since 0.0.3
+     */
+    public static char lowerAt(
+        @NotNull CharSequence c, int i
+    ) {
+        char ch = c.charAt(i);
+        if (ch > 0x40 &&
+            ch < 0x5B) {
+            ch += 0x20;
+        }
+        return ch;
+    }
+
+    /**
+     * Converts the char value at the specified index to uppercase
+     *
+     * @param c the specified chars
+     * @param i the index of the char value to be returned
+     * @throws IndexOutOfBoundsException if the index argument is negative or out of range
+     * @see CharSequence#charAt(int)
+     * @since 0.0.3
+     */
+    public static char upperAt(
+        @NotNull CharSequence c, int i
+    ) {
+        char ch = c.charAt(i);
+        if (ch > 0x60 &&
+            ch < 0x7B) {
+            ch -= 0x20;
+        }
+        return ch;
     }
 
     /**

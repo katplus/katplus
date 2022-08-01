@@ -413,14 +413,14 @@ public class Event<T> implements Flag {
      * Use the specified {@link Type}
      * If this {@link Event} does not have {@code type}
      *
-     * @param type the specified type may be used
+     * @param expected the specified type may be used
      * @since 0.0.2
      */
     public void prepare(
-        @Nullable Type type
+        @Nullable Type expected
     ) {
-        if (this.type == null) {
-            this.type = type;
+        if (type == null) {
+            type = expected;
         }
     }
 
@@ -428,21 +428,22 @@ public class Event<T> implements Flag {
      * Use the specified {@link Supplier}
      * If this {@link Event} does not have {@code supplier}
      *
-     * @param supplier the specified supplier
+     * @param expected the specified supplier
      * @since 0.0.2
      */
     public void prepare(
-        @Nullable Supplier supplier
+        @Nullable Supplier expected
     ) {
-        if (this.supplier == null) {
-            this.supplier = supplier;
+        if (supplier == null) {
+            supplier = expected;
         }
     }
 
     /**
-     * Captures exception
+     * Custom capture treatment or throwing abnormal
      *
-     * @param e the crash
+     * @param e the specified crash
+     * @throws RuntimeException If this {@link Event} wants to throw it
      */
     public void onError(
         @NotNull Exception e
