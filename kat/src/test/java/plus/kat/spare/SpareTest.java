@@ -8,6 +8,7 @@ import plus.kat.anno.Expose;
 import plus.kat.anno.Format;
 import plus.kat.reflex.ArrayType;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
@@ -303,12 +304,21 @@ public class SpareTest {
     }
 
     @Test
-    public void test_Locale_read() {
+    public void test_Locale_read() throws Exception {
         LocaleSpare spare = LocaleSpare.INSTANCE;
 
         assertEquals("zh", spare.read("$(zh)").toString());
         assertEquals("zh_CN", spare.read("$(zh_CN)").toString());
         assertEquals("Locale(zh_CN)", Kat.encode(spare.read("$(zh_CN)")));
+
+        for (Field field : Locale.class.getFields()) {
+            if (field.getType() == Locale.class) {
+                Locale locale = (Locale) field.get(null);
+                if (locale != Locale.ROOT) {
+                    assertSame(locale, LocaleSpare.lookup(locale.toString()));
+                }
+            }
+        }
     }
 
     @Test

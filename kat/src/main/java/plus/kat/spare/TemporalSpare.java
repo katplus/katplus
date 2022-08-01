@@ -28,7 +28,6 @@ import java.lang.reflect.Type;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -52,9 +51,6 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
     protected final Class<K> klass;
     protected final DateTimeFormatter formatter;
 
-    /**
-     * @param formatter the specified {@link DateTimeFormatter}
-     */
     protected TemporalSpare(
         @NotNull Class<K> klass,
         @NotNull DateTimeFormatter formatter
@@ -63,19 +59,20 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
         this.formatter = formatter;
     }
 
-    /**
-     * @param format the specified {@link Format}
-     */
     protected TemporalSpare(
         @NotNull Class<K> klass,
         @NotNull Format format
     ) {
+        this(klass, format.value(), format.zone(), format.lang());
+    }
+
+    protected TemporalSpare(
+        @NotNull Class<K> klass,
+        @NotNull String pattern,
+        @NotNull String zone,
+        @NotNull String language
+    ) {
         this.klass = klass;
-
-        String lang = format.lang();
-        String zone = format.zone();
-        String pattern = format.value();
-
         DateTimeFormatter fmt =
             CACHE.get(pattern);
 
@@ -85,9 +82,9 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
             );
         }
 
-        if (!lang.isEmpty()) {
+        if (!language.isEmpty()) {
             fmt = fmt.withLocale(
-                new Locale(lang)
+                LocaleSpare.lookup(language)
             );
         }
 
