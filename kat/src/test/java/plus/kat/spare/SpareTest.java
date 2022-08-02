@@ -26,6 +26,51 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SpareTest {
 
     @Test
+    public void test_provider() {
+        Supplier supplier = Supplier.ins();
+        for (Class<?> c : new Class[]{
+            int.class,
+            long.class,
+            float.class,
+            double.class,
+            byte.class,
+            short.class,
+            boolean.class}) {
+            Spare<?> spare = supplier.lookup(c);
+            assertNotNull(spare);
+
+            // assert null
+            assertNull(spare.getProvider());
+        }
+
+        Spare<?>[] spares = new Spare[]{
+            ObjectSpare.INSTANCE,
+            StringSpare.INSTANCE,
+            IntegerSpare.INSTANCE,
+            LongSpare.INSTANCE,
+            FloatSpare.INSTANCE,
+            DoubleSpare.INSTANCE,
+            BooleanSpare.INSTANCE,
+            ByteSpare.INSTANCE,
+            ShortSpare.INSTANCE,
+            CharSpare.INSTANCE,
+            ByteArraySpare.INSTANCE,
+            ArraySpare.INSTANCE,
+            MapSpare.INSTANCE,
+            SetSpare.INSTANCE,
+            ListSpare.INSTANCE,
+            IterableSpare.INSTANCE,
+            BigIntegerSpare.INSTANCE,
+            BigDecimalSpare.INSTANCE,
+        };
+
+        for (Spare<?> spare : spares) {
+            // assert null
+            assertNull(spare.getProvider());
+        }
+    }
+
+    @Test
     public void test_object() {
         Spare<Object> spare = ObjectSpare.INSTANCE;
 

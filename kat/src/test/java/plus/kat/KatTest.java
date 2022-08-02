@@ -363,7 +363,14 @@ public class KatTest {
             new Event<>(text)
         );
 
-        assertEquals(text, spare.write(note).toString());
+        // assert not null
+        assertNotNull(
+            spare.getProvider()
+        );
+
+        assertEquals(
+            text, spare.write(note).toString()
+        );
     }
 
     @Embed("State")

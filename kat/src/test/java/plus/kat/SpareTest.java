@@ -50,11 +50,13 @@ public class SpareTest {
     }
 
     @Test
-    public void test_pProvider() {
+    public void test_provider() {
         Spare<User> spare =
             lookup(User.class);
 
         assertNotNull(spare);
+
+        // assert not null
         assertNotNull(spare.getProvider());
     }
 
