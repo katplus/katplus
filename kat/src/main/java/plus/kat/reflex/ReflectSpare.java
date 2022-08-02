@@ -241,7 +241,8 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 }
 
                 // check its modifier
-                if ((mod & Modifier.PUBLIC) == 0) {
+                if ((mod & Modifier.PUBLIC) == 0 ||
+                    (mod & Modifier.TRANSIENT) != 0) {
                     continue;
                 }
             }

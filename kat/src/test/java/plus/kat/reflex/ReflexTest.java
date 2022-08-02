@@ -307,4 +307,27 @@ public class ReflexTest {
         assertEquals("{\"id\":1,\"firstName\":\"kat\",\"lastName\":\"plus\"}", Json.encode(master));
         assertEquals("<Master><id>1</id><firstName>kat</firstName><lastName>plus</lastName></Master>", Doc.encode(master));
     }
+
+    static class Bean1 {
+        public int one;
+        public transient int two;
+    }
+
+    @Test
+    public void test7() {
+        Supplier supplier = Supplier.ins();
+
+        Bean1 bean = supplier.read(
+            Bean1.class, new Event<>(
+                "{:one(1):two(2)}"
+            )
+        );
+
+        assertNotNull(bean);
+        assertEquals(1, bean.one);
+        assertEquals(0, bean.two);
+
+        bean.two = 2;
+        assertEquals("{\"one\":1}", Json.encode(bean));
+    }
 }
