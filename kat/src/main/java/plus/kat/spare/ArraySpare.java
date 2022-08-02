@@ -186,15 +186,19 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOCrash {
-            // NOOP
+            throw new UnexpectedCrash(
+                "Unexpectedly, operation not supported"
+            );
         }
 
         @Override
         public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
-        ) {
-            return null;
+        ) throws IOCrash {
+            throw new UnexpectedCrash(
+                "Unexpectedly, operation not supported"
+            );
         }
 
         /**
@@ -250,7 +254,6 @@ public class ArraySpare implements Spare<Object> {
     public static class Builder1 extends Builder0 {
 
         protected Type type;
-        protected boolean branch, casting;
 
         public Builder1(
             @NotNull Type type
@@ -264,7 +267,9 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Alias alias
         ) throws Crash, IOCrash {
             if (type instanceof Class) {
-                if (type != Object.class) {
+                if (type == Object.class) {
+                    type = null;
+                } else {
                     klass = (Class<?>) type;
                     v = supplier.lookup(klass);
                 }
@@ -283,20 +288,6 @@ public class ArraySpare implements Spare<Object> {
             list = Array.newInstance(
                 klass, length = 1
             );
-
-            if (klass == Object.class) {
-                type = null;
-                branch = true;
-                casting = true;
-            } else {
-                if (klass.isArray()) {
-                    branch = true;
-                    casting = false;
-                } else {
-                    branch = false;
-                    casting = true;
-                }
-            }
         }
 
         @Override
@@ -305,29 +296,27 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOCrash {
-            if (casting) {
-                Object data;
-                if (v != null) {
-                    data = v.read(
-                        flag, value
-                    );
-                } else {
-                    Spare<?> spare = supplier
-                        .lookup(space);
-                    if (spare == null) return;
-
+            Object data = null;
+            if (v != null) {
+                data = v.read(
+                    flag, value
+                );
+            } else {
+                Spare<?> spare = supplier
+                    .lookup(space);
+                if (spare != null) {
                     data = spare.read(
                         flag, value
                     );
                 }
-
-                if (length == size) {
-                    enlarge();
-                }
-                Array.set(
-                    list, size++, data
-                );
             }
+
+            if (length == size) {
+                enlarge();
+            }
+            Array.set(
+                list, size++, data
+            );
         }
 
         @Override
@@ -348,19 +337,18 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Space space,
             @NotNull Alias alias
         ) {
-            if (branch) {
-                if (v != null) {
-                    return v.getBuilder(type);
-                }
-
-                Spare<?> spare = supplier
-                    .lookup(space);
-
-                if (spare != null) {
-                    return spare.getBuilder(type);
-                }
+            if (v != null) {
+                return v.getBuilder(type);
             }
-            return null;
+
+            Spare<?> spare = supplier
+                .lookup(space);
+
+            if (spare == null) {
+                return null;
+            }
+
+            return spare.getBuilder(type);
         }
 
         @Override
