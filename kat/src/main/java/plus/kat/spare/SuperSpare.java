@@ -40,19 +40,22 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
     protected final Class<T> klass;
     protected final CharSequence space;
 
-    protected Node<T> head;
-    protected Node<T> tail;
-
     protected int flags;
+    protected Node<T> head, tail;
+
+    protected Provider provider;
     protected Supplier supplier;
 
     protected SuperSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
+        @NotNull Provider provider,
         @NotNull Supplier supplier
     ) {
         this.klass = klass;
+        this.provider = provider;
         this.supplier = supplier;
+
         if (embed != null) {
             flags = embed.claim();
         }
@@ -93,6 +96,12 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
     @Override
     public Class<T> getType() {
         return klass;
+    }
+
+    @Nullable
+    @Override
+    public Provider getProvider() {
+        return provider;
     }
 
     @Override

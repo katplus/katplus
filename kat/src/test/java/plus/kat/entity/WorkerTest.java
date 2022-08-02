@@ -19,9 +19,7 @@ public class WorkerTest {
 
     @Test
     public void test() throws NoSuchMethodException {
-        Spare<User> spare = new ReflectSpare<>(
-            User.class, Supplier.ins()
-        );
+        Spare<User> spare = Spare.lookup(User.class);
 
         User user = spare.read(
             new Event<>(

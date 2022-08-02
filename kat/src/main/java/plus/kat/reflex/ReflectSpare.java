@@ -56,7 +56,10 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
-        this(klass.getAnnotation(Embed.class), klass, supplier);
+        this(
+            klass.getAnnotation(Embed.class),
+            klass, null, supplier
+        );
     }
 
     /**
@@ -65,9 +68,10 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
     public ReflectSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
+        @NotNull Provider provider,
         @NotNull Supplier supplier
     ) {
-        super(embed, klass, supplier);
+        super(embed, klass, provider, supplier);
     }
 
     @Override

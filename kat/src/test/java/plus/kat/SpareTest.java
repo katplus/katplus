@@ -49,6 +49,15 @@ public class SpareTest {
         assertEquals("kraity", user.name);
     }
 
+    @Test
+    public void test_pProvider() {
+        Spare<User> spare =
+            lookup(User.class);
+
+        assertNotNull(spare);
+        assertNotNull(spare.getProvider());
+    }
+
     static class User {
         @Expose("id")
         private int id;

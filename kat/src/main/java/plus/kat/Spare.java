@@ -72,6 +72,16 @@ public interface Spare<K> extends Coder<K> {
     Class<? extends K> getType();
 
     /**
+     * Returns the {@link Provider} of {@link Spare}
+     *
+     * @since 0.0.3
+     */
+    @Nullable
+    default Provider getProvider() {
+        return null;
+    }
+
+    /**
      * Create a {@link Builder} of {@link K}
      */
     @Nullable
@@ -545,13 +555,13 @@ public interface Spare<K> extends Coder<K> {
                 if (sn.equals("java.lang.Record")) {
                     put(klass, spare =
                         new RecordSpare<>(
-                            embed, klass, supplier
+                            embed, klass, this, supplier
                         )
                     );
                 } else {
                     put(klass, spare =
                         new ReflectSpare<>(
-                            embed, klass, supplier
+                            embed, klass, this, supplier
                         )
                     );
                 }

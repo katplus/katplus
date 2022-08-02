@@ -45,7 +45,10 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
         @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
-        this(klass.getAnnotation(Embed.class), klass, supplier);
+        this(
+            klass.getAnnotation(Embed.class),
+            klass, null, supplier
+        );
     }
 
     /**
@@ -54,9 +57,10 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
     public RecordSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
+        @NotNull Provider provider,
         @NotNull Supplier supplier
     ) {
-        super(embed, klass, supplier);
+        super(embed, klass, provider, supplier);
     }
 
     @Override
