@@ -302,43 +302,6 @@ public class Doc extends Chan {
     }
 
     /**
-     * Serializes the specified {@code alias}, {@code coder} and {@code value} at the current hierarchy
-     *
-     * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
-     */
-    @Override
-    public boolean set(
-        @Nullable CharSequence alias,
-        @Nullable Coder<?> coder,
-        @Nullable Object value
-    ) throws IOCrash {
-        if (coder == null) {
-            return set(
-                alias, value
-            );
-        }
-
-        if (alias == null) {
-            alias = coder.getSpace();
-        }
-
-        if (value == null) {
-            return coding(alias);
-        }
-
-        Boolean flag = coder.getFlag();
-        flow.leftAlias(alias, flag);
-        if (flag != null) {
-            coder.write(this, value);
-        } else {
-            coder.write(flow, value);
-        }
-        flow.rightAlias(alias, flag);
-        return true;
-    }
-
-    /**
      * Writes the specified {@code alias}
      *
      * @return {@code true} if successful
@@ -386,26 +349,27 @@ public class Doc extends Chan {
     }
 
     /**
-     * Writes the specified {@code alias} and {@code value} by specified {@link Spare}
+     * Writes the specified {@code alias} and {@code value} by specified {@link Coder}
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
      */
+    @Override
     protected boolean coding(
         @Nullable CharSequence alias,
-        @NotNull Spare<?> spare,
+        @NotNull Coder<?> coder,
         @NotNull Object value
     ) throws IOCrash {
         if (alias == null) {
-            alias = spare.getSpace();
+            alias = coder.getSpace();
         }
 
-        Boolean flag = spare.getFlag();
+        Boolean flag = coder.getFlag();
         flow.leftAlias(alias, flag);
         if (flag != null) {
-            spare.write(this, value);
+            coder.write(this, value);
         } else {
-            spare.write(flow, value);
+            coder.write(flow, value);
         }
         flow.rightAlias(alias, flag);
         return true;

@@ -239,59 +239,6 @@ public class Json extends Chan {
     }
 
     /**
-     * Serializes the specified {@code alias}, {@code coder} and {@code value} at the current hierarchy
-     *
-     * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
-     */
-    @Override
-    public boolean set(
-        @Nullable CharSequence alias,
-        @Nullable Coder<?> coder,
-        @Nullable Object value
-    ) throws IOCrash {
-        if (coder == null) {
-            return set(
-                alias, value
-            );
-        }
-
-        if (value == null) {
-            return coding(alias);
-        }
-
-        Boolean flag =
-            coder.getFlag();
-
-        flow.addComma();
-        flow.addAlias(alias);
-        if (flag != null) {
-            if (flag) {
-                flow.leftBrace();
-                coder.write(this, value);
-                flow.rightBrace();
-            } else {
-                flow.leftBracket();
-                coder.write(this, value);
-                flow.rightBracket();
-            }
-        } else {
-            if (value instanceof CharSequence) {
-                flow.addQuote();
-                coder.write(flow, value);
-                flow.addQuote();
-            } else if (value instanceof Number || value instanceof Boolean) {
-                coder.write(flow, value);
-            } else {
-                flow.addQuote();
-                coder.write(flow, value);
-                flow.addQuote();
-            }
-        }
-        return true;
-    }
-
-    /**
      * Writes the specified {@code alias}
      *
      * @return {@code true} if successful
@@ -351,41 +298,42 @@ public class Json extends Chan {
     }
 
     /**
-     * Writes the specified {@code alias} and {@code value} by specified {@link Spare}
+     * Writes the specified {@code alias} and {@code value} by specified {@link Coder}
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
      */
+    @Override
     protected boolean coding(
         @Nullable CharSequence alias,
-        @NotNull Spare<?> spare,
+        @NotNull Coder<?> coder,
         @NotNull Object value
     ) throws IOCrash {
         Boolean flag =
-            spare.getFlag();
+            coder.getFlag();
 
         flow.addComma();
         flow.addAlias(alias);
         if (flag != null) {
             if (flag) {
                 flow.leftBrace();
-                spare.write(this, value);
+                coder.write(this, value);
                 flow.rightBrace();
             } else {
                 flow.leftBracket();
-                spare.write(this, value);
+                coder.write(this, value);
                 flow.rightBracket();
             }
         } else {
             if (value instanceof CharSequence) {
                 flow.addQuote();
-                spare.write(flow, value);
+                coder.write(flow, value);
                 flow.addQuote();
             } else if (value instanceof Number || value instanceof Boolean) {
-                spare.write(flow, value);
+                coder.write(flow, value);
             } else {
                 flow.addQuote();
-                spare.write(flow, value);
+                coder.write(flow, value);
                 flow.addQuote();
             }
         }

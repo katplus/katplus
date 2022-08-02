@@ -417,20 +417,9 @@ public class Chan implements Flag {
             return coding(alias);
         }
 
-        flow.addSpace(
-            coder.getSpace()
+        return coding(
+            alias, coder, value
         );
-        flow.addAlias(alias);
-        if (coder.getFlag() != null) {
-            flow.leftBrace();
-            coder.write(this, value);
-            flow.rightBrace();
-        } else {
-            flow.leftParen();
-            coder.write(flow, value);
-            flow.rightParen();
-        }
-        return true;
     }
 
     /**
@@ -522,27 +511,27 @@ public class Chan implements Flag {
     }
 
     /**
-     * Writes the specified {@code alias} and {@code value} by specified {@link Spare}
+     * Writes the specified {@code alias} and {@code value} by specified {@link Coder}
      *
      * @return {@code true} if successful
      * @throws IOCrash If an I/O error occurs
      */
     protected boolean coding(
         @Nullable CharSequence alias,
-        @NotNull Spare<?> spare,
+        @NotNull Coder<?> coder,
         @NotNull Object value
     ) throws IOCrash {
         flow.addSpace(
-            spare.getSpace()
+            coder.getSpace()
         );
         flow.addAlias(alias);
-        if (spare.getFlag() != null) {
+        if (coder.getFlag() != null) {
             flow.leftBrace();
-            spare.write(this, value);
+            coder.write(this, value);
             flow.rightBrace();
         } else {
             flow.leftParen();
-            spare.write(flow, value);
+            coder.write(flow, value);
             flow.rightParen();
         }
         return true;
