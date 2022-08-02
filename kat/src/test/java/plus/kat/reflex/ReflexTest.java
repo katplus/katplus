@@ -2,14 +2,12 @@ package plus.kat.reflex;
 
 import org.junit.jupiter.api.Test;
 
-import plus.kat.Event;
-import plus.kat.Json;
-import plus.kat.Kat;
-import plus.kat.Supplier;
+import plus.kat.*;
 
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 import plus.kat.anno.NotNull;
+import plus.kat.anno.Unwrapped;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -282,5 +280,31 @@ public class ReflexTest {
         public static int getMage() {
             return 143;
         }
+    }
+
+    static class Name {
+        public String firstName;
+        public String lastName;
+    }
+
+    @Embed("Master")
+    static class Master {
+        public int id;
+
+        @Unwrapped
+        public Name name;
+    }
+
+    @Test
+    public void test6() {
+        Master master = new Master();
+        master.id = 1;
+        master.name = new Name();
+        master.name.firstName = "kat";
+        master.name.lastName = "plus";
+
+        assertEquals("Master{i:id(1)s:firstName(kat)s:lastName(plus)}", Kat.encode(master));
+        assertEquals("{\"id\":1,\"firstName\":\"kat\",\"lastName\":\"plus\"}", Json.encode(master));
+        assertEquals("<Master><id>1</id><firstName>kat</firstName><lastName>plus</lastName></Master>", Doc.encode(master));
     }
 }

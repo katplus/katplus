@@ -259,19 +259,23 @@ public class Doc extends Chan {
         @Nullable CharSequence alias,
         @Nullable Action action
     ) throws IOCrash {
-        if (alias != null) {
+        if (alias == null) {
+            return false;
+        }
+
+        if (action == null) {
+            flow.leftAlias(alias, null);
+            flow.rightAlias(alias, null);
+        } else {
             flow.leftAlias(
                 alias, Boolean.TRUE
             );
-            if (action != null) {
-                action.accept(this);
-            }
+            action.accept(this);
             flow.rightAlias(
                 alias, Boolean.TRUE
             );
-            return true;
         }
-        return false;
+        return true;
     }
 
     /**
@@ -390,7 +394,7 @@ public class Doc extends Chan {
     /**
      * Returns the job of {@link Doc}
      */
-    @Nullable
+    @NotNull
     @Override
     public Job getJob() {
         return Job.DOC;
@@ -399,7 +403,7 @@ public class Doc extends Chan {
     /**
      * Returns the internal {@link Paper}
      */
-    @Nullable
+    @NotNull
     @Override
     public Paper getFlow() {
         return flow;

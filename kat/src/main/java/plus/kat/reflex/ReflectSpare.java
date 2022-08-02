@@ -601,6 +601,8 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             this.coder = handle.coder;
             this.setter = handle.setter;
             this.getter = handle.getter;
+            this.nullable = handle.nullable;
+            this.unwrapped = handle.unwrapped;
         }
 
         public Handle(
@@ -615,7 +617,9 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             field.setAccessible(true);
             setter = lookup.unreflectSetter(field);
             getter = lookup.unreflectGetter(field);
+
             nullable = field.getAnnotation(NotNull.class) == null;
+            unwrapped = field.getAnnotation(Unwrapped.class) != null;
 
             Format format = field
                 .getAnnotation(Format.class);
@@ -649,7 +653,9 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
             method.setAccessible(true);
             getter = setter = lookup.unreflect(method);
+
             nullable = method.getAnnotation(NotNull.class) == null;
+            unwrapped = method.getAnnotation(Unwrapped.class) != null;
 
             Format format = method
                 .getAnnotation(Format.class);

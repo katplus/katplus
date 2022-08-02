@@ -355,7 +355,7 @@ public class Json extends Chan {
     /**
      * Returns the job of {@link Json}
      */
-    @Nullable
+    @NotNull
     @Override
     public Job getJob() {
         return Job.JSON;
@@ -364,7 +364,7 @@ public class Json extends Chan {
     /**
      * Returns the internal {@link Paper}
      */
-    @Nullable
+    @NotNull
     @Override
     public Paper getFlow() {
         return flow;

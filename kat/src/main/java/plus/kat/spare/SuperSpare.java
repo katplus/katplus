@@ -165,10 +165,29 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         Node<T> node = head;
         while (node != null) {
             Object val = node.onApply(value);
-            if (val != null || node.nullable) {
-                chan.set(
-                    node.key, node.coder, val
-                );
+            if (val == null) {
+                if (node.nullable) {
+                    chan.set(node.key, null);
+                }
+            } else {
+                if (node.unwrapped) {
+                    Coder<?> coder = node.coder;
+                    if (coder != null) {
+                        coder.write(chan, val);
+                    } else {
+                        coder = chan.getSupplier()
+                            .lookup(
+                                val.getClass()
+                            );
+                        if (coder != null) {
+                            coder.write(chan, val);
+                        }
+                    }
+                } else {
+                    chan.set(
+                        node.key, node.coder, val
+                    );
+                }
             }
             node = node.next;
         }
@@ -245,7 +264,9 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
 
         protected final int index;
         protected Coder<?> coder;
+
         protected boolean nullable;
+        protected boolean unwrapped;
 
         /**
          * @param index the specified {@code index}

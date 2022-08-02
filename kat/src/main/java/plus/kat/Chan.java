@@ -552,7 +552,7 @@ public class Chan implements Flag {
     /**
      * Returns the job of {@link Chan}
      */
-    @Nullable
+    @NotNull
     public Job getJob() {
         return Job.KAT;
     }
@@ -575,9 +575,19 @@ public class Chan implements Flag {
      *   chan.closeFlow() // flow.close();
      * }</pre>
      */
-    @Nullable
+    @NotNull
     public Paper getFlow() {
         return flow;
+    }
+
+    /**
+     * Returns the internal {@link Supplier}
+     *
+     * @since 0.0.3
+     */
+    @NotNull
+    public Supplier getSupplier() {
+        return supplier;
     }
 
     /**

@@ -15,13 +15,11 @@
  */
 package plus.kat.anno;
 
-import plus.kat.entity.Coder;
-
 import java.lang.annotation.*;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.3
  */
 @Documented
 @Target({
@@ -30,24 +28,5 @@ import java.lang.annotation.*;
     ElementType.PARAMETER
 })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Expose {
-    /**
-     * Returns the alias of this
-     */
-    String[] value() default {};
-
-    /**
-     * Returns the index of this
-     */
-    int index() default -1;
-
-    /**
-     * Whether it can be exposed
-     */
-    boolean export() default true;
-
-    /**
-     * Returns the specified {@link Coder}
-     */
-    Class<? extends Coder> with() default Coder.class;
+public @interface Unwrapped {
 }

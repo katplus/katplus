@@ -267,6 +267,8 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
             this.klass = handle.klass;
             this.coder = handle.coder;
             this.getter = handle.getter;
+            this.nullable = handle.nullable;
+            this.unwrapped = handle.unwrapped;
         }
 
         public Handle(
@@ -277,6 +279,7 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
             super(expose);
             klass = method.getReturnType();
             nullable = method.getAnnotation(NotNull.class) == null;
+            unwrapped = method.getAnnotation(Unwrapped.class) != null;
 
             method.setAccessible(true);
             getter = lookup.unreflect(method);
