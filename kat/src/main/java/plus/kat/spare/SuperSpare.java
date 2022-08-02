@@ -129,7 +129,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
 
         if (data instanceof CharSequence) {
             return Casting.cast(
-                this, (CharSequence) data, supplier
+                this, (CharSequence) data, null, supplier
             );
         }
 

@@ -69,7 +69,7 @@ public class ArraySpare implements Spare<Object> {
 
         if (data instanceof CharSequence) {
             return Casting.cast(
-                this, (CharSequence) data, supplier
+                this, (CharSequence) data, null, supplier
             );
         }
 

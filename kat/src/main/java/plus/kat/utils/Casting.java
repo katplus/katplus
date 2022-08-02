@@ -22,6 +22,8 @@ import plus.kat.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
+import static plus.kat.Job.*;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -45,15 +47,22 @@ public class Casting {
     /**
      * Parse {@link CharSequence} and convert result to {@link K}
      *
-     * @param supplier the specified {@code supplier}
-     * @param text     specify the {@code text} to be parsed
+     * @param klass the specified {@code klass}
+     * @param text  specify the {@code text} to be parsed
+     * @since 0.0.3
      */
     @Nullable
     public static <K> K cast(
-        @NotNull Spare<K> spare,
-        @Nullable CharSequence text,
-        @Nullable Supplier supplier
+        @NotNull Class<K> klass,
+        @Nullable CharSequence text
     ) {
+        Supplier supplier = Supplier.ins();
+        Spare<K> spare = supplier.lookup(klass);
+
+        if (spare == null) {
+            return null;
+        }
+
         return cast(
             spare, text, null, supplier
         );
@@ -108,24 +117,24 @@ public class Casting {
         if (c2 != '}') {
             // ()
             if (c2 == ')') {
-                job = Job.KAT;
+                job = KAT;
             }
 
             // []
             else if (c2 == ']') {
-                if (c1 != '[') {
-                    return null;
+                if (c1 == '[') {
+                    job = JSON;
                 } else {
-                    job = Job.JSON;
+                    return null;
                 }
             }
 
             // <>
             else if (c2 == '>') {
-                if (c1 != '<' || e < 8) {
-                    return null;
+                if (c1 == '<' && e > 6) {
+                    job = DOC;
                 } else {
-                    job = Job.DOC;
+                    return null;
                 }
             } else {
                 return null;
@@ -134,14 +143,27 @@ public class Casting {
             if (c1 != '{') {
                 job = Job.KAT;
             } else {
-                char ch = 0;
-                for (int t = i + 1; t < e; t++) {
-                    ch = text.charAt(t);
-                    if (ch > 0x20) {
-                        break;
+                char ch;
+                int t = i + 1;
+
+                BOOT:
+                while (true) {
+                    ch = text.charAt(t++);
+                    switch (ch) {
+                        case '"':
+                        case '\'':
+                        case '\\': {
+                            job = JSON;
+                            break BOOT;
+                        }
+                        default: {
+                            if (ch > 0x20 || t >= e) {
+                                job = KAT;
+                                break BOOT;
+                            }
+                        }
                     }
                 }
-                job = ch != '"' ? Job.KAT : Job.JSON;
             }
         }
 

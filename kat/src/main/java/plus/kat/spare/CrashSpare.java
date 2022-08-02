@@ -73,7 +73,7 @@ public class CrashSpare implements Spare<Crash> {
 
         if (data instanceof CharSequence) {
             return Casting.cast(
-                this, (CharSequence) data, supplier
+                this, (CharSequence) data, null, supplier
             );
         }
 
