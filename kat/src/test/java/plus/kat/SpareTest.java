@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import plus.kat.anno.Expose;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.function.BiConsumer;
 
 import static plus.kat.Spare.lookup;
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,6 +35,25 @@ public class SpareTest {
                 lookup(o.getClass())
             );
         }
+    }
+
+    @Test
+    public void test_flat() {
+        Spare<User> spare =
+            lookup(User.class);
+
+        User user = new User();
+        user.id = 1;
+        user.name = "kraity";
+
+        HashMap<String, Object>
+            data = new HashMap<>();
+
+        spare.flat(
+            user, data::put
+        );
+
+        assertEquals("{name=kraity, id=1}", data.toString());
     }
 
     @Test

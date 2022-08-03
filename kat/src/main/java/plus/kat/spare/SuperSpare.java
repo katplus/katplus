@@ -29,6 +29,7 @@ import plus.kat.utils.KatMap;
 
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * @author kraity
@@ -197,6 +198,23 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
                         node.key, node.coder, val
                     );
                 }
+            }
+            node = node.next;
+        }
+    }
+
+    @Override
+    public void flat(
+        @NotNull T bean,
+        @NotNull BiConsumer<String, Object> action
+    ) {
+        Node<T> node = head;
+        while (node != null) {
+            Object val = node.onApply(bean);
+            if (val != null || node.nullable) {
+                action.accept(
+                    node.key.toString(), val
+                );
             }
             node = node.next;
         }

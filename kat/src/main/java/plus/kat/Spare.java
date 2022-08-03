@@ -35,6 +35,7 @@ import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
+import java.util.function.BiConsumer;
 
 import static plus.kat.Supplier.Impl;
 
@@ -88,6 +89,20 @@ public interface Spare<K> extends Coder<K> {
     Builder<? extends K> getBuilder(
         @Nullable Type type
     );
+
+    /**
+     * If {@link K} is a Bean, then perform a given
+     * action in each item until all entries are processed.
+     *
+     * @throws NullPointerException If the bean or action is null
+     * @since 0.0.3
+     */
+    default void flat(
+        @NotNull K bean,
+        @NotNull BiConsumer<String, Object> action
+    ) {
+        // Nothing
+    }
 
     /**
      * Parse {@link Kat} {@link CharSequence} and convert result to {@link K}
