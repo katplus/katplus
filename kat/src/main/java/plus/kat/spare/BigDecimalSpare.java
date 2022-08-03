@@ -21,10 +21,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 
-import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -32,7 +29,7 @@ import java.math.BigInteger;
  * @author kraity
  * @since 0.0.1
  */
-public class BigDecimalSpare implements Spare<BigDecimal>, Serializable {
+public class BigDecimalSpare extends NumberSpare<BigDecimal> {
 
     public static final BigDecimalSpare
         INSTANCE = new BigDecimalSpare();
@@ -52,24 +49,10 @@ public class BigDecimalSpare implements Spare<BigDecimal>, Serializable {
             || klass == Object.class;
     }
 
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
     @NotNull
     @Override
     public Class<BigDecimal> getType() {
         return BigDecimal.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<BigDecimal> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @NotNull

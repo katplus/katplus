@@ -21,16 +21,12 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
-
-import java.io.Serializable;
-import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class FloatSpare implements Spare<Float>, Serializable {
+public class FloatSpare extends NumberSpare<Float> {
 
     public static final FloatSpare
         INSTANCE = new FloatSpare();
@@ -51,24 +47,10 @@ public class FloatSpare implements Spare<Float>, Serializable {
             || klass == Object.class;
     }
 
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
     @NotNull
     @Override
     public Class<Float> getType() {
         return float.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<Float> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @NotNull

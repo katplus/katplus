@@ -21,17 +21,13 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 import plus.kat.stream.*;
-
-import java.io.Serializable;
-import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class ByteSpare implements Spare<Byte>, Serializable {
+public class ByteSpare extends NumberSpare<Byte> {
 
     public static final ByteSpare
         INSTANCE = new ByteSpare();
@@ -52,24 +48,10 @@ public class ByteSpare implements Spare<Byte>, Serializable {
             || klass == Object.class;
     }
 
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
     @NotNull
     @Override
     public Class<Byte> getType() {
         return byte.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<Byte> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @NotNull

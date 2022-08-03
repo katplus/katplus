@@ -21,17 +21,14 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 
-import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicIntegerSpare implements Spare<AtomicInteger>, Serializable {
+public class AtomicIntegerSpare extends NumberSpare<AtomicInteger> {
 
     public static final AtomicIntegerSpare
         INSTANCE = new AtomicIntegerSpare();
@@ -51,24 +48,10 @@ public class AtomicIntegerSpare implements Spare<AtomicInteger>, Serializable {
             || klass == Object.class;
     }
 
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
     @NotNull
     @Override
     public Class<AtomicInteger> getType() {
         return AtomicInteger.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<AtomicInteger> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

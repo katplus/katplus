@@ -21,17 +21,13 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 import plus.kat.stream.*;
-
-import java.io.Serializable;
-import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class LongSpare implements Spare<Long>, Serializable {
+public class LongSpare extends NumberSpare<Long> {
 
     public static final LongSpare
         INSTANCE = new LongSpare();
@@ -52,24 +48,10 @@ public class LongSpare implements Spare<Long>, Serializable {
             || klass == Object.class;
     }
 
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
     @NotNull
     @Override
     public Class<Long> getType() {
         return long.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<Long> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @NotNull
