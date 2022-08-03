@@ -23,13 +23,14 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class BooleanSpare implements Spare<Boolean> {
+public class BooleanSpare implements Spare<Boolean>, Serializable {
 
     public static final BooleanSpare
         INSTANCE = new BooleanSpare();

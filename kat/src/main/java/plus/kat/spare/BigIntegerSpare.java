@@ -23,6 +23,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -31,7 +32,7 @@ import java.math.BigInteger;
  * @author kraity
  * @since 0.0.1
  */
-public class BigIntegerSpare implements Spare<BigInteger> {
+public class BigIntegerSpare implements Spare<BigInteger>, Serializable {
 
     public static final BigIntegerSpare
         INSTANCE = new BigIntegerSpare();

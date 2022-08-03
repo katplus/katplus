@@ -24,13 +24,14 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.stream.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class ByteSpare implements Spare<Byte> {
+public class ByteSpare implements Spare<Byte>, Serializable {
 
     public static final ByteSpare
         INSTANCE = new ByteSpare();

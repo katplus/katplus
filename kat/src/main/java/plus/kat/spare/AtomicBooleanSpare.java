@@ -23,6 +23,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicBooleanSpare implements Spare<AtomicBoolean> {
+public class AtomicBooleanSpare implements Spare<AtomicBoolean>, Serializable {
 
     public static final AtomicBooleanSpare
         INSTANCE = new AtomicBooleanSpare();

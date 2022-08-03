@@ -23,6 +23,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicIntegerSpare implements Spare<AtomicInteger> {
+public class AtomicIntegerSpare implements Spare<AtomicInteger>, Serializable {
 
     public static final AtomicIntegerSpare
         INSTANCE = new AtomicIntegerSpare();

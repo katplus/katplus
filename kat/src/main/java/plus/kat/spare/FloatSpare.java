@@ -23,13 +23,14 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class FloatSpare implements Spare<Float> {
+public class FloatSpare implements Spare<Float>, Serializable {
 
     public static final FloatSpare
         INSTANCE = new FloatSpare();

@@ -23,6 +23,8 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.stream.*;
 
+import java.io.Serializable;
+
 import static plus.kat.Supplier.Impl.INS;
 
 /**
@@ -286,7 +288,7 @@ public class Json extends Chan {
                 flow.rightBracket();
             }
         } else {
-            if (value instanceof Number) {
+            if (value instanceof Serializable) {
                 value.onCoding(flow);
             } else {
                 flow.addQuote();
@@ -325,11 +327,7 @@ public class Json extends Chan {
                 flow.rightBracket();
             }
         } else {
-            if (value instanceof CharSequence) {
-                flow.addQuote();
-                coder.write(flow, value);
-                flow.addQuote();
-            } else if (value instanceof Number || value instanceof Boolean) {
+            if (coder instanceof Serializable) {
                 coder.write(flow, value);
             } else {
                 flow.addQuote();

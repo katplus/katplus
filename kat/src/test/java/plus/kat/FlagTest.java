@@ -2,6 +2,7 @@ package plus.kat;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,33 +12,55 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class FlagTest {
 
+    static class Meta {
+        public Date date;
+        public Instant instant;
+    }
+
     @Test
-    public void test_DATE_AS_TIMESTAMP() {
+    public void test_date_as_timestamp() {
         Meta meta = new Meta();
+        meta.date = new Date(1641871353000L);
+        meta.instant = Instant.ofEpochMilli(1641871353123L);
 
-        meta.setDate(
-            new Date(1641871353000L)
+        assertEquals(
+            "{\"date\":\"2022-01-11 11:22:33\",\"instant\":\"2022-01-11T03:22:33.123Z\"}", new Json(meta).toString()
         );
 
         assertEquals(
-            "{\"date\":\"2022-01-11 11:22:33\"}", new Json(meta).toString()
+            "{\"date\":1641871353000,\"instant\":\"2022-01-11T03:22:33.123Z\"}",
+            Json.encode(meta, Flag.DATE_AS_TIMESTAMP)
         );
 
         assertEquals(
-            "{\"date\":\"1641871353000\"}",
-            new Json(meta, Flag.DATE_AS_TIMESTAMP).toString()
+            "{\"date\":\"2022-01-11 11:22:33\",\"instant\":1641871353123}",
+            Json.encode(meta, Flag.INSTANT_AS_TIMESTAMP)
         );
     }
 
-    static class Meta {
-        Date date;
+    enum Role {
+        A, B, C
+    }
 
-        public Date getDate() {
-            return date;
-        }
+    static class Bean0 {
+        public Role role;
+    }
 
-        public void setDate(Date date) {
-            this.date = date;
-        }
+    @Test
+    public void test_enum_as_index() {
+        Bean0 bean = new Bean0();
+
+        bean.role = Role.A;
+        assertEquals("{\"role\":\"A\"}", Json.encode(bean));
+        assertEquals("{\"role\":0}", Json.encode(bean, Flag.ENUM_AS_INDEX));
+
+        bean.role = Role.B;
+        assertEquals("{\"role\":\"B\"}", Json.encode(bean));
+        assertEquals("{\"role\":1}", Json.encode(bean, Flag.ENUM_AS_INDEX));
+
+
+        bean.role = Role.C;
+        assertEquals("{\"role\":\"C\"}", Json.encode(bean));
+        assertEquals("{\"role\":2}", Json.encode(bean, Flag.ENUM_AS_INDEX));
     }
 }

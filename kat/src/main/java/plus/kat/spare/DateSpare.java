@@ -25,6 +25,7 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.utils.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,7 +36,7 @@ import java.util.TimeZone;
  * @author kraity
  * @since 0.0.1
  */
-public class DateSpare extends SimpleDateFormat implements Spare<Date> {
+public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializable {
 
     public static final DateSpare
         INSTANCE = new DateSpare();
@@ -169,10 +170,16 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
                 date.getTime()
             );
         } else {
+            String s;
             synchronized (this) {
-                flow.emit(
-                    format(date)
-                );
+                s = format(date);
+            }
+            if (flow.getJob() != Job.JSON) {
+                flow.emit(s);
+            } else {
+                flow.addByte((byte) '"');
+                flow.emit(s);
+                flow.addByte((byte) '"');
             }
         }
     }

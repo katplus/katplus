@@ -23,6 +23,7 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
 
@@ -32,7 +33,7 @@ import static java.time.format.DateTimeFormatter.ISO_INSTANT;
  * @author kraity
  * @since 0.0.2
  */
-public class InstantSpare extends TemporalSpare<Instant> {
+public class InstantSpare extends TemporalSpare<Instant> implements Serializable {
 
     public static final InstantSpare
         INSTANCE = new InstantSpare();
@@ -132,9 +133,17 @@ public class InstantSpare extends TemporalSpare<Instant> {
                 ((Instant) value).toEpochMilli()
             );
         } else {
-            formatter.formatTo(
-                (TemporalAccessor) value, flow
-            );
+            if (flow.getJob() != Job.JSON) {
+                formatter.formatTo(
+                    (TemporalAccessor) value, flow
+                );
+            } else {
+                flow.addByte((byte) '"');
+                formatter.formatTo(
+                    (TemporalAccessor) value, flow
+                );
+                flow.addByte((byte) '"');
+            }
         }
     }
 }

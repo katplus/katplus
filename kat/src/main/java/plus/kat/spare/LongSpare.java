@@ -24,13 +24,14 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.stream.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class LongSpare implements Spare<Long> {
+public class LongSpare implements Spare<Long>, Serializable {
 
     public static final LongSpare
         INSTANCE = new LongSpare();

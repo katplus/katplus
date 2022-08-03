@@ -24,6 +24,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
@@ -32,7 +33,7 @@ import java.lang.reflect.Type;
  * @since 0.0.1
  */
 @SuppressWarnings("unchecked")
-public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
+public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>>, Serializable {
 
     private K[] enums;
     private final Class<K> klass;
@@ -194,14 +195,19 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOCrash {
+        Enum<?> e = (Enum<?>) value;
         if (flow.isFlag(Flag.ENUM_AS_INDEX)) {
             flow.addInt(
-                ((Enum<?>) value).ordinal()
+                e.ordinal()
             );
         } else {
-            flow.text(
-                ((Enum<?>) value).name()
-            );
+            if (flow.getJob() != Job.JSON) {
+                flow.emit(e.name());
+            } else {
+                flow.addByte((byte) '"');
+                flow.emit(e.name());
+                flow.addByte((byte) '"');
+            }
         }
     }
 }

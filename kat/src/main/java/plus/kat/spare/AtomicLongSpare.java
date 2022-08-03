@@ -23,6 +23,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicLongSpare implements Spare<AtomicLong> {
+public class AtomicLongSpare implements Spare<AtomicLong>, Serializable {
 
     public static final AtomicLongSpare
         INSTANCE = new AtomicLongSpare();
