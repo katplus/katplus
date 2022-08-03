@@ -13,10 +13,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -450,6 +447,15 @@ public class SpareTest {
         LocalDateTime localDateTime = spare.read("$(2022-02-22T22:22:22.123)");
         assertNotNull(localDateTime);
         assertEquals("LocalDateTime(2022-02-22T22:22:22.123)", Kat.encode(localDateTime));
+    }
+
+    @Test
+    public void test_zoned_date_time() {
+        ZonedDateTimeSpare spare = ZonedDateTimeSpare.INSTANCE;
+
+        ZonedDateTime zonedDateTime = spare.read("$(2022-02-22T22:22:22.123+08:00[Asia/Shanghai])");
+        assertNotNull(zonedDateTime);
+        assertEquals("ZonedDateTime(2022-02-22T22:22:22.123+08:00[Asia/Shanghai])", Kat.encode(zonedDateTime));
     }
 
     static class Hook {

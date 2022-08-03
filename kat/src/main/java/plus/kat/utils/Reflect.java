@@ -28,10 +28,7 @@ import plus.kat.reflex.*;
 
 import java.lang.invoke.*;
 import java.lang.reflect.*;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.Date;
 
 /**
@@ -167,6 +164,8 @@ public final class Reflect {
                 return new LocalTimeSpare(format);
             } else if (klass == LocalDateTime.class) {
                 return new LocalDateTimeSpare(format);
+            } else if (klass == ZonedDateTime.class) {
+                return new ZonedDateTimeSpare(format);
             }
         } else if (expose != null) {
             Class<?> with = expose.with();

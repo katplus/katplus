@@ -73,6 +73,14 @@ public interface Spare<K> extends Coder<K> {
     Class<? extends K> getType();
 
     /**
+     * Create a {@link Builder} of {@link K}
+     */
+    @Nullable
+    Builder<? extends K> getBuilder(
+        @Nullable Type type
+    );
+
+    /**
      * Returns the {@link Provider} of {@link Spare}
      *
      * @since 0.0.3
@@ -83,16 +91,21 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Create a {@link Builder} of {@link K}
-     */
-    @Nullable
-    Builder<? extends K> getBuilder(
-        @Nullable Type type
-    );
-
-    /**
      * If {@link K} is a Bean, then perform a given
      * action in each item until all entries are processed.
+     *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  Map<String, Object> collector = ...
+     *
+     *  User user = ...
+     *  spare.flat(
+     *    user, collector::put
+     *  );
+     *
+     *  int id = (int) collector.get("id");
+     *  String name = (String) collector.get("name");
+     * }</pre>
      *
      * @throws NullPointerException If the bean or action is null
      * @since 0.0.3
@@ -661,6 +674,8 @@ public interface Spare<K> extends Coder<K> {
                         spare = LocalTimeSpare.INSTANCE;
                     } else if (klass == LocalDateTime.class) {
                         spare = LocalDateTimeSpare.INSTANCE;
+                    } else if (klass == ZonedDateTime.class) {
+                        spare = ZonedDateTimeSpare.INSTANCE;
                     } else {
                         return null;
                     }
