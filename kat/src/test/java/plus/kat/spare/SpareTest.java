@@ -8,6 +8,7 @@ import plus.kat.anno.Expose;
 import plus.kat.anno.Format;
 import plus.kat.reflex.ArrayType;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -384,6 +385,14 @@ public class SpareTest {
 
         BitSet b1 = spare.parse("[1,0,1,0]");
         assertEquals("[1,0,1]", Json.encode(b1));
+    }
+
+    @Test
+    public void test_File_read() {
+        FileSpare spare = FileSpare.INSTANCE;
+
+        File f0 = spare.read("$(file:\\kat.plus\\user.kat)");
+        assertEquals("File(file:\\kat.plus\\user.kat)", Kat.encode(f0));
     }
 
     @Test

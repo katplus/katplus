@@ -25,6 +25,7 @@ import plus.kat.entity.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.*;
 
+import java.io.File;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -646,6 +647,18 @@ public interface Spare<K> extends Coder<K> {
             // lookup the appropriate spare
             Spare<?> spare;
             switch (name.charAt(5)) {
+                // java.io
+                case 'i': {
+                    if (klass == File.class) {
+                        spare = FileSpare.INSTANCE;
+                    } else {
+                        return null;
+                    }
+                    this.put(
+                        klass, spare
+                    );
+                    return spare;
+                }
                 // java.nio
                 // java.net
                 case 'n': {
