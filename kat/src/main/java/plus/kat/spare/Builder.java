@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.entity;
+package plus.kat.spare;
 
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
@@ -22,13 +22,11 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
-import java.lang.reflect.Type;
-
 /**
  * @author kraity
  * @since 0.0.1
  */
-public abstract class Builder<K> implements Flag {
+public abstract class Builder<K> {
 
     private Alias alias;
     private Builder<?> parent;
@@ -38,18 +36,6 @@ public abstract class Builder<K> implements Flag {
      */
     protected Event<?> event;
     protected Supplier supplier;
-
-    /**
-     * Check if this use the {@code flag}
-     *
-     * @param flag the specified {@code flag}
-     */
-    @Override
-    public boolean isFlag(
-        long flag
-    ) {
-        return event.isFlag(flag);
-    }
 
     /**
      * @throws IOCrash If an I/O error occurs
@@ -104,20 +90,6 @@ public abstract class Builder<K> implements Flag {
         @NotNull Space space,
         @NotNull Alias alias
     ) throws IOCrash;
-
-    /**
-     * Returns the {@link Type} object of the
-     * current attribute declaration type, it can be variable, not {@link K}
-     *
-     * @see Coder#read(Flag, Value)
-     * @see Worker.Builder$#onAccept(Space, Value, Target)
-     * @since 0.0.3
-     */
-    @Nullable
-    @Override
-    public Type getType() {
-        return null;
-    }
 
     /**
      * Returns the result of building {@link K}

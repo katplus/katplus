@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 import plus.kat.stream.*;
 
 import java.lang.reflect.Type;

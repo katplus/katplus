@@ -21,9 +21,8 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
-import plus.kat.spare.*;
 import plus.kat.chain.*;
-import plus.kat.entity.*;
+import plus.kat.spare.*;
 import plus.kat.reflex.*;
 
 import java.lang.invoke.*;

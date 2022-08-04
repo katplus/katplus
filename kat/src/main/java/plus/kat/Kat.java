@@ -19,7 +19,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.crash.*;
-import plus.kat.entity.*;
+import plus.kat.spare.*;
 
 import static plus.kat.Supplier.Impl.INS;
 

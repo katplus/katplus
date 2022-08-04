@@ -39,16 +39,6 @@ public final class Space extends Chain implements Type {
         EMPTY = new Space();
 
     /**
-     * actual type
-     */
-    private Type type;
-
-    /**
-     * cache string
-     */
-    private String cache;
-
-    /**
      * cached spaces
      */
     public static final Space $ = new Space(new byte[]{'$'}, Object.class);
@@ -71,6 +61,12 @@ public final class Space extends Chain implements Type {
     public static final Space $D = new Space(new byte[]{'D'}, BigDecimal.class);
 
     /**
+     * actual type
+     */
+    private Type actual;
+    private String cache;
+
+    /**
      * default
      */
     private Space() {
@@ -85,7 +81,7 @@ public final class Space extends Chain implements Type {
         byte[] b, Type t
     ) {
         super();
-        type = t;
+        actual = t;
         value = b;
         count = b.length;
     }
@@ -117,7 +113,7 @@ public final class Space extends Chain implements Type {
         @NotNull Class<?> type
     ) {
         this(type.getName());
-        this.type = type;
+        this.actual = type;
     }
 
     /**
@@ -130,7 +126,7 @@ public final class Space extends Chain implements Type {
         @Nullable Type type
     ) {
         this(space);
-        this.type = type;
+        this.actual = type;
     }
 
     /**
@@ -403,8 +399,21 @@ public final class Space extends Chain implements Type {
      * Returns a {@code Type} representing the specified actual type
      */
     @Nullable
+    @Override
     public Type getType() {
-        return type;
+        return actual;
+    }
+
+    /**
+     * @throws RunCrash Not support
+     */
+    @Override
+    public void setType(
+        @Nullable Type type
+    ) {
+        throw new RunCrash(
+            "Unexpectedly, not support"
+        );
     }
 
     /**

@@ -27,7 +27,6 @@ import java.util.concurrent.*;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 import plus.kat.utils.Casting;
 import plus.kat.utils.Reflect;
 
@@ -230,9 +229,10 @@ public class ListSpare implements Spare<List> {
             @NotNull Value value
         ) throws IOCrash {
             if (v != null) {
+                value.setType(param);
                 entity.add(
                     v.read(
-                        this, value
+                        event, value
                     )
                 );
             } else {
@@ -240,9 +240,10 @@ public class ListSpare implements Spare<List> {
                     .lookup(space);
 
                 if (spare != null) {
+                    value.setType(param);
                     entity.add(
                         spare.read(
-                            this, value
+                            event, value
                         )
                     );
                 }

@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.crash.*;
 import plus.kat.spare.*;
-import plus.kat.entity.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.*;
 

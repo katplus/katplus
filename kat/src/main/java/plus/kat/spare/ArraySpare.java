@@ -26,7 +26,6 @@ import java.lang.reflect.Type;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.Casting;
 import plus.kat.utils.Reflect;
@@ -174,9 +173,10 @@ public class ArraySpare implements Spare<Object> {
             if (length == size) {
                 enlarge();
             }
+            value.setType(klass);
             Array.set(
                 list, size++, v.read(
-                    this, value
+                    event, value
                 )
             );
         }
@@ -226,11 +226,6 @@ public class ArraySpare implements Spare<Object> {
                 list, 0, make, 0, size
             );
             list = make;
-        }
-
-        @Override
-        public Type getType() {
-            return klass;
         }
 
         @Nullable
@@ -304,14 +299,15 @@ public class ArraySpare implements Spare<Object> {
             Object data = null;
             if (v != null) {
                 data = v.read(
-                    this, value
+                    event, value
                 );
             } else {
                 Spare<?> spare = supplier
                     .lookup(space);
                 if (spare != null) {
+                    value.setType(type);
                     data = spare.read(
-                        this, value
+                        event, value
                     );
                 }
             }
@@ -357,11 +353,6 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
-        public Type getType() {
-            return type;
-        }
-
-        @Override
         public void onDestroy() {
             super.onDestroy();
             type = null;
@@ -402,8 +393,9 @@ public class ArraySpare implements Spare<Object> {
                 );
 
                 if (spare != null) {
+                    value.setType(type);
                     list[index] = spare.read(
-                        this, value
+                        event, value
                     );
                 }
             }
@@ -459,13 +451,6 @@ public class ArraySpare implements Spare<Object> {
                     type, supplier
                 );
             }
-        }
-
-        @Override
-        public Type getType() {
-            return types.getType(
-                index
-            );
         }
 
         @Override

@@ -15,10 +15,6 @@
  */
 package plus.kat;
 
-import plus.kat.anno.Nullable;
-
-import java.lang.reflect.Type;
-
 /**
  * @author kraity
  * @since 0.0.1
@@ -49,15 +45,4 @@ public interface Flag {
     boolean isFlag(
         long flag
     );
-
-    /**
-     * Returns the {@link Type} object of the
-     * current attribute declaration type, it can be variable
-     *
-     * @since 0.0.3
-     */
-    @Nullable
-    default Type getType() {
-        return null;
-    }
 }

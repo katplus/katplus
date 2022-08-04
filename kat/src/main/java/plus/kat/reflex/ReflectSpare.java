@@ -967,18 +967,6 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         }
 
         @Override
-        public Type getType() {
-            Target t = target;
-            if (t == null) {
-                t = setter;
-                if (t == null) {
-                    return null;
-                }
-            }
-            return t.getActualType();
-        }
-
-        @Override
         public K getResult() {
             if (marker && entity == null) {
                 try {

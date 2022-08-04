@@ -21,6 +21,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
+import plus.kat.spare.*;
 
 import java.lang.reflect.Type;
 
@@ -160,15 +161,6 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             return getBuilder(space, setter);
         }
 
-        @Override
-        public Type getType() {
-            Setter<?, ?> s = setter;
-            if (s == null) {
-                return null;
-            }
-            return s.getActualType();
-        }
-
         @Nullable
         @Override
         public K getResult() {
@@ -263,16 +255,6 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             return getBuilder(space, target);
         }
 
-
-        @Override
-        public Type getType() {
-            Target t = target;
-            if (t == null) {
-                return null;
-            }
-            return t.getActualType();
-        }
-
         @Nullable
         @Override
         public K getResult() {
@@ -318,9 +300,12 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             Coder<?> coder = target.getCoder();
 
             if (coder != null) {
+                value.setType(
+                    target.getActualType()
+                );
                 onAccept(
                     target, coder.read(
-                        this, value
+                        event, value
                     )
                 );
                 return;
@@ -335,9 +320,12 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 spare = supplier.lookup(space);
 
                 if (spare != null) {
+                    value.setType(
+                        target.getActualType()
+                    );
                     onAccept(
                         target, spare.read(
-                            this, value
+                            event, value
                         )
                     );
                 }
@@ -347,9 +335,12 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
                 // skip if null
                 if (spare != null) {
+                    value.setType(
+                        target.getActualType()
+                    );
                     onAccept(
                         target, spare.read(
-                            this, value
+                            event, value
                         )
                     );
                     return;
@@ -361,9 +352,12 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 // skip if null
                 if (spare != null &&
                     spare.accept(klass)) {
+                    value.setType(
+                        target.getActualType()
+                    );
                     onAccept(
                         target, spare.read(
-                            this, value
+                            event, value
                         )
                     );
                 }

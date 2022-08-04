@@ -18,6 +18,8 @@ package plus.kat.entity;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.spare.*;
+
 /**
  * @author kraity
  * @since 0.0.1

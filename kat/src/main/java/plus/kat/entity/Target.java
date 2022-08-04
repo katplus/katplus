@@ -17,6 +17,8 @@ package plus.kat.entity;
 
 import plus.kat.anno.Nullable;
 
+import plus.kat.spare.*;
+
 import java.lang.reflect.Type;
 
 /**

@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import javax.crypto.*;
 import java.io.*;
+import java.lang.reflect.Type;
 import java.security.*;
 import java.nio.charset.Charset;
 
@@ -35,10 +36,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
+    protected int hash;
     protected int count;
     protected byte[] value;
 
-    protected int hash;
+    protected Type type;
     protected Bucket bucket;
 
     /**
@@ -1034,6 +1036,30 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns the {@link Type} object of the
+     * current declaration type, it can be variable
+     *
+     * @since 0.0.3
+     */
+    @Nullable
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * Sets customized {@link Type} object, as needed
+     *
+     * @param type the specified type
+     * @throws RuntimeException If not supported
+     * @since 0.0.3
+     */
+    public void setType(
+        @Nullable Type type
+    ) {
+        this.type = type;
+    }
+
+    /**
      * Returns the internal {@code byte[]}
      *
      * @throws RunCrash If the internal value cannot be shared
@@ -2024,6 +2050,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     protected void clean() {
         hash = 0;
+        type = null;
         count = 0;
     }
 

@@ -10,6 +10,7 @@ import plus.kat.chain.Space;
 import plus.kat.chain.Value;
 import plus.kat.crash.IOCrash;
 import plus.kat.Flow;
+import plus.kat.spare.Coder;
 
 import static org.junit.jupiter.api.Assertions.*;
 

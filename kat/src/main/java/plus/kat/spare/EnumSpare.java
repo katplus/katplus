@@ -22,7 +22,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;

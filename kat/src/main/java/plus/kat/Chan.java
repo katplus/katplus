@@ -18,10 +18,9 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.spare.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
+import plus.kat.spare.*;
 import plus.kat.stream.*;
 
 import java.util.*;

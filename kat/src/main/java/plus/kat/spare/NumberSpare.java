@@ -18,7 +18,6 @@ package plus.kat.spare;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
-import plus.kat.entity.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;

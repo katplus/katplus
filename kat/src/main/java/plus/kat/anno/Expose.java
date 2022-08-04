@@ -15,7 +15,7 @@
  */
 package plus.kat.anno;
 
-import plus.kat.entity.Coder;
+import plus.kat.spare.Coder;
 
 import java.lang.annotation.*;
 

@@ -26,7 +26,6 @@ import java.util.concurrent.*;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 import plus.kat.utils.Casting;
 import plus.kat.utils.Reflect;
 
@@ -126,7 +125,7 @@ public class MapSpare implements Spare<Map> {
 
         private Map entity;
         private Type type;
-        private Type param;
+        private Type tk, tv;
         private Spare<?> k, v;
 
         public Builder0(
@@ -145,10 +144,10 @@ public class MapSpare implements Spare<Map> {
                 raw = p.getRawType();
                 Type[] ary = p.getActualTypeArguments();
                 k = Reflect.lookup(
-                    ary[0], supplier
+                    tk = ary[0], supplier
                 );
                 v = Reflect.lookup(
-                    param = ary[1], supplier
+                    tv = ary[1], supplier
                 );
             }
 
@@ -227,20 +226,22 @@ public class MapSpare implements Spare<Map> {
             @NotNull Value value
         ) throws IOCrash {
             if (v != null) {
+                alias.setType(tk);
+                value.setType(tv);
                 if (k == null) {
                     entity.put(
                         alias.toString(),
                         v.read(
-                            this, value
+                            event, value
                         )
                     );
                 } else {
                     entity.put(
                         k.read(
-                            this, alias
+                            event, alias
                         ),
                         v.read(
-                            this, value
+                            event, value
                         )
                     );
                 }
@@ -249,10 +250,11 @@ public class MapSpare implements Spare<Map> {
                     .lookup(space);
 
                 if (spare != null) {
+                    value.setType(tv);
                     entity.put(
                         alias.toString(),
                         spare.read(
-                            this, value
+                            event, value
                         )
                     );
                 }
@@ -273,7 +275,7 @@ public class MapSpare implements Spare<Map> {
             } else {
                 entity.put(
                     k.read(
-                        this, alias
+                        event, alias
                     ),
                     child.getResult()
                 );
@@ -286,7 +288,7 @@ public class MapSpare implements Spare<Map> {
             @NotNull Alias alias
         ) {
             if (v != null) {
-                return v.getBuilder(param);
+                return v.getBuilder(tv);
             }
 
             Spare<?> spare = supplier
@@ -296,7 +298,7 @@ public class MapSpare implements Spare<Map> {
                 return null;
             }
 
-            return spare.getBuilder(param);
+            return spare.getBuilder(tv);
         }
 
         @Nullable
@@ -310,7 +312,8 @@ public class MapSpare implements Spare<Map> {
             type = null;
             k = null;
             v = null;
-            param = null;
+            tv = null;
+            tk = null;
             entity = null;
         }
     }

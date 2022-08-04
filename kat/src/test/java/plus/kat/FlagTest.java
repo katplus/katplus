@@ -1,18 +1,8 @@
 package plus.kat;
 
 import org.junit.jupiter.api.Test;
-import plus.kat.chain.Value;
-import plus.kat.crash.IOCrash;
-import plus.kat.crash.UnexpectedCrash;
-import plus.kat.entity.Builder;
-import plus.kat.entity.Coder;
-import plus.kat.spare.StringSpare;
-
-import java.lang.reflect.Type;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Date;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -71,96 +61,5 @@ public class FlagTest {
         bean.role = Role.C;
         assertEquals("{\"role\":\"C\"}", Json.encode(bean));
         assertEquals("{\"role\":2}", Json.encode(bean, Flag.ENUM_AS_INDEX));
-    }
-
-    @Test
-    public void test_getType() {
-        Event<?> event = new Event<>();
-
-        Flag flag = event.getFlag();
-        assertNull(flag.getType());
-
-        Type[] types = new Type[]{
-            int.class,
-            Long.class,
-            Map.class,
-            Iterable.class,
-            BigInteger.class
-        };
-
-        for (Type type : types) {
-            event.with(type);
-            assertEquals(type, flag.getType());
-        }
-    }
-
-    @Test
-    public void test_getType2() {
-        Type[] types = new Type[]{
-            String.class,
-            Value.class,
-            StringBuilder.class
-        };
-
-        Spare<CharSequence> spare = new Spare<CharSequence>() {
-            @Override
-            public CharSequence getSpace() {
-                return null;
-            }
-
-            @Override
-            public Boolean getFlag() {
-                return null;
-            }
-
-            @Override
-            public boolean accept(Class<?> klass) {
-                return false;
-            }
-
-            @Override
-            public CharSequence read(
-                Flag flag,
-                Value value
-            ) throws IOCrash {
-                Type type = flag.getType();
-
-                if (type == String.class) {
-                    return value.toString();
-                }
-
-                if (type == Value.class) {
-                    return new Value(value);
-                }
-
-                if (type == StringBuilder.class) {
-                    return new StringBuilder(
-                        value.toString()
-                    );
-                }
-
-                throw new UnexpectedCrash();
-            }
-
-            @Override
-            public Class<CharSequence> getType() {
-                return null;
-            }
-
-            @Override
-            public Builder<CharSequence> getBuilder(Type type) {
-                return null;
-            }
-        };
-
-        for (Type type : types) {
-            Event<CharSequence> event =
-                new Event<>("$(test)");
-            event.with(type).with(spare);
-
-            assertEquals(
-                type, Kat.decode(event).getClass()
-            );
-        }
     }
 }

@@ -26,7 +26,6 @@ import javax.crypto.Cipher;
 
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 import plus.kat.stream.*;
 import plus.kat.stream.Reader;
 import plus.kat.stream.InputStreamReader;
@@ -520,7 +519,6 @@ public class Event<T> implements Flag {
      * @since 0.0.2
      */
     @Nullable
-    @Override
     public Type getType() {
         return type;
     }
