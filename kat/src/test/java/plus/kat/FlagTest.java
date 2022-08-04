@@ -2,8 +2,11 @@ package plus.kat;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Type;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -62,5 +65,26 @@ public class FlagTest {
         bean.role = Role.C;
         assertEquals("{\"role\":\"C\"}", Json.encode(bean));
         assertEquals("{\"role\":2}", Json.encode(bean, Flag.ENUM_AS_INDEX));
+    }
+
+    @Test
+    public void test_getType() {
+        Event<?> event = new Event<>();
+
+        Flag flag = event.getFlag();
+        assertNull(flag.getType());
+
+        Type[] types = new Type[]{
+            int.class,
+            Long.class,
+            Map.class,
+            Iterable.class,
+            BigInteger.class
+        };
+
+        for (Type type : types) {
+            event.with(type);
+            assertEquals(type, flag.getType());
+        }
     }
 }

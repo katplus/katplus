@@ -244,7 +244,7 @@ public class IterableSpare implements Spare<Iterable> {
             if (v != null) {
                 entity.add(
                     v.read(
-                        flag, value
+                        this, value
                     )
                 );
             } else {
@@ -254,7 +254,7 @@ public class IterableSpare implements Spare<Iterable> {
                 if (spare != null) {
                     entity.add(
                         spare.read(
-                            flag, value
+                            this, value
                         )
                     );
                 }

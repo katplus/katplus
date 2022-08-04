@@ -232,7 +232,7 @@ public class ListSpare implements Spare<List> {
             if (v != null) {
                 entity.add(
                     v.read(
-                        flag, value
+                        this, value
                     )
                 );
             } else {
@@ -242,7 +242,7 @@ public class ListSpare implements Spare<List> {
                 if (spare != null) {
                     entity.add(
                         spare.read(
-                            flag, value
+                            this, value
                         )
                     );
                 }

@@ -820,6 +820,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 c.value = value;
                 c.setter = setter;
 
+                setter = null;
                 if (cache == null) {
                     cache = c;
                 } else {
@@ -963,6 +964,18 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 );
                 cache = cache.next;
             }
+        }
+
+        @Override
+        public Type getType() {
+            Target t = target;
+            if (t == null) {
+                t = setter;
+                if (t == null) {
+                    return null;
+                }
+            }
+            return t.getActualType();
         }
 
         @Override

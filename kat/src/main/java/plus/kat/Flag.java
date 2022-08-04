@@ -15,10 +15,15 @@
  */
 package plus.kat;
 
+import plus.kat.anno.Nullable;
+
+import java.lang.reflect.Type;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
+@FunctionalInterface
 public interface Flag {
     /**
      * Write Flags
@@ -44,4 +49,14 @@ public interface Flag {
     boolean isFlag(
         long flag
     );
+
+    /**
+     * Returns the {@link Type} object that identifies the declared type.
+     *
+     * @since 0.0.3
+     */
+    @Nullable
+    default Type getType() {
+        return null;
+    }
 }

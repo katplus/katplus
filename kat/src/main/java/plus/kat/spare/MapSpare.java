@@ -231,16 +231,16 @@ public class MapSpare implements Spare<Map> {
                     entity.put(
                         alias.toString(),
                         v.read(
-                            flag, value
+                            this, value
                         )
                     );
                 } else {
                     entity.put(
                         k.read(
-                            flag, alias
+                            this, alias
                         ),
                         v.read(
-                            flag, value
+                            this, value
                         )
                     );
                 }
@@ -252,7 +252,7 @@ public class MapSpare implements Spare<Map> {
                     entity.put(
                         alias.toString(),
                         spare.read(
-                            flag, value
+                            this, value
                         )
                     );
                 }
@@ -273,7 +273,7 @@ public class MapSpare implements Spare<Map> {
             } else {
                 entity.put(
                     k.read(
-                        flag, alias
+                        this, alias
                     ),
                     child.getResult()
                 );

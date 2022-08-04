@@ -223,7 +223,7 @@ public class SetSpare implements Spare<Set> {
             if (v != null) {
                 entity.add(
                     v.read(
-                        flag, value
+                        this, value
                     )
                 );
             } else {
@@ -233,7 +233,7 @@ public class SetSpare implements Spare<Set> {
                 if (spare != null) {
                     entity.add(
                         spare.read(
-                            flag, value
+                            this, value
                         )
                     );
                 }

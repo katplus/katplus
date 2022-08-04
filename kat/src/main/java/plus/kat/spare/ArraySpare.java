@@ -176,7 +176,7 @@ public class ArraySpare implements Spare<Object> {
             }
             Array.set(
                 list, size++, v.read(
-                    flag, value
+                    this, value
                 )
             );
         }
@@ -226,6 +226,11 @@ public class ArraySpare implements Spare<Object> {
                 list, 0, make, 0, size
             );
             list = make;
+        }
+
+        @Override
+        public Type getType() {
+            return klass;
         }
 
         @Nullable
@@ -299,14 +304,14 @@ public class ArraySpare implements Spare<Object> {
             Object data = null;
             if (v != null) {
                 data = v.read(
-                    flag, value
+                    this, value
                 );
             } else {
                 Spare<?> spare = supplier
                     .lookup(space);
                 if (spare != null) {
                     data = spare.read(
-                        flag, value
+                        this, value
                     );
                 }
             }
@@ -352,6 +357,11 @@ public class ArraySpare implements Spare<Object> {
         }
 
         @Override
+        public Type getType() {
+            return type;
+        }
+
+        @Override
         public void onDestroy() {
             super.onDestroy();
             type = null;
@@ -361,7 +371,7 @@ public class ArraySpare implements Spare<Object> {
     public static class Builder2 extends Builder<Object> {
 
         protected Object[] list;
-        protected int size;
+        protected int index;
         protected ArrayType types;
 
         public Builder2(
@@ -374,7 +384,7 @@ public class ArraySpare implements Spare<Object> {
         public void onCreate(
             @NotNull Alias alias
         ) throws Crash, IOCrash {
-            size = 0;
+            index = -1;
             list = new Object[types.size()];
         }
 
@@ -384,16 +394,16 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOCrash {
-            if (size != list.length) {
+            if (++index < list.length) {
                 Type type = types
-                    .getType(size++);
+                    .getType(index);
                 Spare<?> spare = lookup(
                     type, space
                 );
 
                 if (spare != null) {
-                    list[size - 1] = spare.read(
-                        flag, value
+                    list[index] = spare.read(
+                        this, value
                     );
                 }
             }
@@ -404,7 +414,7 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) {
-            list[size - 1] = child.getResult();
+            list[index] = child.getResult();
         }
 
         @Override
@@ -412,12 +422,12 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Space space,
             @NotNull Alias alias
         ) {
-            if (size == list.length) {
+            if (++index >= list.length) {
                 return null;
             }
 
             Type type = types
-                .getType(size++);
+                .getType(index);
             Spare<?> spare = lookup(
                 type, space
             );
@@ -449,6 +459,13 @@ public class ArraySpare implements Spare<Object> {
                     type, supplier
                 );
             }
+        }
+
+        @Override
+        public Type getType() {
+            return types.getType(
+                index
+            );
         }
 
         @Override

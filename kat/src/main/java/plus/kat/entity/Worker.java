@@ -160,6 +160,15 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             return getBuilder(space, setter);
         }
 
+        @Override
+        public Type getType() {
+            Setter<?, ?> s = setter;
+            if (s == null) {
+                return null;
+            }
+            return s.getActualType();
+        }
+
         @Nullable
         @Override
         public K getResult() {
@@ -254,6 +263,16 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             return getBuilder(space, target);
         }
 
+
+        @Override
+        public Type getType() {
+            Target t = target;
+            if (t == null) {
+                return null;
+            }
+            return t.getActualType();
+        }
+
         @Nullable
         @Override
         public K getResult() {
@@ -301,7 +320,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             if (coder != null) {
                 onAccept(
                     target, coder.read(
-                        flag, value
+                        this, value
                     )
                 );
                 return;
@@ -318,7 +337,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 if (spare != null) {
                     onAccept(
                         target, spare.read(
-                            flag, value
+                            this, value
                         )
                     );
                 }
@@ -330,7 +349,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 if (spare != null) {
                     onAccept(
                         target, spare.read(
-                            flag, value
+                            this, value
                         )
                     );
                     return;
@@ -344,7 +363,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                     spare.accept(klass)) {
                     onAccept(
                         target, spare.read(
-                            flag, value
+                            this, value
                         )
                     );
                 }

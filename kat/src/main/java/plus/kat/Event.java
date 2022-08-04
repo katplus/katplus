@@ -346,6 +346,12 @@ public class Event<T> implements Flag {
     public boolean isFlag(
         long flag
     ) {
+        Flag f = this.flag;
+        if (f != null) {
+            return f.isFlag(
+                flag
+            );
+        }
         return (flags & flag) != 0;
     }
 
@@ -550,6 +556,7 @@ public class Event<T> implements Flag {
      * @since 0.0.2
      */
     @Nullable
+    @Override
     public Type getType() {
         return type;
     }

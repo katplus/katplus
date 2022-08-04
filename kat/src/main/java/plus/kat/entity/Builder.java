@@ -22,20 +22,34 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
+import java.lang.reflect.Type;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
-public abstract class Builder<K> {
+public abstract class Builder<K> implements Flag {
 
     private Alias alias;
     private Builder<?> parent;
 
     /**
-     * flag etc.
+     * event etc.
      */
-    protected Flag flag;
+    protected Event<?> event;
     protected Supplier supplier;
+
+    /**
+     * Check if this use the {@code flag}
+     *
+     * @param flag the specified {@code flag}
+     */
+    @Override
+    public boolean isFlag(
+        long flag
+    ) {
+        return event.isFlag(flag);
+    }
 
     /**
      * @throws IOCrash If an I/O error occurs
@@ -48,7 +62,7 @@ public abstract class Builder<K> {
         if (parent == null) {
             alias = a;
             parent = b;
-            flag = e.getFlag();
+            event = e;
             supplier = e.getSupplier();
             onCreate(a);
         } else {
@@ -92,6 +106,20 @@ public abstract class Builder<K> {
     ) throws IOCrash;
 
     /**
+     * Returns the {@link Type} object of the
+     * current attribute declaration type, it can be variable, not {@link K}
+     *
+     * @see Coder#read(Flag, Value)
+     * @see Worker.Builder$#onAccept(Space, Value, Target)
+     * @since 0.0.3
+     */
+    @Nullable
+    @Override
+    public Type getType() {
+        return null;
+    }
+
+    /**
      * Returns the result of building {@link K}
      * <p>
      * May be called multiple times,
@@ -127,7 +155,7 @@ public abstract class Builder<K> {
     final void onDetach() {
         onDestroy();
         alias = null;
-        flag = null;
+        event = null;
         parent = null;
         supplier = null;
     }

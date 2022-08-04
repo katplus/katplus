@@ -19,7 +19,7 @@ import plus.kat.anno.Embed;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.crash.RunCrash;
+import plus.kat.crash.*;
 import plus.kat.spare.*;
 import plus.kat.entity.*;
 import plus.kat.reflex.*;
@@ -440,6 +440,7 @@ public interface Spare<K> extends Coder<K> {
             INS.put(Character.class, CharSpare.INSTANCE);
             INS.put(byte[].class, ByteArraySpare.INSTANCE);
             INS.put(Object[].class, ArraySpare.INSTANCE);
+            INS.put(CharSequence.class, StringSpare.INSTANCE);
             INS.put(Map.class, MapSpare.INSTANCE);
             INS.put(Set.class, SetSpare.INSTANCE);
             INS.put(List.class, ListSpare.INSTANCE);
