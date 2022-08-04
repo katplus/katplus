@@ -41,7 +41,7 @@ public class Parser implements Pipe {
     protected Object bundle;
     protected int depth, range;
 
-    protected Event<?> target;
+    protected Event<?> event;
     protected Builder<?> active;
 
     /**
@@ -106,7 +106,7 @@ public class Parser implements Pipe {
             return null;
         }
 
-        this.target = event;
+        this.event = event;
         this.range = event.getRange();
 
         try {
@@ -217,10 +217,13 @@ public class Parser implements Pipe {
                 space, name
             );
         } else {
-            child = target.getCoder(
-                space, name
-            ).getBuilder(
-                target.getType()
+            Spare<?> spare = event
+                .getSpare(
+                    space, name
+                );
+
+            child = spare.getBuilder(
+                event.getType()
             );
         }
 
@@ -230,7 +233,7 @@ public class Parser implements Pipe {
 
         try {
             child.onAttach(
-                name, target, parent
+                name, event, parent
             );
             ++depth;
             active = child;
@@ -254,10 +257,13 @@ public class Parser implements Pipe {
                 space, alias, value
             );
         } else {
-            bundle = target.getCoder(
-                space, alias.copy()
-            ).read(
-                target.getFlag(), value
+            Spare<?> spare = event
+                .getSpare(
+                    space, alias.copy()
+                );
+
+            bundle = spare.read(
+                event, value
             );
         }
     }

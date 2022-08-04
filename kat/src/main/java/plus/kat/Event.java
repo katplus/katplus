@@ -458,42 +458,6 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Returns the specified {@link Coder} being used
-     *
-     * @throws IOCrash If the specified coder was not found
-     * @since 0.0.2
-     */
-    @NotNull
-    public Coder<?> getCoder(
-        @NotNull Space space,
-        @NotNull Alias alias
-    ) throws IOCrash {
-        this.alias = alias;
-        if (spare != null) {
-            return spare;
-        }
-
-        Coder<?> coder;
-        Supplier supplier = getSupplier();
-
-        if (type == null) {
-            coder = supplier.lookup(space);
-        } else {
-            return Reflect.lookup(
-                type, supplier
-            );
-        }
-
-        if (coder != null) {
-            return coder;
-        }
-
-        throw new UnexpectedCrash(
-            "Unexpectedly, the specified coder was not found"
-        );
-    }
-
-    /**
      * Sets the alias of this {@link Event}
      *
      * @param alias the specified alias
@@ -569,6 +533,42 @@ public class Event<T> implements Flag {
     @Nullable
     public Spare<?> getSpare() {
         return spare;
+    }
+
+    /**
+     * Returns the specified {@link Spare} being used
+     *
+     * @throws IOCrash If the specified coder was not found
+     * @since 0.0.3
+     */
+    @NotNull
+    public Spare<?> getSpare(
+        @NotNull Space space,
+        @NotNull Alias alias
+    ) throws IOCrash {
+        this.alias = alias;
+        if (spare != null) {
+            return spare;
+        }
+
+        Spare<?> spare;
+        Supplier supplier = getSupplier();
+
+        if (type == null) {
+            spare = supplier.lookup(space);
+        } else {
+            return Reflect.lookup(
+                type, supplier
+            );
+        }
+
+        if (spare != null) {
+            return spare;
+        }
+
+        throw new UnexpectedCrash(
+            "Unexpectedly, the specified spare was not found"
+        );
     }
 
     /**

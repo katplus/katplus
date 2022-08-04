@@ -51,7 +51,8 @@ public interface Flag {
     );
 
     /**
-     * Returns the {@link Type} object that identifies the declared type.
+     * Returns the {@link Type} object of the
+     * current attribute declaration type, it can be variable
      *
      * @since 0.0.3
      */
