@@ -5,6 +5,8 @@ KAT+ 一个轻量级的 **KAT** + **XML** + **JSON** 库
 - 兼容 **Kotlin**
 - 兼容 **Android 8+**
 
+致力于安全性、规范性、拓展性和轻量性的微组件
+
 # 1. 使用准备
 
 ## 1.1 添加依赖
@@ -208,6 +210,89 @@ User user = Json.decode(
 );
 ```
 
+### 2.5 **Chan** to **Text**
+
+Java:
+
+```java
+// kat
+Chan chan = new Chan(c -> {
+    c.set("id", 100001);
+    c.set("title", "kat");
+    c.set("author", "User", $ -> {
+        $.set("id", 1);
+        $.set("name", "kraity");
+    });
+});
+
+// M{i:id(100001)s:title(kat)User:author{i:id(1)s:name(kraity)}}
+byte[] src = chan.getFlow.copyBytes();
+String text = chan.toString()
+
+// json
+Json json = new Json(c -> {
+    c.set("id", 100001);
+    c.set("title", "kat");
+    c.set("author", "User", $ -> {
+        $.set("id", 1);
+        $.set("name", "kraity");
+    });
+});
+// {"id":100001,"title":"kat","author":{"id":1,"name":"kraity"}}
+byte[] src = json.getFlow.copyBytes();
+String text = json.toString()
+
+// xml
+Doc doc = new Doc("Story", c -> {
+    c.set("id", 100001);
+    c.set("title", "kat");
+    c.set("author", "User", $ -> {
+        $.set("id", 1);
+        $.set("name", "kraity");
+    });
+});
+// <Story><id>100001</id><title>kat</title><author><id>1</id><name>kraity</name></author></Story>
+byte[] src = doc.getFlow.copyBytes();
+String text = doc.toString()
+```
+
+Kotlin:
+
+````kotlin
+// kat
+val text = kat { it ->
+    it["id"] = 100001
+    it["title"] = "kat"
+    it["meta"] = {
+        it["view"] = 99
+    }
+    it["author", "User"] = {
+        it["id"] = 1
+        it["name"] = "kraity"
+    }
+}
+
+// json
+val text = json { it ->
+    it["id"] = 100001
+    it["title"] = "kat"
+    it["author"] = {
+        it["id"] = 1
+        it["name"] = "kraity"
+    }
+}
+
+// xml
+val text = doc("Story") { it ->
+    it["id"] = 100001
+    it["title"] = "KAT+"
+    it["author"] = {
+        it["id"] = 1
+        it["name"] = "kraity"
+    }
+}
+````
+
 # 3. 基础使用
 
 ### 3.1 Use **Spare**
@@ -281,15 +366,15 @@ event.with(
     Supplier.ins()
 );
 
-// specify reader
-Reader reader = ...;
-event.with(reader);
-
 // specify type
 event.with(User.class);
 
+// specify reader
+Reader reader = ...;
+event.setReader(reader);
+
 // specify flag
-event.with(Flag.ENUM_ORDINAL);
+event.with(Flag.INDEX_AS_ENUM);
 ```
 
 Extends event:
