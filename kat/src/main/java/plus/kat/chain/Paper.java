@@ -904,8 +904,30 @@ public abstract class Paper extends Chain implements Flow {
     }
 
     /**
-     * Close this {@link Paper} and returns the {@code byte[]} of this {@link Paper} as a {@link String}
+     * Closes this {@link Paper} and returns the {@code byte[]} of this {@link Paper} as a copy
      *
+     * @see Paper#closePaper()
+     * @since 0.0.3
+     */
+    @NotNull
+    public byte[] closeFlow() {
+        byte[] data;
+        if (count == 0) {
+            data = EMPTY_BYTES;
+        } else {
+            data = new byte[count];
+            System.arraycopy(
+                value, 0, data, 0, count
+            );
+        }
+        close();
+        return data;
+    }
+
+    /**
+     * Closes this {@link Paper} and returns the {@code byte[]} of this {@link Paper} as a {@link String}
+     *
+     * @see Paper#closeFlow()
      * @since 0.0.2
      */
     @NotNull

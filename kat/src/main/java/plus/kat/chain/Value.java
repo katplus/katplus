@@ -213,6 +213,16 @@ public class Value extends Chain {
     }
 
     /**
+     * Creates and returns a copy of this {@link Value}
+     *
+     * @since 0.0.3
+     */
+    @NotNull
+    public Value copy() {
+        return new Value(this);
+    }
+
+    /**
      * Parses this {@code UTF8} {@link Value} as a {@code char}
      */
     public char toChar() {
