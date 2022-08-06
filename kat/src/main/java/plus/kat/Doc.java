@@ -420,7 +420,29 @@ public class Doc extends Chan {
     }
 
     /**
-     * Returns a serialized string of {@link Flow}
+     * Returns a copy of {@link Flow}.
+     * Automatically close this {@link Flow} when calling
+     *
+     * <pre>{@code
+     *   Doc doc = ...
+     *   byte[] data = doc.toBytes();
+     * }</pre>
+     *
+     * @see Paper#closeFlow()
+     * @since 0.0.3
+     */
+    public byte[] toBytes() {
+        return flow.closeFlow();
+    }
+
+    /**
+     * Returns a serialized string of {@link Flow}.
+     * Automatically close this {@link Flow} when calling
+     *
+     * <pre>{@code
+     *   Doc doc = ...
+     *   String text = doc.toString();
+     * }</pre>
      *
      * @see Paper#closePaper()
      */
