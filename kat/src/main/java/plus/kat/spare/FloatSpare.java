@@ -22,14 +22,20 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
+import java.io.Serializable;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class FloatSpare extends NumberSpare<Float> {
+public class FloatSpare extends DataSpare<Float> implements Serializable {
 
     public static final FloatSpare
         INSTANCE = new FloatSpare();
+
+    public FloatSpare() {
+        super(Float.class);
+    }
 
     @NotNull
     @Override
@@ -45,12 +51,6 @@ public class FloatSpare extends NumberSpare<Float> {
             || klass == Float.class
             || klass == Number.class
             || klass == Object.class;
-    }
-
-    @NotNull
-    @Override
-    public Class<Float> getType() {
-        return float.class;
     }
 
     @NotNull

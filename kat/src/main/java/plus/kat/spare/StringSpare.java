@@ -22,16 +22,18 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
-import java.lang.reflect.Type;
-
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class StringSpare implements Spare<String> {
+public class StringSpare extends DataSpare<String> {
 
     public static final StringSpare
         INSTANCE = new StringSpare();
+
+    public StringSpare() {
+        super(String.class);
+    }
 
     @NotNull
     @Override
@@ -46,26 +48,6 @@ public class StringSpare implements Spare<String> {
         return klass == String.class
             || klass == Object.class
             || klass == CharSequence.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<String> getType() {
-        return String.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<String> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @NotNull

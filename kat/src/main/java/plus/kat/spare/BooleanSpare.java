@@ -23,16 +23,19 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class BooleanSpare implements Spare<Boolean>, Serializable {
+public class BooleanSpare extends DataSpare<Boolean> implements Serializable {
 
     public static final BooleanSpare
         INSTANCE = new BooleanSpare();
+
+    public BooleanSpare() {
+        super(Boolean.class);
+    }
 
     @NotNull
     @Override
@@ -47,26 +50,6 @@ public class BooleanSpare implements Spare<Boolean>, Serializable {
         return klass == boolean.class
             || klass == Boolean.class
             || klass == Object.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<Boolean> getType() {
-        return boolean.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<Boolean> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @NotNull

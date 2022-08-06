@@ -23,16 +23,18 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
 
-import java.lang.reflect.Type;
-
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class ByteArraySpare implements Spare<byte[]> {
+public class ByteArraySpare extends DataSpare<byte[]> {
 
     public static final ByteArraySpare
         INSTANCE = new ByteArraySpare();
+
+    public ByteArraySpare() {
+        super(byte[].class);
+    }
 
     @NotNull
     @Override
@@ -46,26 +48,6 @@ public class ByteArraySpare implements Spare<byte[]> {
     ) {
         return klass == byte[].class
             || klass == Object.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<byte[]> getType() {
-        return byte[].class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<byte[]> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

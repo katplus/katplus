@@ -23,14 +23,20 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
 
+import java.io.Serializable;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class ShortSpare extends NumberSpare<Short> {
+public class ShortSpare extends DataSpare<Short> implements Serializable {
 
     public static final ShortSpare
         INSTANCE = new ShortSpare();
+
+    public ShortSpare() {
+        super(Short.class);
+    }
 
     @NotNull
     @Override
@@ -46,12 +52,6 @@ public class ShortSpare extends NumberSpare<Short> {
             || klass == Short.class
             || klass == Number.class
             || klass == Object.class;
-    }
-
-    @NotNull
-    @Override
-    public Class<Short> getType() {
-        return short.class;
     }
 
     @NotNull

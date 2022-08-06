@@ -475,7 +475,7 @@ public interface Supplier {
      * @throws NullPointerException If the specified {@code klass} is null
      */
     @NotNull
-    default <T> CharSequence register(
+    default <T> String register(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
         @NotNull Spare<? super T> spare

@@ -22,7 +22,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
-import java.lang.reflect.Type;
 import java.util.Locale;
 
 import static plus.kat.stream.Strings.lowerAt;
@@ -32,10 +31,14 @@ import static plus.kat.stream.Strings.upperAt;
  * @author kraity
  * @since 0.0.2
  */
-public class LocaleSpare implements Spare<Locale> {
+public class LocaleSpare extends DataSpare<Locale> {
 
     public static final LocaleSpare
         INSTANCE = new LocaleSpare();
+
+    public LocaleSpare() {
+        super(Locale.class);
+    }
 
     @NotNull
     @Override
@@ -49,26 +52,6 @@ public class LocaleSpare implements Spare<Locale> {
     ) {
         return klass == Locale.class
             || klass == Object.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<Locale> getType() {
-        return Locale.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<Locale> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

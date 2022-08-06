@@ -15,27 +15,46 @@
  */
 package plus.kat.spare;
 
+import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.*;
+import plus.kat.Spare;
 
-import java.io.Serializable;
 import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.3
  */
-public abstract class NumberSpare<K extends Number> implements Spare<K>, Serializable {
-    @Nullable
+public abstract class DataSpare<T> implements Spare<T> {
+
+    protected final Class<T> klass;
+
+    protected DataSpare(
+        @NotNull Class<T> klass
+    ) {
+        this.klass = klass;
+    }
+
     @Override
-    public final Boolean getFlag() {
+    public boolean accept(
+        @NotNull Class<?> clazz
+    ) {
+        return clazz.isAssignableFrom(klass);
+    }
+
+    @Override
+    public Boolean getFlag() {
         return null;
     }
 
-    @Nullable
     @Override
-    public final Builder<K> getBuilder(
+    public Class<? extends T> getType() {
+        return klass;
+    }
+
+    @Override
+    public Builder<? extends T> getBuilder(
         @Nullable Type type
     ) {
         return null;

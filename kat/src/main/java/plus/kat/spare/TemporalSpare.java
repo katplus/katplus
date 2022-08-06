@@ -36,7 +36,7 @@ import static java.time.format.DateTimeFormatter.*;
  * @author kraity
  * @since 0.0.2
  */
-public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare<K> {
+public abstract class TemporalSpare<K extends TemporalAccessor> extends DataSpare<K> {
 
     public static final Map<String, DateTimeFormatter>
         CACHE = new ConcurrentHashMap<>();
@@ -47,14 +47,13 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
         );
     }
 
-    protected final Class<K> klass;
     protected final DateTimeFormatter formatter;
 
     protected TemporalSpare(
         @NotNull Class<K> klass,
         @NotNull DateTimeFormatter formatter
     ) {
-        this.klass = klass;
+        super(klass);
         this.formatter = formatter;
     }
 
@@ -71,7 +70,7 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
         @NotNull String zone,
         @NotNull String language
     ) {
-        this.klass = klass;
+        super(klass);
         DateTimeFormatter fmt =
             CACHE.get(pattern);
 
@@ -94,23 +93,6 @@ public abstract class TemporalSpare<K extends TemporalAccessor> implements Spare
                 ZoneId.of(zone)
             );
         }
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> type
-    ) {
-        return type.isAssignableFrom(klass);
-    }
-
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @Override
-    public Class<K> getType() {
-        return klass;
     }
 
     @Override

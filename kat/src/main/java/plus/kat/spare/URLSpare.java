@@ -22,7 +22,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -31,10 +30,14 @@ import java.net.MalformedURLException;
  * @author kraity
  * @since 0.0.2
  */
-public class URLSpare implements Spare<URL> {
+public class URLSpare extends DataSpare<URL> {
 
     public static final URLSpare
         INSTANCE = new URLSpare();
+
+    public URLSpare() {
+        super(URL.class);
+    }
 
     @NotNull
     @Override
@@ -48,26 +51,6 @@ public class URLSpare implements Spare<URL> {
     ) {
         return klass == URL.class
             || klass == Object.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<URL> getType() {
-        return URL.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<URL> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

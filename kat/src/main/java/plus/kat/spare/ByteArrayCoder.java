@@ -22,8 +22,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
-import java.lang.reflect.Type;
-
 /**
  * @author kraity
  * @since 0.0.1
@@ -37,20 +35,6 @@ public class ByteArrayCoder implements Coder<byte[]> {
     @Override
     public Space getSpace() {
         return Space.$s;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public Builder<byte[]> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

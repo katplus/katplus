@@ -23,17 +23,20 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicBooleanSpare implements Spare<AtomicBoolean>, Serializable {
+public class AtomicBooleanSpare extends DataSpare<AtomicBoolean> implements Serializable {
 
     public static final AtomicBooleanSpare
         INSTANCE = new AtomicBooleanSpare();
+
+    public AtomicBooleanSpare() {
+        super(AtomicBoolean.class);
+    }
 
     @NotNull
     @Override
@@ -47,26 +50,6 @@ public class AtomicBooleanSpare implements Spare<AtomicBoolean>, Serializable {
     ) {
         return klass == AtomicBoolean.class
             || klass == Object.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<AtomicBoolean> getType() {
-        return AtomicBoolean.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<AtomicBoolean> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

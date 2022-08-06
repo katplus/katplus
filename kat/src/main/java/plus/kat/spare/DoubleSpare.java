@@ -22,14 +22,20 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
+import java.io.Serializable;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class DoubleSpare extends NumberSpare<Double> {
+public class DoubleSpare extends DataSpare<Double> implements Serializable {
 
     public static final DoubleSpare
         INSTANCE = new DoubleSpare();
+
+    public DoubleSpare() {
+        super(Double.class);
+    }
 
     @NotNull
     @Override
@@ -45,12 +51,6 @@ public class DoubleSpare extends NumberSpare<Double> {
             || klass == Double.class
             || klass == Number.class
             || klass == Object.class;
-    }
-
-    @NotNull
-    @Override
-    public Class<Double> getType() {
-        return double.class;
     }
 
     @NotNull

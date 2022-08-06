@@ -25,26 +25,23 @@ import plus.kat.crash.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
 @SuppressWarnings("unchecked")
-public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>>, Serializable {
+public class EnumSpare<K extends Enum<K>> extends DataSpare<K> implements Serializable {
 
     private K[] enums;
-    private final Class<K> klass;
-    private final CharSequence space;
+    private final String space;
 
     public EnumSpare(
         @NotNull Class<K> klass,
         @Nullable Embed embed,
         @NotNull Supplier supplier
     ) {
-        this.klass = klass;
-
+        super(klass);
         try {
             Method values = klass
                 .getMethod("values");
@@ -66,7 +63,7 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>>, Serializabl
         @Nullable Embed embed,
         @NotNull Supplier supplier
     ) {
-        this.klass = klass;
+        super(klass);
         this.enums = enums;
         this.space = supplier.register(
             embed, klass, this
@@ -74,32 +71,8 @@ public class EnumSpare<K extends Enum<K>> implements Spare<Enum<K>>, Serializabl
     }
 
     @Override
-    public CharSequence getSpace() {
+    public String getSpace() {
         return space;
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return klass == clazz;
-    }
-
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @Override
-    public Class<K> getType() {
-        return klass;
-    }
-
-    @Override
-    public Builder<K> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

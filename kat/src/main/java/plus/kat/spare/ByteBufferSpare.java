@@ -22,49 +22,25 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
-import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class ByteBufferSpare implements Spare<ByteBuffer> {
+public class ByteBufferSpare extends DataSpare<ByteBuffer> {
 
     public static final ByteBufferSpare
         INSTANCE = new ByteBufferSpare();
+
+    public ByteBufferSpare() {
+        super(ByteBuffer.class);
+    }
 
     @NotNull
     @Override
     public Space getSpace() {
         return Space.$s;
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> klass
-    ) {
-        return klass.isAssignableFrom(ByteBuffer.class);
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<ByteBuffer> getType() {
-        return ByteBuffer.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<ByteBuffer> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

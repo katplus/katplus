@@ -22,6 +22,7 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -29,10 +30,14 @@ import java.math.BigInteger;
  * @author kraity
  * @since 0.0.1
  */
-public class BigIntegerSpare extends NumberSpare<BigInteger> {
+public class BigIntegerSpare extends DataSpare<BigInteger> implements Serializable {
 
     public static final BigIntegerSpare
         INSTANCE = new BigIntegerSpare();
+
+    public BigIntegerSpare() {
+        super(BigInteger.class);
+    }
 
     @NotNull
     @Override
@@ -47,12 +52,6 @@ public class BigIntegerSpare extends NumberSpare<BigInteger> {
         return klass == BigInteger.class
             || klass == Number.class
             || klass == Object.class;
-    }
-
-    @NotNull
-    @Override
-    public Class<BigInteger> getType() {
-        return BigInteger.class;
     }
 
     @NotNull

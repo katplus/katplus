@@ -23,7 +23,6 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 
 import java.io.File;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URL;
 
@@ -31,10 +30,14 @@ import java.net.URL;
  * @author kraity
  * @since 0.0.3
  */
-public class FileSpare implements Spare<File> {
+public class FileSpare extends DataSpare<File> {
 
     public static final FileSpare
         INSTANCE = new FileSpare();
+
+    public FileSpare() {
+        super(File.class);
+    }
 
     @NotNull
     @Override
@@ -48,26 +51,6 @@ public class FileSpare implements Spare<File> {
     ) {
         return klass == File.class
             || klass == Object.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<File> getType() {
-        return File.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<File> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

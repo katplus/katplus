@@ -23,14 +23,20 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
 
+import java.io.Serializable;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class IntegerSpare extends NumberSpare<Integer> {
+public class IntegerSpare extends DataSpare<Integer> implements Serializable {
 
     public static final IntegerSpare
         INSTANCE = new IntegerSpare();
+
+    public IntegerSpare() {
+        super(Integer.class);
+    }
 
     @NotNull
     @Override
@@ -46,12 +52,6 @@ public class IntegerSpare extends NumberSpare<Integer> {
             || klass == Integer.class
             || klass == Number.class
             || klass == Object.class;
-    }
-
-    @NotNull
-    @Override
-    public Class<Integer> getType() {
-        return int.class;
     }
 
     @NotNull

@@ -22,7 +22,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
-import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,10 +30,14 @@ import java.net.URISyntaxException;
  * @author kraity
  * @since 0.0.2
  */
-public class URISpare implements Spare<URI> {
+public class URISpare extends DataSpare<URI> {
 
     public static final URISpare
         INSTANCE = new URISpare();
+
+    public URISpare() {
+        super(URI.class);
+    }
 
     @NotNull
     @Override
@@ -48,26 +51,6 @@ public class URISpare implements Spare<URI> {
     ) {
         return klass == URI.class
             || klass == Object.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<URI> getType() {
-        return URI.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<URI> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

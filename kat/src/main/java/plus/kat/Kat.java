@@ -59,11 +59,11 @@ public interface Kat {
     /**
      * Serialization if {@link #getSpace()} is not null
      *
-     * @param page the specified {@link Flow}
+     * @param flow the specified {@link Flow}
      * @throws IOCrash If an I/O error occurs
      */
     default void onCoding(
-        @NotNull Flow page
+        @NotNull Flow flow
     ) throws IOCrash {
         // nothing
     }

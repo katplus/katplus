@@ -24,17 +24,20 @@ import plus.kat.crash.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
-import java.lang.reflect.Type;
 import java.util.UUID;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class UUIDSpare implements Spare<UUID> {
+public class UUIDSpare extends DataSpare<UUID> {
 
     public static final UUIDSpare
         INSTANCE = new UUIDSpare();
+
+    public UUIDSpare() {
+        super(UUID.class);
+    }
 
     @NotNull
     @Override
@@ -48,26 +51,6 @@ public class UUIDSpare implements Spare<UUID> {
     ) {
         return klass == UUID.class
             || klass == Object.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<UUID> getType() {
-        return UUID.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<UUID> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable

@@ -22,16 +22,21 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicIntegerSpare extends NumberSpare<AtomicInteger> {
+public class AtomicIntegerSpare extends DataSpare<AtomicInteger> implements Serializable {
 
     public static final AtomicIntegerSpare
         INSTANCE = new AtomicIntegerSpare();
+
+    public AtomicIntegerSpare() {
+        super(AtomicInteger.class);
+    }
 
     @NotNull
     @Override
@@ -46,12 +51,6 @@ public class AtomicIntegerSpare extends NumberSpare<AtomicInteger> {
         return klass == AtomicInteger.class
             || klass == Number.class
             || klass == Object.class;
-    }
-
-    @NotNull
-    @Override
-    public Class<AtomicInteger> getType() {
-        return AtomicInteger.class;
     }
 
     @Nullable

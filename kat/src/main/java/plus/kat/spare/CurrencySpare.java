@@ -22,7 +22,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
-import java.lang.reflect.Type;
 import java.util.Currency;
 
 import static java.util.Currency.getInstance;
@@ -31,10 +30,14 @@ import static java.util.Currency.getInstance;
  * @author kraity
  * @since 0.0.2
  */
-public class CurrencySpare implements Spare<Currency> {
+public class CurrencySpare extends DataSpare<Currency> {
 
     public static final CurrencySpare
         INSTANCE = new CurrencySpare();
+
+    public CurrencySpare() {
+        super(Currency.class);
+    }
 
     @NotNull
     @Override
@@ -48,26 +51,6 @@ public class CurrencySpare implements Spare<Currency> {
     ) {
         return klass == Currency.class
             || klass == Object.class;
-    }
-
-    @Nullable
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public Class<Currency> getType() {
-        return Currency.class;
-    }
-
-    @Nullable
-    @Override
-    public Builder<Currency> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Nullable
