@@ -20,9 +20,9 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 import plus.kat.stream.*;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -104,7 +104,7 @@ public class LongSpare extends DataSpare<Long> implements Serializable {
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.addLong(
             (long) value
         );

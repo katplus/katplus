@@ -20,8 +20,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.util.Locale;
 
 import static plus.kat.stream.Strings.lowerAt;
@@ -103,7 +103,7 @@ public class LocaleSpare extends DataSpare<Locale> {
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.text(
             value.toString()
         );

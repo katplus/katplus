@@ -25,6 +25,8 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
+import java.io.IOException;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -196,13 +198,13 @@ public class Parser implements Pipe {
     }
 
     /**
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     @Override
     public boolean attach(
         @NotNull Space space,
         @NotNull Alias alias
-    ) throws IOCrash {
+    ) throws IOException {
         if (depth >= range) {
             throw new OutOfRangeCrash(
                 "Parse depth out of range"
@@ -244,14 +246,14 @@ public class Parser implements Pipe {
     }
 
     /**
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     @Override
     public void accept(
         @NotNull Space space,
         @NotNull Alias alias,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         if (depth != 0) {
             active.onAccept(
                 space, alias, value
@@ -272,11 +274,11 @@ public class Parser implements Pipe {
     }
 
     /**
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     @Override
     public boolean detach()
-        throws IOCrash {
+        throws IOException {
         if (--depth < 0) {
             throw new OutOfRangeCrash(
                 "Parse depth out of range"

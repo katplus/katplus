@@ -21,8 +21,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -99,7 +99,7 @@ public abstract class TemporalSpare<K extends TemporalAccessor> extends DataSpar
     public K read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         if (value.isEmpty()) {
             return null;
         }
@@ -112,7 +112,7 @@ public abstract class TemporalSpare<K extends TemporalAccessor> extends DataSpar
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         formatter.formatTo(
             (TemporalAccessor) value, flow
         );
@@ -121,7 +121,7 @@ public abstract class TemporalSpare<K extends TemporalAccessor> extends DataSpar
     @Nullable
     public K cast(
         @NotNull String value
-    ) throws IOCrash {
+    ) throws IOException {
         return null;
     }
 

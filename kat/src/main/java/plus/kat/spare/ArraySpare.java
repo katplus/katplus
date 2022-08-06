@@ -18,6 +18,7 @@ package plus.kat.spare;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
@@ -91,7 +92,7 @@ public class ArraySpare implements Spare<Object> {
     public void write(
         @NotNull Chan chan,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         int l = Array.getLength(value);
         for (int i = 0; i < l; i++) {
             chan.set(
@@ -149,7 +150,7 @@ public class ArraySpare implements Spare<Object> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOCrash {
+        ) throws Crash, IOException {
             v = supplier.lookup(klass);
             if (v == null) {
                 throw new Crash(
@@ -169,7 +170,7 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
-        ) throws IOCrash {
+        ) throws IOException {
             if (length == size) {
                 enlarge();
             }
@@ -185,7 +186,7 @@ public class ArraySpare implements Spare<Object> {
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) throws IOCrash {
+        ) throws IOException {
             throw new UnexpectedCrash(
                 "Unexpectedly, operation not supported"
             );
@@ -195,7 +196,7 @@ public class ArraySpare implements Spare<Object> {
         public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
-        ) throws IOCrash {
+        ) throws IOException {
             throw new UnexpectedCrash(
                 "Unexpectedly, operation not supported"
             );
@@ -265,7 +266,7 @@ public class ArraySpare implements Spare<Object> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOCrash {
+        ) throws Crash, IOException {
             if (type instanceof Class) {
                 if (type == Object.class) {
                     type = null;
@@ -295,7 +296,7 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
-        ) throws IOCrash {
+        ) throws IOException {
             Object data = null;
             if (v != null) {
                 data = v.read(
@@ -374,7 +375,7 @@ public class ArraySpare implements Spare<Object> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOCrash {
+        ) throws Crash, IOException {
             index = -1;
             list = new Object[types.size()];
         }
@@ -384,7 +385,7 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
-        ) throws IOCrash {
+        ) throws IOException {
             if (++index < list.length) {
                 Type type = types
                     .getType(index);

@@ -24,6 +24,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.utils.*;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
@@ -162,7 +163,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         Date date = (Date) value;
         if (flow.isFlag(Flag.DATE_AS_TIMESTAMP)) {
             flow.addLong(

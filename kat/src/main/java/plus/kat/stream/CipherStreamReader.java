@@ -20,6 +20,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.crash.*;
 
 import javax.crypto.Cipher;
+import java.io.IOException;
 import java.io.InputStream;
 
 import static plus.kat.stream.Reader.Bucket.INS;
@@ -56,19 +57,17 @@ public class CipherStreamReader implements Reader {
     }
 
     @Override
-    public boolean also() throws IOCrash {
+    public boolean also() throws IOException {
         if (index < offset) {
             return true;
         }
 
-        if (offset > 0) try {
+        if (offset > 0) {
             offset = read(buffer);
             if (offset > 0) {
                 index = 0;
                 return true;
             }
-        } catch (Exception e) {
-            throw new IOCrash(e);
         }
 
         return false;
@@ -80,19 +79,17 @@ public class CipherStreamReader implements Reader {
     }
 
     @Override
-    public byte next() throws IOCrash {
+    public byte next() throws IOException {
         if (index < offset) {
             return cache[index++];
         }
 
-        if (offset > 0) try {
+        if (offset > 0) {
             offset = read(buffer);
             if (offset > 0) {
                 index = 0;
                 return cache[index++];
             }
-        } catch (Exception e) {
-            throw new IOCrash(e);
         }
 
         throw new UnexpectedCrash(
@@ -102,7 +99,7 @@ public class CipherStreamReader implements Reader {
 
     private int read(
         @NotNull byte[] buf
-    ) throws Exception {
+    ) throws IOException {
         int in = value.read(buf);
         if (in > 0) {
             cache = cipher.update(

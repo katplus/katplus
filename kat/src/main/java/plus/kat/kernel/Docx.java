@@ -21,6 +21,8 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
 
+import java.io.IOException;
+
 import static plus.kat.chain.Space.$s;
 import static plus.kat.chain.Space.$M;
 
@@ -53,13 +55,13 @@ public class Docx implements Solver {
     /**
      * @param p specify the data transfer pipeline
      * @param r specify the source of decoded data
-     * @throws IOCrash Unexpected errors by {@link Pipe} or {@link Reader}
+     * @throws IOException Unexpected errors by {@link Pipe} or {@link Reader}
      */
     @Override
     public void read(
         @NotNull Pipe p,
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         // local
         Alias a = alias;
         Value v = value;
@@ -182,7 +184,7 @@ public class Docx implements Solver {
         @NotNull Value v,
         @NotNull Pipe p,
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         Boot:
         while (r.also()) {
             byte b = r.read();
@@ -237,7 +239,7 @@ public class Docx implements Solver {
 
     protected void decide(
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         byte b;
         while (r.also()) {
             b = r.read();
@@ -259,7 +261,7 @@ public class Docx implements Solver {
     protected void escape(
         @NotNull Chain c,
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         byte b = r.next();
         switch (b) {
             case 'l': {
@@ -346,7 +348,7 @@ public class Docx implements Solver {
     protected void explain(
         @NotNull Value v,
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         byte b;
         Boot:
         switch (r.next()) {
@@ -421,7 +423,7 @@ public class Docx implements Solver {
     protected void dropdown(
         int i,
         Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         boolean in = true;
         Boot:
         while (r.also()) {

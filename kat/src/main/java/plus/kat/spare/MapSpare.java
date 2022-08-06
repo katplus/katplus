@@ -18,6 +18,7 @@ package plus.kat.spare;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -68,7 +69,7 @@ public class MapSpare implements Spare<Map> {
     public Map read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
             return Casting.cast(
                 this, value, flag, null
@@ -81,7 +82,7 @@ public class MapSpare implements Spare<Map> {
     public void write(
         @NotNull Chan chan,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
             chan.set(
                 entry.getKey().toString(),
@@ -137,7 +138,7 @@ public class MapSpare implements Spare<Map> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOCrash {
+        ) throws Crash, IOException {
             Type raw = type;
             if (type instanceof ParameterizedType) {
                 ParameterizedType p = (ParameterizedType) type;
@@ -224,7 +225,7 @@ public class MapSpare implements Spare<Map> {
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
-        ) throws IOCrash {
+        ) throws IOException {
             if (v != null) {
                 alias.setType(tk);
                 value.setType(tv);
@@ -266,7 +267,7 @@ public class MapSpare implements Spare<Map> {
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) throws IOCrash {
+        ) throws IOException {
             if (k == null) {
                 entity.put(
                     alias.toString(),

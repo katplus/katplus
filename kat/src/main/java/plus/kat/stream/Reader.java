@@ -21,6 +21,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.crash.*;
 import plus.kat.utils.Config;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.*;
 
 /**
@@ -31,23 +32,23 @@ public interface Reader {
     /**
      * Read a byte in {@link Reader} and cursor switch to next
      *
-     * @throws IOCrash Unexpected crash if this {@link Reader} has been closed or I/O error occurs
+     * @throws IOException Unexpected crash if this {@link Reader} has been closed or I/O error occurs
      */
-    byte read() throws IOCrash;
+    byte read() throws IOException;
 
     /**
      * Check {@link Reader} for readable bytes
      *
-     * @throws IOCrash Unexpected crash if this {@link Reader} has been closed or I/O error occurs
+     * @throws IOException Unexpected crash if this {@link Reader} has been closed or I/O error occurs
      */
-    boolean also() throws IOCrash;
+    boolean also() throws IOException;
 
     /**
      * Read a byte if {@link Reader} has readable bytes, otherwise raise IOCrash
      *
-     * @throws IOCrash Unexpected crash if this {@link Reader} has been closed or I/O error occurs
+     * @throws IOException Unexpected crash if this {@link Reader} has been closed or I/O error occurs
      */
-    default byte next() throws IOCrash {
+    default byte next() throws IOException {
         if (also()) {
             return read();
         }

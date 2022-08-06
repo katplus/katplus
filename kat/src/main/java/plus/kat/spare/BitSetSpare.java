@@ -23,6 +23,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.utils.Casting;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.BitSet;
 
@@ -104,7 +105,7 @@ public class BitSetSpare implements Spare<BitSet> {
     public void write(
         @NotNull Chan chan,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         BitSet set = (BitSet) value;
         int len = set.length();
         for (int i = 0; i < len; i++) {

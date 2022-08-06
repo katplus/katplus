@@ -18,8 +18,7 @@ package plus.kat.spare;
 import plus.kat.anno.Format;
 import plus.kat.anno.NotNull;
 
-import plus.kat.crash.*;
-
+import java.io.IOException;
 import java.time.ZonedDateTime;
 
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
@@ -53,7 +52,7 @@ public class ZonedDateTimeSpare extends TemporalSpare<ZonedDateTime> {
     @Override
     public ZonedDateTime cast(
         @NotNull String value
-    ) throws IOCrash {
+    ) throws IOException {
         return ZonedDateTime.from(
             formatter.parse(value)
         );

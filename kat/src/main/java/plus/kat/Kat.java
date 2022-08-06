@@ -18,8 +18,9 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.crash.*;
 import plus.kat.spare.*;
+
+import java.io.IOException;
 
 import static plus.kat.Supplier.Impl.INS;
 
@@ -48,11 +49,11 @@ public interface Kat {
      * Serialization if {@link #getSpace()} is not null
      *
      * @param chan the specified {@link Chan}
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     default void onCoding(
         @NotNull Chan chan
-    ) throws IOCrash {
+    ) throws IOException {
         // nothing
     }
 
@@ -60,11 +61,11 @@ public interface Kat {
      * Serialization if {@link #getSpace()} is not null
      *
      * @param flow the specified {@link Flow}
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     default void onCoding(
         @NotNull Flow flow
-    ) throws IOCrash {
+    ) throws IOException {
         // nothing
     }
 

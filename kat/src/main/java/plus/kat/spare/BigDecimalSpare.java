@@ -20,8 +20,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -113,7 +113,7 @@ public class BigDecimalSpare extends DataSpare<BigDecimal> implements Serializab
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.addChars(
             value.toString()
         );

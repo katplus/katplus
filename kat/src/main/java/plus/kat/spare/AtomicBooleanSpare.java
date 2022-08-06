@@ -20,8 +20,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -99,7 +99,7 @@ public class AtomicBooleanSpare extends DataSpare<AtomicBoolean> implements Seri
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.addBoolean(
             ((AtomicBoolean) value).get()
         );

@@ -23,6 +23,8 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
 
+import java.io.IOException;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -76,7 +78,7 @@ public class ByteArraySpare extends DataSpare<byte[]> {
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.addBytes(
             Base64.base().encode(
                 (byte[]) value

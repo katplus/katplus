@@ -18,6 +18,7 @@ package plus.kat.spare;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -69,7 +70,7 @@ public class ListSpare implements Spare<List> {
     public List read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
             return Casting.cast(
                 this, value, flag, null
@@ -82,7 +83,7 @@ public class ListSpare implements Spare<List> {
     public void write(
         @NotNull Chan chan,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         List<?> val =
             (List<?>) value;
 
@@ -170,7 +171,7 @@ public class ListSpare implements Spare<List> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOCrash {
+        ) throws Crash, IOException {
             Type raw = type;
             if (type instanceof ParameterizedType) {
                 ParameterizedType p = (ParameterizedType) type;
@@ -227,7 +228,7 @@ public class ListSpare implements Spare<List> {
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
-        ) throws IOCrash {
+        ) throws IOException {
             if (v != null) {
                 value.setType(param);
                 entity.add(
@@ -255,7 +256,7 @@ public class ListSpare implements Spare<List> {
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) throws IOCrash {
+        ) throws IOException {
             entity.add(
                 child.getResult()
             );

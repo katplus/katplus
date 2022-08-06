@@ -18,8 +18,7 @@ package plus.kat.spare;
 import plus.kat.anno.Format;
 import plus.kat.anno.NotNull;
 
-import plus.kat.crash.*;
-
+import java.io.IOException;
 import java.time.LocalTime;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
@@ -53,7 +52,7 @@ public class LocalTimeSpare extends TemporalSpare<LocalTime> {
     @Override
     public LocalTime cast(
         @NotNull String value
-    ) throws IOCrash {
+    ) throws IOException {
         return LocalTime.from(
             formatter.parse(value)
         );

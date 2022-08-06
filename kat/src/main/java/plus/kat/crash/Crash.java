@@ -18,9 +18,10 @@ package plus.kat.crash;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.Chan;
-import plus.kat.Kat;
-import plus.kat.chain.Space;
+import plus.kat.*;
+import plus.kat.chain.*;
+
+import java.io.IOException;
 
 /**
  * @author kraity
@@ -124,7 +125,7 @@ public class Crash extends Exception implements Kat {
     @Override
     public void onCoding(
         @NotNull Chan chan
-    ) throws IOCrash {
+    ) throws IOException {
         chan.set(
             "c", code
         );

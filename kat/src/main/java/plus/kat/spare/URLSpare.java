@@ -22,6 +22,7 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -112,7 +113,7 @@ public class URLSpare extends DataSpare<URL> {
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.text(
             ((URL) value).toExternalForm()
         );

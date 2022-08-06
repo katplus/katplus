@@ -22,6 +22,8 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
+import java.io.IOException;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -38,13 +40,13 @@ public abstract class Builder<K> {
     protected Supplier supplier;
 
     /**
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     final void onAttach(
         @NotNull Alias a,
         @NotNull Event<?> e,
         @NotNull Builder<?> b
-    ) throws Crash, IOCrash {
+    ) throws Crash, IOException {
         if (parent == null) {
             alias = a;
             parent = b;
@@ -59,28 +61,28 @@ public abstract class Builder<K> {
     }
 
     /**
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     public abstract void onCreate(
         @NotNull Alias alias
-    ) throws Crash, IOCrash;
+    ) throws Crash, IOException;
 
     /**
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     public abstract void onAccept(
         @NotNull Alias alias,
         @NotNull Builder<?> child
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     public abstract void onAccept(
         @NotNull Space space,
         @NotNull Alias alias,
         @NotNull Value value
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * Create a branch of this {@link Builder}
@@ -89,7 +91,7 @@ public abstract class Builder<K> {
     public abstract Builder<?> getBuilder(
         @NotNull Space space,
         @NotNull Alias alias
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * Returns the result of building {@link K}

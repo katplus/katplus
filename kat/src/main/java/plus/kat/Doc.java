@@ -19,9 +19,10 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
+
+import java.io.IOException;
 
 import static plus.kat.Supplier.Impl.INS;
 
@@ -252,13 +253,13 @@ public class Doc extends Chan {
      * Serializes the specified {@code alias} and {@code action} at the current hierarchy
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     @Override
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable Action action
-    ) throws IOCrash {
+    ) throws IOException {
         if (alias == null) {
             return false;
         }
@@ -282,14 +283,14 @@ public class Doc extends Chan {
      * Serializes the specified {@code alias}, {@code space} and {@code action} at the current hierarchy
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     @Override
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable CharSequence space,
         @Nullable Action action
-    ) throws IOCrash {
+    ) throws IOException {
         if (alias == null)
             if ((alias = space) == null)
                 return false;
@@ -326,13 +327,13 @@ public class Doc extends Chan {
      * Writes the specified {@code alias} and {@code value}
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     @Override
     protected boolean coding(
         @Nullable CharSequence alias,
         @NotNull Kat value
-    ) throws IOCrash {
+    ) throws IOException {
         CharSequence space =
             value.getSpace();
         if (alias == null) {
@@ -356,14 +357,14 @@ public class Doc extends Chan {
      * Writes the specified {@code alias} and {@code value} by specified {@link Coder}
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     @Override
     protected boolean coding(
         @Nullable CharSequence alias,
         @NotNull Coder<?> coder,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         if (alias == null) {
             alias = coder.getSpace();
         }

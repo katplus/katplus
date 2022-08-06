@@ -21,8 +21,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
@@ -127,7 +127,7 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializable
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         if (flow.isFlag(Flag.INSTANT_AS_TIMESTAMP)) {
             flow.addLong(
                 ((Instant) value).toEpochMilli()

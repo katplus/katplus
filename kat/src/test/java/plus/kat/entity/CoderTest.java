@@ -8,9 +8,10 @@ import plus.kat.anno.Expose;
 import plus.kat.anno.NotNull;
 import plus.kat.chain.Space;
 import plus.kat.chain.Value;
-import plus.kat.crash.IOCrash;
 import plus.kat.Flow;
 import plus.kat.spare.Coder;
+
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -83,7 +84,7 @@ public class CoderTest {
         public void write(
             @NotNull Flow flow,
             @NotNull Object value
-        ) throws IOCrash {
+        ) throws IOException {
             String val = value.toString();
             if (val.equals("open")) {
                 flow.emit("OPEN");

@@ -23,6 +23,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 
 /**
@@ -96,7 +97,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOCrash {
+        ) throws Crash, IOException {
             // get an instance
             entity = worker.apply(alias);
 
@@ -112,7 +113,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         public void onAccept(
             @NotNull Target tag,
             @NotNull Object value
-        ) throws IOCrash {
+        ) throws IOException {
             setter.onAccept(
                 entity, value
             );
@@ -122,7 +123,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) throws IOCrash {
+        ) throws IOException {
             setter.onAccept(
                 entity, child.getResult()
             );
@@ -133,7 +134,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
-        ) throws IOCrash {
+        ) throws IOException {
             setter = worker.setter(
                 index++, alias
             );
@@ -149,7 +150,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
-        ) throws IOCrash {
+        ) throws IOException {
             setter = worker.setter(
                 index++, alias
             );
@@ -199,7 +200,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOCrash {
+        ) throws Crash, IOException {
             // Nothing
         }
 
@@ -207,7 +208,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         public void onAccept(
             @NotNull Target tag,
             @NotNull Object value
-        ) throws IOCrash {
+        ) throws IOException {
             int i = tag.getIndex();
             data[i] = value;
         }
@@ -216,7 +217,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) throws IOCrash {
+        ) throws IOException {
             int i = target.getIndex();
             data[i] = child.getResult();
         }
@@ -226,7 +227,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
-        ) throws IOCrash {
+        ) throws IOException {
             target = worker.target(
                 index++, alias
             );
@@ -243,7 +244,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
-        ) throws IOCrash {
+        ) throws IOException {
             target = worker.target(
                 index++, alias
             );
@@ -287,7 +288,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         public void onAccept(
             @NotNull Target tag,
             @Nullable Object value
-        ) throws IOCrash {
+        ) throws IOException {
             // Nothing
         }
 
@@ -295,7 +296,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Space space,
             @NotNull Value value,
             @NotNull Target target
-        ) throws IOCrash {
+        ) throws IOException {
             // specified coder
             Coder<?> coder = target.getCoder();
 
@@ -368,7 +369,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Target target
-        ) throws IOCrash {
+        ) throws IOException {
             // specified coder
             Coder<?> coder = target.getCoder();
 

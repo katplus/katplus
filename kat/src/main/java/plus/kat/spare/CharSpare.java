@@ -20,7 +20,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
+
+import java.io.IOException;
 
 /**
  * @author kraity
@@ -100,7 +101,7 @@ public class CharSpare extends DataSpare<Character> {
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.emit(
             (char) value
         );

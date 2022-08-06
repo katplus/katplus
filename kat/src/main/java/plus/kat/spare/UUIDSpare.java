@@ -24,6 +24,7 @@ import plus.kat.crash.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
+import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -119,7 +120,7 @@ public class UUIDSpare extends DataSpare<UUID> {
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         UUID u = (UUID) value;
 
         long most = u.getMostSignificantBits();

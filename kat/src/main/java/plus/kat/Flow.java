@@ -19,6 +19,8 @@ import plus.kat.anno.NotNull;
 
 import plus.kat.crash.*;
 
+import java.io.IOException;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -42,11 +44,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addByte((byte) 'k');
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addByte(
         byte b
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a {@code byte[]} to this {@link Flow}
@@ -57,12 +59,12 @@ public interface Flow extends Flag, Appendable {
      *   flow.addBytes(data);
      * }</pre>
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void addBytes(
         @NotNull byte[] data
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a {@code byte[]} to this {@link Flow}
@@ -73,12 +75,12 @@ public interface Flow extends Flag, Appendable {
      *   flow.addBytes(data, 2, 3); // 128, 256, 512
      * }</pre>
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void addBytes(
         @NotNull byte[] data, int offset, int length
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a short value to this {@link Flow}
@@ -88,11 +90,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addShort((short) 32);
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addShort(
         short num
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add an int value to this {@link Flow}
@@ -103,11 +105,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addInt(64);
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addInt(
         int num
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add an int value to this {@link Flow}
@@ -122,11 +124,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addInt(-36, 4, 12); // 0000ffffffdc
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addInt(
         int num, int shift
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add an int value to this {@link Flow}
@@ -141,12 +143,12 @@ public interface Flow extends Flag, Appendable {
      *   flow.addInt(-36, 4); // ffffffdc
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      * @since 0.0.2
      */
     void addInt(
         int num, int shift, int length
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a long value to this {@link Flow}
@@ -157,11 +159,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addLong(64L);
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addLong(
         long num
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a long value to this {@link Flow}
@@ -176,11 +178,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addLong(-36L, 4); // ffffffffffffffdc
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addLong(
         long num, int shift
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a long value to this {@link Flow}
@@ -195,12 +197,12 @@ public interface Flow extends Flag, Appendable {
      *   flow.addLong(-36L, 4, 12); // 0000ffffffdc
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      * @since 0.0.2
      */
     void addLong(
         long num, int shift, int length
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a float value to this {@link Flow}
@@ -212,11 +214,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addFloat(64.128F);
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addFloat(
         float num
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a float value to this {@link Flow}
@@ -230,11 +232,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addFloat(16.32F, false); // 41828F5C
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addFloat(
         float num, boolean hint
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a double value to this {@link Flow}
@@ -246,11 +248,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addDouble(64.128D);
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addDouble(
         double num
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a double value to this {@link Flow}
@@ -264,11 +266,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addDouble(16.32D, false); // 403051EB851EB852
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addDouble(
         double num, boolean hint
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a boolean value to this {@link Flow}
@@ -279,11 +281,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addBoolean(false);
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addBoolean(
         boolean b
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a char value to this {@link Flow}
@@ -295,11 +297,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.addChar('t');
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void addChar(
         char c
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a {@code char[]} to this {@link Flow}
@@ -310,12 +312,12 @@ public interface Flow extends Flag, Appendable {
      *   flow.addChars(data);
      * }</pre>
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void addChars(
         @NotNull char[] data
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a {@code byte[]} to this {@link Flow}
@@ -326,12 +328,12 @@ public interface Flow extends Flag, Appendable {
      *   flow.addChars(data, 1, 2); // 'a', 't'
      * }</pre>
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void addChars(
         @NotNull char[] data, int offset, int length
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a {@link CharSequence} to this {@link Flow}
@@ -341,12 +343,12 @@ public interface Flow extends Flag, Appendable {
      *   flow.addChars("kat.plus");
      * }</pre>
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void addChars(
         @NotNull CharSequence data
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a {@link CharSequence} to this {@link Flow}
@@ -356,12 +358,12 @@ public interface Flow extends Flag, Appendable {
      *   flow.addChars("kat.plus", 1, 2); // "at"
      * }</pre>
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void addChars(
         @NotNull CharSequence data, int offset, int length
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow},
@@ -380,11 +382,11 @@ public interface Flow extends Flag, Appendable {
      *   flow.emit((byte) 'k'); // not escaped
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void emit(
         byte b
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow},
@@ -403,149 +405,149 @@ public interface Flow extends Flag, Appendable {
      *   flow.emit('k'); // not escaped
      * }</pre>
      *
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void emit(
         char c
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow},
      * which will be escaped if it is a special character
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void emit(
         @NotNull byte[] data
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow},
      * which will be escaped if it is a special character
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void emit(
         @NotNull byte[] data, int offset, int length
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow},
      * which will be escaped if it is a special character
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void emit(
         @NotNull CharSequence data
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow},
      * which will be escaped if it is a special character
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void emit(
         @NotNull CharSequence data, int offset, int length
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow} that will be escaped
      * if it is a special character, or will be escaped to Unicode if it is non-ASCII
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void text(
         char data
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow} that will be escaped
      * if it is a special character, or will be escaped to Unicode if it is non-ASCII
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void text(
         @NotNull byte[] data
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow} that will be escaped
      * if it is a special character, or will be escaped to Unicode if it is non-ASCII
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void text(
         @NotNull byte[] data, int offset, int length
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow} that will be escaped
      * if it is a special character, or will be escaped to Unicode if it is non-ASCII
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void text(
         @NotNull CharSequence data
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow} that will be escaped
      * if it is a special character, or will be escaped to Unicode if it is non-ASCII
      *
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      */
     void text(
         @NotNull CharSequence data, int offset, int length
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow} that will be escaped
      * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
      *
      * @return this {@link Flow}
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      * @since 0.0.2
      */
     @Override
     Flow append(
         char c
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow} that will be escaped
      * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
      *
      * @return this {@link Flow}
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      * @since 0.0.2
      */
     @Override
     Flow append(
         CharSequence data
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * add a data to this {@link Flow} that will be escaped
      * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
      *
      * @return this {@link Flow}
-     * @throws IOCrash              If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
      * @since 0.0.2
      */
     @Override
     Flow append(
         CharSequence data, int start, int end
-    ) throws IOCrash;
+    ) throws IOException;
 }

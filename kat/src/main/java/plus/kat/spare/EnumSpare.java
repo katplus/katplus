@@ -21,8 +21,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
@@ -166,7 +166,7 @@ public class EnumSpare<K extends Enum<K>> extends DataSpare<K> implements Serial
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         Enum<?> e = (Enum<?>) value;
         if (flow.isFlag(Flag.ENUM_AS_INDEX)) {
             flow.addInt(

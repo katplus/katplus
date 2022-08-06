@@ -19,10 +19,10 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
 
+import java.io.IOException;
 import java.util.*;
 
 import static plus.kat.chain.Space.*;
@@ -277,11 +277,11 @@ public class Chan implements Flag {
     @FunctionalInterface
     public interface Action {
         /**
-         * @throws IOCrash If an I/O error occurs
+         * @throws IOException If an I/O error occurs
          */
         void accept(
             @NotNull Chan chan
-        ) throws IOCrash;
+        ) throws IOException;
     }
 
     /**
@@ -294,12 +294,12 @@ public class Chan implements Flag {
      * }</pre>
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable Object value
-    ) throws IOCrash {
+    ) throws IOException {
         if (value == null) {
             return coding(alias);
         }
@@ -337,12 +337,12 @@ public class Chan implements Flag {
      * }</pre>
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable Action action
-    ) throws IOCrash {
+    ) throws IOException {
         if (action != null) {
             flow.addSpace($M);
             flow.addAlias(alias);
@@ -366,13 +366,13 @@ public class Chan implements Flag {
      * }</pre>
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable CharSequence space,
         @Nullable Action action
-    ) throws IOCrash {
+    ) throws IOException {
         if (action != null) {
             flow.addSpace(
                 space == null ? $M : space
@@ -399,13 +399,13 @@ public class Chan implements Flag {
      * }</pre>
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable Coder<?> coder,
         @Nullable Object value
-    ) throws IOCrash {
+    ) throws IOException {
         if (coder == null) {
             return set(
                 alias, value
@@ -440,12 +440,12 @@ public class Chan implements Flag {
      * Writes the specified {@code alias} and {@code value}
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     protected boolean coding(
         @Nullable CharSequence alias,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         if (value instanceof Kat) {
             return coding(
                 alias, (Kat) value
@@ -483,12 +483,12 @@ public class Chan implements Flag {
      * Writes the specified {@code alias} and {@code value}
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     protected boolean coding(
         @Nullable CharSequence alias,
         @NotNull Kat value
-    ) throws IOCrash {
+    ) throws IOException {
         CharSequence space =
             value.getSpace();
         if (space == null) {
@@ -513,13 +513,13 @@ public class Chan implements Flag {
      * Writes the specified {@code alias} and {@code value} by specified {@link Coder}
      *
      * @return {@code true} if successful
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     protected boolean coding(
         @Nullable CharSequence alias,
         @NotNull Coder<?> coder,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.addSpace(
             coder.getSpace()
         );

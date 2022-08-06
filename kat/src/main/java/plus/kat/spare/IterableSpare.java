@@ -18,6 +18,7 @@ package plus.kat.spare;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -81,14 +82,12 @@ public class IterableSpare implements Spare<Iterable> {
     public void write(
         @NotNull Chan chan,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         Iterable<?> val =
             (Iterable<?>) value;
 
         for (Object v : val) {
-            chan.set(
-                null, v
-            );
+            chan.set(null, v);
         }
     }
 
@@ -239,7 +238,7 @@ public class IterableSpare implements Spare<Iterable> {
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
-        ) throws IOCrash {
+        ) throws IOException {
             if (v != null) {
                 value.setType(param);
                 entity.add(

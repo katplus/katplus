@@ -19,6 +19,7 @@ import plus.kat.anno.NotNull;
 
 import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import static plus.kat.stream.Reader.Bucket.INS;
@@ -49,12 +50,12 @@ public class InputStreamReader implements Reader {
     }
 
     @Override
-    public boolean also() throws IOCrash {
+    public boolean also() throws IOException {
         if (index < offset) {
             return true;
         }
 
-        if (offset > 0) try {
+        if (offset > 0) {
             offset = value.read(
                 cache, 0, cache.length
             );
@@ -63,8 +64,6 @@ public class InputStreamReader implements Reader {
                 index = 0;
                 return true;
             }
-        } catch (Exception e) {
-            throw new IOCrash(e);
         }
 
         return false;
@@ -76,12 +75,12 @@ public class InputStreamReader implements Reader {
     }
 
     @Override
-    public byte next() throws IOCrash {
+    public byte next() throws IOException {
         if (index < offset) {
             return cache[index++];
         }
 
-        if (offset > 0) try {
+        if (offset > 0) {
             offset = value.read(
                 cache, 0, cache.length
             );
@@ -90,8 +89,6 @@ public class InputStreamReader implements Reader {
                 index = 0;
                 return cache[index++];
             }
-        } catch (Exception e) {
-            throw new IOCrash(e);
         }
 
         throw new UnexpectedCrash(

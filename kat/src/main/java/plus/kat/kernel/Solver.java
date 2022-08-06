@@ -17,8 +17,9 @@ package plus.kat.kernel;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.crash.*;
 import plus.kat.stream.*;
+
+import java.io.IOException;
 
 /**
  * @author kraity
@@ -28,12 +29,12 @@ public interface Solver {
     /**
      * @param pipe   specify the data transfer pipeline
      * @param reader specify the source of decoded data
-     * @throws IOCrash Unexpected errors by {@link Pipe} or {@link Reader}
+     * @throws IOException Unexpected errors by {@link Pipe} or {@link Reader}
      */
     void read(
         @NotNull Pipe pipe,
         @NotNull Reader reader
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
      * close this {@link Solver}

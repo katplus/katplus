@@ -18,6 +18,7 @@ package plus.kat.spare;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -69,7 +70,7 @@ public class SetSpare implements Spare<Set> {
     public Set read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
             return Casting.cast(
                 this, value, flag, null
@@ -82,7 +83,7 @@ public class SetSpare implements Spare<Set> {
     public void write(
         @NotNull Chan chan,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         for (Object entry : (Set<?>) value) {
             chan.set(
                 null, entry
@@ -164,7 +165,7 @@ public class SetSpare implements Spare<Set> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOCrash {
+        ) throws Crash, IOException {
             Type raw = type;
             if (type instanceof ParameterizedType) {
                 ParameterizedType p = (ParameterizedType) type;
@@ -218,7 +219,7 @@ public class SetSpare implements Spare<Set> {
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
-        ) throws IOCrash {
+        ) throws IOException {
             if (v != null) {
                 value.setType(param);
                 entity.add(
@@ -246,7 +247,7 @@ public class SetSpare implements Spare<Set> {
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) throws IOCrash {
+        ) throws IOException {
             entity.add(
                 child.getResult()
             );

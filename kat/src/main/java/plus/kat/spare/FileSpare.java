@@ -20,9 +20,9 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 
@@ -107,7 +107,7 @@ public class FileSpare extends DataSpare<File> {
     public File read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         if (value.isEmpty()) {
             return null;
         }
@@ -120,7 +120,7 @@ public class FileSpare extends DataSpare<File> {
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.text(
             ((File) value).getPath()
         );

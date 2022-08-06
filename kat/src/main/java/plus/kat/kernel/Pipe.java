@@ -18,7 +18,8 @@ package plus.kat.kernel;
 import plus.kat.anno.NotNull;
 
 import plus.kat.chain.*;
-import plus.kat.crash.*;
+
+import java.io.IOException;
 
 /**
  * @author kraity
@@ -26,24 +27,24 @@ import plus.kat.crash.*;
  */
 public interface Pipe {
     /**
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     boolean attach(
         @NotNull Space space,
         @NotNull Alias alias
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     void accept(
         @NotNull Space space,
         @NotNull Alias alias,
         @NotNull Value value
-    ) throws IOCrash;
+    ) throws IOException;
 
     /**
-     * @throws IOCrash If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
-    boolean detach() throws IOCrash;
+    boolean detach() throws IOException;
 }

@@ -27,6 +27,7 @@ import plus.kat.entity.*;
 import plus.kat.utils.Casting;
 import plus.kat.utils.KatMap;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -171,7 +172,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
     public void write(
         @NotNull Chan chan,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         Node<T> node = head;
         while (node != null) {
             Object val = node.onApply(value);

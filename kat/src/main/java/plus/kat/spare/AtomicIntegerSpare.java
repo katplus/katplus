@@ -20,8 +20,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -100,7 +100,7 @@ public class AtomicIntegerSpare extends DataSpare<AtomicInteger> implements Seri
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.addInt(
             ((AtomicInteger) value).get()
         );

@@ -20,8 +20,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -192,7 +192,7 @@ public class ObjectSpare implements Spare<Object> {
     public void write(
         Chan chan,
         Object value
-    ) throws IOCrash {
+    ) throws IOException {
         if (value instanceof Map) {
             for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
                 chan.set(
@@ -213,7 +213,7 @@ public class ObjectSpare implements Spare<Object> {
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         if (value instanceof Number) {
             if (value instanceof Integer) {
                 flow.addInt(

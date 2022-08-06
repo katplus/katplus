@@ -18,6 +18,7 @@ package plus.kat.reflex;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.*;
 import java.lang.reflect.*;
@@ -773,7 +774,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOCrash {
+        ) throws Crash, IOException {
             int size = args.length;
             if (marker) {
                 size += 2;
@@ -799,7 +800,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         public void onAccept(
             @NotNull Target tag,
             @NotNull Object value
-        ) throws IOCrash {
+        ) throws IOException {
             if (entity != null) {
                 setter.onAccept(
                     entity, value
@@ -812,7 +813,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     try {
                         this.embark();
                     } catch (Crash e) {
-                        throw new IOCrash(e);
+                        throw new IOException(e);
                     }
                 }
             } else {
@@ -833,7 +834,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) throws IOCrash {
+        ) throws IOException {
             onAccept(
                 null, child.getResult()
             );
@@ -844,7 +845,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
-        ) throws IOCrash {
+        ) throws IOException {
             int i = index++;
             if (entity != null) {
                 setter = worker.setter(
@@ -880,7 +881,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
-        ) throws IOCrash {
+        ) throws IOException {
             int i = index++;
             if (entity != null) {
                 setter = worker.setter(

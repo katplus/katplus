@@ -22,6 +22,8 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
 
+import java.io.IOException;
+
 import static plus.kat.chain.Space.$;
 import static plus.kat.chain.Space.$s;
 import static plus.kat.chain.Space.$M;
@@ -59,13 +61,13 @@ public class Mage implements Solver {
     /**
      * @param p specify the data transfer pipeline
      * @param r specify the source of decoded data
-     * @throws IOCrash Unexpected errors by {@link Pipe} or {@link Reader}
+     * @throws IOException Unexpected errors by {@link Pipe} or {@link Reader}
      */
     @Override
     public void read(
         @NotNull Pipe p,
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         Boot:
         // decode json stream
         while (r.also()) {
@@ -244,7 +246,7 @@ public class Mage implements Solver {
         Pipe p,
         Reader r,
         boolean mark
-    ) throws IOCrash {
+    ) throws IOException {
         if (mask == Long.MIN_VALUE) {
             throw new UnexpectedCrash(
                 "Unexpectedly, out of range"
@@ -277,7 +279,7 @@ public class Mage implements Solver {
     protected void accept(
         Pipe p,
         Space s
-    ) throws IOCrash {
+    ) throws IOException {
         p.accept(
             s, alias, value
         );
@@ -288,7 +290,7 @@ public class Mage implements Solver {
     protected void bundle(
         Pipe p,
         boolean m
-    ) throws IOCrash {
+    ) throws IOException {
         if (mutable == m) {
             p.detach();
             mask >>>= 1;
@@ -302,7 +304,7 @@ public class Mage implements Solver {
 
     protected void escape(
         Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         byte b2 = r.next();
         byte b3 = r.next();
         byte b4 = r.next();
@@ -323,7 +325,7 @@ public class Mage implements Solver {
         Chain c,
         byte e,
         Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         while (true) {
             byte b = r.next();
             if (b == e) {
@@ -361,7 +363,7 @@ public class Mage implements Solver {
     protected void dropdown(
         byte a,
         Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         while (true) {
             byte b = r.next();
             if (a == b) {

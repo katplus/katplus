@@ -21,6 +21,8 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
 
+import java.io.IOException;
+
 import static plus.kat.kernel.Radar.Event.*;
 import static plus.kat.stream.Binary.hex;
 
@@ -69,13 +71,13 @@ public class Radar implements Solver {
      *
      * @param p specify the data transfer pipeline
      * @param r specify the source of decoded data
-     * @throws IOCrash Unexpected errors by {@link Pipe} or {@link Reader}
+     * @throws IOException Unexpected errors by {@link Pipe} or {@link Reader}
      */
     @Override
     public void read(
         @NotNull Pipe p,
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         // event status
         Event event = SPACE;
 
@@ -239,7 +241,7 @@ public class Radar implements Solver {
     protected void escape(
         @NotNull Chain c,
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         if (r.also()) {
             byte b = r.read();
             switch (b) {
@@ -273,7 +275,7 @@ public class Radar implements Solver {
      */
     protected void explain(
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         while (true) {
             switch (r.next()) {
                 case '#':
@@ -290,7 +292,7 @@ public class Radar implements Solver {
      */
     protected void dropdown(
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         int i = 0;
         while (true) {
             switch (r.next()) {
@@ -351,7 +353,7 @@ public class Radar implements Solver {
     static void uncork(
         @NotNull Chain c,
         @NotNull Reader r
-    ) throws IOCrash {
+    ) throws IOException {
         // hex number
         int c1 = hex(r.next());
         int c2 = hex(r.next());

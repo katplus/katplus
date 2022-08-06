@@ -20,8 +20,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.util.Currency;
 
 import static java.util.Currency.getInstance;
@@ -118,7 +118,7 @@ public class CurrencySpare extends DataSpare<Currency> {
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         flow.emit(
             value.toString()
         );

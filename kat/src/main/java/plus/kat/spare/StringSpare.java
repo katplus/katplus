@@ -20,7 +20,8 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
+
+import java.io.IOException;
 
 /**
  * @author kraity
@@ -81,7 +82,7 @@ public class StringSpare extends DataSpare<String> {
     public void write(
         @NotNull Flow flow,
         @NotNull Object value
-    ) throws IOCrash {
+    ) throws IOException {
         if (flow.isFlag(Flag.UNICODE)) {
             flow.text(
                 value.toString()
