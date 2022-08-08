@@ -68,7 +68,9 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
         Entry<K, V> e = tab[m & h];
 
         while (e != null) {
-            if (e.hash == h && key.equals(e.key)) {
+            if (e.hash == h &&
+                (key.equals(e.key) ||
+                    e.key.equals(key))) {
                 return e.val;
             }
             e = e.next;
@@ -120,7 +122,9 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
                 return null;
             }
 
-            if (e.hash == h && key.equals(e.key)) {
+            if (e.hash == h &&
+                (key.equals(e.key) ||
+                    e.key.equals(key))) {
                 V v = e.val;
                 e.val = val;
                 return v;
@@ -145,7 +149,9 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
                 }
 
                 e = e.next;
-                if (e.hash == h && key.equals(e.key)) {
+                if (e.hash == h &&
+                    (key.equals(e.key) ||
+                        e.key.equals(key))) {
                     V v = e.val;
                     e.val = val;
                     return v;
@@ -227,7 +233,9 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
             return null;
         }
 
-        if (e.hash == h && key.equals(e.key)) {
+        if (e.hash == h &&
+            (key.equals(e.key) ||
+                e.key.equals(key))) {
             tab[i] = null;
             size--;
             V v = e.val;
@@ -241,7 +249,9 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
                 return null;
             }
 
-            if (n.hash == h && key.equals(n.key)) {
+            if (n.hash == h &&
+                (key.equals(e.key) ||
+                    e.key.equals(key))) {
                 e.next = n.next;
                 size--;
                 V v = n.val;
@@ -271,7 +281,9 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
         Entry<K, V> e = tab[m & h];
 
         while (e != null) {
-            if (e.hash == h && key.equals(e.key)) {
+            if (e.hash == h &&
+                (key.equals(e.key) ||
+                    e.key.equals(key))) {
                 return true;
             }
             e = e.next;

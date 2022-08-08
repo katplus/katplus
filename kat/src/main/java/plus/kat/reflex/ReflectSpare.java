@@ -120,7 +120,10 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         @NotNull Supplier supplier,
         @NotNull Map<?, ?> data
     ) throws Exception {
-        // create ins
+        if (params != null) {
+            return null;
+        }
+
         T entity = apply(
             Alias.EMPTY
         );
