@@ -107,8 +107,8 @@ public class Mage implements Solver {
         // codec
         while (r.also()) {
             if (mutable) Alias:
-                do {
-                    byte b = r.read();
+                while (true) {
+                    byte b = r.next();
                     if (b <= 0x20) {
                         switch (b) {
                             case 0x09:
@@ -145,12 +145,10 @@ public class Mage implements Solver {
                             );
                         }
                     }
-                } while (
-                    r.also()
-                );
+                }
 
-            while (r.also()) {
-                byte b = r.read();
+            while (true) {
+                byte b = r.next();
                 if (b <= 0x20) {
                     switch (b) {
                         case 0x09:
@@ -202,8 +200,8 @@ public class Mage implements Solver {
                     }
                 }
 
-                while (r.also()) {
-                    byte c = r.read();
+                while (true) {
+                    byte c = r.next();
                     if (c <= 0x20) {
                         switch (c) {
                             case 0x09:

@@ -91,8 +91,8 @@ public class Docx implements Solver {
                 }
                 case SLASH: {
                     if (a.isEmpty()) {
-                        while (r.also()) {
-                            byte d = r.read();
+                        while (true) {
+                            byte d = r.next();
                             if (d != GT) {
                                 continue;
                             }
@@ -102,8 +102,8 @@ public class Docx implements Solver {
                         }
                     } else {
                         int i = 0;
-                        while (r.also()) {
-                            byte d = r.read();
+                        while (true) {
+                            byte d = r.next();
                             if (d == GT) {
                                 p.accept(
                                     $s, a, v
@@ -123,7 +123,6 @@ public class Docx implements Solver {
                             );
                         }
                     }
-                    break Boot;
                 }
                 default: {
                     if (a.isNotEmpty()) {
@@ -140,8 +139,8 @@ public class Docx implements Solver {
                     v.clean();
                     a.chain(c);
 
-                    while (r.also()) {
-                        b = r.read();
+                    while (true) {
+                        b = r.next();
                         if (b == AMP) {
                             escape(a, r);
                             continue;
@@ -186,8 +185,8 @@ public class Docx implements Solver {
         @NotNull Reader r
     ) throws IOException {
         Boot:
-        while (r.also()) {
-            byte b = r.read();
+        while (true) {
+            byte b = r.next();
 
             if (b == GT) {
                 break;
@@ -215,8 +214,8 @@ public class Docx implements Solver {
 
             b = r.next();
             if (b == QUOT) {
-                while (r.also()) {
-                    b = r.read();
+                while (true) {
+                    b = r.next();
                     if (b != QUOT) {
                         v.chain(b);
                         continue;
@@ -241,8 +240,8 @@ public class Docx implements Solver {
         @NotNull Reader r
     ) throws IOException {
         byte b;
-        while (r.also()) {
-            b = r.read();
+        while (true) {
+            b = r.next();
             if (b != '?') {
                 continue;
             }
@@ -360,8 +359,8 @@ public class Docx implements Solver {
                     );
                 }
 
-                while (r.also()) {
-                    b = r.read();
+                while (true) {
+                    b = r.next();
                     if (b != '-') {
                         continue;
                     }
@@ -376,7 +375,6 @@ public class Docx implements Solver {
                         break Boot;
                     }
                 }
-                break;
             }
             case '[': {
                 byte[] m = {
@@ -393,8 +391,8 @@ public class Docx implements Solver {
                     );
                 }
 
-                while (r.also()) {
-                    byte c = r.read();
+                while (true) {
+                    byte c = r.next();
                     if (c != ']') {
                         v.chain(c);
                         continue;
@@ -455,8 +453,8 @@ public class Docx implements Solver {
                             } else {
                                 c = ']';
                             }
-                            while (r.also()) {
-                                if (r.read() != c) {
+                            while (true) {
+                                if (r.next() != c) {
                                     continue;
                                 }
                                 if (r.next() != c) {
@@ -466,7 +464,6 @@ public class Docx implements Solver {
                                     continue Boot;
                                 }
                             }
-                            continue;
                         }
                         default: {
                             i++;
@@ -476,17 +473,13 @@ public class Docx implements Solver {
                     }
                 }
                 case '/': {
-                    if (in && r.also()) {
-                        if (r.read() == '>') i--;
-                    }
+                    if (in && r.next() == '>') i--;
                     continue;
                 }
                 case '"': {
-                    if (in) {
-                        while (r.also()) {
-                            if (r.read() == '"') {
-                                continue Boot;
-                            }
+                    if (in) while (true) {
+                        if (r.next() == '"') {
+                            continue Boot;
                         }
                     }
                 }

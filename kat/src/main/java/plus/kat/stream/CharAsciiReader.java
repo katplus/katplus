@@ -43,6 +43,7 @@ public class CharAsciiReader extends CharReader {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected int load() {
         int cap = end - begin;
         if (cap <= 0) {

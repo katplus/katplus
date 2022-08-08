@@ -90,8 +90,8 @@ public class Radar implements Solver {
         // decode kat stream
         while (r.also()) switch (event) {
             case SPACE: {
-                do {
-                    byte b = r.read();
+                while (true) {
+                    byte b = r.next();
                     if (b <= 0x20) {
                         if (s.isEmpty())
                             switch (b) {
@@ -99,7 +99,9 @@ public class Radar implements Solver {
                                 case 0x0A:
                                 case 0x0D:
                                 case 0x20: {
-                                    continue;
+                                    if (r.also()) {
+                                        continue;
+                                    } else break Radar;
                                 }
                             }
                         throw new UnexpectedCrash(
@@ -135,10 +137,10 @@ public class Radar implements Solver {
                         }
                         case '}': {
                             if (s.isEmpty()) {
-                                if (p.detach()) {
-                                    continue;
-                                } else {
+                                if (!p.detach()) {
                                     break Radar;
+                                } else {
+                                    continue Radar;
                                 }
                             }
                             throw new UnexpectedCrash(
@@ -155,10 +157,7 @@ public class Radar implements Solver {
                             s.chain(b);
                         }
                     }
-                } while (
-                    r.also()
-                );
-                break Radar;
+                }
             }
             case ALIAS: {
                 while (true) {
@@ -242,32 +241,30 @@ public class Radar implements Solver {
         @NotNull Chain c,
         @NotNull Reader r
     ) throws IOException {
-        if (r.also()) {
-            byte b = r.read();
-            switch (b) {
-                case '^': {
-                    c.chain(b);
-                    return;
-                }
-                case 's': {
-                    b = ' ';
-                    break;
-                }
-                case 'r': {
-                    b = '\r';
-                    break;
-                }
-                case 'n': {
-                    b = '\n';
-                    break;
-                }
-                case 'u': {
-                    uncork(c, r);
-                    return;
-                }
+        byte b = r.next();
+        switch (b) {
+            case '^': {
+                c.chain(b);
+                return;
             }
-            c.chain(b);
+            case 's': {
+                b = ' ';
+                break;
+            }
+            case 'r': {
+                b = '\r';
+                break;
+            }
+            case 'n': {
+                b = '\n';
+                break;
+            }
+            case 'u': {
+                uncork(c, r);
+                return;
+            }
         }
+        c.chain(b);
     }
 
     /**
@@ -312,27 +309,24 @@ public class Radar implements Solver {
                     continue;
                 }
                 case '^': {
-                    if (r.also()) {
-                        r.read();
-                    }
+                    r.next();
                     continue;
                 }
                 case '(': {
                     Drop:
-                    while (r.also()) {
-                        switch (r.read()) {
-                            case '(': {
-                                throw new UnexpectedCrash(
-                                    "Unexpectedly, byte '40', it can't be here."
-                                );
+                    while (true) {
+                        switch (r.next()) {
+                            case '^': {
+                                r.next();
+                                continue;
                             }
                             case ')': {
                                 break Drop;
                             }
-                            case '^': {
-                                if (r.also()) {
-                                    r.read();
-                                }
+                            case '(': {
+                                throw new UnexpectedCrash(
+                                    "Unexpectedly, byte '40', it can't be here."
+                                );
                             }
                         }
                     }
