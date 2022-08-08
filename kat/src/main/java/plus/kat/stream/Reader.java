@@ -109,13 +109,9 @@ public interface Reader {
         public void revert(
             @Nullable byte[] it
         ) {
-            if (it != null && it.length != SCALE) {
+            if (it != null && SCALE == it.length) {
                 Thread th = Thread.currentThread();
-                int tr = th.hashCode() & 0xFFFFFF;
-
-                this.set(
-                    tr % SIZE, it
-                );
+                set((th.hashCode() & 0xFFFFFF) % SIZE, it);
             }
         }
     }
