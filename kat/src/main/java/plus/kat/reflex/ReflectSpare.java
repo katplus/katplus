@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.*;
 import java.lang.reflect.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.Map;
 
 import plus.kat.*;
@@ -31,6 +34,7 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
+import plus.kat.utils.Casting;
 import plus.kat.utils.KatMap;
 import plus.kat.utils.Reflect;
 
@@ -133,9 +137,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             return null;
         }
 
-        // foreach
         for (Map.Entry<?, ?> entry : data.entrySet()) {
-            // key
             Object key = entry.getKey();
             if (key == null) {
                 continue;
@@ -143,24 +145,50 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
             // try lookup
             Setter<T, ?> setter = get(key);
-            if (setter == null) {
+            if (setter != null) {
+                Casting.update(
+                    entity, entry.getValue(), setter, supplier
+                );
+            }
+        }
+
+        return entity;
+    }
+
+    @Override
+    public T apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet data
+    ) throws Crash, SQLException {
+        if (params != null) {
+            return null;
+        }
+
+        T entity = apply(
+            Alias.EMPTY
+        );
+
+        if (entity == null) {
+            return null;
+        }
+
+        ResultSetMetaData meta =
+            data.getMetaData();
+
+        int count = meta.getColumnCount();
+        for (int i = 1; i <= count; i++) {
+            String key = meta.getColumnName(i);
+            if (key == null) {
                 continue;
             }
 
-            // get class specified
-            Class<?> klass = setter.getType();
-
-            // get spare specified
-            Spare<?> spare = supplier.lookup(klass);
-            if (spare == null) {
-                continue;
+            // try lookup
+            Setter<T, ?> setter = get(key);
+            if (setter != null) {
+                Casting.update(
+                    entity, data.getObject(i), setter, supplier
+                );
             }
-
-            setter.onAccept(
-                entity, spare.cast(
-                    supplier, entry.getValue()
-                )
-            );
         }
 
         return entity;

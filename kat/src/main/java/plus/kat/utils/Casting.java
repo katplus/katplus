@@ -19,6 +19,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
+import plus.kat.entity.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
@@ -28,7 +29,7 @@ import static plus.kat.Job.*;
  * @author kraity
  * @since 0.0.1
  */
-public class Casting {
+public final class Casting {
     /**
      * Parse {@link CharSequence} and convert result to {@link K}
      *
@@ -184,5 +185,101 @@ public class Casting {
                 supplier
             )
         );
+    }
+
+    /**
+     * @param it  the entity
+     * @param val the value of entity
+     * @since 0.0.3
+     */
+    public static void update(
+        @NotNull Object[] it,
+        @Nullable Object val,
+        @NotNull Target target,
+        @Nullable Supplier supplier
+    ) {
+        // get class specified
+        Class<?> klass = target.getType();
+
+        // check type
+        if (klass == null) {
+            return;
+        }
+
+        // update field
+        int i = target.getIndex();
+        if (val != null) {
+            Class<?> type = val.getClass();
+            if (klass.isAssignableFrom(type)) {
+                it[i] = val;
+                return;
+            }
+        }
+
+        // check supplier
+        if (supplier == null) {
+            supplier = Supplier.ins();
+        }
+
+        // get spare specified
+        Spare<?> spare = supplier.lookup(klass);
+
+        // update field
+        if (spare != null) {
+            it[i] = spare.cast(
+                supplier, val
+            );
+        }
+    }
+
+    /**
+     * @param it  the entity
+     * @param val the value of entity
+     * @since 0.0.3
+     */
+    public static <T> void update(
+        @NotNull T it,
+        @Nullable Object val,
+        @NotNull Setter<T, ?> set,
+        @Nullable Supplier supplier
+    ) {
+        // get class specified
+        Class<?> klass = set.getType();
+
+        // check type
+        if (klass == null) {
+            set.onAccept(
+                it, val
+            );
+            return;
+        }
+
+        // update field
+        if (val != null) {
+            Class<?> type = val.getClass();
+            if (klass.isAssignableFrom(type)) {
+                set.onAccept(
+                    it, val
+                );
+                return;
+            }
+        }
+
+        // check supplier
+        if (supplier == null) {
+            supplier = Supplier.ins();
+        }
+
+        // get spare specified
+        Spare<?> spare = supplier.lookup(klass);
+
+        // update field
+        if (spare != null) {
+            set.onAccept(
+                it, spare.cast(
+                    supplier, val
+                )
+            );
+        }
     }
 }

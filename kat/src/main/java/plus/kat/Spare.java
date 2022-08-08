@@ -31,6 +31,8 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -91,6 +93,25 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
+     * If {@link K} is a Bean, then perform
+     * a given {@link ResultSet} to create a {@code K}
+     *
+     * @param supplier  the specified {@code supplier}
+     * @param resultSet the specified {@code resultSet} to be used
+     * @throws Crash                If it fails when creating an instance
+     * @throws SQLException         If a database access error occurs
+     * @throws NullPointerException If the {@code supplier} or {@code resultSet} is null
+     * @since 0.0.3
+     */
+    @Nullable
+    default K apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws Crash, SQLException {
+        return null;
+    }
+
+    /**
      * If {@link K} is a Bean, then perform a given
      * action in each item until all entries are processed.
      *
@@ -107,7 +128,7 @@ public interface Spare<K> extends Coder<K> {
      *  String name = (String) collector.get("name");
      * }</pre>
      *
-     * @throws NullPointerException If the bean or action is null
+     * @throws NullPointerException If the {@code bean} or {@code action} is null
      * @since 0.0.3
      */
     default void flat(

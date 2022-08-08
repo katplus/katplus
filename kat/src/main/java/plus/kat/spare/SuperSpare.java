@@ -29,6 +29,7 @@ import plus.kat.utils.KatMap;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.sql.ResultSet;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -133,6 +134,14 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         if (data instanceof Map) try {
             return cast(
                 supplier, (Map<?, ?>) data
+            );
+        } catch (Exception e) {
+            return null;
+        }
+
+        if (data instanceof ResultSet) try {
+            return apply(
+                supplier, (ResultSet) data
             );
         } catch (Exception e) {
             return null;

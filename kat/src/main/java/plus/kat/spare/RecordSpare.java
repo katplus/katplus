@@ -21,10 +21,14 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
+import plus.kat.utils.Casting;
 import plus.kat.utils.Reflect;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.Map;
 
 import static plus.kat.utils.Reflect.lookup;
@@ -90,9 +94,8 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
         // parameters
         Object[] args = new Object[width];
 
-        // foreach
+        // update params
         for (Map.Entry<?, ?> entry : data.entrySet()) {
-            // key
             Object key = entry.getKey();
             if (key == null) {
                 continue;
@@ -100,23 +103,44 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
 
             // try lookup
             Target target = get(key);
-            if (target == null) {
+            if (target != null) {
+                Casting.update(
+                    args, entry.getValue(), target, supplier
+                );
+            }
+        }
+
+        return apply(
+            Alias.EMPTY, args
+        );
+    }
+
+    @Override
+    public T apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet data
+    ) throws Crash, SQLException {
+        ResultSetMetaData meta =
+            data.getMetaData();
+
+        // parameters
+        Object[] args = new Object[width];
+
+        // update params
+        int count = meta.getColumnCount();
+        for (int i = 1; i <= count; i++) {
+            String key = meta.getColumnName(i);
+            if (key == null) {
                 continue;
             }
 
-            // get class specified
-            Class<?> klass = target.getType();
-
-            // get spare specified
-            Spare<?> spare = supplier.lookup(klass);
-            if (spare == null) {
-                continue;
+            // try lookup
+            Target target = get(key);
+            if (target != null) {
+                Casting.update(
+                    args, data.getObject(i), target, supplier
+                );
             }
-
-            int i = target.getIndex();
-            args[i] = spare.cast(
-                entry.getValue()
-            );
         }
 
         return apply(
