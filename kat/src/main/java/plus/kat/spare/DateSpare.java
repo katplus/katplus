@@ -99,22 +99,40 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
         return null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public Date cast(
         @NotNull Supplier supplier,
         @Nullable Object data
     ) {
+        if (data == null) {
+            return null;
+        }
+
         if (data instanceof Date) {
             return (Date) data;
         }
 
-        if (data instanceof String) {
+        if (data instanceof Long) {
+            return new Date(
+                (long) data
+            );
+        }
+
+        if (data instanceof Integer) {
+            return new Date(
+                (int) data * 1000L
+            );
+        }
+
+        if (data instanceof CharSequence) {
+            String d = data.toString();
+            if (d.isEmpty()) {
+                return null;
+            }
             synchronized (this) {
                 try {
-                    return parse(
-                        (String) data
-                    );
+                    return parse(d);
                 } catch (Exception e) {
                     return null;
                 }
@@ -135,18 +153,9 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
             return null;
         }
 
-        if (len == 10) {
-            long sec = value.toLong();
-            if (sec > 0) {
-                return new Date(
-                    sec * 1000
-                );
-            }
-        } else if (len == 13) {
-            long mil = value.toLong();
-            if (mil > 0) {
-                return new Date(mil);
-            }
+        long mil = value.toLong(-1);
+        if (mil >= 0) {
+            return new Date(mil);
         }
 
         String text = value.toString();

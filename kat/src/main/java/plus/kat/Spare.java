@@ -94,7 +94,7 @@ public interface Spare<K> extends Coder<K> {
 
     /**
      * If {@link K} is a Bean, then perform
-     * a given {@link ResultSet} to create a {@code K}
+     * a given {@link ResultSet} to create a {@link K}
      *
      * @param result the specified {@code resultSet} to be used
      * @throws NullPointerException If the {@code result} is null
@@ -113,7 +113,7 @@ public interface Spare<K> extends Coder<K> {
 
     /**
      * If {@link K} is a Bean, then perform
-     * a given {@link ResultSet} to create a {@code K}
+     * a given {@link ResultSet} to create a {@link K}
      *
      * @param supplier  the specified {@code supplier}
      * @param resultSet the specified {@code resultSet} to be used

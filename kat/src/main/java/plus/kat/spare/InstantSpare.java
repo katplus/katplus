@@ -71,8 +71,14 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializable
         }
 
         if (data instanceof Long) {
-            return Instant.ofEpochSecond(
+            return Instant.ofEpochMilli(
                 (long) data
+            );
+        }
+
+        if (data instanceof Integer) {
+            return Instant.ofEpochSecond(
+                ((Number) data).longValue()
             );
         }
 
@@ -104,16 +110,9 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializable
             return null;
         }
 
-        if (len == 10) {
-            long sec = value.toLong();
-            if (sec > 0) {
-                return Instant.ofEpochSecond(sec);
-            }
-        } else if (len == 13) {
-            long mil = value.toLong();
-            if (mil > 0) {
-                return Instant.ofEpochMilli(mil);
-            }
+        long mil = value.toLong(-1);
+        if (mil >= 0) {
+            return Instant.ofEpochMilli(mil);
         }
 
         return Instant.from(

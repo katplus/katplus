@@ -21,6 +21,9 @@ import plus.kat.anno.Nullable;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -89,6 +92,28 @@ public class MapSpare implements Spare<Map> {
                 entry.getValue()
             );
         }
+    }
+
+    @NotNull
+    @Override
+    public Map apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet data
+    ) throws SQLException {
+        Map<String, Object> entity =
+            new LinkedHashMap<>();
+
+        ResultSetMetaData meta =
+            data.getMetaData();
+
+        int count = meta.getColumnCount();
+        for (int i = 1; i <= count; i++) {
+            entity.put(
+                meta.getColumnName(i), data.getObject(i)
+            );
+        }
+
+        return entity;
     }
 
     @Nullable

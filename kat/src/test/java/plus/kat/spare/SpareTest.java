@@ -112,7 +112,7 @@ public class SpareTest {
 
         Role role = spare.read(
             new Event<Role>(
-                "${$:now(2022-01-11 11:11:11)$:last(1641910260)$:time(1641871353000)$:date(2022-02-22T22:22:22.222Z)$:just(03,三月 2022)$:instant(2022-02-22 22:33)$:localDate(2022-02-22)$:localTime(22:33)$:localDateTime(2022-02-22 22:33)}"
+                "${$:now(2022-01-11 11:11:11)$:time(1641871353000)$:date(2022-02-22T22:22:22.222Z)$:just(03,三月 2022)$:instant(2022-02-22 22:33)$:localDate(2022-02-22)$:localTime(22:33)$:localDateTime(2022-02-22 22:33)}"
             ) {
                 @Override
                 public void onError(Exception e) {
@@ -122,7 +122,14 @@ public class SpareTest {
         );
 
         assertNotNull(role);
-        assertEquals("Role{Date:now(2022-01-11 11:11:11)Date:last(2022-01-11 22:11:00)Date:time(2022-01-11 11:22:33)Date:date(2022-02-22T22:22:22.222Z)Date:just(03,三月 2022)Instant:instant(2022-02-22 22:33)LocalDate:localDate(2022-02-22)LocalTime:localTime(22:33)LocalDateTime:localDateTime(2022-02-22 22:33)}", spare.write(role).toString());
+        assertEquals("Role{Date:now(2022-01-11 11:11:11)Date:time(2022-01-11 11:22:33)Date:date(2022-02-22T22:22:22.222Z)Date:just(03,三月 2022)Instant:instant(2022-02-22 22:33)LocalDate:localDate(2022-02-22)LocalTime:localTime(22:33)LocalDateTime:localDateTime(2022-02-22 22:33)}", spare.write(role).toString());
+    }
+
+    @Test
+    public void test_date_cast() {
+        DateSpare spare = DateSpare.INSTANCE;
+        assertEquals(1641871353000L, spare.cast(1641871353).getTime());
+        assertEquals(1641871353999L, spare.cast(1641871353999L).getTime());
     }
 
     public static class Art {
@@ -183,7 +190,6 @@ public class SpareTest {
     @Embed("Role")
     static class Role {
         public Date now;
-        public Date last;
         public Date time;
 
         @Format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
@@ -416,7 +422,7 @@ public class SpareTest {
         InstantSpare spare = InstantSpare.INSTANCE;
 
         Instant i0 = spare.read("$(1645540424)");
-        assertEquals("Instant(1645540424000)", Kat.encode(i0, Flag.INSTANT_AS_TIMESTAMP));
+        assertEquals("Instant(1645540424)", Kat.encode(i0, Flag.INSTANT_AS_TIMESTAMP));
 
         Instant i1 = spare.read("$(1645540424123)");
         assertEquals("Instant(1645540424123)", Kat.encode(i1, Flag.INSTANT_AS_TIMESTAMP));

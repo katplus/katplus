@@ -178,7 +178,7 @@ public interface Supplier {
 
     /**
      * If {@link E} is a Bean, then perform
-     * a given {@link ResultSet} to create a {@code K}
+     * a given {@link ResultSet} to create a {@link E}
      *
      * @throws NullPointerException If the {@code klass} or {@code resultSet} is null
      * @throws SQLException         If it fails to create or a database access error occurs
