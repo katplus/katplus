@@ -6,6 +6,7 @@ import plus.kat.chain.Value;
 import plus.kat.crash.IOCrash;
 import plus.kat.crash.UnexpectedCrash;
 import plus.kat.spare.Builder;
+import plus.kat.spare.DataSpare;
 
 import java.lang.reflect.Type;
 import java.math.BigInteger;
@@ -103,22 +104,9 @@ public class SpareTest {
             StringBuilder.class
         };
 
-        Spare<CharSequence> spare = new Spare<CharSequence>() {
-            @Override
-            public CharSequence getSpace() {
-                return null;
-            }
-
-            @Override
-            public Boolean getFlag() {
-                return null;
-            }
-
-            @Override
-            public boolean accept(Class<?> klass) {
-                return false;
-            }
-
+        Spare<CharSequence> spare = new DataSpare<CharSequence>(
+            CharSequence.class
+        ) {
             @Override
             public CharSequence read(
                 Flag flag,
@@ -141,16 +129,6 @@ public class SpareTest {
                 }
 
                 throw new UnexpectedCrash();
-            }
-
-            @Override
-            public Class<CharSequence> getType() {
-                return null;
-            }
-
-            @Override
-            public Builder<CharSequence> getBuilder(Type type) {
-                return null;
             }
         };
 

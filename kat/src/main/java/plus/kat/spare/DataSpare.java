@@ -37,6 +37,11 @@ public abstract class DataSpare<T> implements Spare<T> {
     }
 
     @Override
+    public CharSequence getSpace() {
+        return klass.getName();
+    }
+
+    @Override
     public boolean accept(
         @NotNull Class<?> clazz
     ) {

@@ -364,7 +364,7 @@ spare.flat(
     user, collector::put
 );
 
-nt id = (int) collector.get("id");
+int id = (int) collector.get("id");
 String name = (String) collector.get("name");
 ```
 
