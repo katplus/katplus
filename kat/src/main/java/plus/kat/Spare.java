@@ -96,18 +96,36 @@ public interface Spare<K> extends Coder<K> {
      * If {@link K} is a Bean, then perform
      * a given {@link ResultSet} to create a {@code K}
      *
+     * @param result the specified {@code resultSet} to be used
+     * @throws NullPointerException If the {@code result} is null
+     * @throws SQLException         If it fails to create or a database access error occurs
+     * @see Spare#apply(Supplier, ResultSet)
+     * @since 0.0.3
+     */
+    @Nullable
+    default K apply(
+        @NotNull ResultSet result
+    ) throws SQLException {
+        return apply(
+            Impl.INS, result
+        );
+    }
+
+    /**
+     * If {@link K} is a Bean, then perform
+     * a given {@link ResultSet} to create a {@code K}
+     *
      * @param supplier  the specified {@code supplier}
      * @param resultSet the specified {@code resultSet} to be used
-     * @throws Crash                If it fails when creating an instance
-     * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the {@code supplier} or {@code resultSet} is null
+     * @throws SQLException         If it fails to create or a database access error occurs
      * @since 0.0.3
      */
     @Nullable
     default K apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
-    ) throws Crash, SQLException {
+    ) throws SQLException {
         return null;
     }
 

@@ -24,6 +24,8 @@ import plus.kat.spare.*;
 import plus.kat.utils.*;
 
 import java.lang.reflect.Type;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.concurrent.*;
 
 import static plus.kat.chain.Space.*;
@@ -172,6 +174,29 @@ public interface Supplier {
     @NotNull
     static Supplier ins() {
         return Impl.INS;
+    }
+
+    /**
+     * If {@link E} is a Bean, then perform
+     * a given {@link ResultSet} to create a {@code K}
+     *
+     * @throws NullPointerException If the {@code klass} or {@code resultSet} is null
+     * @throws SQLException         If it fails to create or a database access error occurs
+     * @see Spare#apply(Supplier, ResultSet)
+     * @since 0.0.3
+     */
+    @Nullable
+    default <E> E apply(
+        @NotNull Class<E> klass,
+        @NotNull ResultSet result
+    ) throws SQLException {
+        Spare<E> spare = lookup(klass);
+
+        if (spare == null) {
+            return null;
+        }
+
+        return spare.apply(this, result);
     }
 
     /**

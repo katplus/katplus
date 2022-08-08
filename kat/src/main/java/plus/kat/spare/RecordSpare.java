@@ -119,7 +119,7 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
     public T apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet data
-    ) throws Crash, SQLException {
+    ) throws SQLException {
         ResultSetMetaData meta =
             data.getMetaData();
 
@@ -143,9 +143,15 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
             }
         }
 
-        return apply(
-            Alias.EMPTY, args
-        );
+        try {
+            return apply(
+                Alias.EMPTY, args
+            );
+        } catch (Throwable e) {
+            throw new SQLException(
+                "Error creating specified " + klass, e
+            );
+        }
     }
 
     @Override

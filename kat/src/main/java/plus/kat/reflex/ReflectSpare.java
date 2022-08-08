@@ -159,14 +159,21 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
     public T apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet data
-    ) throws Crash, SQLException {
+    ) throws SQLException {
         if (params != null) {
             return null;
         }
 
-        T entity = apply(
-            Alias.EMPTY
-        );
+        T entity;
+        try {
+            entity = apply(
+                Alias.EMPTY
+            );
+        } catch (Throwable e) {
+            throw new SQLException(
+                "Error creating specified " + klass, e
+            );
+        }
 
         if (entity == null) {
             return null;
