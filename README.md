@@ -353,6 +353,37 @@ User user = spare.cast(
 );
 ```
 
+FLAT:
+
+```java
+Spare<User> spare = ...
+Map<String, Object> collector = ...
+
+User user = ...
+spare.flat(
+    user, collector::put
+);
+
+nt id = (int) collector.get("id");
+String name = (String) collector.get("name");
+```
+
+JDBC:
+
+```java
+// register User
+Spare<User> spare = Spare.lookup(User.class);
+
+ResultSet rs = stmt.executeQuery(sql);
+List<User> users = new ArrayList<>();
+
+while (rs.next()) {
+    users.add(
+        spare.apply(rs)
+    );
+}
+```
+
 ### 3.1 Use **Event**
 
 Create event:

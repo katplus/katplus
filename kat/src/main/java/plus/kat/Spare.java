@@ -115,6 +115,19 @@ public interface Spare<K> extends Coder<K> {
      * If {@link K} is a Bean, then perform
      * a given {@link ResultSet} to create a {@link K}
      *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *
+     *  ResultSet rs = stmt.executeQuery(sql);
+     *  List<User> users = new ArrayList<>();
+     *
+     *  while (rs.next()) {
+     *    users.add(
+     *      spare.apply(rs)
+     *    );
+     *  }
+     * }</pre>
+     *
      * @param supplier  the specified {@code supplier}
      * @param resultSet the specified {@code resultSet} to be used
      * @throws NullPointerException If the {@code supplier} or {@code resultSet} is null
