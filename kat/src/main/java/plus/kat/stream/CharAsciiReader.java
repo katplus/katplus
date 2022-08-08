@@ -16,28 +16,21 @@
 package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
-import plus.kat.crash.IOCrash;
-import plus.kat.crash.UnexpectedCrash;
+
+import plus.kat.kernel.*;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class CharAsciiReader implements Reader {
-
-    private int index;
-    private int offset;
-    private CharSequence value;
-
+public class CharAsciiReader extends CharReader {
+    /**
+     * @throws NullPointerException If the data is null
+     */
     public CharAsciiReader(
         @NotNull CharSequence data
     ) {
-        if (data == null) {
-            throw new NullPointerException();
-        }
-
-        this.value = data;
-        this.offset = data.length();
+        super(data);
     }
 
     /**
@@ -46,47 +39,51 @@ public class CharAsciiReader implements Reader {
     public CharAsciiReader(
         @NotNull CharSequence data, int index, int length
     ) {
-        if (data == null) {
-            throw new NullPointerException();
+        super(data, index, length);
+    }
+
+    @Override
+    protected int load() {
+        int cap = end - begin;
+        if (cap <= 0) {
+            return -1;
         }
 
-        int offset = index + length;
-        if (index < 0 ||
-            offset <= index ||
-            offset > data.length()
-        ) {
-            throw new IndexOutOfBoundsException();
+        byte[] tmp = cache;
+        if (tmp == null) {
+            int r = range;
+            if (r == 0) {
+                r = 128;
+            }
+            if (cap < r) {
+                r = cap;
+            }
+            cache = tmp = new byte[r];
         }
 
-        this.value = data;
-        this.index = index;
-        this.offset = offset;
-    }
-
-    @Override
-    public boolean also() {
-        return index < offset;
-    }
-
-    @Override
-    public byte read() {
-        return (byte) value.charAt(index++);
-    }
-
-    @Override
-    public byte next() throws IOCrash {
-        if (index < offset) {
-            return (byte) value.charAt(index++);
+        if (cap > tmp.length) {
+            cap = tmp.length;
         }
 
-        throw new UnexpectedCrash(
-            "Unexpectedly, no readable byte"
-        );
-    }
+        if (value instanceof String) {
+            String s = (String) value;
+            s.getBytes(
+                begin, begin += cap, tmp, 0
+            );
+        } else if (value instanceof Chain) {
+            Chain c = (Chain) value;
+            cap = c.getBytes(
+                begin, tmp, 0, cap
+            );
+            if (cap > 0) {
+                begin += cap;
+            }
+        } else {
+            for (int i = 0; i < cap; i++) {
+                tmp[i] = (byte) value.charAt(begin++);
+            }
+        }
 
-    @Override
-    public void close() {
-        offset = 0;
-        value = null;
+        return cap;
     }
 }

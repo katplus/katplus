@@ -17,23 +17,19 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.crash.*;
-
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class CharReader implements Reader {
+public class CharReader extends AbstractReader {
 
-    private int index;
-    private int offset;
+    protected int begin;
+    protected final int end;
+    protected CharSequence value;
 
-    private int begin;
-    private final int end;
-
-    private byte[] cache;
-    private CharSequence value;
-
+    /**
+     * @throws NullPointerException If the data is null
+     */
     public CharReader(
         @NotNull CharSequence data
     ) {
@@ -43,12 +39,10 @@ public class CharReader implements Reader {
 
         value = data;
         end = data.length();
-        cache = new byte[64];
-        index = cache.length;
-        offset = cache.length;
     }
 
     /**
+     * @throws NullPointerException      If the data is null
      * @throws IndexOutOfBoundsException If the index and the length are out of range
      */
     public CharReader(
@@ -67,72 +61,44 @@ public class CharReader implements Reader {
         }
 
         this.value = data;
-        this.begin = index;
         this.end = end;
-        this.cache = new byte[64];
-        this.index = cache.length;
-        this.offset = cache.length;
+        this.begin = index;
     }
 
     @Override
-    public boolean also() {
-        if (index < offset) {
-            return true;
+    protected int load() {
+        int cap = end - begin;
+        if (cap <= 0) {
+            return -1;
         }
 
-        if (offset > 0) {
-            offset = read(cache);
-            if (offset > 0) {
-                index = 0;
-                return true;
+        byte[] tmp = cache;
+        if (tmp == null) {
+            int r = range;
+            if (r == 0) {
+                r = 128;
             }
-        }
-
-        return false;
-    }
-
-    @Override
-    public byte read() {
-        return cache[index++];
-    }
-
-    @Override
-    public byte next() throws IOCrash {
-        if (index < offset) {
-            return cache[index++];
-        }
-
-        if (offset > 0) {
-            offset = read(cache);
-            if (offset > 0) {
-                index = 0;
-                return cache[index++];
+            if ((cap *= 3) < r) {
+                r = cap;
             }
+            cache = tmp = new byte[r];
         }
 
-        throw new UnexpectedCrash(
-            "Unexpectedly, no readable byte"
-        );
-    }
-
-    private int read(
-        @NotNull byte[] buf
-    ) {
-        int i = 0, l = buf.length;
+        int i = 0, l = tmp.length;
         for (; i < l && begin < end; begin++) {
             // get char
             char c = value.charAt(begin);
 
             // U+0000 ~ U+007F
             if (c < 0x80) {
-                buf[i++] = (byte) c;
+                tmp[i++] = (byte) c;
             }
 
             // U+0080 ~ U+07FF
             else if (c < 0x800) {
                 if (i + 2 > l) break;
-                buf[i++] = (byte) ((c >> 6) | 0xC0);
-                buf[i++] = (byte) ((c & 0x3F) | 0x80);
+                tmp[i++] = (byte) ((c >> 6) | 0xC0);
+                tmp[i++] = (byte) ((c & 0x3F) | 0x80);
             }
 
             // U+10000 ~ U+10FFFF
@@ -140,29 +106,29 @@ public class CharReader implements Reader {
             else if (c >= 0xD800 && c <= 0xDFFF) {
                 if (i + 4 > l) break;
                 if (++begin >= end) {
-                    buf[i++] = '?';
+                    tmp[i++] = '?';
                     break;
                 }
 
                 char d = value.charAt(begin);
                 if (d < 0xDC00 || d > 0xDFFF) {
-                    buf[i++] = '?';
+                    tmp[i++] = '?';
                     continue;
                 }
 
                 int u = (c << 10) + d - 0x35F_DC00;
-                buf[i++] = (byte) ((u >> 18) | 0xF0);
-                buf[i++] = (byte) (((u >> 12) & 0x3F) | 0x80);
-                buf[i++] = (byte) (((u >> 6) & 0x3F) | 0x80);
-                buf[i++] = (byte) ((u & 0x3F) | 0x80);
+                tmp[i++] = (byte) ((u >> 18) | 0xF0);
+                tmp[i++] = (byte) (((u >> 12) & 0x3F) | 0x80);
+                tmp[i++] = (byte) (((u >> 6) & 0x3F) | 0x80);
+                tmp[i++] = (byte) ((u & 0x3F) | 0x80);
             }
 
             // U+0800 ~ U+FFFF
             else {
                 if (i + 3 > l) break;
-                buf[i++] = (byte) ((c >> 12) | 0xE0);
-                buf[i++] = (byte) (((c >> 6) & 0x3F) | 0x80);
-                buf[i++] = (byte) ((c & 0x3F) | 0x80);
+                tmp[i++] = (byte) ((c >> 12) | 0xE0);
+                tmp[i++] = (byte) (((c >> 6) & 0x3F) | 0x80);
+                tmp[i++] = (byte) ((c & 0x3F) | 0x80);
             }
         }
 
@@ -171,8 +137,8 @@ public class CharReader implements Reader {
 
     @Override
     public void close() {
-        offset = 0;
         value = null;
         cache = null;
+        offset = -1;
     }
 }

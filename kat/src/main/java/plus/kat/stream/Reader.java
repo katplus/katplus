@@ -30,23 +30,24 @@ import java.util.concurrent.atomic.*;
  */
 public interface Reader {
     /**
-     * Read a byte in {@link Reader} and cursor switch to next
+     * Reads a byte in {@link Reader} and index switch to next
      *
-     * @throws IOException Unexpected crash if this {@link Reader} has been closed or I/O error occurs
+     * @throws IOException                    If this has been closed or I/O error occurs
+     * @throws ArrayIndexOutOfBoundsException If the index is greater than or equal to the size of the array
      */
     byte read() throws IOException;
 
     /**
-     * Check {@link Reader} for readable bytes
+     * Checks {@link Reader} for readable bytes
      *
-     * @throws IOException Unexpected crash if this {@link Reader} has been closed or I/O error occurs
+     * @throws IOException If this has been closed or I/O error occurs
      */
     boolean also() throws IOException;
 
     /**
-     * Read a byte if {@link Reader} has readable bytes, otherwise raise IOCrash
+     * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOCrash
      *
-     * @throws IOException Unexpected crash if this {@link Reader} has been closed or I/O error occurs
+     * @throws IOException If this has been closed or I/O error occurs
      */
     default byte next() throws IOException {
         if (also()) {
@@ -108,7 +109,7 @@ public interface Reader {
         public void revert(
             @Nullable byte[] it
         ) {
-            if (it != null && it.length >= SCALE) {
+            if (it != null && it.length != SCALE) {
                 Thread th = Thread.currentThread();
                 int tr = th.hashCode() & 0xFFFFFF;
 

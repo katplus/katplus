@@ -17,8 +17,6 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.crash.*;
-
 import javax.crypto.Cipher;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,12 +27,9 @@ import static plus.kat.stream.Reader.Bucket.INS;
  * @author kraity
  * @since 0.0.1
  */
-public class CipherStreamReader implements Reader {
+public class CipherStreamReader extends AbstractReader {
 
-    private int index;
-    private int offset;
-
-    private byte[] cache;
+    private int in, mark;
     private byte[] buffer;
 
     private Cipher cipher;
@@ -51,71 +46,57 @@ public class CipherStreamReader implements Reader {
 
         this.value = data;
         this.cipher = cipher;
-        this.buffer = INS.alloc();
-        this.index = buffer.length;
-        this.offset = buffer.length;
     }
 
     @Override
-    public boolean also() throws IOException {
-        if (index < offset) {
-            return true;
+    protected int load()
+        throws IOException {
+        byte[] tmp = buffer;
+        if (tmp == null) {
+            buffer = tmp = alloc();
         }
 
-        if (offset > 0) {
-            offset = read(buffer);
-            if (offset > 0) {
-                index = 0;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public byte read() {
-        return cache[index++];
-    }
-
-    @Override
-    public byte next() throws IOException {
-        if (index < offset) {
-            return cache[index++];
-        }
-
-        if (offset > 0) {
-            offset = read(buffer);
-            if (offset > 0) {
-                index = 0;
-                return cache[index++];
-            }
-        }
-
-        throw new UnexpectedCrash(
-            "Unexpectedly, no readable byte"
+        int s = scale(
+            tmp.length
         );
-    }
 
-    private int read(
-        @NotNull byte[] buf
-    ) throws IOException {
-        int in = value.read(buf);
-        if (in > 0) {
+        int i = in, m = mark;
+        if (m == 0) {
+            i = value.read(tmp);
+            if (i <= s) {
+                s = i;
+            } else {
+                in = i;
+                mark = s;
+            }
+        } else {
+            int n = i - m;
+            if (n <= s) {
+                s = n;
+                in = 0;
+                mark = 0;
+            } else {
+                mark += s;
+            }
+        }
+
+        if (i > 0) {
             cache = cipher.update(
-                buf, 0, in
+                tmp, m, s
             );
             if (cache == null ||
                 cache.length == 0) {
-                return read(buf);
+                return load();
             }
-        } else try {
-            cache = cipher.doFinal();
-            if (cache == null) {
-                return -1;
+        } else {
+            try {
+                cache = cipher.doFinal();
+                if (cache == null) {
+                    return -1;
+                }
+            } catch (Exception e) {
+                throw new IOException(e);
             }
-        } catch (Exception e) {
-            return -1;
         }
 
         return cache.length;
@@ -134,9 +115,9 @@ public class CipherStreamReader implements Reader {
         } catch (Exception e) {
             // NOOP
         } finally {
-            offset = 0;
             cache = null;
             value = null;
+            offset = -1;
             cipher = null;
             buffer = null;
         }

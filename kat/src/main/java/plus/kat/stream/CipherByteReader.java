@@ -17,24 +17,19 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.crash.*;
-
 import javax.crypto.Cipher;
+import java.io.IOException;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class CipherByteReader implements Reader {
-
-    private int index;
-    private int offset;
+public class CipherByteReader extends AbstractReader {
 
     private int begin;
-    private int end;
-    private byte[] value;
+    private final int end;
 
-    private byte[] cache;
+    private byte[] value;
     private Cipher cipher;
 
     /**
@@ -50,10 +45,8 @@ public class CipherByteReader implements Reader {
         }
 
         this.value = data;
-        this.cipher = cipher;
         this.end = data.length;
-        this.index = data.length;
-        this.offset = data.length;
+        this.cipher = cipher;
     }
 
     /**
@@ -80,81 +73,40 @@ public class CipherByteReader implements Reader {
         }
 
         this.value = data;
-        this.cipher = cipher;
         this.begin = index;
         this.end = offset;
-        this.index = data.length;
-        this.offset = data.length;
+        this.cipher = cipher;
     }
 
     @Override
-    public boolean also() throws IOCrash {
-        if (index < offset) {
-            return true;
-        }
+    protected int load()
+        throws IOException {
+        int b = begin;
+        int length = end - b;
 
-        if (offset > 0) try {
-            offset = read(value);
-            if (offset > 0) {
-                index = 0;
-                return true;
+        if (length > 0) {
+            int s = scale;
+            if (s != 0 &&
+                length > s) {
+                length = s;
             }
-        } catch (Exception e) {
-            throw new IOCrash(e);
-        }
-
-        return false;
-    }
-
-    @Override
-    public byte read() {
-        return cache[index++];
-    }
-
-    @Override
-    public byte next() throws IOCrash {
-        if (index < offset) {
-            return cache[index++];
-        }
-
-        if (offset > 0) try {
-            offset = read(value);
-            if (offset > 0) {
-                index = 0;
-                return cache[index++];
-            }
-        } catch (Exception e) {
-            throw new IOCrash(e);
-        }
-
-        throw new UnexpectedCrash(
-            "Unexpectedly, no readable byte"
-        );
-    }
-
-    private int read(
-        @NotNull byte[] buf
-    ) {
-        int more = end - begin;
-        if (more > 0) {
-            if (more > offset) {
-                more = offset;
-            }
-            begin += more;
+            begin += length;
             cache = cipher.update(
-                buf, 0, more
+                value, b, length
             );
             if (cache == null ||
                 cache.length == 0) {
-                return read(buf);
+                return load();
             }
-        } else try {
-            cache = cipher.doFinal();
-            if (cache == null) {
-                return -1;
+        } else {
+            try {
+                cache = cipher.doFinal();
+                if (cache == null) {
+                    return -1;
+                }
+            } catch (Exception e) {
+                throw new IOException(e);
             }
-        } catch (Exception e) {
-            return -1;
         }
 
         return cache.length;
@@ -170,8 +122,7 @@ public class CipherByteReader implements Reader {
         } catch (Exception e) {
             // NOOP
         } finally {
-            end = 0;
-            offset = 0;
+            offset = -1;
             cipher = null;
         }
     }

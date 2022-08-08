@@ -17,8 +17,6 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.crash.*;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -28,12 +26,8 @@ import static plus.kat.stream.Reader.Bucket.INS;
  * @author kraity
  * @since 0.0.1
  */
-public class InputStreamReader implements Reader {
+public class InputStreamReader extends AbstractReader {
 
-    private int index;
-    private int offset;
-
-    private byte[] cache;
     private InputStream value;
 
     public InputStreamReader(
@@ -44,55 +38,18 @@ public class InputStreamReader implements Reader {
         }
 
         this.value = data;
-        this.cache = INS.alloc();
-        this.index = cache.length;
-        this.offset = cache.length;
     }
 
     @Override
-    public boolean also() throws IOException {
-        if (index < offset) {
-            return true;
+    protected int load()
+        throws IOException {
+        byte[] tmp = cache;
+        if (tmp == null) {
+            cache = tmp = alloc();
         }
 
-        if (offset > 0) {
-            offset = value.read(
-                cache, 0, cache.length
-            );
-
-            if (offset > 0) {
-                index = 0;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public byte read() {
-        return cache[index++];
-    }
-
-    @Override
-    public byte next() throws IOException {
-        if (index < offset) {
-            return cache[index++];
-        }
-
-        if (offset > 0) {
-            offset = value.read(
-                cache, 0, cache.length
-            );
-
-            if (offset > 0) {
-                index = 0;
-                return cache[index++];
-            }
-        }
-
-        throw new UnexpectedCrash(
-            "Unexpectedly, no readable byte"
+        return value.read(
+            tmp, 0, scale(tmp.length)
         );
     }
 
@@ -106,9 +63,9 @@ public class InputStreamReader implements Reader {
         } catch (Exception e) {
             // NOOP
         } finally {
-            offset = 0;
             cache = null;
             value = null;
+            offset = -1;
         }
     }
 }

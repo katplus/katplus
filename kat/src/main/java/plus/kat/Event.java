@@ -155,25 +155,6 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * For example
-     * <pre>{@code
-     *   CharSequence data = ...;
-     *   Cipher cipher = ...;
-     *   Event<User> event = new Event<>(data, cipher);
-     * }</pre>
-     *
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see CipherCharReader#CipherCharReader(CharSequence, Cipher)
-     */
-    public Event(
-        @NotNull CharSequence data,
-        @NotNull Cipher cipher
-    ) {
-        this(Event.class);
-        reader = new CipherCharReader(data, cipher);
-    }
-
-    /**
      * @throws NullPointerException      If the specified {@code data} is null
      * @throws IndexOutOfBoundsException If the index and the length are out of range
      * @see ByteReader#ByteReader(byte[], int, int)

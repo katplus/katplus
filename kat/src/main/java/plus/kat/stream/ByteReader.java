@@ -19,6 +19,8 @@ import plus.kat.anno.NotNull;
 
 import plus.kat.crash.*;
 
+import java.io.IOException;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -78,7 +80,7 @@ public class ByteReader implements Reader {
     }
 
     @Override
-    public byte next() throws IOCrash {
+    public byte next() throws IOException {
         if (index < offset) {
             return value[index++];
         }
