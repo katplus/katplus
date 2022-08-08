@@ -17,6 +17,7 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
+import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
@@ -168,17 +169,49 @@ public final class Binary {
     /**
      * @param d specify the {@code d} to be converted
      */
+    @NotNull
+    @SuppressWarnings("deprecation")
     public static byte[] ascii(
         @NotNull String d
     ) {
         int len = d.length();
         if (len != 0) {
             byte[] it = new byte[len];
-            for (int i = 0; i < len; i++) {
-                it[i] = (byte) d.charAt(i);
-            }
+            d.getBytes(0, len, it, 0);
             return it;
         }
         return Chain.EMPTY_BYTES;
+    }
+
+    /**
+     * @param d specify the {@code d} to be converted
+     * @since 0.0.3
+     */
+    @NotNull
+    @SuppressWarnings("deprecation")
+    public static String ascii(
+        @NotNull byte[] d
+    ) {
+        if (d.length == 0) {
+            return "";
+        }
+        return new String(
+            d, 0, 0, d.length
+        );
+    }
+
+    /**
+     * @param d specify the {@code d} to be referenced
+     * @since 0.0.3
+     */
+    @NotNull
+    public static Alias alias(
+        @NotNull byte[] d
+    ) {
+        if (d.length == 0) {
+            return Alias.EMPTY;
+        } else {
+            return new Alias(d);
+        }
     }
 }

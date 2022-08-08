@@ -30,6 +30,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.spare.*;
+import plus.kat.stream.*;
 import plus.kat.utils.KatMap;
 import plus.kat.utils.Reflect;
 
@@ -319,6 +320,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
     /**
      * @param methods the specified {@link Method} collection
      */
+    @SuppressWarnings("deprecation")
     protected void onMethods(
         @NotNull Method[] methods
     ) {
@@ -445,11 +447,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
 
                 name = new byte[l - i + 1];
                 name[0] = (byte) c1;
-                name[1] = (byte) c2;
-
-                for (int k = 2; ++i < l; ) {
-                    name[k++] = (byte) key.charAt(i);
-                }
+                key.getBytes(i, l, name, 1);
             }
 
             try {
@@ -460,14 +458,13 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 continue;
             }
 
-            Alias alias = new Alias(name);
             if (count == 0) {
                 getter(
-                    alias, handle
+                    Binary.ascii(name), handle
                 );
             } else {
                 setter(
-                    alias, handle
+                    Binary.alias(name), handle
                 );
 
                 // check whether to use direct index

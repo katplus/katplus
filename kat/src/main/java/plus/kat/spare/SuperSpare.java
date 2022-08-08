@@ -214,7 +214,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
             Object val = node.onApply(bean);
             if (val != null || node.nullable) {
                 action.accept(
-                    node.key.toString(), val
+                    node.key, val
                 );
             }
             node = node.next;
@@ -235,7 +235,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
      * @param getter the specified {@link Getter}
      */
     protected void getter(
-        @NotNull CharSequence key,
+        @NotNull String key,
         @NotNull Node<T> getter
     ) {
         getter.key = key;
@@ -287,8 +287,8 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         extends Entry<E, Node<E>>
         implements Getter<E, Object> {
 
+        private String key;
         private Node<E> next;
-        private CharSequence key;
 
         protected final int index;
         protected Coder<?> coder;
