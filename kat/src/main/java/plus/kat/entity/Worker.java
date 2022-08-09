@@ -150,7 +150,9 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             // try lookup
             Setter<K, ?> setter = setter(key);
             if (setter == null) {
-                continue;
+                throw new SQLCrash(
+                    "Can't find the Setter of " + key
+                );
             }
 
             // get the value
@@ -186,15 +188,20 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
             // update field
             if (spare != null) {
-                Object tag = spare.cast(
+                val = spare.cast(
                     supplier, val
                 );
-                if (tag != null) {
+                if (val != null) {
                     setter.onAccept(
-                        entity, tag
+                        entity, val
                     );
+                    continue;
                 }
             }
+
+            throw new SQLCrash(
+                "Cannot convert the type of " + key + " from " + type + " to " + klass
+            );
         }
 
         return entity;
@@ -224,7 +231,17 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             // try lookup
             Target target = target(key);
             if (target == null) {
-                continue;
+                throw new SQLCrash(
+                    "Can't find the Target of " + key
+                );
+            }
+
+            // check index
+            int k = target.getIndex();
+            if (k < 0 || k >= data.length) {
+                throw new SQLCrash(
+                    "'" + k + "' out of range"
+                );
             }
 
             // get the value
@@ -240,14 +257,14 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
             // check type
             if (klass == null) {
-                data[target.getIndex()] = val;
+                data[k] = val;
                 continue;
             }
 
             // update field
             Class<?> type = val.getClass();
             if (klass.isAssignableFrom(type)) {
-                data[target.getIndex()] = val;
+                data[k] = val;
                 continue;
             }
 
@@ -256,13 +273,18 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
             // update field
             if (spare != null) {
-                Object tag = spare.cast(
+                val = spare.cast(
                     supplier, val
                 );
-                if (tag != null) {
-                    data[target.getIndex()] = tag;
+                if (val != null) {
+                    data[k] = val;
+                    continue;
                 }
             }
+
+            throw new SQLCrash(
+                "Cannot convert the type of " + key + " from " + type + " to " + klass
+            );
         }
 
         try {

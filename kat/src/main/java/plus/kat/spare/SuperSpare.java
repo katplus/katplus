@@ -260,6 +260,9 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
 
             // get the value
             Object val = entry.getValue();
+            if (val == null) {
+                continue;
+            }
 
             // get class specified
             Class<?> klass = setter.getType();
@@ -273,14 +276,12 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
             }
 
             // update field
-            if (val != null) {
-                Class<?> type = val.getClass();
-                if (klass.isAssignableFrom(type)) {
-                    setter.onAccept(
-                        entity, val
-                    );
-                    continue;
-                }
+            Class<?> type = val.getClass();
+            if (klass.isAssignableFrom(type)) {
+                setter.onAccept(
+                    entity, val
+                );
+                continue;
             }
 
             // get spare specified
@@ -324,25 +325,34 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
                 continue;
             }
 
+            // check index
+            int k = target.getIndex();
+            if (k < 0 || k >= data.length) {
+                throw new Crash(
+                    "'" + k + "' out of range"
+                );
+            }
+
             // get the value
             Object val = entry.getValue();
+            if (val == null) {
+                continue;
+            }
 
             // get class specified
             Class<?> klass = target.getType();
 
             // check type
             if (klass == null) {
-                data[target.getIndex()] = val;
+                data[k] = val;
                 continue;
             }
 
             // update field
-            if (val != null) {
-                Class<?> type = val.getClass();
-                if (klass.isAssignableFrom(type)) {
-                    data[target.getIndex()] = val;
-                    continue;
-                }
+            Class<?> type = val.getClass();
+            if (klass.isAssignableFrom(type)) {
+                data[k] = val;
+                continue;
             }
 
             // get spare specified
@@ -350,10 +360,9 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
 
             // update field
             if (spare != null) {
-                data[target.getIndex()] =
-                    spare.cast(
-                        supplier, val
-                    );
+                data[k] = spare.cast(
+                    supplier, val
+                );
             }
         }
 
