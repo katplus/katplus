@@ -134,6 +134,7 @@ public interface Spare<K> extends Coder<K> {
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the {@code supplier} or {@code resultSet} is null
+     * @see plus.kat.entity.Worker#compose(Supplier, ResultSet)
      * @since 0.0.3
      */
     @NotNull

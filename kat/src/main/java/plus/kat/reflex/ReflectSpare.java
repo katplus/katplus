@@ -23,7 +23,6 @@ import java.lang.annotation.Annotation;
 import java.lang.invoke.*;
 import java.lang.reflect.*;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -34,7 +33,6 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
-import plus.kat.utils.Casting;
 import plus.kat.utils.KatMap;
 import plus.kat.utils.Reflect;
 
@@ -93,8 +91,8 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         );
     }
 
+    @NotNull
     @Override
-    @Nullable
     @SuppressWarnings("unchecked")
     public T apply(
         @NotNull Alias alias
@@ -106,104 +104,90 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
     public T apply(
         @NotNull Alias alias,
-        @NotNull Object... params
+        @NotNull Object... data
     ) throws Crash {
+        if (marker) {
+            int i = 0, flag = 0;
+            for (; i < args.length; i++) {
+                if (data[i] == null) {
+                    flag |= (1 << i);
+                    Class<?> c = args[i];
+                    if (c.isPrimitive()) {
+                        if (c == int.class) {
+                            data[i] = 0;
+                        } else if (c == long.class) {
+                            data[i] = 0L;
+                        } else if (c == float.class) {
+                            data[i] = 0F;
+                        } else if (c == double.class) {
+                            data[i] = 0D;
+                        } else if (c == boolean.class) {
+                            data[i] = false;
+                        } else if (c == byte.class) {
+                            data[i] = (byte) 0;
+                        } else if (c == char.class) {
+                            data[i] = (char) 0;
+                        } else if (c == short.class) {
+                            data[i] = (short) 0;
+                        }
+                    }
+                }
+            }
+            data[i] = flag;
+        }
         try {
-            return builder.newInstance(params);
+            return builder.newInstance(data);
         } catch (Throwable e) {
             throw new Crash(e);
         }
     }
 
-    @Override
     @Nullable
-    public T cast(
+    @Override
+    public T apply(
         @NotNull Supplier supplier,
         @NotNull Map<?, ?> data
-    ) throws Exception {
-        if (params != null) {
-            return null;
-        }
-
-        T entity = apply(
-            Alias.EMPTY
-        );
-
-        if (entity == null) {
-            return null;
-        }
-
-        for (Map.Entry<?, ?> entry : data.entrySet()) {
-            Object key = entry.getKey();
-            if (key == null) {
-                continue;
-            }
-
-            // try lookup
-            Setter<T, ?> setter = get(key);
-            if (setter != null) {
-                Casting.update(
-                    entity, entry.getValue(), setter, supplier
+    ) throws Crash {
+        if (params == null) {
+            return compose(
+                supplier, data
+            );
+        } else {
+            if (size() != 0 || owner != null) {
+                throw new Crash(
+                    "Not currently supported"
                 );
             }
+            return compose(
+                supplier, new Object[args.length], data
+            );
         }
-
-        return entity;
     }
 
     @NotNull
     @Override
     public T apply(
         @NotNull Supplier supplier,
-        @NotNull ResultSet data
+        @NotNull ResultSet resultSet
     ) throws SQLException {
-        if (params != null) {
-            throw new SQLCrash(
-                "Not currently supported"
+        if (params == null) {
+            return compose(
+                supplier, resultSet
             );
-        }
-
-        T entity;
-        try {
-            entity = apply(
-                Alias.EMPTY
-            );
-        } catch (Throwable e) {
-            throw new SQLCrash(
-                "Error creating specified " + klass, e
-            );
-        }
-
-        if (entity == null) {
-            throw new SQLCrash(
-                "Entity created through ReflectSpare is null"
-            );
-        }
-
-        ResultSetMetaData meta =
-            data.getMetaData();
-
-        int count = meta.getColumnCount();
-        for (int i = 1; i <= count; i++) {
-            String key = meta.getColumnName(i);
-            if (key == null) {
-                continue;
-            }
-
-            // try lookup
-            Setter<T, ?> setter = get(key);
-            if (setter != null) {
-                Casting.update(
-                    entity, data.getObject(i), setter, supplier
+        } else {
+            if (size() != 0 || owner != null) {
+                throw new SQLCrash(
+                    "Not currently supported"
                 );
             }
+            return compose(
+                supplier, new Object[args.length], resultSet
+            );
         }
-
-        return entity;
     }
 
     @Override
@@ -217,11 +201,10 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         return new Builder2<>(this);
     }
 
-    @Override
     @Nullable
+    @Override
     public Target target(
-        @NotNull int index,
-        @NotNull Alias alias
+        Object alias
     ) {
         if (params == null) {
             return null;
@@ -229,8 +212,30 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         return params.get(alias);
     }
 
-    @Override
     @Nullable
+    @Override
+    public Target target(
+        @NotNull int index,
+        @NotNull Alias alias
+    ) {
+        if (params == null) {
+            return null;
+        }
+        return params.get(
+            alias.isEmpty() ? index : alias
+        );
+    }
+
+    @Nullable
+    @Override
+    public Setter<T, ?> setter(
+        @NotNull Object alias
+    ) {
+        return get(alias);
+    }
+
+    @Nullable
+    @Override
     public Setter<T, ?> setter(
         @NotNull int index,
         @NotNull Alias alias
@@ -254,13 +259,6 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         @NotNull Setter<T, ?> setter
     ) {
         super.put(key, setter);
-    }
-
-    @Override
-    protected Setter<T, ?> setter(
-        @NotNull Object key
-    ) {
-        return super.get(key);
     }
 
     /**
@@ -973,36 +971,6 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         }
 
         private void embark() throws Crash {
-            if (marker) {
-                int i = 0, flag = 0;
-                for (; i < args.length; i++) {
-                    if (data[i] == null) {
-                        flag |= (1 << i);
-                        Class<?> c = args[i];
-                        if (c.isPrimitive()) {
-                            if (c == int.class) {
-                                data[i] = 0;
-                            } else if (c == long.class) {
-                                data[i] = 0L;
-                            } else if (c == float.class) {
-                                data[i] = 0F;
-                            } else if (c == double.class) {
-                                data[i] = 0D;
-                            } else if (c == boolean.class) {
-                                data[i] = false;
-                            } else if (c == byte.class) {
-                                data[i] = (byte) 0;
-                            } else if (c == char.class) {
-                                data[i] = (char) 0;
-                            } else if (c == short.class) {
-                                data[i] = (short) 0;
-                            }
-                        }
-                    }
-                }
-                data[i] = flag;
-            }
-
             entity = worker.apply(
                 getAlias(), data
             );

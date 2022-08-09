@@ -38,7 +38,7 @@ import java.util.function.BiConsumer;
  * @since 0.0.2
  */
 @SuppressWarnings("unchecked")
-public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spare<T> {
+public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Worker<T> {
 
     protected final Class<T> klass;
     protected final CharSequence space;
@@ -74,6 +74,14 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
      */
     protected void initialize() {
         // Nothing
+    }
+
+    @Nullable
+    public T apply(
+        @NotNull Supplier supplier,
+        @NotNull Map<?, ?> data
+    ) throws Crash {
+        return null;
     }
 
     @NotNull
@@ -132,7 +140,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         }
 
         if (data instanceof Map) try {
-            return cast(
+            return apply(
                 supplier, (Map<?, ?>) data
             );
         } catch (Exception e) {
@@ -153,14 +161,6 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
             );
         }
 
-        return null;
-    }
-
-    @Nullable
-    public T cast(
-        @NotNull Supplier supplier,
-        @NotNull Map<?, ?> data
-    ) throws Exception {
         return null;
     }
 
@@ -232,14 +232,134 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
     }
 
     /**
-     * @param key the key of setter
+     * @param supplier the specified supplier
+     * @param result   the specified result
      * @since 0.0.3
      */
-    @Nullable
-    protected Setter<T, ?> setter(
-        @NotNull Object key
-    ) {
-        return null;
+    @NotNull
+    public T compose(
+        @NotNull Supplier supplier,
+        @NotNull Map<?, ?> result
+    ) throws Crash {
+        T entity = apply(
+            Alias.EMPTY
+        );
+
+        for (Map.Entry<?, ?> entry : result.entrySet()) {
+            // get its key
+            Object key = entry.getKey();
+            if (key == null) {
+                continue;
+            }
+
+            // try lookup
+            Setter<T, ?> setter = setter(key);
+            if (setter == null) {
+                continue;
+            }
+
+            // get the value
+            Object val = entry.getValue();
+
+            // get class specified
+            Class<?> klass = setter.getType();
+
+            // check type
+            if (klass == null) {
+                setter.onAccept(
+                    entity, val
+                );
+                continue;
+            }
+
+            // update field
+            if (val != null) {
+                Class<?> type = val.getClass();
+                if (klass.isAssignableFrom(type)) {
+                    setter.onAccept(
+                        entity, val
+                    );
+                    continue;
+                }
+            }
+
+            // get spare specified
+            Spare<?> spare = supplier.lookup(klass);
+
+            // update field
+            if (spare != null) {
+                setter.onAccept(
+                    entity, spare.cast(
+                        supplier, val
+                    )
+                );
+            }
+        }
+
+        return entity;
+    }
+
+    /**
+     * @param supplier the specified supplier
+     * @param data     the specified params
+     * @param result   the specified result
+     * @since 0.0.3
+     */
+    @NotNull
+    public T compose(
+        @NotNull Supplier supplier,
+        @NotNull Object[] data,
+        @NotNull Map<?, ?> result
+    ) throws Crash {
+        for (Map.Entry<?, ?> entry : result.entrySet()) {
+            // get its key
+            Object key = entry.getKey();
+            if (key == null) {
+                continue;
+            }
+
+            // try lookup
+            Target target = target(key);
+            if (target == null) {
+                continue;
+            }
+
+            // get the value
+            Object val = entry.getValue();
+
+            // get class specified
+            Class<?> klass = target.getType();
+
+            // check type
+            if (klass == null) {
+                data[target.getIndex()] = val;
+                continue;
+            }
+
+            // update field
+            if (val != null) {
+                Class<?> type = val.getClass();
+                if (klass.isAssignableFrom(type)) {
+                    data[target.getIndex()] = val;
+                    continue;
+                }
+            }
+
+            // get spare specified
+            Spare<?> spare = supplier.lookup(klass);
+
+            // update field
+            if (spare != null) {
+                data[target.getIndex()] =
+                    spare.cast(
+                        supplier, val
+                    );
+            }
+        }
+
+        return apply(
+            Alias.EMPTY, data
+        );
     }
 
     /**
@@ -272,7 +392,9 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
         @NotNull Object key,
         @NotNull Setter<T, ?> setter
     ) {
-        // Nothing
+        throw new RunCrash(
+            "Not currently supported"
+        );
     }
 
     /**

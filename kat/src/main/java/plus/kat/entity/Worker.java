@@ -25,6 +25,9 @@ import plus.kat.spare.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
 /**
  * @author kraity
@@ -35,10 +38,51 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
      * @param alias the alias of entity
      * @throws Crash If a failure occurs
      */
-    @Nullable
+    @NotNull
     K apply(
         @NotNull Alias alias
     ) throws Crash;
+
+    /**
+     * @param alias the alias of entity
+     * @throws Crash If a failure occurs
+     * @since 0.0.2
+     */
+    @NotNull
+    @Override
+    default K apply(
+        @NotNull Alias alias,
+        @NotNull Object... params
+    ) throws Crash {
+        throw new Crash();
+    }
+
+    /**
+     * @param supplier  the specified supplier
+     * @param resultSet the specified resultSet
+     * @since 0.0.3
+     */
+    @NotNull
+    @Override
+    default K apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        return compose(
+            supplier, resultSet
+        );
+    }
+
+    /**
+     * @param alias the alias of target
+     * @since 0.0.3
+     */
+    @Nullable
+    default Target target(
+        @NotNull Object alias
+    ) {
+        return null;
+    }
 
     /**
      * @param alias the alias of target
@@ -53,6 +97,17 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
     /**
      * @param alias the alias of setter
+     * @since 0.0.3
+     */
+    @Nullable
+    default Setter<K, ?> setter(
+        @NotNull Object alias
+    ) {
+        return null;
+    }
+
+    /**
+     * @param alias the alias of setter
      */
     @Nullable
     default Setter<K, ?> setter(
@@ -60,6 +115,165 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         @NotNull Alias alias
     ) {
         return null;
+    }
+
+    /**
+     * @param supplier  the specified supplier
+     * @param resultSet the specified resultSet
+     * @since 0.0.3
+     */
+    @NotNull
+    default K compose(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        K entity;
+        try {
+            entity = apply(
+                Alias.EMPTY
+            );
+        } catch (Throwable e) {
+            throw new SQLCrash(
+                "Error creating " + getType(), e
+            );
+        }
+
+        ResultSetMetaData meta =
+            resultSet.getMetaData();
+        int count = meta.getColumnCount();
+
+        // update fields
+        for (int i = 1; i <= count; i++) {
+            // get its key
+            String key = meta.getColumnName(i);
+
+            // try lookup
+            Setter<K, ?> setter = setter(key);
+            if (setter == null) {
+                continue;
+            }
+
+            // get the value
+            Object val = resultSet.getObject(i);
+
+            // skip if null
+            if (val == null) {
+                continue;
+            }
+
+            // get class specified
+            Class<?> klass = setter.getType();
+
+            // check type
+            if (klass == null) {
+                setter.onAccept(
+                    entity, val
+                );
+                continue;
+            }
+
+            // update field
+            Class<?> type = val.getClass();
+            if (klass.isAssignableFrom(type)) {
+                setter.onAccept(
+                    entity, val
+                );
+                continue;
+            }
+
+            // get spare specified
+            Spare<?> spare = supplier.lookup(klass);
+
+            // update field
+            if (spare != null) {
+                Object tag = spare.cast(
+                    supplier, val
+                );
+                if (tag != null) {
+                    setter.onAccept(
+                        entity, tag
+                    );
+                }
+            }
+        }
+
+        return entity;
+    }
+
+    /**
+     * @param supplier  the specified supplier
+     * @param data      the specified params
+     * @param resultSet the specified resultSet
+     * @since 0.0.3
+     */
+    @NotNull
+    default K compose(
+        @NotNull Supplier supplier,
+        @NotNull Object[] data,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        ResultSetMetaData meta =
+            resultSet.getMetaData();
+        int count = meta.getColumnCount();
+
+        // update params
+        for (int i = 1; i <= count; i++) {
+            // get its key
+            String key = meta.getColumnName(i);
+
+            // try lookup
+            Target target = target(key);
+            if (target == null) {
+                continue;
+            }
+
+            // get the value
+            Object val = resultSet.getObject(i);
+
+            // skip if null
+            if (val == null) {
+                continue;
+            }
+
+            // get class specified
+            Class<?> klass = target.getType();
+
+            // check type
+            if (klass == null) {
+                data[target.getIndex()] = val;
+                continue;
+            }
+
+            // update field
+            Class<?> type = val.getClass();
+            if (klass.isAssignableFrom(type)) {
+                data[target.getIndex()] = val;
+                continue;
+            }
+
+            // get spare specified
+            Spare<?> spare = supplier.lookup(klass);
+
+            // update field
+            if (spare != null) {
+                Object tag = spare.cast(
+                    supplier, val
+                );
+                if (tag != null) {
+                    data[target.getIndex()] = tag;
+                }
+            }
+        }
+
+        try {
+            return apply(
+                Alias.EMPTY, data
+            );
+        } catch (Throwable e) {
+            throw new SQLCrash(
+                "Error creating " + getType(), e
+            );
+        }
     }
 
     /**
