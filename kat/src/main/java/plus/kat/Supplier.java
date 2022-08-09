@@ -180,8 +180,9 @@ public interface Supplier {
      * If {@link E} is a Bean, then perform
      * a given {@link ResultSet} to create a {@link E}
      *
+     * @throws SQLCrash             If it fails to create
+     * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the {@code klass} or {@code resultSet} is null
-     * @throws SQLException         If it fails to create or a database access error occurs
      * @see Spare#apply(Supplier, ResultSet)
      * @since 0.0.3
      */

@@ -106,8 +106,8 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         }
     }
 
-    @Override
     @Nullable
+    @Override
     public T apply(
         @NotNull Alias alias,
         @NotNull Object... params
@@ -155,13 +155,16 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         return entity;
     }
 
+    @NotNull
     @Override
     public T apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet data
     ) throws SQLException {
         if (params != null) {
-            return null;
+            throw new SQLCrash(
+                "Not currently supported"
+            );
         }
 
         T entity;
@@ -170,13 +173,15 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 Alias.EMPTY
             );
         } catch (Throwable e) {
-            throw new SQLException(
+            throw new SQLCrash(
                 "Error creating specified " + klass, e
             );
         }
 
         if (entity == null) {
-            return null;
+            throw new SQLCrash(
+                "Entity created through ReflectSpare is null"
+            );
         }
 
         ResultSetMetaData meta =
@@ -249,6 +254,13 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         @NotNull Setter<T, ?> setter
     ) {
         super.put(key, setter);
+    }
+
+    @Override
+    protected Setter<T, ?> setter(
+        @NotNull Object key
+    ) {
+        return super.get(key);
     }
 
     /**

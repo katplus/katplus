@@ -97,12 +97,13 @@ public interface Spare<K> extends Coder<K> {
      * a given {@link ResultSet} to create a {@link K}
      *
      * @param result the specified {@code resultSet} to be used
+     * @throws SQLCrash             If it fails to create
+     * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the {@code result} is null
-     * @throws SQLException         If it fails to create or a database access error occurs
      * @see Spare#apply(Supplier, ResultSet)
      * @since 0.0.3
      */
-    @Nullable
+    @NotNull
     default K apply(
         @NotNull ResultSet result
     ) throws SQLException {
@@ -130,16 +131,19 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param supplier  the specified {@code supplier}
      * @param resultSet the specified {@code resultSet} to be used
+     * @throws SQLCrash             If it fails to create
+     * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the {@code supplier} or {@code resultSet} is null
-     * @throws SQLException         If it fails to create or a database access error occurs
      * @since 0.0.3
      */
-    @Nullable
+    @NotNull
     default K apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
-        return null;
+        throw new SQLCrash(
+            "Unexpectedly, '" + getType() + "' not a Bean"
+        );
     }
 
     /**
@@ -159,14 +163,15 @@ public interface Spare<K> extends Coder<K> {
      *  String name = (String) collector.get("name");
      * }</pre>
      *
+     * @return {@code true} if the action is consumed otherwise {@code false}
      * @throws NullPointerException If the {@code bean} or {@code action} is null
      * @since 0.0.3
      */
-    default void flat(
+    default boolean flat(
         @NotNull K bean,
         @NotNull BiConsumer<String, Object> action
     ) {
-        // Nothing
+        return false;
     }
 
     /**

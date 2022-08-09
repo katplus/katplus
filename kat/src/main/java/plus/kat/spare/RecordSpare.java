@@ -86,6 +86,7 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
         }
     }
 
+    @NotNull
     @Override
     public T cast(
         @NotNull Supplier supplier,
@@ -115,6 +116,7 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
         );
     }
 
+    @NotNull
     @Override
     public T apply(
         @NotNull Supplier supplier,
@@ -148,7 +150,7 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
                 Alias.EMPTY, args
             );
         } catch (Throwable e) {
-            throw new SQLException(
+            throw new SQLCrash(
                 "Error creating specified " + klass, e
             );
         }

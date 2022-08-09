@@ -56,10 +56,11 @@ public class SpareTest {
         HashMap<String, Object>
             data = new HashMap<>();
 
-        spare.flat(
-            user, data::put
+        assertTrue(
+            spare.flat(
+                user, data::put
+            )
         );
-
         assertEquals("{name=kraity, id=1}", data.toString());
     }
 

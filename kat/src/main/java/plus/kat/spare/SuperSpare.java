@@ -214,7 +214,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
     }
 
     @Override
-    public void flat(
+    public boolean flat(
         @NotNull T bean,
         @NotNull BiConsumer<String, Object> action
     ) {
@@ -228,6 +228,41 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Spar
             }
             node = node.next;
         }
+        return true;
+    }
+
+    /**
+     * @param key the key of setter
+     * @since 0.0.3
+     */
+    @Nullable
+    protected Setter<T, ?> setter(
+        @NotNull Object key
+    ) {
+        return null;
+    }
+
+    /**
+     * @param alias the alias of getter
+     * @since 0.0.3
+     */
+    @Nullable
+    protected Getter<T, ?> getter(
+        @NotNull String alias
+    ) {
+        Node<T> node = head;
+        int hash = alias.hashCode();
+
+        while (node != null) {
+            String key = node.key;
+            if (hash == key.hashCode()
+                && alias.equals(key)) {
+                return node;
+            }
+            node = node.next;
+        }
+
+        return null;
     }
 
     /**
