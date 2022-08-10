@@ -260,35 +260,41 @@ Kotlin:
 
 ````kotlin
 // kat
-val text = kat { it ->
+val text = kat {
     it["id"] = 100001
     it["title"] = "kat"
-    it["meta"] = {
-        it["view"] = 99
+    it["meta"] = { meta ->
+        meta["view"] = 99
     }
-    it["author", "User"] = {
-        it["id"] = 1
-        it["name"] = "kraity"
+    it["author", "User"] = { user ->
+        user["id"] = 1
+        user["name"] = "kraity"
     }
 }
 
 // json
-val text = json { it ->
+val text = json {
     it["id"] = 100001
     it["title"] = "kat"
-    it["author"] = {
-        it["id"] = 1
-        it["name"] = "kraity"
+    it["meta"] = { meta ->
+        meta["view"] = 99
+    }
+    it["author"] = { user ->
+        user["id"] = 1
+        user["name"] = "kraity"
     }
 }
 
 // xml
-val text = doc("Story") { it ->
+val text = doc("Story") {
     it["id"] = 100001
-    it["title"] = "KAT+"
-    it["author"] = {
-        it["id"] = 1
-        it["name"] = "kraity"
+    it["title"] = "kat"
+    it["meta"] = { meta ->
+        meta["view"] = 99
+    }
+    it["author"] = { user ->
+        user["id"] = 1
+        user["name"] = "kraity"
     }
 }
 ````
