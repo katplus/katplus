@@ -39,8 +39,13 @@ public interface Getter<K, V> extends Target {
     default V onApply(
         @NotNull Object it
     ) {
-        return apply(
-            (K) it
-        );
+        try {
+            return apply(
+                (K) it
+            );
+        } catch (Exception e) {
+            // Nothing
+        }
+        return null;
     }
 }

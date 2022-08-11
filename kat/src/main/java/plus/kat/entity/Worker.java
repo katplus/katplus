@@ -28,6 +28,7 @@ import java.lang.reflect.Type;
 
 /**
  * @author kraity
+ * @see Workman
  * @since 0.0.1
  */
 public interface Worker<K> extends Spare<K>, Maker<K> {
@@ -72,6 +73,31 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
      */
     @Nullable
     default Target target(
+        @NotNull int index,
+        @NotNull Alias alias
+    ) {
+        return null;
+    }
+
+    /**
+     * @param alias the alias of getter
+     * @see Workman
+     * @since 0.0.3
+     */
+    @Nullable
+    default Getter<K, ?> getter(
+        @NotNull Object alias
+    ) {
+        return null;
+    }
+
+    /**
+     * @param alias the alias of getter
+     * @see Workman
+     * @since 0.0.3
+     */
+    @Nullable
+    default Getter<K, ?> getter(
         @NotNull int index,
         @NotNull Alias alias
     ) {

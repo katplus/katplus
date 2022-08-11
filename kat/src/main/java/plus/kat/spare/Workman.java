@@ -537,6 +537,58 @@ public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<
     }
 
     /**
+     * @param alias the alias of getter
+     * @since 0.0.3
+     */
+    @Override
+    public Getter<T, ?> getter(
+        @NotNull Object alias
+    ) {
+        Node<T> node = head;
+        int hash = alias.hashCode();
+
+        while (node != null) {
+            String key = node.key;
+            if (hash == key.hashCode()
+                && alias.equals(key)) {
+                return node;
+            }
+            node = node.next;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param alias the alias of getter
+     * @since 0.0.3
+     */
+    @Override
+    public Getter<T, ?> getter(
+        @NotNull int index,
+        @NotNull Alias alias
+    ) {
+        if (alias.isNotEmpty()) {
+            return getter(alias);
+        }
+
+        if (index < 0) {
+            return null;
+        }
+
+        Node<T> node = head;
+        while (node != null) {
+            if (index == 0) {
+                return node;
+            }
+            index--;
+            node = node.next;
+        }
+
+        return null;
+    }
+
+    /**
      * @param getter the specified {@link Getter}
      * @since 0.0.3
      */
@@ -583,29 +635,6 @@ public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<
                 }
             }
         }
-    }
-
-    /**
-     * @param alias the alias of getter
-     * @since 0.0.3
-     */
-    @Nullable
-    protected Getter<T, ?> getter(
-        @NotNull String alias
-    ) {
-        Node<T> node = head;
-        int hash = alias.hashCode();
-
-        while (node != null) {
-            String key = node.key;
-            if (hash == key.hashCode()
-                && alias.equals(key)) {
-                return node;
-            }
-            node = node.next;
-        }
-
-        return null;
     }
 
     /**
@@ -677,7 +706,7 @@ public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<
         public Item(
             int index
         ) {
-            super(0);
+            super();
             this.index = index;
         }
 
@@ -687,7 +716,7 @@ public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<
         public Item(
             @NotNull Item item
         ) {
-            super(0);
+            super();
             index = item.index;
             type = item.type;
             coder = item.coder;
@@ -703,7 +732,7 @@ public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<
             @NotNull Type type,
             @Nullable Coder<?> coder
         ) {
-            super(0);
+            super();
             this.index = index;
             this.type = type;
             this.coder = coder;

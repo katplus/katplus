@@ -46,7 +46,7 @@ public interface Setter<K, V> extends Target {
                 it, (V) val
             );
         } catch (Exception e) {
-            // nothing
+            // Nothing
         }
     }
 }

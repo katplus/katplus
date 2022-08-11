@@ -108,11 +108,17 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
             if (e == null) {
                 if (val instanceof Entry) {
                     n = (Entry<K, V>) val;
-                    n.hash = h;
-                    n.key = key;
-                    n.val = val;
-                    n.next = null;
-                    tab[i] = n;
+                    if (n.key == null) {
+                        n.hash = h;
+                        n.key = key;
+                        n.val = val;
+                        n.next = null;
+                        tab[i] = n;
+                    } else {
+                        tab[i] = new Entry<>(
+                            h, key, val
+                        );
+                    }
                 } else {
                     tab[i] = new Entry<>(
                         h, key, val
@@ -134,11 +140,17 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
                 if (e.next == null) {
                     if (val instanceof Entry) {
                         n = (Entry<K, V>) val;
-                        n.hash = h;
-                        n.key = key;
-                        n.val = val;
-                        n.next = null;
-                        e.next = n;
+                        if (n.key == null) {
+                            n.hash = h;
+                            n.key = key;
+                            n.val = val;
+                            n.next = null;
+                            e.next = n;
+                        } else {
+                            e.next = new Entry<>(
+                                h, key, val
+                            );
+                        }
                     } else {
                         e.next = new Entry<>(
                             h, key, val
@@ -468,10 +480,8 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
         private V val;
         private Entry<K, V> next;
 
-        public Entry(
-            int hash
-        ) {
-            this.hash = hash;
+        public Entry() {
+            // Nothing
         }
 
         public Entry(
@@ -504,12 +514,6 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
         }
 
         @Override
-        public int hashCode() {
-            return key.hashCode() ^
-                (val == null ? 0 : val.hashCode());
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (o == this) {
                 return true;
@@ -517,8 +521,8 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
 
             if (o instanceof Map.Entry) {
                 Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
-                return e.getKey().equals(key) &&
-                    e.getValue().equals(val);
+                return Objects.equals(key, e.getKey())
+                    && Objects.equals(val, e.getValue());
             }
 
             return false;
