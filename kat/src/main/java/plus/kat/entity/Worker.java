@@ -25,9 +25,6 @@ import plus.kat.spare.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 
 /**
  * @author kraity
@@ -58,23 +55,8 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     }
 
     /**
-     * @param supplier  the specified supplier
-     * @param resultSet the specified resultSet
-     * @since 0.0.3
-     */
-    @NotNull
-    @Override
-    default K apply(
-        @NotNull Supplier supplier,
-        @NotNull ResultSet resultSet
-    ) throws SQLException {
-        return compose(
-            supplier, resultSet
-        );
-    }
-
-    /**
      * @param alias the alias of target
+     * @see Workman
      * @since 0.0.3
      */
     @Nullable
@@ -86,6 +68,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
     /**
      * @param alias the alias of target
+     * @see Workman
      */
     @Nullable
     default Target target(
@@ -97,6 +80,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
     /**
      * @param alias the alias of setter
+     * @see Workman
      * @since 0.0.3
      */
     @Nullable
@@ -108,6 +92,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
     /**
      * @param alias the alias of setter
+     * @see Workman
      */
     @Nullable
     default Setter<K, ?> setter(
@@ -115,191 +100,13 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         @NotNull Alias alias
     ) {
         return null;
-    }
-
-    /**
-     * @param supplier  the specified supplier
-     * @param resultSet the specified resultSet
-     * @since 0.0.3
-     */
-    @NotNull
-    default K compose(
-        @NotNull Supplier supplier,
-        @NotNull ResultSet resultSet
-    ) throws SQLException {
-        K entity;
-        try {
-            entity = apply(
-                Alias.EMPTY
-            );
-        } catch (Throwable e) {
-            throw new SQLCrash(
-                "Error creating " + getType(), e
-            );
-        }
-
-        ResultSetMetaData meta =
-            resultSet.getMetaData();
-        int count = meta.getColumnCount();
-
-        // update fields
-        for (int i = 1; i <= count; i++) {
-            // get its key
-            String key = meta.getColumnName(i);
-
-            // try lookup
-            Setter<K, ?> setter = setter(key);
-            if (setter == null) {
-                throw new SQLCrash(
-                    "Can't find the Setter of " + key
-                );
-            }
-
-            // get the value
-            Object val = resultSet.getObject(i);
-
-            // skip if null
-            if (val == null) {
-                continue;
-            }
-
-            // get class specified
-            Class<?> klass = setter.getType();
-
-            // check type
-            if (klass == null) {
-                setter.onAccept(
-                    entity, val
-                );
-                continue;
-            }
-
-            // update field
-            Class<?> type = val.getClass();
-            if (klass.isAssignableFrom(type)) {
-                setter.onAccept(
-                    entity, val
-                );
-                continue;
-            }
-
-            // get spare specified
-            Spare<?> spare = supplier.lookup(klass);
-
-            // update field
-            if (spare != null) {
-                val = spare.cast(
-                    supplier, val
-                );
-                if (val != null) {
-                    setter.onAccept(
-                        entity, val
-                    );
-                    continue;
-                }
-            }
-
-            throw new SQLCrash(
-                "Cannot convert the type of " + key + " from " + type + " to " + klass
-            );
-        }
-
-        return entity;
-    }
-
-    /**
-     * @param supplier  the specified supplier
-     * @param data      the specified params
-     * @param resultSet the specified resultSet
-     * @since 0.0.3
-     */
-    @NotNull
-    default K compose(
-        @NotNull Supplier supplier,
-        @NotNull Object[] data,
-        @NotNull ResultSet resultSet
-    ) throws SQLException {
-        ResultSetMetaData meta =
-            resultSet.getMetaData();
-        int count = meta.getColumnCount();
-
-        // update params
-        for (int i = 1; i <= count; i++) {
-            // get its key
-            String key = meta.getColumnName(i);
-
-            // try lookup
-            Target target = target(key);
-            if (target == null) {
-                throw new SQLCrash(
-                    "Can't find the Target of " + key
-                );
-            }
-
-            // check index
-            int k = target.getIndex();
-            if (k < 0 || k >= data.length) {
-                throw new SQLCrash(
-                    "'" + k + "' out of range"
-                );
-            }
-
-            // get the value
-            Object val = resultSet.getObject(i);
-
-            // skip if null
-            if (val == null) {
-                continue;
-            }
-
-            // get class specified
-            Class<?> klass = target.getType();
-
-            // check type
-            if (klass == null) {
-                data[k] = val;
-                continue;
-            }
-
-            // update field
-            Class<?> type = val.getClass();
-            if (klass.isAssignableFrom(type)) {
-                data[k] = val;
-                continue;
-            }
-
-            // get spare specified
-            Spare<?> spare = supplier.lookup(klass);
-
-            // update field
-            if (spare != null) {
-                val = spare.cast(
-                    supplier, val
-                );
-                if (val != null) {
-                    data[k] = val;
-                    continue;
-                }
-            }
-
-            throw new SQLCrash(
-                "Cannot convert the type of " + key + " from " + type + " to " + klass
-            );
-        }
-
-        try {
-            return apply(
-                Alias.EMPTY, data
-            );
-        } catch (Throwable e) {
-            throw new SQLCrash(
-                "Error creating " + getType(), e
-            );
-        }
     }
 
     /**
      * Returns a {@link Builder} of {@link K}
+     *
+     * @see Builder0
+     * @see Builder1
      */
     @Nullable
     @Override

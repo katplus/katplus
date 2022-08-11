@@ -134,7 +134,7 @@ public interface Spare<K> extends Coder<K> {
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the {@code supplier} or {@code resultSet} is null
-     * @see plus.kat.entity.Worker#compose(Supplier, ResultSet)
+     * @see Workman#compose(Supplier, ResultSet)
      * @since 0.0.3
      */
     @NotNull
@@ -559,7 +559,6 @@ public interface Spare<K> extends Coder<K> {
             @NotNull Class<?> klass,
             @NotNull Supplier supplier
         ) {
-            Spare<?> spare;
             if (klass.isArray()) {
                 return ArraySpare.INSTANCE;
             }
@@ -601,7 +600,9 @@ public interface Spare<K> extends Coder<K> {
             }
 
             Embed embed = klass
-                .getAnnotation(Embed.class);
+                .getAnnotation(
+                    Embed.class
+                );
 
             if (embed != null) {
                 Class<? extends Spare>
@@ -610,7 +611,8 @@ public interface Spare<K> extends Coder<K> {
                 if (with != Spare.class) {
                     // static inject
                     // and double-checking
-                    spare = get(klass);
+                    Spare<?> spare =
+                        get(klass);
 
                     if (spare != null) {
                         return spare;
@@ -629,30 +631,22 @@ public interface Spare<K> extends Coder<K> {
 
             Class<?> sc = klass.getSuperclass();
             if (sc == Enum.class) {
-                put(klass, spare =
-                    new EnumSpare(
-                        klass, embed, supplier
-                    )
+                return new EnumSpare(
+                    klass, embed, supplier
                 );
-                return spare;
             }
 
             try {
                 String sn = sc.getName();
                 if (sn.equals("java.lang.Record")) {
-                    put(klass, spare =
-                        new RecordSpare<>(
-                            embed, klass, this, supplier
-                        )
+                    return new RecordSpare<>(
+                        embed, klass, supplier, this
                     );
                 } else {
-                    put(klass, spare =
-                        new ReflectSpare<>(
-                            embed, klass, this, supplier
-                        )
+                    return new ReflectSpare<>(
+                        embed, klass, supplier, this
                     );
                 }
-                return spare;
             } catch (Exception e) {
                 return null;
             }

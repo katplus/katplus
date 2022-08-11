@@ -5,14 +5,11 @@ import plus.kat.anno.Expose;
 import plus.kat.chain.Value;
 import plus.kat.crash.IOCrash;
 import plus.kat.crash.UnexpectedCrash;
-import plus.kat.spare.Builder;
-import plus.kat.spare.DataSpare;
+import plus.kat.spare.Property;
 
 import java.lang.reflect.Type;
-import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 import static plus.kat.Spare.lookup;
 import static org.junit.jupiter.api.Assertions.*;
@@ -105,7 +102,7 @@ public class SpareTest {
             StringBuilder.class
         };
 
-        Spare<CharSequence> spare = new DataSpare<CharSequence>(
+        Spare<CharSequence> spare = new Property<CharSequence>(
             CharSequence.class
         ) {
             @Override

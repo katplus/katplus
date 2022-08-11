@@ -150,13 +150,21 @@ public class Parser implements Pipe {
                 );
             }
             case DOC: {
+                Docx solver = docx;
+                if (solver == null) {
+                    solver = docx = new Docx(radar);
+                }
                 return read(
-                    docx != null ? docx : (docx = new Docx(radar)), event
+                    solver, event
                 );
             }
             case JSON: {
+                Mage solver = mage;
+                if (solver == null) {
+                    solver = mage = new Mage(radar);
+                }
                 return read(
-                    mage != null ? mage : (mage = new Mage(radar)), event
+                    solver, event
                 );
             }
             default: {

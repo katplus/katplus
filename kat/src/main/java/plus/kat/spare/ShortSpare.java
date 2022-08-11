@@ -29,7 +29,7 @@ import java.io.Serializable;
  * @author kraity
  * @since 0.0.1
  */
-public class ShortSpare extends DataSpare<Short> implements Serializable {
+public class ShortSpare extends Property<Short> implements Serializable {
 
     public static final ShortSpare
         INSTANCE = new ShortSpare();

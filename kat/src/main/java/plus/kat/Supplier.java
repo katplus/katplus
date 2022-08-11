@@ -506,6 +506,7 @@ public interface Supplier {
         @NotNull Class<T> klass,
         @NotNull Spare<? super T> spare
     ) {
+        embed(klass, spare);
         if (embed == null) {
             return klass.getName();
         }

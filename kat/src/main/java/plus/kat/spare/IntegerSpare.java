@@ -29,7 +29,7 @@ import java.io.Serializable;
  * @author kraity
  * @since 0.0.1
  */
-public class IntegerSpare extends DataSpare<Integer> implements Serializable {
+public class IntegerSpare extends Property<Integer> implements Serializable {
 
     public static final IntegerSpare
         INSTANCE = new IntegerSpare();

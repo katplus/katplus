@@ -28,7 +28,7 @@ import java.io.Serializable;
  * @author kraity
  * @since 0.0.1
  */
-public class DoubleSpare extends DataSpare<Double> implements Serializable {
+public class DoubleSpare extends Property<Double> implements Serializable {
 
     public static final DoubleSpare
         INSTANCE = new DoubleSpare();

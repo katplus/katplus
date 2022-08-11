@@ -31,7 +31,7 @@ import static plus.kat.stream.Strings.upperAt;
  * @author kraity
  * @since 0.0.2
  */
-public class LocaleSpare extends DataSpare<Locale> {
+public class LocaleSpare extends Property<Locale> {
 
     public static final LocaleSpare
         INSTANCE = new LocaleSpare();

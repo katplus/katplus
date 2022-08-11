@@ -30,7 +30,7 @@ import java.math.BigInteger;
  * @author kraity
  * @since 0.0.1
  */
-public class BigDecimalSpare extends DataSpare<BigDecimal> implements Serializable {
+public class BigDecimalSpare extends Property<BigDecimal> implements Serializable {
 
     public static final BigDecimalSpare
         INSTANCE = new BigDecimalSpare();

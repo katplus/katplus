@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicIntegerSpare extends DataSpare<AtomicInteger> implements Serializable {
+public class AtomicIntegerSpare extends Property<AtomicInteger> implements Serializable {
 
     public static final AtomicIntegerSpare
         INSTANCE = new AtomicIntegerSpare();

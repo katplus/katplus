@@ -36,7 +36,7 @@ import static java.time.format.DateTimeFormatter.*;
  * @author kraity
  * @since 0.0.2
  */
-public abstract class TemporalSpare<K extends TemporalAccessor> extends DataSpare<K> {
+public abstract class TemporalSpare<K extends TemporalAccessor> extends Property<K> {
 
     public static final Map<String, DateTimeFormatter>
         CACHE = new ConcurrentHashMap<>();

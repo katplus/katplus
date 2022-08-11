@@ -31,7 +31,7 @@ import java.lang.reflect.Method;
  * @since 0.0.1
  */
 @SuppressWarnings("unchecked")
-public class EnumSpare<K extends Enum<K>> extends DataSpare<K> implements Serializable {
+public class EnumSpare<K extends Enum<K>> extends Property<K> implements Serializable {
 
     private K[] enums;
     private final String space;

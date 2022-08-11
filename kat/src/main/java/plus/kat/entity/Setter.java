@@ -18,13 +18,10 @@ package plus.kat.entity;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.spare.*;
-
 /**
  * @author kraity
  * @since 0.0.1
  */
-@FunctionalInterface
 public interface Setter<K, V> extends Target {
     /**
      * @param it  the entity
@@ -51,23 +48,5 @@ public interface Setter<K, V> extends Target {
         } catch (Exception e) {
             // nothing
         }
-    }
-
-    /**
-     * Returns the {@link Class} of {@link K}
-     */
-    @Nullable
-    @Override
-    default Class<?> getType() {
-        return null;
-    }
-
-    /**
-     * Returns the {@link Coder} of {@link K}
-     */
-    @Nullable
-    @Override
-    default Coder<?> getCoder() {
-        return null;
     }
 }

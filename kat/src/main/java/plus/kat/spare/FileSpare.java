@@ -30,7 +30,7 @@ import java.net.URL;
  * @author kraity
  * @since 0.0.3
  */
-public class FileSpare extends DataSpare<File> {
+public class FileSpare extends Property<File> {
 
     public static final FileSpare
         INSTANCE = new FileSpare();

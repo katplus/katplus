@@ -143,36 +143,85 @@ public final class Reflect {
     }
 
     /**
-     * @since 0.0.2
+     * @since 0.0.3
+     */
+    @NotNull
+    public static Class<?> wrap(
+        @NotNull Class<?> type
+    ) {
+        if (type == int.class) {
+            return Integer.class;
+        }
+        if (type == long.class) {
+            return Long.class;
+        }
+        if (type == boolean.class) {
+            return Boolean.class;
+        }
+        if (type == byte.class) {
+            return Byte.class;
+        }
+        if (type == short.class) {
+            return Short.class;
+        }
+        if (type == float.class) {
+            return Float.class;
+        }
+        if (type == double.class) {
+            return Double.class;
+        }
+        if (type == void.class) {
+            return Void.class;
+        }
+        if (type == char.class) {
+            return Character.class;
+        }
+        return type;
+    }
+
+    /**
+     * @since 0.0.3
      */
     @Nullable
     public static Coder<?> activate(
-        @NotNull Class<?> klass,
         @Nullable Expose expose,
-        @Nullable Format format,
         @NotNull Supplier supplier
     ) {
-        if (format != null) {
-            if (klass == Date.class) {
-                return new DateSpare(format);
-            } else if (klass == Instant.class) {
-                return new InstantSpare(format);
-            } else if (klass == LocalDate.class) {
-                return new LocalDateSpare(format);
-            } else if (klass == LocalTime.class) {
-                return new LocalTimeSpare(format);
-            } else if (klass == LocalDateTime.class) {
-                return new LocalDateTimeSpare(format);
-            } else if (klass == ZonedDateTime.class) {
-                return new ZonedDateTimeSpare(format);
-            }
-        } else if (expose != null) {
+        if (expose != null) {
             Class<?> with = expose.with();
             if (with != Coder.class) {
                 return supplier.activate(with);
             }
         }
+        return null;
+    }
 
+    /**
+     * @since 0.0.3
+     */
+    @Nullable
+    public static Coder<?> activate(
+        @NotNull Class<?> type,
+        @NotNull Format format
+    ) {
+        if (type == Date.class) {
+            return new DateSpare(format);
+        }
+        if (type == Instant.class) {
+            return new InstantSpare(format);
+        }
+        if (type == LocalDate.class) {
+            return new LocalDateSpare(format);
+        }
+        if (type == LocalTime.class) {
+            return new LocalTimeSpare(format);
+        }
+        if (type == LocalDateTime.class) {
+            return new LocalDateTimeSpare(format);
+        }
+        if (type == ZonedDateTime.class) {
+            return new ZonedDateTimeSpare(format);
+        }
         return null;
     }
 }

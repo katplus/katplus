@@ -26,11 +26,11 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.3
  */
-public abstract class DataSpare<T> implements Spare<T> {
+public abstract class Property<T> implements Spare<T> {
 
     protected final Class<T> klass;
 
-    protected DataSpare(
+    protected Property(
         @NotNull Class<T> klass
     ) {
         this.klass = klass;

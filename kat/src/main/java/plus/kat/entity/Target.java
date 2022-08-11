@@ -15,6 +15,7 @@
  */
 package plus.kat.entity;
 
+import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.spare.*;
@@ -25,18 +26,13 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.2
  */
+@FunctionalInterface
 public interface Target {
     /**
      * Returns the {@link Class} of {@link Target}
      */
-    @Nullable
+    @NotNull
     Class<?> getType();
-
-    /**
-     * Returns the {@link Coder} of {@link Target}
-     */
-    @Nullable
-    Coder<?> getCoder();
 
     /**
      * Returns the index of {@link Target}
@@ -46,9 +42,17 @@ public interface Target {
     }
 
     /**
-     * Returns the {@link Type} of {@link Target}
+     * Returns the {@link Coder} of {@link Target}
      */
     @Nullable
+    default Coder<?> getCoder() {
+        return null;
+    }
+
+    /**
+     * Returns the {@link Type} of {@link Target}
+     */
+    @NotNull
     default Type getActualType() {
         return getType();
     }

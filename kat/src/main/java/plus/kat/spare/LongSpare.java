@@ -29,7 +29,7 @@ import java.io.Serializable;
  * @author kraity
  * @since 0.0.1
  */
-public class LongSpare extends DataSpare<Long> implements Serializable {
+public class LongSpare extends Property<Long> implements Serializable {
 
     public static final LongSpare
         INSTANCE = new LongSpare();

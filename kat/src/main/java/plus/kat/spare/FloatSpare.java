@@ -28,7 +28,7 @@ import java.io.Serializable;
  * @author kraity
  * @since 0.0.1
  */
-public class FloatSpare extends DataSpare<Float> implements Serializable {
+public class FloatSpare extends Property<Float> implements Serializable {
 
     public static final FloatSpare
         INSTANCE = new FloatSpare();

@@ -20,7 +20,6 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -29,7 +28,7 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public class ByteArraySpare extends DataSpare<byte[]> {
+public class ByteArraySpare extends Property<byte[]> {
 
     public static final ByteArraySpare
         INSTANCE = new ByteArraySpare();

@@ -30,7 +30,7 @@ import static java.util.Currency.getInstance;
  * @author kraity
  * @since 0.0.2
  */
-public class CurrencySpare extends DataSpare<Currency> {
+public class CurrencySpare extends Property<Currency> {
 
     public static final CurrencySpare
         INSTANCE = new CurrencySpare();

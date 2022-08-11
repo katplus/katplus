@@ -31,7 +31,7 @@ import java.net.MalformedURLException;
  * @author kraity
  * @since 0.0.2
  */
-public class URLSpare extends DataSpare<URL> {
+public class URLSpare extends Property<URL> {
 
     public static final URLSpare
         INSTANCE = new URLSpare();

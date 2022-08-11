@@ -24,36 +24,46 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
-import plus.kat.utils.Casting;
-import plus.kat.utils.KatMap;
+import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
  * @author kraity
- * @since 0.0.2
+ * @since 0.0.3
  */
-@SuppressWarnings("unchecked")
-public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Worker<T> {
-
-    protected final Class<T> klass;
-    protected final CharSequence space;
-
-    protected int flags;
-    protected Node<T> head, tail;
+public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<T> {
 
     protected Provider provider;
     protected Supplier supplier;
 
-    protected SuperSpare(
+    protected int flags;
+    protected Node<T> head, tail;
+
+    protected final String space;
+    protected final Class<T> klass;
+
+    protected Workman(
+        @NotNull Class<T> klass,
+        @NotNull Supplier supplier
+    ) {
+        this(
+            klass.getAnnotation(Embed.class),
+            klass, supplier, null
+        );
+    }
+
+    protected Workman(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
-        @NotNull Provider provider,
-        @NotNull Supplier supplier
+        @NotNull Supplier supplier,
+        @Nullable Provider provider
     ) {
         this.klass = klass;
         this.provider = provider;
@@ -76,17 +86,9 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
         // Nothing
     }
 
-    @Nullable
-    public T apply(
-        @NotNull Supplier supplier,
-        @NotNull Map<?, ?> data
-    ) throws Crash {
-        return null;
-    }
-
     @NotNull
     @Override
-    public CharSequence getSpace() {
+    public String getSpace() {
         return space;
     }
 
@@ -115,6 +117,14 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
         return provider;
     }
 
+    @Nullable
+    public T apply(
+        @NotNull Supplier supplier,
+        @NotNull Map<?, ?> data
+    ) throws Crash {
+        return null;
+    }
+
     @Override
     public T cast(
         @Nullable Object data
@@ -126,6 +136,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
 
     @Nullable
     @Override
+    @SuppressWarnings("unchecked")
     public T cast(
         @NotNull Supplier supplier,
         @Nullable Object data
@@ -265,18 +276,10 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
             }
 
             // get class specified
+            Class<?> type = val.getClass();
             Class<?> klass = setter.getType();
 
-            // check type
-            if (klass == null) {
-                setter.onAccept(
-                    entity, val
-                );
-                continue;
-            }
-
             // update field
-            Class<?> type = val.getClass();
             if (klass.isAssignableFrom(type)) {
                 setter.onAccept(
                     entity, val
@@ -340,16 +343,10 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
             }
 
             // get class specified
+            Class<?> type = val.getClass();
             Class<?> klass = target.getType();
 
-            // check type
-            if (klass == null) {
-                data[k] = val;
-                continue;
-            }
-
             // update field
-            Class<?> type = val.getClass();
             if (klass.isAssignableFrom(type)) {
                 data[k] = val;
                 continue;
@@ -371,43 +368,177 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
         );
     }
 
+
     /**
-     * @param alias the alias of getter
+     * @param supplier  the specified supplier
+     * @param resultSet the specified resultSet
      * @since 0.0.3
      */
-    @Nullable
-    protected Getter<T, ?> getter(
-        @NotNull String alias
-    ) {
-        Node<T> node = head;
-        int hash = alias.hashCode();
-
-        while (node != null) {
-            String key = node.key;
-            if (hash == key.hashCode()
-                && alias.equals(key)) {
-                return node;
-            }
-            node = node.next;
+    @NotNull
+    public T compose(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        T entity;
+        try {
+            entity = apply(
+                Alias.EMPTY
+            );
+        } catch (Throwable e) {
+            throw new SQLCrash(
+                "Error creating " + getType(), e
+            );
         }
 
-        return null;
+        ResultSetMetaData meta =
+            resultSet.getMetaData();
+        int count = meta.getColumnCount();
+
+        // update fields
+        for (int i = 1; i <= count; i++) {
+            // get its key
+            String key = meta.getColumnName(i);
+
+            // try lookup
+            Setter<T, ?> setter = setter(key);
+            if (setter == null) {
+                throw new SQLCrash(
+                    "Can't find the Setter of " + key
+                );
+            }
+
+            // get the value
+            Object val = resultSet.getObject(i);
+
+            // skip if null
+            if (val == null) {
+                continue;
+            }
+
+            // get class specified
+            Class<?> type = val.getClass();
+            Class<?> klass = setter.getType();
+
+            // update field
+            if (klass.isAssignableFrom(type)) {
+                setter.onAccept(
+                    entity, val
+                );
+                continue;
+            }
+
+            // get spare specified
+            Spare<?> spare = supplier.lookup(klass);
+
+            // update field
+            if (spare != null) {
+                val = spare.cast(
+                    supplier, val
+                );
+                if (val != null) {
+                    setter.onAccept(
+                        entity, val
+                    );
+                    continue;
+                }
+            }
+
+            throw new SQLCrash(
+                "Cannot convert the type of " + key + " from " + type + " to " + klass
+            );
+        }
+
+        return entity;
     }
 
     /**
-     * @param setter the specified {@link Setter}
+     * @param supplier  the specified supplier
+     * @param data      the specified params
+     * @param resultSet the specified resultSet
+     * @since 0.0.3
      */
-    protected void setter(
-        @NotNull Object key,
-        @NotNull Setter<T, ?> setter
-    ) {
-        throw new RunCrash(
-            "Not currently supported"
-        );
+    @NotNull
+    public T compose(
+        @NotNull Supplier supplier,
+        @NotNull Object[] data,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        ResultSetMetaData meta =
+            resultSet.getMetaData();
+        int count = meta.getColumnCount();
+
+        // update params
+        for (int i = 1; i <= count; i++) {
+            // get its key
+            String key = meta.getColumnName(i);
+
+            // try lookup
+            Target target = target(key);
+            if (target == null) {
+                throw new SQLCrash(
+                    "Can't find the Target of " + key
+                );
+            }
+
+            // check index
+            int k = target.getIndex();
+            if (k < 0 || k >= data.length) {
+                throw new SQLCrash(
+                    "'" + k + "' out of range"
+                );
+            }
+
+            // get the value
+            Object val = resultSet.getObject(i);
+
+            // skip if null
+            if (val == null) {
+                continue;
+            }
+
+            // get class specified
+            Class<?> type = val.getClass();
+            Class<?> klass = target.getType();
+
+            // update field
+            if (klass.isAssignableFrom(type)) {
+                data[k] = val;
+                continue;
+            }
+
+            // get spare specified
+            Spare<?> spare = supplier.lookup(klass);
+
+            // update field
+            if (spare != null) {
+                val = spare.cast(
+                    supplier, val
+                );
+                if (val != null) {
+                    data[k] = val;
+                    continue;
+                }
+            }
+
+            throw new SQLCrash(
+                "Cannot convert the type of " + key + " from " + type + " to " + klass
+            );
+        }
+
+        try {
+            return apply(
+                Alias.EMPTY, data
+            );
+        } catch (Throwable e) {
+            throw new SQLCrash(
+                "Error creating " + getType(), e
+            );
+        }
     }
 
     /**
      * @param getter the specified {@link Getter}
+     * @since 0.0.3
      */
     protected void getter(
         @NotNull String key,
@@ -455,18 +586,37 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
     }
 
     /**
+     * @param alias the alias of getter
+     * @since 0.0.3
+     */
+    @Nullable
+    protected Getter<T, ?> getter(
+        @NotNull String alias
+    ) {
+        Node<T> node = head;
+        int hash = alias.hashCode();
+
+        while (node != null) {
+            String key = node.key;
+            if (hash == key.hashCode()
+                && alias.equals(key)) {
+                return node;
+            }
+            node = node.next;
+        }
+
+        return null;
+    }
+
+    /**
      * @author kraity
      * @since 0.0.2
      */
     public static abstract class Node<E>
-        extends Entry<E, Node<E>>
-        implements Getter<E, Object> {
+        extends Item implements Getter<E, Object> {
 
         private String key;
         private Node<E> next;
-
-        protected final int index;
-        protected Coder<?> coder;
 
         protected boolean nullable;
         protected boolean unwrapped;
@@ -477,8 +627,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
         protected Node(
             int index
         ) {
-            super(0);
-            this.index = index;
+            super(index);
         }
 
         /**
@@ -487,9 +636,9 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
         protected Node(
             Node<?> node
         ) {
-            super(0);
-            this.index = node.index;
+            super(node);
             this.nullable = node.nullable;
+            this.unwrapped = node.unwrapped;
         }
 
         /**
@@ -498,24 +647,7 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
         protected Node(
             Expose expose
         ) {
-            super(0);
-            this.index = expose == null ? -1 : expose.index();
-        }
-
-        /**
-         * Returns the index of {@link Target}
-         */
-        @Override
-        public int getIndex() {
-            return index;
-        }
-
-        /**
-         * Returns the {@link Coder} of {@link Node}
-         */
-        @Override
-        public Coder<?> getCoder() {
-            return coder;
+            super(expose == null ? -1 : expose.index());
         }
 
         /**
@@ -531,13 +663,13 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
      */
     public static class Item
         extends Entry<Object, Item>
-        implements Target {
+        implements Target, Cloneable {
 
-        private Type type;
-        private Class<?> klass;
+        protected Type type;
+        protected Class<?> klass;
 
-        private Coder<?> coder;
-        private final int index;
+        protected Coder<?> coder;
+        protected final int index;
 
         /**
          * @param index the specified {@code index}
@@ -557,9 +689,33 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
         ) {
             super(0);
             index = item.index;
-            coder = item.coder;
             type = item.type;
+            coder = item.coder;
             klass = item.klass;
+        }
+
+        /**
+         * @param index the specified {@code index}
+         */
+        public Item(
+            @NotNull int index,
+            @NotNull Class<?> klass,
+            @NotNull Type type,
+            @Nullable Coder<?> coder
+        ) {
+            super(0);
+            this.index = index;
+            this.type = type;
+            this.coder = coder;
+            this.klass = klass;
+        }
+
+        /**
+         * Returns a clone of this {@link Item}
+         */
+        @Override
+        public Item clone() {
+            return new Item(this);
         }
 
         /**
@@ -571,29 +727,11 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
         }
 
         /**
-         * @param klass the specified {@link Class}
-         */
-        public void setType(
-            Class<?> klass
-        ) {
-            this.klass = klass;
-        }
-
-        /**
          * Returns the {@link Class} of {@link Item}
          */
         @Override
         public Class<?> getType() {
             return klass;
-        }
-
-        /**
-         * @param coder the specified {@link Coder}
-         */
-        public void setCoder(
-            Coder<?> coder
-        ) {
-            this.coder = coder;
         }
 
         /**
@@ -605,28 +743,11 @@ public abstract class SuperSpare<T, E> extends KatMap<Object, E> implements Work
         }
 
         /**
-         * @param type the specified {@link Type}
-         */
-        public void setActualType(
-            Type type
-        ) {
-            this.type = type;
-        }
-
-        /**
          * Returns the {@link Type} of {@link Item}
          */
         @Override
         public Type getActualType() {
             return type;
-        }
-
-        /**
-         * Returns a clone of this {@link Item}
-         */
-        @Override
-        public Item clone() {
-            return new Item(this);
         }
     }
 }

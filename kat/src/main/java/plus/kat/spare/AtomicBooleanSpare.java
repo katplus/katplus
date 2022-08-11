@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicBooleanSpare extends DataSpare<AtomicBoolean> implements Serializable {
+public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Serializable {
 
     public static final AtomicBooleanSpare
         INSTANCE = new AtomicBooleanSpare();

@@ -31,7 +31,7 @@ import java.util.UUID;
  * @author kraity
  * @since 0.0.2
  */
-public class UUIDSpare extends DataSpare<UUID> {
+public class UUIDSpare extends Property<UUID> {
 
     public static final UUIDSpare
         INSTANCE = new UUIDSpare();

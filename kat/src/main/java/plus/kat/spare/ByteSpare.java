@@ -29,7 +29,7 @@ import java.io.Serializable;
  * @author kraity
  * @since 0.0.1
  */
-public class ByteSpare extends DataSpare<Byte> implements Serializable {
+public class ByteSpare extends Property<Byte> implements Serializable {
 
     public static final ByteSpare
         INSTANCE = new ByteSpare();

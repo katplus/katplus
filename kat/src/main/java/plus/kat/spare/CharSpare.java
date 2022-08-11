@@ -27,7 +27,7 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public class CharSpare extends DataSpare<Character> {
+public class CharSpare extends Property<Character> {
 
     public static final CharSpare
         INSTANCE = new CharSpare();

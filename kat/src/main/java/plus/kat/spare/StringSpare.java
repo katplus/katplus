@@ -27,7 +27,7 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public class StringSpare extends DataSpare<String> {
+public class StringSpare extends Property<String> {
 
     public static final StringSpare
         INSTANCE = new StringSpare();

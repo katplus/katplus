@@ -42,7 +42,7 @@ import static plus.kat.utils.Reflect.lookup;
  * @author kraity
  * @since 0.0.2
  */
-public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Maker<T>, Worker<T> {
+public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T>, Worker<T> {
 
     private MethodHandle handle;
     private Constructor<T> builder;
@@ -60,10 +60,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
-        this(
-            klass.getAnnotation(Embed.class),
-            klass, null, supplier
-        );
+        super(klass, supplier);
     }
 
     /**
@@ -72,10 +69,10 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
     public ReflectSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
-        @NotNull Provider provider,
-        @NotNull Supplier supplier
+        @NotNull Supplier supplier,
+        @Nullable Provider provider
     ) {
-        super(embed, klass, provider, supplier);
+        super(embed, klass, supplier, provider);
     }
 
     @Override
@@ -245,22 +242,6 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
         );
     }
 
-    @Override
-    public Setter<T, ?> put(
-        @NotNull Object key,
-        @Nullable Setter<T, ?> val
-    ) {
-        throw new RunCrash();
-    }
-
-    @Override
-    protected void setter(
-        @NotNull Object key,
-        @NotNull Setter<T, ?> setter
-    ) {
-        super.put(key, setter);
-    }
-
     /**
      * @param fields the specified {@link Field} collection
      */
@@ -311,7 +292,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 getter(
                     name, handle
                 );
-                setter(
+                super.put(
                     name, handle.clone()
                 );
                 continue;
@@ -321,7 +302,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             if (direct) {
                 int index = handle.getIndex();
                 if (index > -1) {
-                    setter(
+                    super.put(
                         index, handle.clone()
                     );
                 }
@@ -334,11 +315,11 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     getter(
                         name, handle
                     );
-                    setter(
+                    super.put(
                         name, handle.clone()
                     );
                 } else {
-                    setter(
+                    super.put(
                         name, handle
                     );
                 }
@@ -353,7 +334,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 for (String alias : keys) {
                     // check empty
                     if (!alias.isEmpty()) {
-                        setter(
+                        super.put(
                             alias, handle.clone()
                         );
                     }
@@ -419,7 +400,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                         if (direct) {
                             int index = handle.getIndex();
                             if (index > -1) {
-                                setter(
+                                super.put(
                                     index, handle
                                 );
                             }
@@ -428,7 +409,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                         for (String alias : keys) {
                             // check empty
                             if (!alias.isEmpty()) {
-                                setter(
+                                super.put(
                                     alias, handle.clone()
                                 );
                             }
@@ -508,7 +489,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     Binary.ascii(name), handle
                 );
             } else {
-                setter(
+                super.put(
                     Binary.alias(name), handle
                 );
 
@@ -516,7 +497,7 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                 if (direct) {
                     int index = handle.getIndex();
                     if (index > -1) {
-                        setter(
+                        super.put(
                             index, handle.clone()
                         );
                     }
@@ -602,14 +583,22 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
                     }
                 }
 
-                Coder<?> c = Reflect.activate(
-                    args[i], expose, format, supplier
-                );
+                Coder<?> coder;
+                Class<?> type = args[i];
+                if (type.isPrimitive()) {
+                    type = Reflect.wrap(type);
+                    coder = Reflect.activate(expose, supplier);
+                } else {
+                    if (format != null) {
+                        coder = Reflect.activate(type, format);
+                    } else {
+                        coder = Reflect.activate(expose, supplier);
+                    }
+                }
 
-                Item item = new Item(i);
-                item.setCoder(c);
-                item.setType(args[i]);
-                item.setActualType(ts[i]);
+                Item item = new Item(
+                    i, type, ts[i], coder
+                );
 
                 if (expose == null) {
                     if (ps == null) {
@@ -649,11 +638,8 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             super(handle);
             this.klass = handle.klass;
             this.type = handle.type;
-            this.coder = handle.coder;
             this.setter = handle.setter;
             this.getter = handle.getter;
-            this.nullable = handle.nullable;
-            this.unwrapped = handle.unwrapped;
         }
 
         public Handle(
@@ -662,21 +648,31 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             Supplier supplier
         ) throws IllegalAccessException {
             super(expose);
-            klass = field.getType();
-            type = field.getGenericType();
-
             field.setAccessible(true);
             setter = lookup.unreflectSetter(field);
             getter = lookup.unreflectGetter(field);
 
-            nullable = field.getAnnotation(NotNull.class) == null;
-            unwrapped = field.getAnnotation(Unwrapped.class) != null;
+            type = field.getGenericType();
+            Class<?> clazz = field.getType();
 
-            Format format = field
-                .getAnnotation(Format.class);
-            coder = Reflect.activate(
-                klass, expose, format, supplier
-            );
+            if (clazz.isPrimitive()) {
+                klass = Reflect.wrap(clazz);
+                coder = Reflect.activate(expose, supplier);
+            } else {
+                klass = clazz;
+                nullable = field.getAnnotation(NotNull.class) == null;
+                unwrapped = field.getAnnotation(Unwrapped.class) != null;
+
+                Format format = field
+                    .getAnnotation(
+                        Format.class
+                    );
+                if (format != null) {
+                    coder = Reflect.activate(klass, format);
+                } else {
+                    coder = Reflect.activate(expose, supplier);
+                }
+            }
         }
 
         public Handle(
@@ -685,13 +681,14 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             Supplier supplier
         ) throws IllegalAccessException {
             super(expose);
+            Class<?> clazz;
             switch (method.getParameterCount()) {
                 case 0: {
-                    type = klass = method.getReturnType();
+                    type = clazz = method.getReturnType();
                     break;
                 }
                 case 1: {
-                    klass = method.getParameterTypes()[0];
+                    clazz = method.getParameterTypes()[0];
                     type = method.getGenericParameterTypes()[0];
                     break;
                 }
@@ -705,14 +702,24 @@ public class ReflectSpare<T> extends SuperSpare<T, Setter<T, ?>> implements Make
             method.setAccessible(true);
             getter = setter = lookup.unreflect(method);
 
-            nullable = method.getAnnotation(NotNull.class) == null;
-            unwrapped = method.getAnnotation(Unwrapped.class) != null;
+            if (clazz.isPrimitive()) {
+                klass = Reflect.wrap(clazz);
+                coder = Reflect.activate(expose, supplier);
+            } else {
+                klass = clazz;
+                nullable = method.getAnnotation(NotNull.class) == null;
+                unwrapped = method.getAnnotation(Unwrapped.class) != null;
 
-            Format format = method
-                .getAnnotation(Format.class);
-            coder = Reflect.activate(
-                klass, expose, format, supplier
-            );
+                Format format = method
+                    .getAnnotation(
+                        Format.class
+                    );
+                if (format != null) {
+                    coder = Reflect.activate(klass, format);
+                } else {
+                    coder = Reflect.activate(expose, supplier);
+                }
+            }
         }
 
         @Nullable

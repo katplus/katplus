@@ -35,7 +35,7 @@ import static plus.kat.utils.Reflect.lookup;
  * @author kraity
  * @since 0.0.2
  */
-public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
+public class RecordSpare<T> extends Workman<T, Target> implements Worker<T> {
 
     private int width;
     private Constructor<T> ctor;
@@ -47,10 +47,7 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
         @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
-        this(
-            klass.getAnnotation(Embed.class),
-            klass, null, supplier
-        );
+        super(klass, supplier);
     }
 
     /**
@@ -59,10 +56,10 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
     public RecordSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
-        @NotNull Provider provider,
-        @NotNull Supplier supplier
+        @NotNull Supplier supplier,
+        @Nullable Provider provider
     ) {
-        super(embed, klass, provider, supplier);
+        super(embed, klass, supplier, provider);
     }
 
     @NotNull
@@ -147,34 +144,44 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
                         Expose.class
                     );
 
-                Format f1 = field
-                    .getAnnotation(
-                        Format.class
-                    );
-
-                Item item = new Item(width++);
+                Coder<?> coder;
                 Class<?> type = field.getType();
-                item.setType(type);
-                item.setCoder(
-                    Reflect.activate(
-                        type, e1, f1, supplier
-                    )
-                );
-                item.setActualType(
-                    field.getGenericType()
+                if (type.isPrimitive()) {
+                    type = Reflect.wrap(type);
+                    coder = Reflect.activate(e1, supplier);
+                } else {
+                    Format f1 = field
+                        .getAnnotation(
+                            Format.class
+                        );
+
+                    if (f1 != null) {
+                        coder = Reflect.activate(type, f1);
+                    } else {
+                        coder = Reflect.activate(e1, supplier);
+                    }
+                }
+
+                Item item = new Item(
+                    width++, type,
+                    field.getGenericType(), coder
                 );
 
                 String name = field.getName();
                 if (e1 == null) {
-                    put(name, item);
+                    super.put(
+                        name, item
+                    );
                 } else {
                     String[] keys = e1.value();
                     if (keys.length == 0) {
-                        put(name, item);
+                        super.put(
+                            name, item
+                        );
                     } else {
                         name = keys[0];
                         for (int i = 0; i < keys.length; i++) {
-                            put(
+                            super.put(
                                 keys[i], i == 0 ? item : item.clone()
                             );
                         }
@@ -260,10 +267,7 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
         ) {
             super(handle);
             this.klass = handle.klass;
-            this.coder = handle.coder;
             this.getter = handle.getter;
-            this.nullable = handle.nullable;
-            this.unwrapped = handle.unwrapped;
         }
 
         public Handle(
@@ -272,18 +276,28 @@ public class RecordSpare<T> extends SuperSpare<T, Target> implements Worker<T> {
             Supplier supplier
         ) throws IllegalAccessException {
             super(expose);
-            klass = method.getReturnType();
-            nullable = method.getAnnotation(NotNull.class) == null;
-            unwrapped = method.getAnnotation(Unwrapped.class) != null;
-
             method.setAccessible(true);
             getter = lookup.unreflect(method);
 
-            Format format = method
-                .getAnnotation(Format.class);
-            coder = Reflect.activate(
-                klass, expose, format, supplier
-            );
+            Class<?> clazz = method.getReturnType();
+            if (clazz.isPrimitive()) {
+                klass = Reflect.wrap(clazz);
+                coder = Reflect.activate(expose, supplier);
+            } else {
+                klass = clazz;
+                nullable = method.getAnnotation(NotNull.class) == null;
+                unwrapped = method.getAnnotation(Unwrapped.class) != null;
+
+                Format format = method
+                    .getAnnotation(
+                        Format.class
+                    );
+                if (format != null) {
+                    coder = Reflect.activate(klass, format);
+                } else {
+                    coder = Reflect.activate(expose, supplier);
+                }
+            }
         }
 
         @Override

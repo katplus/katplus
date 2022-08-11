@@ -28,7 +28,7 @@ import java.io.Serializable;
  * @author kraity
  * @since 0.0.1
  */
-public class BooleanSpare extends DataSpare<Boolean> implements Serializable {
+public class BooleanSpare extends Property<Boolean> implements Serializable {
 
     public static final BooleanSpare
         INSTANCE = new BooleanSpare();

@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
  * @author kraity
  * @since 0.0.2
  */
-public class ByteBufferSpare extends DataSpare<ByteBuffer> {
+public class ByteBufferSpare extends Property<ByteBuffer> {
 
     public static final ByteBufferSpare
         INSTANCE = new ByteBufferSpare();

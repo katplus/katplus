@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicLongSpare extends DataSpare<AtomicLong> implements Serializable {
+public class AtomicLongSpare extends Property<AtomicLong> implements Serializable {
 
     public static final AtomicLongSpare
         INSTANCE = new AtomicLongSpare();

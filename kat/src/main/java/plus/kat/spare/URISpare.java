@@ -31,7 +31,7 @@ import java.net.URISyntaxException;
  * @author kraity
  * @since 0.0.2
  */
-public class URISpare extends DataSpare<URI> {
+public class URISpare extends Property<URI> {
 
     public static final URISpare
         INSTANCE = new URISpare();
