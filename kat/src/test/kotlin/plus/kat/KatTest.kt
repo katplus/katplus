@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 import plus.kat.anno.Embed
-import plus.kat.anno.Embed.*
 import plus.kat.anno.Expose
 
 class KatKtTest {
@@ -87,7 +86,7 @@ class KatKtTest {
         )
     }
 
-    @Embed("User", claim = SEALED)
+    @Embed("User")
     class User {
         @Expose("id")
         val id = 0

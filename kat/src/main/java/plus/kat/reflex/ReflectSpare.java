@@ -42,16 +42,16 @@ import static plus.kat.utils.Reflect.lookup;
  * @author kraity
  * @since 0.0.2
  */
-public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T>, Worker<T> {
+public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worker<T> {
 
     private MethodHandle handle;
     private Constructor<T> builder;
 
-    protected Class<?> owner;
-    protected boolean marker;
+    private Class<?> owner;
+    private boolean marker;
 
-    protected Class<?>[] args;
-    protected KatMap<Object, Target> params;
+    private Class<?>[] args;
+    private KatMap<Object, Target> params;
 
     /**
      * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
@@ -225,19 +225,21 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
 
     @Nullable
     @Override
+    @SuppressWarnings("unchecked")
     public Setter<T, ?> setter(
         @NotNull Object alias
     ) {
-        return get(alias);
+        return (Setter<T, ?>) get(alias);
     }
 
     @Nullable
     @Override
+    @SuppressWarnings("unchecked")
     public Setter<T, ?> setter(
         @NotNull int index,
         @NotNull Alias alias
     ) {
-        return get(
+        return (Setter<T, ?>) get(
             alias.isEmpty() ? index : alias
         );
     }
@@ -245,7 +247,7 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
     /**
      * @param fields the specified {@link Field} collection
      */
-    protected void onFields(
+    private void onFields(
         @NotNull Field[] fields
     ) {
         boolean sealed = (flags & Embed.SEALED) != 0;
@@ -278,9 +280,9 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
                 }
             }
 
-            Handle<T> handle;
+            Task<T> node;
             try {
-                handle = new Handle<>(
+                node = new Task<>(
                     field, expose, supplier
                 );
             } catch (Throwable e) {
@@ -289,21 +291,21 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
 
             if (expose == null) {
                 String name = field.getName();
-                getter(
-                    name, handle
+                setup(
+                    name, node
                 );
                 super.put(
-                    name, handle.clone()
+                    name, node
                 );
                 continue;
             }
 
             // check whether to use direct index
             if (direct) {
-                int index = handle.getIndex();
+                int index = node.getIndex();
                 if (index > -1) {
                     super.put(
-                        index, handle.clone()
+                        index, node
                     );
                 }
             }
@@ -312,22 +314,18 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
             if (keys.length == 0) {
                 String name = field.getName();
                 if (expose.export()) {
-                    getter(
-                        name, handle
-                    );
-                    super.put(
-                        name, handle.clone()
-                    );
-                } else {
-                    super.put(
-                        name, handle
+                    setup(
+                        name, node
                     );
                 }
+                super.put(
+                    name, node
+                );
             } else {
                 // register only the first alias
                 if (expose.export()) {
-                    getter(
-                        keys[0], handle
+                    setup(
+                        keys[0], node
                     );
                 }
 
@@ -335,7 +333,7 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
                     // check empty
                     if (!alias.isEmpty()) {
                         super.put(
-                            alias, handle.clone()
+                            alias, node
                         );
                     }
                 }
@@ -347,7 +345,7 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
      * @param methods the specified {@link Method} collection
      */
     @SuppressWarnings("deprecation")
-    protected void onMethods(
+    private void onMethods(
         @NotNull Method[] methods
     ) {
         boolean sealed = (flags & Embed.SEALED) != 0;
@@ -368,7 +366,7 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
                 continue;
             }
 
-            Handle<T> handle;
+            Task<T> node;
             Expose expose = method
                 .getAnnotation(
                     Expose.class
@@ -388,7 +386,7 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
                 String[] keys = expose.value();
                 if (keys.length != 0) {
                     try {
-                        handle = new Handle<>(
+                        node = new Task<>(
                             method, expose, supplier
                         );
                     } catch (Throwable e) {
@@ -398,10 +396,10 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
                     if (count != 0) {
                         // check whether to use direct index
                         if (direct) {
-                            int index = handle.getIndex();
+                            int index = node.getIndex();
                             if (index > -1) {
                                 super.put(
-                                    index, handle
+                                    index, node
                                 );
                             }
                         }
@@ -410,15 +408,15 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
                             // check empty
                             if (!alias.isEmpty()) {
                                 super.put(
-                                    alias, handle.clone()
+                                    alias, node
                                 );
                             }
                         }
                     } else {
                         // register all aliases
                         for (int i = 0; i < keys.length; i++) {
-                            getter(
-                                keys[i], i == 0 ? handle : handle.clone()
+                            setup(
+                                keys[i], i == 0 ? node : new Task<>(node)
                             );
                         }
                     }
@@ -477,7 +475,7 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
             }
 
             try {
-                handle = new Handle<>(
+                node = new Task<>(
                     method, expose, supplier
                 );
             } catch (Throwable e) {
@@ -485,20 +483,20 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
             }
 
             if (count == 0) {
-                getter(
-                    Binary.ascii(name), handle
+                setup(
+                    Binary.ascii(name), node
                 );
             } else {
                 super.put(
-                    Binary.alias(name), handle
+                    Binary.alias(name), node
                 );
 
                 // check whether to use direct index
                 if (direct) {
-                    int index = handle.getIndex();
+                    int index = node.getIndex();
                     if (index > -1) {
                         super.put(
-                            index, handle.clone()
+                            index, node
                         );
                     }
                 }
@@ -510,7 +508,7 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
      * @param constructors the specified {@link Constructor} collection
      */
     @SuppressWarnings("unchecked")
-    protected void onConstructors(
+    private void onConstructors(
         @NotNull Constructor<?>[] constructors
     ) {
         Constructor<?> $ = null,
@@ -609,9 +607,9 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
                     );
                 } else {
                     String[] keys = expose.value();
-                    for (int k = 0; k < keys.length; k++) {
+                    for (String key : keys) {
                         params.put(
-                            keys[k], k == 0 ? item : item.clone()
+                            key, item
                         );
                     }
                 }
@@ -621,45 +619,39 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
 
     /**
      * @author kraity
-     * @since 0.0.2
+     * @since 0.0.3
      */
-    static class Handle<K>
-        extends Node<K>
-        implements Setter<K, Object> {
+    public static class Task<K>
+        extends Node<K> implements Setter<K, Object> {
 
-        final Class<?> klass;
-        final Type type;
-        final MethodHandle setter;
         final MethodHandle getter;
+        final MethodHandle setter;
 
-        public Handle(
-            Handle<?> handle
+        public Task(
+            Task<K> node
         ) {
-            super(handle);
-            this.klass = handle.klass;
-            this.type = handle.type;
-            this.setter = handle.setter;
-            this.getter = handle.getter;
+            super(node);
+            getter = node.getter;
+            setter = node.setter;
         }
 
-        public Handle(
+        public Task(
             Field field,
             Expose expose,
             Supplier supplier
         ) throws IllegalAccessException {
             super(expose);
             field.setAccessible(true);
-            setter = lookup.unreflectSetter(field);
             getter = lookup.unreflectGetter(field);
+            setter = lookup.unreflectSetter(field);
 
-            type = field.getGenericType();
-            Class<?> clazz = field.getType();
+            klass = field.getType();
+            actual = field.getGenericType();
 
-            if (clazz.isPrimitive()) {
-                klass = Reflect.wrap(clazz);
+            if (klass.isPrimitive()) {
+                klass = Reflect.wrap(klass);
                 coder = Reflect.activate(expose, supplier);
             } else {
-                klass = clazz;
                 nullable = field.getAnnotation(NotNull.class) == null;
                 unwrapped = field.getAnnotation(Unwrapped.class) != null;
 
@@ -675,21 +667,25 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
             }
         }
 
-        public Handle(
+        public Task(
             Method method,
             Expose expose,
             Supplier supplier
         ) throws IllegalAccessException {
             super(expose);
-            Class<?> clazz;
+            method.setAccessible(true);
             switch (method.getParameterCount()) {
                 case 0: {
-                    type = clazz = method.getReturnType();
+                    setter = null;
+                    getter = lookup.unreflect(method);
+                    actual = klass = method.getReturnType();
                     break;
                 }
                 case 1: {
-                    clazz = method.getParameterTypes()[0];
-                    type = method.getGenericParameterTypes()[0];
+                    getter = null;
+                    setter = lookup.unreflect(method);
+                    klass = method.getParameterTypes()[0];
+                    actual = method.getGenericParameterTypes()[0];
                     break;
                 }
                 default: {
@@ -699,14 +695,10 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
                 }
             }
 
-            method.setAccessible(true);
-            getter = setter = lookup.unreflect(method);
-
-            if (clazz.isPrimitive()) {
-                klass = Reflect.wrap(clazz);
+            if (klass.isPrimitive()) {
+                klass = Reflect.wrap(klass);
                 coder = Reflect.activate(expose, supplier);
             } else {
-                klass = clazz;
                 nullable = method.getAnnotation(NotNull.class) == null;
                 unwrapped = method.getAnnotation(Unwrapped.class) != null;
 
@@ -722,7 +714,6 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
             }
         }
 
-        @Nullable
         @Override
         public Object apply(
             @NotNull K it
@@ -735,7 +726,6 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
             return null;
         }
 
-        @Nullable
         @Override
         public Object onApply(
             @NotNull Object it
@@ -774,21 +764,6 @@ public class ReflectSpare<T> extends Workman<T, Setter<T, ?>> implements Maker<T
                     // Nothing
                 }
             }
-        }
-
-        @Override
-        public Class<?> getType() {
-            return klass;
-        }
-
-        @Override
-        public Type getActualType() {
-            return type;
-        }
-
-        @Override
-        public Handle<K> clone() {
-            return new Handle<>(this);
         }
     }
 

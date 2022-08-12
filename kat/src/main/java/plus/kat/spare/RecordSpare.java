@@ -23,19 +23,18 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.utils.Reflect;
 
-import java.lang.invoke.MethodHandle;
 import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import static plus.kat.utils.Reflect.lookup;
+import static plus.kat.reflex.ReflectSpare.Task;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class RecordSpare<T> extends Workman<T, Target> implements Worker<T> {
+public final class RecordSpare<T> extends Workman<T> implements Worker<T> {
 
     private int width;
     private Constructor<T> ctor;
@@ -109,7 +108,7 @@ public class RecordSpare<T> extends Workman<T, Target> implements Worker<T> {
     public Target target(
         Object alias
     ) {
-        return get(alias);
+        return (Target) get(alias);
     }
 
     @Override
@@ -117,7 +116,9 @@ public class RecordSpare<T> extends Workman<T, Target> implements Worker<T> {
         @NotNull int index,
         @NotNull Alias alias
     ) {
-        return get(alias);
+        return (Target) get(
+            alias.isEmpty() ? index : alias
+        );
     }
 
     @Override
@@ -180,9 +181,9 @@ public class RecordSpare<T> extends Workman<T, Target> implements Worker<T> {
                         );
                     } else {
                         name = keys[0];
-                        for (int i = 0; i < keys.length; i++) {
+                        for (String key : keys) {
                             super.put(
-                                keys[i], i == 0 ? item : item.clone()
+                                key, item
                             );
                         }
                     }
@@ -191,7 +192,7 @@ public class RecordSpare<T> extends Workman<T, Target> implements Worker<T> {
                     }
                 }
 
-                Handle<T> handle;
+                Task<T> node;
                 Method method = klass.getMethod(
                     field.getName()
                 );
@@ -201,21 +202,21 @@ public class RecordSpare<T> extends Workman<T, Target> implements Worker<T> {
                         Expose.class
                     );
                 if (e2 == null) {
-                    handle = new Handle<>(
+                    node = new Task<>(
                         method, e1, supplier
                     );
-                    getter(name, handle);
+                    setup(name, node);
                 } else if (e2.export()) {
-                    handle = new Handle<>(
+                    node = new Task<>(
                         method, e2, supplier
                     );
                     String[] keys = e2.value();
                     if (keys.length == 0) {
-                        getter(name, handle);
+                        setup(name, node);
                     } else {
                         for (int i = 0; i < keys.length; i++) {
-                            getter(
-                                keys[i], i == 0 ? handle : handle.clone()
+                            setup(
+                                keys[i], i == 0 ? node : new Task<>(node)
                             );
                         }
                     }
@@ -250,83 +251,6 @@ public class RecordSpare<T> extends Workman<T, Target> implements Worker<T> {
             throw new RunCrash(
                 "Unexpectedly, the number of actual and formal parameters differ"
             );
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.2
-     */
-    static class Handle<K> extends Node<K> {
-
-        final Class<?> klass;
-        final MethodHandle getter;
-
-        public Handle(
-            Handle<?> handle
-        ) {
-            super(handle);
-            this.klass = handle.klass;
-            this.getter = handle.getter;
-        }
-
-        public Handle(
-            Method method,
-            Expose expose,
-            Supplier supplier
-        ) throws IllegalAccessException {
-            super(expose);
-            method.setAccessible(true);
-            getter = lookup.unreflect(method);
-
-            Class<?> clazz = method.getReturnType();
-            if (clazz.isPrimitive()) {
-                klass = Reflect.wrap(clazz);
-                coder = Reflect.activate(expose, supplier);
-            } else {
-                klass = clazz;
-                nullable = method.getAnnotation(NotNull.class) == null;
-                unwrapped = method.getAnnotation(Unwrapped.class) != null;
-
-                Format format = method
-                    .getAnnotation(
-                        Format.class
-                    );
-                if (format != null) {
-                    coder = Reflect.activate(klass, format);
-                } else {
-                    coder = Reflect.activate(expose, supplier);
-                }
-            }
-        }
-
-        @Override
-        public Object apply(
-            @NotNull K it
-        ) {
-            try {
-                return getter.invoke(it);
-            } catch (Throwable e) {
-                // Nothing
-            }
-            return null;
-        }
-
-        @Override
-        public Object onApply(
-            @NotNull Object it
-        ) {
-            try {
-                return getter.invoke(it);
-            } catch (Throwable e) {
-                // Nothing
-            }
-            return null;
-        }
-
-        @Override
-        public Handle<K> clone() {
-            return new Handle<>(this);
         }
     }
 }

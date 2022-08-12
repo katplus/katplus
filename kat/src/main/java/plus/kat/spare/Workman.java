@@ -38,12 +38,13 @@ import java.util.function.BiConsumer;
  * @author kraity
  * @since 0.0.3
  */
-public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<T> {
+public abstract class Workman<T> extends KatMap<Object, Object> implements Worker<T> {
 
     protected Provider provider;
     protected Supplier supplier;
 
     protected int flags;
+    protected Node<T>[] table;
     protected Node<T> head, tail;
 
     protected final String space;
@@ -220,7 +221,7 @@ public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<
                     );
                 }
             }
-            node = node.next;
+            node = node.later;
         }
     }
 
@@ -237,9 +238,151 @@ public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<
                     node.key, val
                 );
             }
-            node = node.next;
+            node = node.later;
         }
         return true;
+    }
+
+    /**
+     * @param key  the ket of {@link Node}
+     * @param node the specified {@link Node}
+     * @throws RunCrash             If the {@code node} is already used
+     * @throws NullPointerException If the {@code key} or {@code node} is null
+     * @since 0.0.3
+     */
+    @SuppressWarnings("unchecked")
+    public void setup(
+        @NotNull String key,
+        @NotNull Node<T> node
+    ) {
+        if (node.key != null) {
+            throw new RunCrash(
+                node + " is already used"
+            );
+        }
+
+        Node<T>[] tab = table;
+        if (tab == null) {
+            tab = table = new Node[6];
+        }
+
+        int i, hash = key.hashCode() & 0xFFFF;
+        Node<T> e = tab[i = (hash % tab.length)];
+
+        if (e == null) {
+            tab[i] = node;
+        } else {
+            while (true) {
+                if (e.hash == hash &&
+                    key.equals(e.key)) {
+                    return;
+                }
+                if (e.next != null) {
+                    e = e.next;
+                } else {
+                    e.next = node;
+                    break;
+                }
+            }
+        }
+
+        node.key = key;
+        node.hash = hash;
+
+        if (tail == null) {
+            head = node;
+            tail = node;
+        } else if (node.index < 0) {
+            tail.later = node;
+            tail = node;
+        } else {
+            Node<T> m = head;
+            Node<T> n = null;
+
+            while (true) {
+                if (m.index < 0) {
+                    node.later = m;
+                    if (m == head) {
+                        head = node;
+                    }
+                    break;
+                }
+
+                if (m.index > node.index) {
+                    if (n == null) {
+                        head = node;
+                    } else {
+                        n.later = node;
+                    }
+                    node.later = m;
+                    break;
+                } else {
+                    n = m;
+                    m = m.later;
+                    if (m == null) {
+                        tail = node;
+                        n.later = node;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param key the alias of getter
+     * @since 0.0.3
+     */
+    @Override
+    public Getter<T, ?> getter(
+        @NotNull Object key
+    ) {
+        Node<T>[] tab = table;
+        if (tab == null) {
+            return null;
+        }
+
+        int h = key.hashCode() & 0xFFFF;
+        Node<T> e = tab[h % tab.length];
+
+        while (e != null) {
+            if (e.hash == h &&
+                key.equals(e.key)) {
+                return e;
+            }
+            e = e.next;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param alias the alias of getter
+     * @since 0.0.3
+     */
+    @Override
+    public Getter<T, ?> getter(
+        @NotNull int index,
+        @NotNull Alias alias
+    ) {
+        if (alias.isNotEmpty()) {
+            return getter(alias);
+        }
+
+        if (index < 0) {
+            return null;
+        }
+
+        Node<T> node = head;
+        while (node != null) {
+            if (index == 0) {
+                return node;
+            }
+            index--;
+            node = node.later;
+        }
+
+        return null;
     }
 
     /**
@@ -537,103 +680,83 @@ public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<
     }
 
     /**
-     * @param alias the alias of getter
-     * @since 0.0.3
+     * @author kraity
+     * @since 0.0.2
      */
-    @Override
-    public Getter<T, ?> getter(
-        @NotNull Object alias
-    ) {
-        Node<T> node = head;
-        int hash = alias.hashCode();
+    public static class Item
+        extends Entry<Object, Item>
+        implements Target {
 
-        while (node != null) {
-            String key = node.key;
-            if (hash == key.hashCode()
-                && alias.equals(key)) {
-                return node;
-            }
-            node = node.next;
+        protected Type actual;
+        protected Class<?> klass;
+
+        protected Coder<?> coder;
+        protected final int index;
+
+        /**
+         * @param index the specified {@code index}
+         */
+        protected Item(
+            int index
+        ) {
+            this.index = index;
         }
 
-        return null;
-    }
-
-    /**
-     * @param alias the alias of getter
-     * @since 0.0.3
-     */
-    @Override
-    public Getter<T, ?> getter(
-        @NotNull int index,
-        @NotNull Alias alias
-    ) {
-        if (alias.isNotEmpty()) {
-            return getter(alias);
+        /**
+         * @param item the specified {@link Item}
+         */
+        public Item(
+            @NotNull Item item
+        ) {
+            index = item.index;
+            coder = item.coder;
+            klass = item.klass;
+            actual = item.actual;
         }
 
-        if (index < 0) {
-            return null;
+        /**
+         * @since 0.0.3
+         */
+        public Item(
+            @NotNull int index, @NotNull Class<?> klass,
+            @NotNull Type type, @Nullable Coder<?> coder
+        ) {
+            this.index = index;
+            this.coder = coder;
+            this.klass = klass;
+            this.actual = type;
         }
 
-        Node<T> node = head;
-        while (node != null) {
-            if (index == 0) {
-                return node;
-            }
-            index--;
-            node = node.next;
+        /**
+         * Returns the index of {@link Item}
+         */
+        @Override
+        public int getIndex() {
+            return index;
         }
 
-        return null;
-    }
+        /**
+         * Returns the {@link Coder} of {@link Item}
+         */
+        @Override
+        public Coder<?> getCoder() {
+            return coder;
+        }
 
-    /**
-     * @param getter the specified {@link Getter}
-     * @since 0.0.3
-     */
-    protected void getter(
-        @NotNull String key,
-        @NotNull Node<T> getter
-    ) {
-        getter.key = key;
-        if (tail == null) {
-            head = getter;
-            tail = getter;
-        } else if (getter.index < 0) {
-            tail.next = getter;
-            tail = getter;
-        } else {
-            Node<T> m = head;
-            Node<T> n = null;
+        /**
+         * Returns the {@link Class} of {@link Item}
+         */
+        @Override
+        public Class<?> getType() {
+            return klass;
+        }
 
-            while (true) {
-                if (m.index < 0) {
-                    getter.next = m;
-                    if (m == head) {
-                        head = getter;
-                    }
-                    break;
-                }
-
-                if (m.index > getter.index) {
-                    if (n == null) {
-                        head = getter;
-                    } else {
-                        n.next = getter;
-                    }
-                    getter.next = m;
-                    break;
-                } else {
-                    n = m;
-                    m = m.next;
-                    if (m == null) {
-                        tail = getter;
-                        n.next = getter;
-                        break;
-                    }
-                }
-            }
+        /**
+         * Returns the {@link Type} of {@link Item}
+         */
+        @Override
+        public Type getActualType() {
+            return actual;
         }
     }
 
@@ -644,8 +767,11 @@ public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<
     public static abstract class Node<E>
         extends Item implements Getter<E, Object> {
 
+        private int hash;
         private String key;
+
         private Node<E> next;
+        private Node<E> later;
 
         protected boolean nullable;
         protected boolean unwrapped;
@@ -677,106 +803,6 @@ public abstract class Workman<T, E> extends KatMap<Object, E> implements Worker<
             Expose expose
         ) {
             super(expose == null ? -1 : expose.index());
-        }
-
-        /**
-         * Returns a clone of this {@link Node}
-         */
-        @Override
-        public abstract Node<E> clone();
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.2
-     */
-    public static class Item
-        extends Entry<Object, Item>
-        implements Target, Cloneable {
-
-        protected Type type;
-        protected Class<?> klass;
-
-        protected Coder<?> coder;
-        protected final int index;
-
-        /**
-         * @param index the specified {@code index}
-         */
-        public Item(
-            int index
-        ) {
-            super();
-            this.index = index;
-        }
-
-        /**
-         * @param item the specified {@link Item}
-         */
-        public Item(
-            @NotNull Item item
-        ) {
-            super();
-            index = item.index;
-            type = item.type;
-            coder = item.coder;
-            klass = item.klass;
-        }
-
-        /**
-         * @param index the specified {@code index}
-         */
-        public Item(
-            @NotNull int index,
-            @NotNull Class<?> klass,
-            @NotNull Type type,
-            @Nullable Coder<?> coder
-        ) {
-            super();
-            this.index = index;
-            this.type = type;
-            this.coder = coder;
-            this.klass = klass;
-        }
-
-        /**
-         * Returns a clone of this {@link Item}
-         */
-        @Override
-        public Item clone() {
-            return new Item(this);
-        }
-
-        /**
-         * Returns the index of {@link Item}
-         */
-        @Override
-        public int getIndex() {
-            return index;
-        }
-
-        /**
-         * Returns the {@link Class} of {@link Item}
-         */
-        @Override
-        public Class<?> getType() {
-            return klass;
-        }
-
-        /**
-         * Returns the {@link Coder} of {@link Item}
-         */
-        @Override
-        public Coder<?> getCoder() {
-            return coder;
-        }
-
-        /**
-         * Returns the {@link Type} of {@link Item}
-         */
-        @Override
-        public Type getActualType() {
-            return type;
         }
     }
 }

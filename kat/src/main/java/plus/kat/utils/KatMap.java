@@ -64,7 +64,7 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
         int h = key.hashCode();
         h = h ^ (h >>> 16);
 
-        int m = table.length - 1;
+        int m = tab.length - 1;
         Entry<K, V> e = tab[m & h];
 
         while (e != null) {
@@ -237,7 +237,7 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
         int h = key.hashCode();
         h = h ^ (h >>> 16);
 
-        int m = table.length - 1;
+        int m = tab.length - 1;
         int i = m & h;
 
         Entry<K, V> e = tab[i];
@@ -289,7 +289,7 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
         int h = key.hashCode();
         h = h ^ (h >>> 16);
 
-        int m = table.length - 1;
+        int m = tab.length - 1;
         Entry<K, V> e = tab[m & h];
 
         while (e != null) {
