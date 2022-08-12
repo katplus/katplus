@@ -43,7 +43,6 @@ public class ShortSpare extends Property<Short> implements Serializable {
         return (short) 0;
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$u;
@@ -59,7 +58,6 @@ public class ShortSpare extends Property<Short> implements Serializable {
             || klass == Object.class;
     }
 
-    @NotNull
     @Override
     public Short cast(
         @NotNull Supplier supplier,
@@ -94,7 +92,6 @@ public class ShortSpare extends Property<Short> implements Serializable {
         return (short) 0;
     }
 
-    @NotNull
     @Override
     public Short read(
         @NotNull Flag flag,
@@ -103,7 +100,6 @@ public class ShortSpare extends Property<Short> implements Serializable {
         return alias.toShort();
     }
 
-    @NotNull
     @Override
     public Short read(
         @NotNull Flag flag,

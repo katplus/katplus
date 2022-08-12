@@ -40,7 +40,6 @@ public class LocaleSpare extends Property<Locale> {
         super(Locale.class);
     }
 
-    @NotNull
     @Override
     public String getSpace() {
         return "Locale";
@@ -54,7 +53,6 @@ public class LocaleSpare extends Property<Locale> {
             || klass == Object.class;
     }
 
-    @Nullable
     @Override
     public Locale cast(
         @NotNull Supplier supplier,
@@ -81,7 +79,6 @@ public class LocaleSpare extends Property<Locale> {
         return null;
     }
 
-    @Nullable
     @Override
     public Locale read(
         @NotNull Flag flag,
@@ -90,7 +87,6 @@ public class LocaleSpare extends Property<Locale> {
         return lookup(alias);
     }
 
-    @Nullable
     @Override
     public Locale read(
         @NotNull Flag flag,

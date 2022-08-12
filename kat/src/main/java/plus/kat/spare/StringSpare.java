@@ -41,7 +41,6 @@ public class StringSpare extends Property<String> {
         return "";
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$s;
@@ -56,7 +55,6 @@ public class StringSpare extends Property<String> {
             || klass == CharSequence.class;
     }
 
-    @NotNull
     @Override
     public String cast(
         @NotNull Supplier supplier,
@@ -65,7 +63,6 @@ public class StringSpare extends Property<String> {
         return data == null ? "" : data.toString();
     }
 
-    @NotNull
     @Override
     public String read(
         @NotNull Flag flag,
@@ -74,7 +71,6 @@ public class StringSpare extends Property<String> {
         return alias.toString();
     }
 
-    @NotNull
     @Override
     public String read(
         @NotNull Flag flag,

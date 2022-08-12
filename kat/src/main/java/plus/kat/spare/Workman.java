@@ -87,7 +87,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         // Nothing
     }
 
-    @NotNull
     @Override
     public String getSpace() {
         return space;
@@ -100,19 +99,16 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         return clazz.isAssignableFrom(klass);
     }
 
-    @Nullable
     @Override
     public Boolean getFlag() {
         return Boolean.TRUE;
     }
 
-    @NotNull
     @Override
     public Class<T> getType() {
         return klass;
     }
 
-    @Nullable
     @Override
     public Provider getProvider() {
         return provider;
@@ -135,7 +131,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         );
     }
 
-    @Nullable
     @Override
     @SuppressWarnings("unchecked")
     public T cast(

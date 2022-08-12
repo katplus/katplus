@@ -42,6 +42,7 @@ import static plus.kat.utils.Reflect.lookup;
  * @author kraity
  * @since 0.0.2
  */
+@SuppressWarnings("unchecked")
 public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worker<T> {
 
     private MethodHandle handle;
@@ -88,26 +89,47 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         );
     }
 
-    @NotNull
     @Override
-    @SuppressWarnings("unchecked")
+    public T apply() {
+        MethodHandle m = handle;
+        if (m != null) {
+            try {
+                return (T) m.invoke();
+            } catch (Throwable e) {
+                // Nothing
+            }
+        }
+        return null;
+    }
+
+    @Override
     public T apply(
         @NotNull Alias alias
     ) throws Crash {
+        MethodHandle m = handle;
+        if (m == null) {
+            throw new Crash(
+                "Not supported"
+            );
+        }
         try {
-            return (T) handle.invoke();
+            return (T) m.invoke();
         } catch (Throwable e) {
             throw new Crash(e);
         }
     }
 
-    @NotNull
     @Override
     public T apply(
         @NotNull Alias alias,
         @NotNull Object... data
     ) throws Crash {
-        if (marker) {
+        Constructor<T> b = builder;
+        if (b == null) {
+            throw new Crash(
+                "Not supported"
+            );
+        } else if (marker) {
             int i = 0, flag = 0;
             for (; i < args.length; i++) {
                 if (data[i] == null) {
@@ -137,13 +159,12 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
             data[i] = flag;
         }
         try {
-            return builder.newInstance(data);
+            return b.newInstance(data);
         } catch (Throwable e) {
             throw new Crash(e);
         }
     }
 
-    @Nullable
     @Override
     public T apply(
         @NotNull Supplier supplier,
@@ -165,7 +186,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         }
     }
 
-    @NotNull
     @Override
     public T apply(
         @NotNull Supplier supplier,
@@ -188,7 +208,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
     }
 
     @Override
-    @Nullable
     public Builder<T> getBuilder(
         @Nullable Type type
     ) {
@@ -198,7 +217,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         return new Builder2<>(this);
     }
 
-    @Nullable
     @Override
     public Target target(
         Object alias
@@ -209,7 +227,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         return params.get(alias);
     }
 
-    @Nullable
     @Override
     public Target target(
         @NotNull int index,
@@ -223,18 +240,14 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         );
     }
 
-    @Nullable
     @Override
-    @SuppressWarnings("unchecked")
     public Setter<T, ?> setter(
         @NotNull Object alias
     ) {
         return (Setter<T, ?>) get(alias);
     }
 
-    @Nullable
     @Override
-    @SuppressWarnings("unchecked")
     public Setter<T, ?> setter(
         @NotNull int index,
         @NotNull Alias alias
@@ -507,7 +520,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
     /**
      * @param constructors the specified {@link Constructor} collection
      */
-    @SuppressWarnings("unchecked")
     private void onConstructors(
         @NotNull Constructor<?>[] constructors
     ) {
@@ -530,9 +542,8 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         }
 
         b.setAccessible(true);
-        builder = (Constructor<T>) b;
-
         int count = b.getParameterCount();
+
         if (count == 0) {
             try {
                 handle = lookup.
@@ -543,6 +554,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         } else {
             Parameter[] ps = null;
             params = new KatMap<>();
+            builder = (Constructor<T>) b;
 
             args = b.getParameterTypes();
             if ($ != null) {

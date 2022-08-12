@@ -44,7 +44,6 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializabl
         return BigInteger.ZERO;
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$I;
@@ -59,7 +58,6 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializabl
             || klass == Object.class;
     }
 
-    @NotNull
     @Override
     public BigInteger cast(
         @NotNull Supplier supplier,
@@ -96,7 +94,6 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializabl
         return BigInteger.ZERO;
     }
 
-    @NotNull
     @Override
     public BigInteger read(
         @NotNull Flag flag,

@@ -42,7 +42,6 @@ public class BooleanSpare extends Property<Boolean> implements Serializable {
         return false;
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$b;
@@ -57,7 +56,6 @@ public class BooleanSpare extends Property<Boolean> implements Serializable {
             || klass == Object.class;
     }
 
-    @NotNull
     @Override
     public Boolean cast(
         @NotNull Supplier supplier,
@@ -89,7 +87,6 @@ public class BooleanSpare extends Property<Boolean> implements Serializable {
         return Boolean.FALSE;
     }
 
-    @NotNull
     @Override
     public Boolean read(
         @NotNull Flag flag,
@@ -98,7 +95,6 @@ public class BooleanSpare extends Property<Boolean> implements Serializable {
         return alias.toBoolean();
     }
 
-    @NotNull
     @Override
     public Boolean read(
         @NotNull Flag flag,

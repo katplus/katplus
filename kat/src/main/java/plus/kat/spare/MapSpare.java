@@ -43,13 +43,11 @@ public class MapSpare implements Spare<Map> {
     public static final MapSpare
         INSTANCE = new MapSpare();
 
-    @NotNull
     @Override
     public Map apply() {
         return new LinkedHashMap<>();
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$M;
@@ -62,13 +60,11 @@ public class MapSpare implements Spare<Map> {
         return Map.class.isAssignableFrom(klass);
     }
 
-    @Nullable
     @Override
     public Boolean getFlag() {
         return Boolean.TRUE;
     }
 
-    @NotNull
     @Override
     public Class<Map> getType() {
         return Map.class;
@@ -100,7 +96,6 @@ public class MapSpare implements Spare<Map> {
         }
     }
 
-    @NotNull
     @Override
     @SuppressWarnings("unchecked")
     public Map apply(
@@ -125,7 +120,6 @@ public class MapSpare implements Spare<Map> {
         return entity;
     }
 
-    @Nullable
     @Override
     public Map cast(
         @NotNull Supplier supplier,
@@ -148,7 +142,6 @@ public class MapSpare implements Spare<Map> {
         return null;
     }
 
-    @Nullable
     @Override
     public Builder<Map> getBuilder(
         @Nullable Type type

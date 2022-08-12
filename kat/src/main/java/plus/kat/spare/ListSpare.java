@@ -41,13 +41,11 @@ public class ListSpare implements Spare<List> {
     public static final ListSpare
         INSTANCE = new ListSpare();
 
-    @NotNull
     @Override
     public List apply() {
         return new ArrayList();
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$L;
@@ -60,13 +58,11 @@ public class ListSpare implements Spare<List> {
         return List.class.isAssignableFrom(klass);
     }
 
-    @Nullable
     @Override
     public Boolean getFlag() {
         return Boolean.FALSE;
     }
 
-    @NotNull
     @Override
     public Class<List> getType() {
         return List.class;
@@ -103,7 +99,6 @@ public class ListSpare implements Spare<List> {
         }
     }
 
-    @Nullable
     @Override
     @SuppressWarnings("unchecked")
     public List cast(
@@ -153,7 +148,6 @@ public class ListSpare implements Spare<List> {
         return null;
     }
 
-    @Nullable
     @Override
     public Builder<List> getBuilder(
         @Nullable Type type

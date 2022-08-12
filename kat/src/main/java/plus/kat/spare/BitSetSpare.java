@@ -36,7 +36,6 @@ public class BitSetSpare implements Spare<BitSet> {
     public static final BitSetSpare
         INSTANCE = new BitSetSpare();
 
-    @NotNull
     @Override
     public String getSpace() {
         return "BitSet";
@@ -50,19 +49,16 @@ public class BitSetSpare implements Spare<BitSet> {
             || klass == Object.class;
     }
 
-    @Nullable
     @Override
     public Boolean getFlag() {
         return Boolean.FALSE;
     }
 
-    @NotNull
     @Override
     public Class<BitSet> getType() {
         return BitSet.class;
     }
 
-    @Nullable
     @Override
     public Builder<BitSet> getBuilder(
         @Nullable Type type
@@ -70,7 +66,6 @@ public class BitSetSpare implements Spare<BitSet> {
         return new Builder0();
     }
 
-    @Nullable
     @Override
     public BitSet cast(
         @NotNull Supplier supplier,
@@ -87,7 +82,6 @@ public class BitSetSpare implements Spare<BitSet> {
         return null;
     }
 
-    @Nullable
     @Override
     public BitSet read(
         @NotNull Flag flag,

@@ -38,7 +38,6 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializabl
         super(AtomicLong.class);
     }
 
-    @NotNull
     @Override
     public String getSpace() {
         return "AtomicLong";
@@ -53,7 +52,6 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializabl
             || klass == Object.class;
     }
 
-    @Nullable
     @Override
     public AtomicLong cast(
         @NotNull Supplier supplier,
@@ -74,7 +72,6 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializabl
         );
     }
 
-    @NotNull
     @Override
     public AtomicLong read(
         @NotNull Flag flag,
@@ -85,7 +82,6 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializabl
         );
     }
 
-    @NotNull
     @Override
     public AtomicLong read(
         @NotNull Flag flag,

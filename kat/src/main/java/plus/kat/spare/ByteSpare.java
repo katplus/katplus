@@ -43,7 +43,6 @@ public class ByteSpare extends Property<Byte> implements Serializable {
         return (byte) 0;
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$o;
@@ -59,7 +58,6 @@ public class ByteSpare extends Property<Byte> implements Serializable {
             || klass == Object.class;
     }
 
-    @NotNull
     @Override
     public Byte cast(
         @NotNull Supplier supplier,
@@ -94,7 +92,6 @@ public class ByteSpare extends Property<Byte> implements Serializable {
         return (byte) 0;
     }
 
-    @NotNull
     @Override
     public Byte read(
         @NotNull Flag flag,
@@ -103,7 +100,6 @@ public class ByteSpare extends Property<Byte> implements Serializable {
         return alias.toByte();
     }
 
-    @NotNull
     @Override
     public Byte read(
         @NotNull Flag flag,

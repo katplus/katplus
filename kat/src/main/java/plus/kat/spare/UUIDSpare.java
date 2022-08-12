@@ -40,7 +40,6 @@ public class UUIDSpare extends Property<UUID> {
         super(UUID.class);
     }
 
-    @NotNull
     @Override
     public String getSpace() {
         return "UUID";
@@ -54,7 +53,6 @@ public class UUIDSpare extends Property<UUID> {
             || klass == Object.class;
     }
 
-    @Nullable
     @Override
     public UUID cast(
         @NotNull Supplier supplier,
@@ -98,7 +96,6 @@ public class UUIDSpare extends Property<UUID> {
         return null;
     }
 
-    @Nullable
     @Override
     public UUID read(
         @NotNull Flag flag,
@@ -107,7 +104,6 @@ public class UUIDSpare extends Property<UUID> {
         return parse(alias);
     }
 
-    @Nullable
     @Override
     public UUID read(
         @NotNull Flag flag,

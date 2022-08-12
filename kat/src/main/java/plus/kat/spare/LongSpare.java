@@ -43,7 +43,6 @@ public class LongSpare extends Property<Long> implements Serializable {
         return 0L;
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$l;
@@ -59,7 +58,6 @@ public class LongSpare extends Property<Long> implements Serializable {
             || klass == Object.class;
     }
 
-    @NotNull
     @Override
     public Long cast(
         @NotNull Supplier supplier,
@@ -87,7 +85,6 @@ public class LongSpare extends Property<Long> implements Serializable {
         return 0L;
     }
 
-    @NotNull
     @Override
     public Long read(
         @NotNull Flag flag,
@@ -96,7 +93,6 @@ public class LongSpare extends Property<Long> implements Serializable {
         return alias.toLong();
     }
 
-    @NotNull
     @Override
     public Long read(
         @NotNull Flag flag,

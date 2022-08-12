@@ -41,7 +41,6 @@ public class CharSpare extends Property<Character> {
         return (char) 0;
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$c;
@@ -56,7 +55,6 @@ public class CharSpare extends Property<Character> {
             || klass == Object.class;
     }
 
-    @NotNull
     @Override
     public Character cast(
         @NotNull Supplier supplier,

@@ -34,7 +34,6 @@ public class CrashSpare implements Spare<Crash> {
     public static final CrashSpare
         INSTANCE = new CrashSpare();
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$E;
@@ -47,19 +46,16 @@ public class CrashSpare implements Spare<Crash> {
         return klass.isAssignableFrom(Crash.class);
     }
 
-    @Nullable
     @Override
     public Boolean getFlag() {
         return Boolean.TRUE;
     }
 
-    @NotNull
     @Override
     public Class<Crash> getType() {
         return Crash.class;
     }
 
-    @Nullable
     @Override
     public Crash cast(
         @NotNull Supplier supplier,
@@ -78,7 +74,6 @@ public class CrashSpare implements Spare<Crash> {
         return null;
     }
 
-    @Nullable
     @Override
     public Builder<Crash> getBuilder(
         @Nullable Type type

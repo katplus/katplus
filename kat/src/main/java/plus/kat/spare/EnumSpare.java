@@ -84,7 +84,6 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         return space;
     }
 
-    @Nullable
     @Override
     public K cast(
         @NotNull Supplier supplier,
@@ -127,7 +126,6 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         return null;
     }
 
-    @Nullable
     @Override
     public K read(
         @NotNull Flag flag,
@@ -151,7 +149,6 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         return null;
     }
 
-    @Nullable
     @Override
     public K read(
         @NotNull Flag flag,

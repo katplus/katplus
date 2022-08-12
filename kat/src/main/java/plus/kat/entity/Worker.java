@@ -33,15 +33,6 @@ import java.lang.reflect.Type;
  */
 public interface Worker<K> extends Spare<K>, Maker<K> {
     /**
-     * @param alias the alias of entity
-     * @throws Crash If a failure occurs
-     */
-    @NotNull
-    K apply(
-        @NotNull Alias alias
-    ) throws Crash;
-
-    /**
      * If this {@link Worker} can create an instance,
      * it returns it, otherwise it will return {@code null}
      *
@@ -63,6 +54,15 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     /**
      * @param alias the alias of entity
      * @throws Crash If a failure occurs
+     */
+    @NotNull
+    K apply(
+        @NotNull Alias alias
+    ) throws Crash;
+
+    /**
+     * @param alias the alias of entity
+     * @throws Crash If a failure occurs
      * @since 0.0.2
      */
     @NotNull
@@ -71,7 +71,9 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         @NotNull Alias alias,
         @NotNull Object... params
     ) throws Crash {
-        throw new Crash();
+        throw new Crash(
+            "Unsupported method"
+        );
     }
 
     /**

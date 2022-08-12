@@ -42,7 +42,6 @@ public class DoubleSpare extends Property<Double> implements Serializable {
         return 0D;
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$d;
@@ -58,7 +57,6 @@ public class DoubleSpare extends Property<Double> implements Serializable {
             || klass == Object.class;
     }
 
-    @NotNull
     @Override
     public Double cast(
         @NotNull Supplier supplier,
@@ -89,7 +87,6 @@ public class DoubleSpare extends Property<Double> implements Serializable {
         return 0D;
     }
 
-    @NotNull
     @Override
     public Double read(
         @NotNull Flag flag,
@@ -98,7 +95,6 @@ public class DoubleSpare extends Property<Double> implements Serializable {
         return alias.toDouble();
     }
 
-    @NotNull
     @Override
     public Double read(
         @NotNull Flag flag,

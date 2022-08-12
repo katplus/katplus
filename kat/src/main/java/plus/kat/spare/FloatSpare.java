@@ -42,7 +42,6 @@ public class FloatSpare extends Property<Float> implements Serializable {
         return 0F;
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$f;
@@ -58,7 +57,6 @@ public class FloatSpare extends Property<Float> implements Serializable {
             || klass == Object.class;
     }
 
-    @NotNull
     @Override
     public Float read(
         @NotNull Flag flag,
@@ -67,7 +65,6 @@ public class FloatSpare extends Property<Float> implements Serializable {
         return alias.toFloat();
     }
 
-    @NotNull
     @Override
     public Float read(
         @NotNull Flag flag,
@@ -92,7 +89,6 @@ public class FloatSpare extends Property<Float> implements Serializable {
         }
     }
 
-    @NotNull
     @Override
     public Float cast(
         @NotNull Supplier supplier,

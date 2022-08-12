@@ -44,7 +44,6 @@ public class BigDecimalSpare extends Property<BigDecimal> implements Serializabl
         return BigDecimal.ZERO;
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$D;
@@ -59,7 +58,6 @@ public class BigDecimalSpare extends Property<BigDecimal> implements Serializabl
             || klass == Object.class;
     }
 
-    @NotNull
     @Override
     public BigDecimal cast(
         @NotNull Supplier supplier,
@@ -105,7 +103,6 @@ public class BigDecimalSpare extends Property<BigDecimal> implements Serializabl
         return BigDecimal.ZERO;
     }
 
-    @NotNull
     @Override
     public BigDecimal read(
         @NotNull Flag flag,

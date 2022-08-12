@@ -40,7 +40,6 @@ public class IterableSpare implements Spare<Iterable> {
     public static final IterableSpare
         INSTANCE = new IterableSpare();
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$L;
@@ -53,13 +52,11 @@ public class IterableSpare implements Spare<Iterable> {
         return Iterable.class.isAssignableFrom(klass);
     }
 
-    @Nullable
     @Override
     public Boolean getFlag() {
         return Boolean.FALSE;
     }
 
-    @NotNull
     @Override
     public Class<Iterable> getType() {
         return Iterable.class;
@@ -91,7 +88,6 @@ public class IterableSpare implements Spare<Iterable> {
         }
     }
 
-    @Nullable
     @Override
     @SuppressWarnings("unchecked")
     public Iterable cast(
@@ -123,7 +119,6 @@ public class IterableSpare implements Spare<Iterable> {
         return null;
     }
 
-    @Nullable
     @Override
     @SuppressWarnings("unchecked")
     public Builder<Iterable> getBuilder(

@@ -16,7 +16,6 @@
 package plus.kat.spare;
 
 import plus.kat.anno.NotNull;
-import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
@@ -32,13 +31,11 @@ public class ByteArrayCoder implements Coder<byte[]> {
     public static final ByteArrayCoder
         INSTANCE = new ByteArrayCoder();
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$s;
     }
 
-    @Nullable
     @Override
     public byte[] read(
         @NotNull Flag flag,

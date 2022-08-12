@@ -56,7 +56,8 @@ public interface Coder<K> {
     }
 
     /**
-     * @throws IOException If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the {@code flag} or {@code alias} is null
      */
     @Nullable
     default K read(
@@ -67,7 +68,8 @@ public interface Coder<K> {
     }
 
     /**
-     * @throws IOException If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the {@code flag} or {@code value} is null
      */
     @Nullable
     default K read(
@@ -78,7 +80,8 @@ public interface Coder<K> {
     }
 
     /**
-     * @throws IOException If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the {@code chan} or {@code value} is null
      */
     default void write(
         @NotNull Chan chan,
@@ -88,7 +91,8 @@ public interface Coder<K> {
     }
 
     /**
-     * @throws IOException If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the {@code flow} or {@code value} is null
      */
     default void write(
         @NotNull Flow flow,

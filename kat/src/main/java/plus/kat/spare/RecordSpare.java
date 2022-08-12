@@ -61,28 +61,38 @@ public final class RecordSpare<T> extends Workman<T> implements Worker<T> {
         super(embed, klass, supplier, provider);
     }
 
-    @NotNull
+    @Override
+    public T apply() {
+        return null;
+    }
+
     @Override
     public T apply(
         @NotNull Alias alias
     ) throws Crash {
-        throw new Crash();
+        throw new Crash(
+            "Unsupported method"
+        );
     }
 
-    @NotNull
     @Override
     public T apply(
         @NotNull Alias alias,
         @NotNull Object... params
     ) throws Crash {
+        Constructor<T> b = ctor;
+        if (ctor == null) {
+            throw new Crash(
+                "Not supported"
+            );
+        }
         try {
-            return ctor.newInstance(params);
+            return b.newInstance(params);
         } catch (Throwable e) {
             throw new Crash(e);
         }
     }
 
-    @NotNull
     @Override
     public T apply(
         @NotNull Supplier supplier,
@@ -93,7 +103,6 @@ public final class RecordSpare<T> extends Workman<T> implements Worker<T> {
         );
     }
 
-    @NotNull
     @Override
     public T apply(
         @NotNull Supplier supplier,

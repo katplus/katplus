@@ -40,7 +40,6 @@ public class URLSpare extends Property<URL> {
         super(URL.class);
     }
 
-    @NotNull
     @Override
     public String getSpace() {
         return "URL";
@@ -54,7 +53,6 @@ public class URLSpare extends Property<URL> {
             || klass == Object.class;
     }
 
-    @Nullable
     @Override
     public URL cast(
         @NotNull Supplier supplier,
@@ -91,7 +89,6 @@ public class URLSpare extends Property<URL> {
         return null;
     }
 
-    @Nullable
     @Override
     public URL read(
         @NotNull Flag flag,

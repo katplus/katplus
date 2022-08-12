@@ -125,7 +125,6 @@ public abstract class TemporalSpare<K extends TemporalAccessor> extends Property
         return null;
     }
 
-    @Nullable
     @Override
     @SuppressWarnings("unchecked")
     public K cast(

@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -37,7 +38,11 @@ public class ByteArraySpare extends Property<byte[]> {
         super(byte[].class);
     }
 
-    @NotNull
+    @Override
+    public byte[] apply() {
+        return Chain.EMPTY_BYTES;
+    }
+
     @Override
     public Space getSpace() {
         return Space.$B;
@@ -51,7 +56,6 @@ public class ByteArraySpare extends Property<byte[]> {
             || klass == Object.class;
     }
 
-    @Nullable
     @Override
     public byte[] cast(
         @NotNull Supplier supplier,
@@ -64,7 +68,6 @@ public class ByteArraySpare extends Property<byte[]> {
         return null;
     }
 
-    @Nullable
     @Override
     public byte[] read(
         @NotNull Flag flag,
@@ -79,7 +82,7 @@ public class ByteArraySpare extends Property<byte[]> {
         @NotNull Object value
     ) throws IOException {
         flow.addBytes(
-            Base64.base().encode(
+            Base64.REC4648.INS.encode(
                 (byte[]) value
             )
         );

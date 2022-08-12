@@ -66,7 +66,6 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
         }
     }
 
-    @NotNull
     @Override
     public String getSpace() {
         return "Date";
@@ -79,19 +78,16 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
         return klass.isAssignableFrom(Date.class);
     }
 
-    @Nullable
     @Override
     public Boolean getFlag() {
         return null;
     }
 
-    @NotNull
     @Override
     public Class<Date> getType() {
         return Date.class;
     }
 
-    @Nullable
     @Override
     public Builder<Date> getBuilder(
         @Nullable Type type
@@ -99,7 +95,6 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
         return null;
     }
 
-    @Nullable
     @Override
     public Date cast(
         @NotNull Supplier supplier,
@@ -142,7 +137,6 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
         return null;
     }
 
-    @Nullable
     @Override
     public Date read(
         @NotNull Flag flag,

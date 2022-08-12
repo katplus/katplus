@@ -40,7 +40,6 @@ public class ArraySpare implements Spare<Object> {
     public static final ArraySpare
         INSTANCE = new ArraySpare();
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$A;
@@ -53,7 +52,6 @@ public class ArraySpare implements Spare<Object> {
         return klass.isArray();
     }
 
-    @Nullable
     @Override
     public Object cast(
         @NotNull Supplier supplier,
@@ -76,13 +74,11 @@ public class ArraySpare implements Spare<Object> {
         return null;
     }
 
-    @Nullable
     @Override
     public Boolean getFlag() {
         return Boolean.FALSE;
     }
 
-    @NotNull
     @Override
     public Class<Object> getType() {
         return Object.class;
@@ -101,7 +97,6 @@ public class ArraySpare implements Spare<Object> {
         }
     }
 
-    @Nullable
     @Override
     public Builder<Object> getBuilder(
         @Nullable Type type

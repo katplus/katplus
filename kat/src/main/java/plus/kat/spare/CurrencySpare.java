@@ -39,7 +39,6 @@ public class CurrencySpare extends Property<Currency> {
         super(Currency.class);
     }
 
-    @NotNull
     @Override
     public String getSpace() {
         return "Currency";
@@ -53,7 +52,6 @@ public class CurrencySpare extends Property<Currency> {
             || klass == Object.class;
     }
 
-    @Nullable
     @Override
     public Currency cast(
         @NotNull Supplier supplier,
@@ -84,7 +82,6 @@ public class CurrencySpare extends Property<Currency> {
         return null;
     }
 
-    @Nullable
     @Override
     public Currency read(
         @NotNull Flag flag,
@@ -99,7 +96,6 @@ public class CurrencySpare extends Property<Currency> {
         );
     }
 
-    @Nullable
     @Override
     public Currency read(
         @NotNull Flag flag,

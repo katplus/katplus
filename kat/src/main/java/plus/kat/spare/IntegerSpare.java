@@ -43,7 +43,6 @@ public class IntegerSpare extends Property<Integer> implements Serializable {
         return 0;
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$i;
@@ -59,7 +58,6 @@ public class IntegerSpare extends Property<Integer> implements Serializable {
             || klass == Object.class;
     }
 
-    @NotNull
     @Override
     public Integer cast(
         @NotNull Supplier supplier,
@@ -87,7 +85,6 @@ public class IntegerSpare extends Property<Integer> implements Serializable {
         return 0;
     }
 
-    @NotNull
     @Override
     public Integer read(
         @NotNull Flag flag,
@@ -96,7 +93,6 @@ public class IntegerSpare extends Property<Integer> implements Serializable {
         return alias.toInt();
     }
 
-    @NotNull
     @Override
     public Integer read(
         @NotNull Flag flag,

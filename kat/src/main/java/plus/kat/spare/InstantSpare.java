@@ -50,13 +50,11 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializable
         super(Instant.class, format);
     }
 
-    @NotNull
     @Override
     public String getSpace() {
         return "Instant";
     }
 
-    @Nullable
     @Override
     public Instant cast(
         @NotNull Supplier supplier,
@@ -99,7 +97,6 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializable
         return null;
     }
 
-    @Nullable
     @Override
     public Instant read(
         @NotNull Flag flag,

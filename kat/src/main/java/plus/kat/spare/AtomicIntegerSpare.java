@@ -38,7 +38,6 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
         super(AtomicInteger.class);
     }
 
-    @NotNull
     @Override
     public String getSpace() {
         return "AtomicInteger";
@@ -53,7 +52,6 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
             || klass == Object.class;
     }
 
-    @Nullable
     @Override
     public AtomicInteger cast(
         @NotNull Supplier supplier,
@@ -74,7 +72,6 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
         );
     }
 
-    @NotNull
     @Override
     public AtomicInteger read(
         @NotNull Flag flag,
@@ -85,7 +82,6 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
         );
     }
 
-    @NotNull
     @Override
     public AtomicInteger read(
         @NotNull Flag flag,

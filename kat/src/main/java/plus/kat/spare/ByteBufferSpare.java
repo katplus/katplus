@@ -37,13 +37,11 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
         super(ByteBuffer.class);
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$s;
     }
 
-    @Nullable
     @Override
     public ByteBuffer cast(
         @NotNull Supplier supplier,
@@ -56,7 +54,6 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
         return null;
     }
 
-    @Nullable
     @Override
     public ByteBuffer read(
         @NotNull Flag flag,

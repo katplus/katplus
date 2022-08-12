@@ -41,13 +41,11 @@ public class SetSpare implements Spare<Set> {
     public static final SetSpare
         INSTANCE = new SetSpare();
 
-    @NotNull
     @Override
     public Set apply() {
         return new HashSet();
     }
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$S;
@@ -60,13 +58,11 @@ public class SetSpare implements Spare<Set> {
         return Set.class.isAssignableFrom(klass);
     }
 
-    @Nullable
     @Override
     public Boolean getFlag() {
         return Boolean.FALSE;
     }
 
-    @NotNull
     @Override
     public Class<Set> getType() {
         return Set.class;
@@ -97,7 +93,6 @@ public class SetSpare implements Spare<Set> {
         }
     }
 
-    @Nullable
     @Override
     @SuppressWarnings("unchecked")
     public Set cast(
@@ -147,7 +142,6 @@ public class SetSpare implements Spare<Set> {
         return null;
     }
 
-    @Nullable
     @Override
     public Builder<Set> getBuilder(
         @Nullable Type type

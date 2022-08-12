@@ -34,7 +34,6 @@ public class ObjectSpare implements Spare<Object> {
     public static final ObjectSpare
         INSTANCE = new ObjectSpare();
 
-    @NotNull
     @Override
     public Space getSpace() {
         return Space.$;
@@ -47,19 +46,16 @@ public class ObjectSpare implements Spare<Object> {
         return klass == Object.class;
     }
 
-    @Nullable
     @Override
     public Boolean getFlag() {
         return null;
     }
 
-    @NotNull
     @Override
     public Class<Object> getType() {
         return Object.class;
     }
 
-    @Nullable
     @Override
     @SuppressWarnings("rawtypes")
     public Builder<Map> getBuilder(
@@ -68,7 +64,6 @@ public class ObjectSpare implements Spare<Object> {
         return new MapSpare.Builder0(type);
     }
 
-    @Nullable
     @Override
     public Object cast(
         @NotNull Supplier supplier,
@@ -77,7 +72,6 @@ public class ObjectSpare implements Spare<Object> {
         return data;
     }
 
-    @Nullable
     @Override
     public Object read(
         @NotNull Flag flag,

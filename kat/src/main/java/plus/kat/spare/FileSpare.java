@@ -39,7 +39,6 @@ public class FileSpare extends Property<File> {
         super(File.class);
     }
 
-    @NotNull
     @Override
     public String getSpace() {
         return "File";
@@ -53,7 +52,6 @@ public class FileSpare extends Property<File> {
             || klass == Object.class;
     }
 
-    @Nullable
     @Override
     public File cast(
         @NotNull Supplier supplier,
@@ -102,7 +100,6 @@ public class FileSpare extends Property<File> {
         return null;
     }
 
-    @Nullable
     @Override
     public File read(
         @NotNull Flag flag,
