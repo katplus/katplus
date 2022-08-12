@@ -29,10 +29,14 @@ import java.util.*;
  * @author kraity
  * @since 0.0.1
  */
-public class ObjectSpare implements Spare<Object> {
+public class ObjectSpare extends Property<Object> {
 
     public static final ObjectSpare
         INSTANCE = new ObjectSpare();
+
+    public ObjectSpare() {
+        super(Object.class);
+    }
 
     @Override
     public Space getSpace() {
@@ -44,16 +48,6 @@ public class ObjectSpare implements Spare<Object> {
         @NotNull Class<?> klass
     ) {
         return klass == Object.class;
-    }
-
-    @Override
-    public Boolean getFlag() {
-        return null;
-    }
-
-    @Override
-    public Class<Object> getType() {
-        return Object.class;
     }
 
     @Override

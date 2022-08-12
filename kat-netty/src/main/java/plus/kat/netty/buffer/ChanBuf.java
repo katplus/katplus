@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.netty;
+package plus.kat.netty.buffer;
 
 import plus.kat.anno.NotNull;
 

@@ -98,7 +98,7 @@ public final class RecordSpare<T> extends Workman<T> implements Worker<T> {
         @NotNull Supplier supplier,
         @NotNull Map<?, ?> data
     ) throws Crash {
-        return compose(
+        return super.apply(
             supplier, new Object[width], data
         );
     }
@@ -108,7 +108,7 @@ public final class RecordSpare<T> extends Workman<T> implements Worker<T> {
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
-        return compose(
+        return super.apply(
             supplier, new Object[width], resultSet
         );
     }

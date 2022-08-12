@@ -105,14 +105,16 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * If {@link K} is a Bean, then perform
-     * a given {@link ResultSet} to create a {@link K}
+     * If {@link K} is a Bean or resultSet only has one element,
+     * then perform a given {@link ResultSet} to create a {@link K}
      *
      * @param result the specified {@code resultSet} to be used
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the {@code result} is null
      * @see Spare#apply(Supplier, ResultSet)
+     * @see Workman#apply(Supplier, ResultSet)
+     * @see Property#apply(Supplier, ResultSet)
      * @since 0.0.3
      */
     @NotNull
@@ -125,8 +127,8 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * If {@link K} is a Bean, then perform
-     * a given {@link ResultSet} to create a {@link K}
+     * If {@link K} is a Bean or resultSet only has one element,
+     * then perform a given {@link ResultSet} to create a {@link K}
      *
      * <pre>{@code
      *  Spare<User> spare = ...
@@ -146,7 +148,7 @@ public interface Spare<K> extends Coder<K> {
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the {@code supplier} or {@code resultSet} is null
-     * @see Workman#compose(Supplier, ResultSet)
+     * @see Workman#apply(Supplier, ResultSet)
      * @since 0.0.3
      */
     @NotNull

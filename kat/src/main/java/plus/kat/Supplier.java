@@ -177,8 +177,8 @@ public interface Supplier {
     }
 
     /**
-     * If {@link E} is a Bean, then perform
-     * a given {@link ResultSet} to create a {@link E}
+     * If {@link E} is a Bean or resultSet only has one element,
+     * then perform a given {@link ResultSet} to create a {@link E}
      *
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs

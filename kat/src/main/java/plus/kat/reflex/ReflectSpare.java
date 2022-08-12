@@ -171,7 +171,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         @NotNull Map<?, ?> data
     ) throws Crash {
         if (params == null) {
-            return compose(
+            return super.apply(
                 supplier, data
             );
         } else {
@@ -180,7 +180,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                     "Not currently supported"
                 );
             }
-            return compose(
+            return super.apply(
                 supplier, new Object[args.length], data
             );
         }
@@ -192,7 +192,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         @NotNull ResultSet resultSet
     ) throws SQLException {
         if (params == null) {
-            return compose(
+            return super.apply(
                 supplier, resultSet
             );
         } else {
@@ -201,7 +201,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                     "Not currently supported"
                 );
             }
-            return compose(
+            return super.apply(
                 supplier, new Object[args.length], resultSet
             );
         }

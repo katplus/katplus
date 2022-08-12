@@ -8,6 +8,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
+import plus.kat.spring.http.MediaTypes;
+import plus.kat.spring.http.MutableHttpMessageConverter;
 
 import java.io.*;
 import java.util.HashMap;

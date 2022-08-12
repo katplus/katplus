@@ -27,6 +27,9 @@ import plus.kat.utils.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -93,6 +96,41 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
         @Nullable Type type
     ) {
         return null;
+    }
+
+    @Override
+    public Date apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        ResultSetMetaData meta =
+            resultSet.getMetaData();
+        int count = meta.getColumnCount();
+        if (count != 1) {
+            throw new SQLCrash(
+                "Expected 1, actual " + count
+            );
+        }
+
+        Object val = resultSet.getObject(1);
+        if (val == null) {
+            return null;
+        }
+
+        if (val instanceof Date) {
+            return (Date) val;
+        }
+
+        Date var = cast(
+            supplier, val
+        );
+        if (var != null) {
+            return var;
+        }
+
+        throw new SQLCrash(
+            "Cannot convert the type from " + val.getClass() + " to " + Date.class
+        );
     }
 
     @Override

@@ -114,14 +114,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         return provider;
     }
 
-    @Nullable
-    public T apply(
-        @NotNull Supplier supplier,
-        @NotNull Map<?, ?> data
-    ) throws Crash {
-        return null;
-    }
-
     @Override
     public T cast(
         @Nullable Object data
@@ -387,8 +379,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @param result   the specified result
      * @since 0.0.3
      */
-    @NotNull
-    public T compose(
+    @Nullable
+    public T apply(
         @NotNull Supplier supplier,
         @NotNull Map<?, ?> result
     ) throws Crash {
@@ -448,8 +440,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @param result   the specified result
      * @since 0.0.3
      */
-    @NotNull
-    public T compose(
+    @Nullable
+    public T apply(
         @NotNull Supplier supplier,
         @NotNull Object[] data,
         @NotNull Map<?, ?> result
@@ -512,8 +504,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @param resultSet the specified resultSet
      * @since 0.0.3
      */
-    @NotNull
-    public T compose(
+    @Override
+    public T apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
@@ -598,7 +590,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @since 0.0.3
      */
     @NotNull
-    public T compose(
+    public T apply(
         @NotNull Supplier supplier,
         @NotNull Object[] data,
         @NotNull ResultSet resultSet

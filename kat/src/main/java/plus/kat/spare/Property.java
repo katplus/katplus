@@ -18,9 +18,13 @@ package plus.kat.spare;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.Spare;
+import plus.kat.*;
+import plus.kat.crash.*;
 
 import java.lang.reflect.Type;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
 /**
  * @author kraity
@@ -56,6 +60,42 @@ public abstract class Property<T> implements Spare<T> {
     @Override
     public Class<? extends T> getType() {
         return klass;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public T apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        ResultSetMetaData meta =
+            resultSet.getMetaData();
+        int count = meta.getColumnCount();
+        if (count != 1) {
+            throw new SQLCrash(
+                "Expected 1, actual " + count
+            );
+        }
+
+        Object val = resultSet.getObject(1);
+        if (val == null) {
+            return null;
+        }
+
+        if (klass.isInstance(val)) {
+            return (T) val;
+        }
+
+        T var = cast(
+            supplier, val
+        );
+        if (var != null) {
+            return var;
+        }
+
+        throw new SQLCrash(
+            "Cannot convert the type from " + val.getClass() + " to " + klass
+        );
     }
 
     @Override
