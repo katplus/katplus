@@ -162,7 +162,7 @@ public class SupplierTest {
             assertNotNull(d3);
             assertEquals(4, d3.length);
             for (int i = 0; i < d3.length; i++) {
-                assertEquals(i == 1, d3[i]);
+                assertEquals(i != 0, d3[i]);
             }
 
             for (Class<?> klass : new Class[]{

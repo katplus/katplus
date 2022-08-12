@@ -533,25 +533,40 @@ public interface Convert {
         @NotNull byte[] it, int len, boolean def
     ) {
         switch (len) {
+            case 0: {
+                return def;
+            }
             case 1: {
-                return it[0] == '1';
+                byte b = it[0];
+                return '1' <= b && b <= '9';
             }
             case 4: {
-                if (it[0] == 't') {
+                byte b = it[0];
+                if (b == 't') {
                     return it[1] == 'r'
                         && it[2] == 'u'
                         && it[3] == 'e';
                 }
 
-                if (it[0] == 'T') {
+                if (b == 'T') {
                     return it[1] == 'R'
                         && it[2] == 'U'
                         && it[3] == 'E';
                 }
+
+                return toInt(it, len, 10, 0) != 0;
+            }
+            case 5: {
+                byte c = it[0];
+                if (c == 'f' || c == 'F') {
+                    return false;
+                }
+
+                return toInt(it, len, 10, 0) != 0;
             }
         }
 
-        return def;
+        return toLong(it, len, 10L, 0L) != 0L;
     }
 
     /**
@@ -561,24 +576,39 @@ public interface Convert {
         @NotNull CharSequence it, int len, boolean def
     ) {
         switch (len) {
+            case 0: {
+                return def;
+            }
             case 1: {
-                return it.charAt(0) == '1';
+                char c = it.charAt(0);
+                return '1' <= c && c <= '9';
             }
             case 4: {
-                if (it.charAt(0) == 't') {
+                char c = it.charAt(0);
+                if (c == 't') {
                     return it.charAt(1) == 'r'
                         && it.charAt(2) == 'u'
                         && it.charAt(3) == 'e';
                 }
 
-                if (it.charAt(0) == 'T') {
+                if (c == 'T') {
                     return it.charAt(1) == 'R'
                         && it.charAt(2) == 'U'
                         && it.charAt(3) == 'E';
                 }
+
+                return toInt(it, len, 10, 0) != 0;
+            }
+            case 5: {
+                char c = it.charAt(0);
+                if (c == 'f' || c == 'F') {
+                    return false;
+                }
+
+                return toInt(it, len, 10, 0) != 0;
             }
         }
 
-        return def;
+        return toLong(it, len, 10L, 0L) != 0L;
     }
 }

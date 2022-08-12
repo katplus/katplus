@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.stream.Convert;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -66,22 +67,14 @@ public class BooleanSpare extends Property<Boolean> implements Serializable {
         }
 
         if (data instanceof Number) {
-            return ((Number) data).intValue() == 1;
+            return ((Number) data).intValue() != 0;
         }
 
         if (data instanceof CharSequence) {
             CharSequence val = (CharSequence) data;
-            switch (val.length()) {
-                case 1: {
-                    return val.charAt(0) == '1';
-                }
-                case 4: {
-                    return val.charAt(0) == 't'
-                        && val.charAt(1) == 'r'
-                        && val.charAt(2) == 'u'
-                        && val.charAt(3) == 'e';
-                }
-            }
+            return Convert.toBoolean(
+                val, val.length(), false
+            );
         }
 
         return Boolean.FALSE;
