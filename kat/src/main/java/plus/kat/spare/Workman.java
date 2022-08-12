@@ -146,8 +146,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             return null;
         }
 
-        Class<?> clazz = data.getClass();
-        if (klass.isAssignableFrom(clazz)) {
+        if (klass.isInstance(data)) {
             return (T) data;
         }
 
@@ -422,11 +421,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             }
 
             // get class specified
-            Class<?> type = val.getClass();
             Class<?> klass = setter.getType();
 
             // update field
-            if (klass.isAssignableFrom(type)) {
+            if (klass.isInstance(val)) {
                 setter.onAccept(
                     entity, val
                 );
@@ -489,11 +487,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             }
 
             // get class specified
-            Class<?> type = val.getClass();
             Class<?> klass = target.getType();
 
             // update field
-            if (klass.isAssignableFrom(type)) {
+            if (klass.isInstance(val)) {
                 data[k] = val;
                 continue;
             }
@@ -543,7 +540,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         // update fields
         for (int i = 1; i <= count; i++) {
             // get its key
-            String key = meta.getColumnName(i);
+            String key = meta.getColumnLabel(i);
+            if (key == null) {
+                key = meta.getColumnName(i);
+            }
 
             // try lookup
             Setter<T, ?> setter = setter(key);
@@ -562,11 +562,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             }
 
             // get class specified
-            Class<?> type = val.getClass();
             Class<?> klass = setter.getType();
 
             // update field
-            if (klass.isAssignableFrom(type)) {
+            if (klass.isInstance(val)) {
                 setter.onAccept(
                     entity, val
                 );
@@ -578,19 +577,19 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
 
             // update field
             if (spare != null) {
-                val = spare.cast(
+                Object var = spare.cast(
                     supplier, val
                 );
-                if (val != null) {
+                if (var != null) {
                     setter.onAccept(
-                        entity, val
+                        entity, var
                     );
                     continue;
                 }
             }
 
             throw new SQLCrash(
-                "Cannot convert the type of " + key + " from " + type + " to " + klass
+                "Cannot convert the type of " + key + " from " + val.getClass() + " to " + klass
             );
         }
 
@@ -616,7 +615,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         // update params
         for (int i = 1; i <= count; i++) {
             // get its key
-            String key = meta.getColumnName(i);
+            String key = meta.getColumnLabel(i);
+            if (key == null) {
+                key = meta.getColumnName(i);
+            }
 
             // try lookup
             Target target = target(key);
@@ -643,11 +645,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             }
 
             // get class specified
-            Class<?> type = val.getClass();
             Class<?> klass = target.getType();
 
             // update field
-            if (klass.isAssignableFrom(type)) {
+            if (klass.isInstance(val)) {
                 data[k] = val;
                 continue;
             }
@@ -657,17 +658,17 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
 
             // update field
             if (spare != null) {
-                val = spare.cast(
+                Object var = spare.cast(
                     supplier, val
                 );
-                if (val != null) {
-                    data[k] = val;
+                if (var != null) {
+                    data[k] = var;
                     continue;
                 }
             }
 
             throw new SQLCrash(
-                "Cannot convert the type of " + key + " from " + type + " to " + klass
+                "Cannot convert the type of " + key + " from " + val.getClass() + " to " + klass
             );
         }
 

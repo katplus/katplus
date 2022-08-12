@@ -71,6 +71,15 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
     }
 
     @Override
+    public K apply() {
+        K[] e = enums;
+        if (e != null) {
+            return e[0];
+        }
+        return null;
+    }
+
+    @Override
     public String getSpace() {
         return space;
     }
@@ -90,9 +99,10 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         }
 
         if (data instanceof String) {
-            if (enums != null) {
+            K[] e = enums;
+            if (e != null) {
                 String key = (String) data;
-                for (K em : enums) {
+                for (K em : e) {
                     if (key.equals(em.name())) {
                         return em;
                     }
@@ -102,12 +112,13 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         }
 
         if (data instanceof Number) {
-            if (enums != null) {
+            K[] e = enums;
+            if (e != null) {
                 Number num = (Number) data;
                 int index = num.intValue();
                 if (index >= 0 &&
-                    index < enums.length) {
-                    return enums[index];
+                    index < e.length) {
+                    return e[index];
                 }
             }
             return null;
@@ -122,15 +133,16 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         @NotNull Flag flag,
         @NotNull Alias alias
     ) {
-        if (enums != null) {
+        K[] e = enums;
+        if (e != null) {
             if (flag.isFlag(Flag.INDEX_AS_ENUM)) {
                 int i = alias.toInt(-1);
-                if (i >= 0 && i < enums.length) {
-                    return enums[i];
+                if (i >= 0 && i < e.length) {
+                    return e[i];
                 }
             }
 
-            for (K em : enums) {
+            for (K em : e) {
                 if (alias.is(em.name())) {
                     return em;
                 }
@@ -145,15 +157,16 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        if (enums != null) {
+        K[] e = enums;
+        if (e != null) {
             if (flag.isFlag(Flag.INDEX_AS_ENUM)) {
                 int i = value.toInt(-1);
-                if (i >= 0 && i < enums.length) {
-                    return enums[i];
+                if (i >= 0 && i < e.length) {
+                    return e[i];
                 }
             }
 
-            for (K em : enums) {
+            for (K em : e) {
                 if (value.is(em.name())) {
                     return em;
                 }

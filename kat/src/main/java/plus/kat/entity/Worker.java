@@ -42,6 +42,25 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     ) throws Crash;
 
     /**
+     * If this {@link Worker} can create an instance,
+     * it returns it, otherwise it will return {@code null}
+     *
+     * @return {@link K} or {@code null}
+     * @since 0.0.3
+     */
+    @Nullable
+    @Override
+    default K apply() {
+        try {
+            return apply(
+                Alias.EMPTY
+            );
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * @param alias the alias of entity
      * @throws Crash If a failure occurs
      * @since 0.0.2

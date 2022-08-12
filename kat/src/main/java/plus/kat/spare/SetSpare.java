@@ -43,6 +43,12 @@ public class SetSpare implements Spare<Set> {
 
     @NotNull
     @Override
+    public Set apply() {
+        return new HashSet();
+    }
+
+    @NotNull
+    @Override
     public Space getSpace() {
         return Space.$S;
     }

@@ -37,6 +37,11 @@ public class BooleanSpare extends Property<Boolean> implements Serializable {
         super(Boolean.class);
     }
 
+    @Override
+    public Boolean apply() {
+        return false;
+    }
+
     @NotNull
     @Override
     public Space getSpace() {

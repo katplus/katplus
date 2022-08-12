@@ -36,6 +36,11 @@ public class StringSpare extends Property<String> {
         super(String.class);
     }
 
+    @Override
+    public String apply() {
+        return "";
+    }
+
     @NotNull
     @Override
     public Space getSpace() {

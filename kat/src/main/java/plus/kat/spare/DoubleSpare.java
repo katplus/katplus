@@ -37,6 +37,11 @@ public class DoubleSpare extends Property<Double> implements Serializable {
         super(Double.class);
     }
 
+    @Override
+    public Double apply() {
+        return 0D;
+    }
+
     @NotNull
     @Override
     public Space getSpace() {

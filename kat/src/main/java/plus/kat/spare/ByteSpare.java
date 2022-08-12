@@ -38,6 +38,11 @@ public class ByteSpare extends Property<Byte> implements Serializable {
         super(Byte.class);
     }
 
+    @Override
+    public Byte apply() {
+        return (byte) 0;
+    }
+
     @NotNull
     @Override
     public Space getSpace() {

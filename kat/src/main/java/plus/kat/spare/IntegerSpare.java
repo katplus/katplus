@@ -38,6 +38,11 @@ public class IntegerSpare extends Property<Integer> implements Serializable {
         super(Integer.class);
     }
 
+    @Override
+    public Integer apply() {
+        return 0;
+    }
+
     @NotNull
     @Override
     public Space getSpace() {

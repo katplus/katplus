@@ -38,6 +38,11 @@ public class LongSpare extends Property<Long> implements Serializable {
         super(Long.class);
     }
 
+    @Override
+    public Long apply() {
+        return 0L;
+    }
+
     @NotNull
     @Override
     public Space getSpace() {

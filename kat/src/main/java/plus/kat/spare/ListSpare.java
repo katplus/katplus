@@ -43,6 +43,12 @@ public class ListSpare implements Spare<List> {
 
     @NotNull
     @Override
+    public List apply() {
+        return new ArrayList();
+    }
+
+    @NotNull
+    @Override
     public Space getSpace() {
         return Space.$L;
     }

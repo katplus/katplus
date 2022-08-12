@@ -39,6 +39,11 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializabl
         super(BigInteger.class);
     }
 
+    @Override
+    public BigInteger apply() {
+        return BigInteger.ZERO;
+    }
+
     @NotNull
     @Override
     public Space getSpace() {

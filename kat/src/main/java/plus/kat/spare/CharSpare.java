@@ -36,6 +36,11 @@ public class CharSpare extends Property<Character> {
         super(Character.class);
     }
 
+    @Override
+    public Character apply() {
+        return (char) 0;
+    }
+
     @NotNull
     @Override
     public Space getSpace() {

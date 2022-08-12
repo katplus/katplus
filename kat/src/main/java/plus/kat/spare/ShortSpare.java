@@ -38,6 +38,11 @@ public class ShortSpare extends Property<Short> implements Serializable {
         super(Short.class);
     }
 
+    @Override
+    public Short apply() {
+        return (short) 0;
+    }
+
     @NotNull
     @Override
     public Space getSpace() {

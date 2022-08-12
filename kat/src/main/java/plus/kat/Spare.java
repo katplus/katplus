@@ -93,6 +93,18 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
+     * If this {@link Spare} can create an instance,
+     * it returns it, otherwise it will return {@code null}
+     *
+     * @return {@link K} or {@code null}
+     * @since 0.0.3
+     */
+    @Nullable
+    default K apply() {
+        return null;
+    }
+
+    /**
      * If {@link K} is a Bean, then perform
      * a given {@link ResultSet} to create a {@link K}
      *

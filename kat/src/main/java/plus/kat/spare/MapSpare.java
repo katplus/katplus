@@ -45,6 +45,12 @@ public class MapSpare implements Spare<Map> {
 
     @NotNull
     @Override
+    public Map apply() {
+        return new LinkedHashMap<>();
+    }
+
+    @NotNull
+    @Override
     public Space getSpace() {
         return Space.$M;
     }
@@ -96,20 +102,23 @@ public class MapSpare implements Spare<Map> {
 
     @NotNull
     @Override
+    @SuppressWarnings("unchecked")
     public Map apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet data
     ) throws SQLException {
-        Map<String, Object> entity =
-            new LinkedHashMap<>();
-
+        Map entity = apply();
         ResultSetMetaData meta =
             data.getMetaData();
 
         int count = meta.getColumnCount();
         for (int i = 1; i <= count; i++) {
+            String key = meta.getColumnLabel(i);
+            if (key == null) {
+                key = meta.getColumnName(i);
+            }
             entity.put(
-                meta.getColumnName(i), data.getObject(i)
+                key, data.getObject(i)
             );
         }
 

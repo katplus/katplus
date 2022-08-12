@@ -39,6 +39,11 @@ public class BigDecimalSpare extends Property<BigDecimal> implements Serializabl
         super(BigDecimal.class);
     }
 
+    @Override
+    public BigDecimal apply() {
+        return BigDecimal.ZERO;
+    }
+
     @NotNull
     @Override
     public Space getSpace() {

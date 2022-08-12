@@ -37,6 +37,11 @@ public class FloatSpare extends Property<Float> implements Serializable {
         super(Float.class);
     }
 
+    @Override
+    public Float apply() {
+        return 0F;
+    }
+
     @NotNull
     @Override
     public Space getSpace() {
