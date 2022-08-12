@@ -13,6 +13,12 @@ public class KatMapTest {
 
     @Test
     public void test_code() {
+        KatMap<String, Object> m = new KatMap<>();
+        m.put("id", 1);
+        assertEquals(1, m.putIfAbsent("id", 2));
+        assertEquals(1, m.get("id"));
+        assertEquals("kraity", m.getOrDefault("name", "kraity"));
+
         KatMap<String, Object> map = new KatMap<>();
 
         assertTrue(map.isEmpty());

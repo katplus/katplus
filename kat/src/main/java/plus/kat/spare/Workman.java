@@ -246,12 +246,13 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     /**
      * @param key  the ket of {@link Node}
      * @param node the specified {@link Node}
+     * @return {@code true} if the node is settled otherwise {@code false}
      * @throws RunCrash             If the {@code node} is already used
      * @throws NullPointerException If the {@code key} or {@code node} is null
      * @since 0.0.3
      */
     @SuppressWarnings("unchecked")
-    public void setup(
+    public boolean setup(
         @NotNull String key,
         @NotNull Node<T> node
     ) {
@@ -275,7 +276,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             while (true) {
                 if (e.hash == hash &&
                     key.equals(e.key)) {
-                    return;
+                    return false;
                 }
                 if (e.next != null) {
                     e = e.next;
@@ -327,6 +328,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 }
             }
         }
+
+        return true;
     }
 
     /**

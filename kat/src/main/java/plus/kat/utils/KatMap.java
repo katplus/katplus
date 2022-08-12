@@ -80,15 +80,55 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
     }
 
     /**
+     * Returns the value to which the specified key is mapped, or
+     * {@code defaultValue} if this map contains no mapping for the key
+     *
+     * @param key          the key whose associated value is to be returned
+     * @param defaultValue the default mapping of the key
+     * @return the value to which the specified key is mapped, or {@code defaultValue} if this map contains no mapping for the key
+     * @since 0.0.3
+     */
+    @Nullable
+    public V getOrDefault(
+        @NotNull Object key,
+        @Nullable V defaultValue
+    ) {
+        Entry<K, V>[] tab = table;
+        if (tab == null) {
+            return defaultValue;
+        }
+
+        int h = key.hashCode();
+        h = h ^ (h >>> 16);
+
+        int m = tab.length - 1;
+        Entry<K, V> e = tab[m & h];
+
+        while (e != null) {
+            if (e.hash == h &&
+                (key.equals(e.key) ||
+                    e.key.equals(key))) {
+                return e.val;
+            }
+            e = e.next;
+        }
+
+        return defaultValue;
+    }
+
+    /**
      * Associates the specified value with the specified key in this map
      *
      * @param key key with which the specified value is to be associated
+     * @param del if false, don't change existing value
      * @param val value to be associated with the specified key
+     * @since 0.0.3
      */
     @Nullable
     @SuppressWarnings("unchecked")
-    public V put(
+    public V set(
         @NotNull K key,
+        boolean del,
         @Nullable V val
     ) {
         Entry<K, V>[] tab = table;
@@ -132,7 +172,9 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
                 (key.equals(e.key) ||
                     e.key.equals(key))) {
                 V v = e.val;
-                e.val = val;
+                if (del) {
+                    e.val = val;
+                }
                 return v;
             }
 
@@ -165,7 +207,9 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
                     (key.equals(e.key) ||
                         e.key.equals(key))) {
                     V v = e.val;
-                    e.val = val;
+                    if (del) {
+                        e.val = val;
+                    }
                     return v;
                 }
             }
@@ -199,6 +243,40 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
             }
             tab = table = bucket;
         }
+    }
+
+    /**
+     * Associates the specified value with the specified key in this map
+     *
+     * @param key key with which the specified value is to be associated
+     * @param val value to be associated with the specified key
+     */
+    @Nullable
+    public V put(
+        @NotNull K key,
+        @Nullable V val
+    ) {
+        return set(
+            key, true, val
+        );
+    }
+
+    /**
+     * If the specified key is not already associated with a value (or is mapped
+     * to {@code null}) associates it with the given value and returns {@code null}, else returns the current value
+     *
+     * @param key key with which the specified value is to be associated
+     * @param val value to be associated with the specified key
+     * @since 0.0.3
+     */
+    @Nullable
+    public V putIfAbsent(
+        @NotNull K key,
+        @Nullable V val
+    ) {
+        return set(
+            key, false, val
+        );
     }
 
     /**
