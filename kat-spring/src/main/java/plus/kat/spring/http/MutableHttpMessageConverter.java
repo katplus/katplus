@@ -204,15 +204,18 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             }
         }
 
-        chan.set(
-            null, data
-        );
-
-        Paper flow = chan.getFlow();
-        flow.update(
-            output.getBody()
-        );
-        chan.closeFlow();
+        if (chan.set(null, data)) {
+            Paper flow = chan.getFlow();
+            flow.update(
+                output.getBody()
+            );
+            chan.closeFlow();
+        } else {
+            chan.closeFlow();
+            throw new HttpMessageNotWritableException(
+                "Unexpectedly, Cannot serialize " + data + " to " + job
+            );
+        }
     }
 
     /**

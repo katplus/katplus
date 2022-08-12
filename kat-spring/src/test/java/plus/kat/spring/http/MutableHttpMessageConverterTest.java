@@ -1,4 +1,4 @@
-package plus.kat.spring;
+package plus.kat.spring.http;
 
 import org.junit.jupiter.api.Test;
 
@@ -8,8 +8,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
-import plus.kat.spring.http.MediaTypes;
-import plus.kat.spring.http.MutableHttpMessageConverter;
 
 import java.io.*;
 import java.util.HashMap;
@@ -28,10 +26,10 @@ public class MutableHttpMessageConverterTest {
         HashMap<Job, String> out = new HashMap<>();
 
         in.put(Job.KAT, "{i:id(1)s:name(kraity)}");
-        out.put(Job.KAT, "plus.kat.spring.MutableHttpMessageConverterTest$User{s:name(kraity)i:id(1)}");
+        out.put(Job.KAT, "plus.kat.spring.http.MutableHttpMessageConverterTest$User{s:name(kraity)i:id(1)}");
 
         in.put(Job.DOC, "<User><id>1</id><name>kraity</name></User>");
-        out.put(Job.DOC, "<plus.kat.spring.MutableHttpMessageConverterTest$User><name>kraity</name><id>1</id></plus.kat.spring.MutableHttpMessageConverterTest$User>");
+        out.put(Job.DOC, "<plus.kat.spring.http.MutableHttpMessageConverterTest$User><name>kraity</name><id>1</id></plus.kat.spring.http.MutableHttpMessageConverterTest$User>");
 
         in.put(Job.JSON, "{\"id\":1,\"name\":\"kraity\"}");
         out.put(Job.JSON, "{\"name\":\"kraity\",\"id\":1}");
