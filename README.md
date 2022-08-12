@@ -380,14 +380,38 @@ JDBC:
 // register User
 Spare<User> spare = Spare.lookup(User.class);
 
-ResultSet rs = stmt.executeQuery(sql);
-List<User> users = new ArrayList<>();
+// test mysql database
+String user = "test_user";
+String password = "test_password";
+String url = "jdbc:mysql://localhost:3306/test_database";
 
+Class.forName("com.mysql.cj.jdbc.Driver");
+Connection conn = DriverManager.getConnection(
+    url, user, password
+);
+
+Statement st = conn.createStatement();
+ResultSet rs = st.executeQuery(
+    "SELECT `id`, `name` FROM test_user LIMIT 6"
+);
+
+List<User> users = new ArrayList<>();
 while (rs.next()) {
     users.add(
         spare.apply(rs)
     );
 }
+
+rs.close();
+st.close();
+conn.close();
+
+// print for observation
+System.out.println(
+    Json.encode(
+        users, Flag.PRETTY
+    )
+);
 ```
 
 ### 3.1 Use **Event**
