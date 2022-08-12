@@ -1,4 +1,4 @@
-package plus.kat.netty;
+package plus.kat.netty.buffer;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +9,6 @@ import plus.kat.Supplier;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import plus.kat.netty.buffer.ByteBufReader;
 
 import static org.junit.jupiter.api.Assertions.*;
 

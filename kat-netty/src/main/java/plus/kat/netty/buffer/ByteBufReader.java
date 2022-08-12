@@ -17,7 +17,6 @@ package plus.kat.netty.buffer;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.crash.*;
 import plus.kat.stream.*;
 
 import io.netty.buffer.ByteBuf;
@@ -26,16 +25,11 @@ import io.netty.buffer.ByteBuf;
  * @author kraity
  * @since 0.0.2
  */
-public class ByteBufReader implements Reader {
+public class ByteBufReader extends AbstractReader {
 
-    private int index;
-    private int offset;
-
+    private ByteBuf value;
     private int begin;
     private final int end;
-
-    private byte[] cache;
-    private ByteBuf value;
 
     /**
      * @since 0.0.2
@@ -44,75 +38,45 @@ public class ByteBufReader implements Reader {
         @NotNull ByteBuf data
     ) {
         value = data;
-        cache = new byte[64];
         begin = value.readerIndex();
         end = value.writerIndex();
-        index = cache.length;
-        offset = cache.length;
     }
 
     @Override
-    public boolean also() {
-        if (index < offset) {
-            return true;
+    protected int load() {
+        int cap = end - begin;
+        if (cap <= 0) {
+            return -1;
         }
 
-        if (offset > 0) {
-            offset = read(cache);
-            if (offset > 0) {
-                index = 0;
-                return true;
+        byte[] tmp = cache;
+        if (tmp == null) {
+            int r = range;
+            if (r == 0) {
+                r = 128;
             }
-        }
-
-        return false;
-    }
-
-    @Override
-    public byte read() {
-        return cache[index++];
-    }
-
-    @Override
-    public byte next() throws IOCrash {
-        if (index < offset) {
-            return cache[index++];
-        }
-
-        if (offset > 0) {
-            offset = read(cache);
-            if (offset > 0) {
-                index = 0;
-                return cache[index++];
+            if (cap < r) {
+                r = cap;
             }
+            cache = tmp = new byte[r];
         }
 
-        throw new UnexpectedCrash(
-            "Unexpectedly, no readable byte"
+        if (cap > tmp.length) {
+            cap = tmp.length;
+        }
+
+        value.getBytes(
+            begin, tmp, 0, cap
         );
-    }
-
-    private int read(
-        @NotNull byte[] buf
-    ) {
-        int length = end - begin;
-        if (length > 0) {
-            if (length > buf.length) {
-                length = buf.length;
-            }
-            value.getBytes(
-                begin, buf, 0, length
-            );
-            begin += length;
-        }
-        return length;
+        begin += cap;
+        return cap;
     }
 
     @Override
     public void close() {
-        offset = 0;
         value = null;
         cache = null;
+        offset = -1;
     }
 
     /**
