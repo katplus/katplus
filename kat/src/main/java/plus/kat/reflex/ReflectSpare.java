@@ -222,7 +222,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
 
         int size = args.length;
         return new Builder2<>(
-            this, new Object[size], size - edge, owner
+            this, new Object[size + edge], size, owner
         );
     }
 

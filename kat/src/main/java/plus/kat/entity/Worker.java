@@ -421,17 +421,17 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 Object res = getParent().getResult();
                 if (res == null) {
                     throw new UnexpectedCrash(
-                        "Unexpectedly, getParent().getResult() is null"
+                        "Unexpectedly, the parent is is null"
                     );
                 } else {
                     if (o.isInstance(res)) {
                         data[count++] = res;
                         if (range == 1) {
-                            onApply();
+                            onApply(alias);
                         }
                     } else {
                         throw new UnexpectedCrash(
-                            "Unexpectedly, getParent().getResult() is not " + o
+                            "Unexpectedly, the parent is not " + o
                         );
                     }
                 }
@@ -468,7 +468,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                     } else {
                         data[i] = value;
                         if (r == ++count) try {
-                            onApply();
+                            onApply(null);
                         } catch (Crash e) {
                             throw new IOCrash(e);
                         }
@@ -571,7 +571,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             if (entity == null &&
                 range != data.length) {
                 try {
-                    onApply();
+                    onApply(null);
                 } catch (Exception e) {
                     return null;
                 }
@@ -605,11 +605,17 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
         /**
          * Apply for it
+         *
+         * @throws Crash If a failure occurs
          */
-        protected void onApply()
-            throws Crash {
+        protected void onApply(
+            @Nullable Alias alias
+        ) throws Crash {
+            if (alias == null) {
+                alias = getAlias();
+            }
             entity = worker.apply(
-                getAlias(), data
+                alias, data
             );
             while (cache != null) {
                 cache.setter.onAccept(
