@@ -330,4 +330,39 @@ public class ReflexTest {
         bean.two = 2;
         assertEquals("{\"one\":1}", Json.encode(bean));
     }
+
+    static class Bean2 extends Bean1 {
+        public int id;
+    }
+
+    static class Bean3 extends Bean2 {
+        private String name;
+
+        public void setName(
+            String name
+        ) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    @Test
+    public void test8() {
+        Supplier supplier = Supplier.ins();
+
+        Bean3 bean = supplier.read(
+            Bean3.class, new Event<>(
+                "{:one(1):id(1):name(kraity)}"
+            )
+        );
+
+        assertNotNull(bean);
+        assertEquals(1, bean.one);
+        assertEquals(1, bean.id);
+        assertEquals("kraity", bean.name);
+        assertEquals("{\"name\":\"kraity\",\"id\":1,\"one\":1}", Json.encode(bean));
+    }
 }

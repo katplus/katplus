@@ -77,15 +77,19 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
 
     @Override
     protected void initialize() {
-        onFields(
-            klass.getDeclaredFields()
-        );
-        onMethods(
-            klass.getDeclaredMethods()
-        );
+        Class<?> clazz = klass;
         onConstructors(
-            klass.getDeclaredConstructors()
+            clazz.getDeclaredConstructors()
         );
+        while (clazz != Object.class) {
+            onFields(
+                clazz.getDeclaredFields()
+            );
+            onMethods(
+                clazz.getDeclaredMethods()
+            );
+            clazz = clazz.getSuperclass();
+        }
     }
 
     @Override
@@ -275,92 +279,111 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         boolean sealed = (flags & Embed.SEALED) != 0;
         boolean direct = (flags & Embed.DIRECT) != 0;
 
-        for (Field field : fields) {
-            // its modifier
-            int mod = field.getModifiers();
-
-            // check its modifier
-            if ((mod & Modifier.STATIC) != 0) {
-                continue;
-            }
-
-            Expose expose = field
-                .getAnnotation(
-                    Expose.class
-                );
-
-            if (expose == null) {
-                // check flag
-                if (sealed) {
-                    continue;
-                }
+        for (Field field : fields)
+            try {
+                // its modifier
+                int mod = field.getModifiers();
 
                 // check its modifier
-                if ((mod & Modifier.PUBLIC) == 0 ||
-                    (mod & Modifier.TRANSIENT) != 0) {
+                if ((mod & Modifier.STATIC) != 0) {
                     continue;
                 }
-            }
 
-            Task<T> node;
-            try {
-                node = new Task<>(
-                    field, expose, supplier
-                );
-            } catch (Throwable e) {
-                continue;
-            }
-
-            if (expose == null) {
-                String name = field.getName();
-                setup(
-                    name, node
-                );
-                super.put(
-                    name, node
-                );
-                continue;
-            }
-
-            // check whether to use direct index
-            if (direct) {
-                int index = node.getIndex();
-                if (index > -1) {
-                    super.put(
-                        index, node
+                Task<T> node;
+                Expose expose = field
+                    .getAnnotation(
+                        Expose.class
                     );
-                }
-            }
 
-            String[] keys = expose.value();
-            if (keys.length == 0) {
-                String name = field.getName();
-                if (expose.export()) {
+                if (expose == null) {
+                    // check flag
+                    if (sealed) {
+                        continue;
+                    }
+
+                    // check its modifier
+                    if ((mod & Modifier.PUBLIC) == 0 ||
+                        (mod & Modifier.TRANSIENT) != 0) {
+                        continue;
+                    }
+                }
+
+                String name;
+                String[] keys;
+
+                if (expose == null) {
+                    name = field.getName();
+                    if (get(name) != null) {
+                        continue;
+                    }
+
+                    node = new Task<>(
+                        field, null, supplier
+                    );
+
                     setup(
                         name, node
                     );
-                }
-                super.put(
-                    name, node
-                );
-            } else {
-                // register only the first alias
-                if (expose.export()) {
-                    setup(
-                        keys[0], node
+                    super.put(
+                        name, node
+                    );
+                    continue;
+                } else {
+                    keys = expose.value();
+                    if (keys.length != 0) {
+                        name = keys[0];
+                    } else {
+                        name = field.getName();
+                    }
+
+                    if (get(name) != null) {
+                        continue;
+                    }
+
+                    node = new Task<>(
+                        field, expose, supplier
                     );
                 }
 
-                for (String alias : keys) {
-                    // check empty
-                    if (!alias.isEmpty()) {
+                // check whether to use direct index
+                if (direct) {
+                    int index = node.getIndex();
+                    if (index > -1) {
                         super.put(
-                            alias, node
+                            index, node
                         );
                     }
                 }
+
+                if (keys.length == 0) {
+                    if (expose.export()) {
+                        setup(
+                            name, node
+                        );
+                    }
+                    super.put(
+                        name, node
+                    );
+                } else {
+                    // register only the first alias
+                    if (expose.export()) {
+                        setup(
+                            name, node
+                        );
+                    }
+
+                    for (String alias : keys) {
+                        // check empty
+                        if (!alias.isEmpty()) {
+                            super.put(
+                                alias, node
+                            );
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Nothing
             }
-        }
     }
 
     /**
@@ -373,157 +396,178 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         boolean sealed = (flags & Embed.SEALED) != 0;
         boolean direct = (flags & Embed.DIRECT) != 0;
 
-        for (Method method : methods) {
-            int count = method.
-                getParameterCount();
-            if (count > 1) {
-                continue;
-            }
-
-            // its modifier
-            int mod = method.getModifiers();
-
-            // check its modifier
-            if ((mod & Modifier.STATIC) != 0) {
-                continue;
-            }
-
-            Task<T> node;
-            Expose expose = method
-                .getAnnotation(
-                    Expose.class
-                );
-
-            if (expose == null) {
-                // check flag
-                if (sealed) {
+        for (Method method : methods)
+            try {
+                int count = method.
+                    getParameterCount();
+                if (count > 1) {
                     continue;
                 }
+
+                // its modifier
+                int mod = method.getModifiers();
 
                 // check its modifier
-                if ((mod & Modifier.PUBLIC) == 0) {
+                if ((mod & Modifier.STATIC) != 0) {
                     continue;
                 }
-            } else {
-                String[] keys = expose.value();
-                if (keys.length != 0) {
-                    try {
-                        node = new Task<>(
-                            method, expose, supplier
-                        );
-                    } catch (Throwable e) {
+
+                Task<T> node;
+                Expose expose = method
+                    .getAnnotation(
+                        Expose.class
+                    );
+
+                if (expose == null) {
+                    // check flag
+                    if (sealed) {
                         continue;
                     }
 
-                    if (count != 0) {
-                        // check whether to use direct index
-                        if (direct) {
-                            int index = node.getIndex();
-                            if (index > -1) {
-                                super.put(
-                                    index, node
-                                );
+                    // check its modifier
+                    if ((mod & Modifier.PUBLIC) == 0) {
+                        continue;
+                    }
+                } else {
+                    String[] keys = expose.value();
+                    if (keys.length != 0) {
+                        if (count == 0) {
+                            if (getter(keys[0]) != null) {
+                                continue;
                             }
-                        }
 
-                        for (String alias : keys) {
-                            // check empty
-                            if (!alias.isEmpty()) {
-                                super.put(
-                                    alias, node
+                            node = new Task<>(
+                                method, expose, supplier
+                            );
+
+                            // register all aliases
+                            for (int i = 0; i < keys.length; i++) {
+                                setup(
+                                    keys[i], i == 0 ? node : new Task<>(node)
                                 );
                             }
+                        } else {
+                            if (get(keys[0]) != null) {
+                                continue;
+                            }
+
+                            node = new Task<>(
+                                method, expose, supplier
+                            );
+
+                            // check whether to use direct index
+                            if (direct) {
+                                int index = node.getIndex();
+                                if (index > -1) {
+                                    super.put(
+                                        index, node
+                                    );
+                                }
+                            }
+
+                            for (String alias : keys) {
+                                // check empty
+                                if (!alias.isEmpty()) {
+                                    super.put(
+                                        alias, node
+                                    );
+                                }
+                            }
                         }
-                    } else {
-                        // register all aliases
-                        for (int i = 0; i < keys.length; i++) {
-                            setup(
-                                keys[i], i == 0 ? node : new Task<>(node)
+                        continue;
+                    }
+                }
+
+                String key = method.getName();
+                int i = 0, l = key.length();
+                if (l < 4) {
+                    continue;
+                }
+
+                char ch = key.charAt(i++);
+                if (ch == 's') {
+                    if (count == 0 ||
+                        key.charAt(i++) != 'e' ||
+                        key.charAt(i++) != 't') {
+                        continue;
+                    }
+                } else if (ch == 'g') {
+                    if (count != 0 ||
+                        key.charAt(i++) != 'e' ||
+                        key.charAt(i++) != 't') {
+                        continue;
+                    }
+                } else if (ch == 'i') {
+                    if (count != 0 ||
+                        key.charAt(i++) != 's') {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+
+                byte[] name;
+                char c1 = key.charAt(i++);
+                if (c1 < 'A' || 'Z' < c1) {
+                    continue;
+                }
+
+                if (i == l) {
+                    name = new byte[]{
+                        (byte) (c1 + 0x20)
+                    };
+                } else {
+                    // See: java.beans.Introspector#decapitalize(String)
+                    char c2 = key.charAt(i);
+                    if (c2 < 'A' || 'Z' < c2) {
+                        c1 += 0x20;
+                    }
+
+                    name = new byte[l - i + 1];
+                    name[0] = (byte) c1;
+                    key.getBytes(i, l, name, 1);
+                }
+
+                if (count == 0) {
+                    String id = Binary
+                        .ascii(name);
+                    if (getter(id) != null) {
+                        continue;
+                    }
+
+                    setup(
+                        id, new Task<>(
+                            method, expose, supplier
+                        )
+                    );
+                } else {
+                    Alias id = Binary
+                        .alias(name);
+                    if (get(id) != null) {
+                        continue;
+                    }
+
+                    node = new Task<>(
+                        method, expose, supplier
+                    );
+
+                    super.put(
+                        id, node
+                    );
+
+                    // check whether to use direct index
+                    if (direct) {
+                        int index = node.getIndex();
+                        if (index > -1) {
+                            super.put(
+                                index, node
                             );
                         }
                     }
-                    continue;
                 }
+            } catch (Exception e) {
+                // Nothing
             }
-
-            String key = method.getName();
-            int i = 0, l = key.length();
-            if (l < 4) {
-                continue;
-            }
-
-            char ch = key.charAt(i++);
-            if (ch == 's') {
-                if (count == 0 ||
-                    key.charAt(i++) != 'e' ||
-                    key.charAt(i++) != 't') {
-                    continue;
-                }
-            } else if (ch == 'g') {
-                if (count != 0 ||
-                    key.charAt(i++) != 'e' ||
-                    key.charAt(i++) != 't') {
-                    continue;
-                }
-            } else if (ch == 'i') {
-                if (count != 0 ||
-                    key.charAt(i++) != 's') {
-                    continue;
-                }
-            } else {
-                continue;
-            }
-
-            byte[] name;
-            char c1 = key.charAt(i++);
-            if (c1 < 'A' || 'Z' < c1) {
-                continue;
-            }
-
-            if (i == l) {
-                name = new byte[]{
-                    (byte) (c1 + 0x20)
-                };
-            } else {
-                // See: java.beans.Introspector#decapitalize(String)
-                char c2 = key.charAt(i);
-                if (c2 < 'A' || 'Z' < c2) {
-                    c1 += 0x20;
-                }
-
-                name = new byte[l - i + 1];
-                name[0] = (byte) c1;
-                key.getBytes(i, l, name, 1);
-            }
-
-            try {
-                node = new Task<>(
-                    method, expose, supplier
-                );
-            } catch (Throwable e) {
-                continue;
-            }
-
-            if (count == 0) {
-                setup(
-                    Binary.ascii(name), node
-                );
-            } else {
-                super.put(
-                    Binary.alias(name), node
-                );
-
-                // check whether to use direct index
-                if (direct) {
-                    int index = node.getIndex();
-                    if (index > -1) {
-                        super.put(
-                            index, node
-                        );
-                    }
-                }
-            }
-        }
     }
 
     /**
