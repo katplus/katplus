@@ -879,10 +879,11 @@ public abstract class Paper extends Chain implements Flow {
      */
     public void clear() {
         this.clean();
-        if (bucket == null) {
+        Bucket bt = bucket;
+        if (bt == null) {
             value = EMPTY_BYTES;
         } else {
-            value = bucket.revert(value);
+            value = bt.revert(value);
         }
     }
 
@@ -896,8 +897,9 @@ public abstract class Paper extends Chain implements Flow {
         this.clean();
         Bucket bt = bucket;
         if (bt != null) {
-            if (value.length != 0) {
-                bt.push(value);
+            byte[] it = value;
+            if (it.length != 0) {
+                bt.push(it);
             }
         }
         value = EMPTY_BYTES;

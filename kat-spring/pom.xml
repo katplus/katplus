@@ -14,6 +14,7 @@
 
     <properties>
         <spring.version>5.3.22</spring.version>
+        <spring.redis.version>2.7.2</spring.redis.version>
     </properties>
 
     <dependencies>
@@ -32,6 +33,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
             <version>${spring.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>${spring.redis.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
