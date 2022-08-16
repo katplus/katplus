@@ -371,6 +371,257 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
     /**
      * @author kraity
+     * @since 0.0.3
+     */
+    class Builder2<K> extends Builder$<K> {
+
+        protected K entity;
+        protected int index;
+
+        protected int count;
+        protected Object[] data;
+
+        protected int range;
+        protected Class<?> owner;
+
+        protected Target target;
+        protected Setter<K, ?> setter;
+
+        protected Cache<K> cache;
+        protected Worker<K> worker;
+
+        public Builder2(
+            @NotNull Worker<K> worker,
+            @NotNull Object[] data
+        ) {
+            this(
+                worker, data,
+                data.length, null
+            );
+        }
+
+        public Builder2(
+            @NotNull Worker<K> worker,
+            @NotNull Object[] data,
+            @NotNull int range,
+            @Nullable Class<?> owner
+        ) {
+            this.data = data;
+            this.owner = owner;
+            this.range = range;
+            this.worker = worker;
+        }
+
+        @Override
+        public void onCreate(
+            @NotNull Alias alias
+        ) throws Crash, IOException {
+            Class<?> o = owner;
+            if (o != null) {
+                Object res = getParent().getResult();
+                if (res == null) {
+                    throw new UnexpectedCrash(
+                        "Unexpectedly, getParent().getResult() is null"
+                    );
+                } else {
+                    if (o.isInstance(res)) {
+                        data[count++] = res;
+                        if (range == 1) {
+                            onApply();
+                        }
+                    } else {
+                        throw new UnexpectedCrash(
+                            "Unexpectedly, getParent().getResult() is not " + o
+                        );
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onAccept(
+            @NotNull Target tag,
+            @NotNull Object value
+        ) throws IOException {
+            if (entity != null) {
+                setter.onAccept(
+                    entity, value
+                );
+            } else if (target == null) {
+                Cache<K> c = new Cache<>();
+                c.value = value;
+                c.setter = setter;
+
+                setter = null;
+                if (cache == null) {
+                    cache = c;
+                } else {
+                    cache.next = c;
+                }
+            } else {
+                int r = range;
+                int i = target.getIndex();
+                if (i < r) {
+                    target = null;
+                    if (data[i] != null) {
+                        data[i] = value;
+                    } else {
+                        data[i] = value;
+                        if (r == ++count) try {
+                            onApply();
+                        } catch (Crash e) {
+                            throw new IOCrash(e);
+                        }
+                    }
+                } else {
+                    throw new UnexpectedCrash(
+                        "Unexpectedly, (" + i + ") out of range(" + r + ")"
+                    );
+                }
+            }
+        }
+
+        @Override
+        public void onAccept(
+            @NotNull Alias alias,
+            @NotNull Builder<?> child
+        ) throws IOException {
+            onAccept(
+                null, child.getResult()
+            );
+        }
+
+        @Override
+        public void onAccept(
+            @NotNull Space space,
+            @NotNull Alias alias,
+            @NotNull Value value
+        ) throws IOException {
+            int i = index++;
+            if (entity != null) {
+                setter = worker.setter(
+                    i, alias
+                );
+                if (setter != null) {
+                    onAccept(
+                        space, value, setter
+                    );
+                }
+            } else {
+                target = worker.target(
+                    i, alias
+                );
+                if (target != null) {
+                    onAccept(
+                        space, value, target
+                    );
+                } else {
+                    setter = worker.setter(
+                        i, alias
+                    );
+                    if (setter != null) {
+                        onAccept(
+                            space, value, setter
+                        );
+                    }
+                }
+            }
+        }
+
+        @Override
+        public Builder<?> getBuilder(
+            @NotNull Space space,
+            @NotNull Alias alias
+        ) throws IOException {
+            int i = index++;
+            if (entity != null) {
+                setter = worker.setter(
+                    i, alias
+                );
+                if (setter != null) {
+                    return getBuilder(
+                        space, setter
+                    );
+                }
+            } else {
+                target = worker.target(
+                    i, alias
+                );
+                if (target != null) {
+                    return getBuilder(
+                        space, target
+                    );
+                } else {
+                    setter = worker.setter(
+                        i, alias
+                    );
+                    if (setter != null) {
+                        return getBuilder(
+                            space, setter
+                        );
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public K getResult() {
+            if (entity == null &&
+                range != data.length) {
+                try {
+                    onApply();
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+            return entity;
+        }
+
+        @Override
+        public void onDestroy() {
+            index = 0;
+            count = 0;
+            range = 0;
+
+            data = null;
+            cache = null;
+
+            setter = null;
+            target = null;
+            entity = null;
+        }
+
+        /**
+         * @author kraity
+         * @since 0.0.3
+         */
+        static class Cache<K> {
+            Object value;
+            Cache<K> next;
+            Setter<K, ?> setter;
+        }
+
+        /**
+         * Apply for it
+         */
+        protected void onApply()
+            throws Crash {
+            entity = worker.apply(
+                getAlias(), data
+            );
+            while (cache != null) {
+                cache.setter.onAccept(
+                    entity, cache.value
+                );
+                cache = cache.next;
+            }
+        }
+    }
+
+    /**
+     * @author kraity
      * @since 0.0.2
      */
     abstract class Builder$<K> extends Builder<K> {

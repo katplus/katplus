@@ -18,7 +18,6 @@ package plus.kat.reflex;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.*;
 import java.lang.reflect.*;
@@ -48,8 +47,8 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
     private MethodHandle handle;
     private Constructor<T> builder;
 
+    private int edge;
     private Class<?> owner;
-    private boolean marker;
 
     private Class<?>[] args;
     private KatMap<Object, Target> params;
@@ -129,35 +128,41 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
             throw new Crash(
                 "Not supported"
             );
-        } else if (marker) {
-            int i = 0, flag = 0;
-            for (; i < args.length; i++) {
-                if (data[i] == null) {
-                    flag |= (1 << i);
-                    Class<?> c = args[i];
-                    if (c.isPrimitive()) {
-                        if (c == int.class) {
-                            data[i] = 0;
-                        } else if (c == long.class) {
-                            data[i] = 0L;
-                        } else if (c == float.class) {
-                            data[i] = 0F;
-                        } else if (c == double.class) {
-                            data[i] = 0D;
-                        } else if (c == boolean.class) {
-                            data[i] = false;
-                        } else if (c == byte.class) {
-                            data[i] = (byte) 0;
-                        } else if (c == char.class) {
-                            data[i] = (char) 0;
-                        } else if (c == short.class) {
-                            data[i] = (short) 0;
-                        }
+        }
+
+        int i = 0, flag = 0;
+        Class<?>[] as = args;
+        for (; i < as.length; i++) {
+            if (data[i] == null) {
+                flag |= (1 << i);
+                Class<?> c = as[i];
+                if (c.isPrimitive()) {
+                    if (c == int.class) {
+                        data[i] = 0;
+                    } else if (c == long.class) {
+                        data[i] = 0L;
+                    } else if (c == float.class) {
+                        data[i] = 0F;
+                    } else if (c == double.class) {
+                        data[i] = 0D;
+                    } else if (c == boolean.class) {
+                        data[i] = false;
+                    } else if (c == byte.class) {
+                        data[i] = (byte) 0;
+                    } else if (c == char.class) {
+                        data[i] = (char) 0;
+                    } else if (c == short.class) {
+                        data[i] = (short) 0;
                     }
                 }
             }
+        }
+
+        if (as.length !=
+            data.length) {
             data[i] = flag;
         }
+
         try {
             return b.newInstance(data);
         } catch (Throwable e) {
@@ -214,7 +219,11 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         if (params == null) {
             return new Builder0<>(this);
         }
-        return new Builder2<>(this);
+
+        int size = args.length;
+        return new Builder2<>(
+            this, new Object[size], size - edge, owner
+        );
     }
 
     @Override
@@ -561,8 +570,8 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 int i = $.getParameterCount();
                 if (i + 2 == count && args[i] == int.class &&
                     "kotlin.jvm.internal.DefaultConstructorMarker".equals(args[i + 1].getName())) {
-                    marker = true;
                     b = $;
+                    edge = 2;
                     args = $.getParameterTypes();
                 }
             }
@@ -776,227 +785,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                     // Nothing
                 }
             }
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.2
-     */
-    public static class Builder2<K> extends Builder$<K> {
-
-        protected K entity;
-        protected int index;
-
-        protected Object[] data;
-        protected int count;
-        protected boolean marker;
-
-        protected Class<?> owner;
-        protected Class<?>[] args;
-
-        protected Target target;
-        protected Setter<K, ?> setter;
-
-        protected Cache<K> cache;
-        protected Worker<K> worker;
-
-        public Builder2(
-            @NotNull ReflectSpare<K> spare
-        ) {
-            this.worker = spare;
-            this.owner = spare.owner;
-            this.args = spare.args;
-            this.marker = spare.marker;
-        }
-
-        @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) throws Crash, IOException {
-            int size = args.length;
-            if (marker) {
-                size += 2;
-            }
-            data = new Object[size];
-            if (owner != null) {
-                Object own = getParent()
-                    .getResult();
-                if (own != null) {
-                    data[count++] = own;
-                    if (args.length == 1) {
-                        this.embark();
-                    }
-                } else {
-                    throw new UnexpectedCrash(
-                        "Unexpectedly, getParent().getResult() is null"
-                    );
-                }
-            }
-        }
-
-        @Override
-        public void onAccept(
-            @NotNull Target tag,
-            @NotNull Object value
-        ) throws IOException {
-            if (entity != null) {
-                setter.onAccept(
-                    entity, value
-                );
-            } else if (target != null) {
-                int i = target.getIndex();
-                target = null;
-                data[i] = value;
-                if (args.length == ++count) {
-                    try {
-                        this.embark();
-                    } catch (Crash e) {
-                        throw new IOException(e);
-                    }
-                }
-            } else {
-                Cache<K> c = new Cache<>();
-                c.value = value;
-                c.setter = setter;
-
-                setter = null;
-                if (cache == null) {
-                    cache = c;
-                } else {
-                    cache.next = c;
-                }
-            }
-        }
-
-        @Override
-        public void onAccept(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) throws IOException {
-            onAccept(
-                null, child.getResult()
-            );
-        }
-
-        @Override
-        public void onAccept(
-            @NotNull Space space,
-            @NotNull Alias alias,
-            @NotNull Value value
-        ) throws IOException {
-            int i = index++;
-            if (entity != null) {
-                setter = worker.setter(
-                    i, alias
-                );
-                if (setter != null) {
-                    onAccept(
-                        space, value, setter
-                    );
-                }
-            } else {
-                target = worker.target(
-                    i, alias
-                );
-                if (target != null) {
-                    onAccept(
-                        space, value, target
-                    );
-                } else {
-                    setter = worker.setter(
-                        i, alias
-                    );
-                    if (setter != null) {
-                        onAccept(
-                            space, value, setter
-                        );
-                    }
-                }
-            }
-        }
-
-        @Override
-        public Builder<?> getBuilder(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) throws IOException {
-            int i = index++;
-            if (entity != null) {
-                setter = worker.setter(
-                    i, alias
-                );
-                if (setter != null) {
-                    return getBuilder(
-                        space, setter
-                    );
-                }
-            } else {
-                target = worker.target(
-                    i, alias
-                );
-                if (target != null) {
-                    return getBuilder(
-                        space, target
-                    );
-                } else {
-                    setter = worker.setter(
-                        i, alias
-                    );
-                    if (setter != null) {
-                        return getBuilder(
-                            space, setter
-                        );
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /**
-         * @author kraity
-         * @since 0.0.2
-         */
-        static class Cache<K> {
-            Object value;
-            Cache<K> next;
-            Setter<K, ?> setter;
-        }
-
-        private void embark() throws Crash {
-            entity = worker.apply(
-                getAlias(), data
-            );
-            while (cache != null) {
-                cache.setter.onAccept(
-                    entity, cache.value
-                );
-                cache = cache.next;
-            }
-        }
-
-        @Override
-        public K getResult() {
-            if (marker && entity == null) {
-                try {
-                    this.embark();
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-            return entity;
-        }
-
-        @Override
-        public void onDestroy() {
-            index = 0;
-            count = 0;
-            data = null;
-            cache = null;
-            setter = null;
-            entity = null;
-            target = null;
         }
     }
 }
