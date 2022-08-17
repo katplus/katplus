@@ -25,20 +25,20 @@ import java.io.IOException;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.3
  */
-public class StringSpare extends Property<String> {
+public class StringBuilderSpare extends Property<StringBuilder> {
 
-    public static final StringSpare
-        INSTANCE = new StringSpare();
+    public static final StringBuilderSpare
+        INSTANCE = new StringBuilderSpare();
 
-    public StringSpare() {
-        super(String.class);
+    public StringBuilderSpare() {
+        super(StringBuilder.class);
     }
 
     @Override
-    public String apply() {
-        return "";
+    public StringBuilder apply() {
+        return new StringBuilder();
     }
 
     @Override
@@ -47,36 +47,41 @@ public class StringSpare extends Property<String> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> klass
-    ) {
-        return klass == String.class
-            || klass == Object.class
-            || klass == CharSequence.class;
-    }
-
-    @Override
-    public String cast(
+    public StringBuilder cast(
         @NotNull Supplier supplier,
         @Nullable Object data
     ) {
-        return data == null ? "" : data.toString();
+        if (data == null) {
+            return new StringBuilder();
+        }
+
+        if (data instanceof CharSequence) {
+            return new StringBuilder(
+                (CharSequence) data
+            );
+        }
+
+        return new StringBuilder(data.toString());
     }
 
     @Override
-    public String read(
+    public StringBuilder read(
         @NotNull Flag flag,
         @NotNull Alias alias
     ) {
-        return alias.toString();
+        return new StringBuilder(
+            alias.toString()
+        );
     }
 
     @Override
-    public String read(
+    public StringBuilder read(
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.toString();
+        return new StringBuilder(
+            value.toString()
+        );
     }
 
     @Override
@@ -84,14 +89,8 @@ public class StringSpare extends Property<String> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        if (flow.isFlag(Flag.UNICODE)) {
-            flow.text(
-                (CharSequence) value
-            );
-        } else {
-            flow.emit(
-                (CharSequence) value
-            );
-        }
+        flow.append(
+            (CharSequence) value
+        );
     }
 }

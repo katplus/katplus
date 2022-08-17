@@ -473,6 +473,28 @@ public class SpareTest {
         assertEquals("ZonedDateTime(2022-02-22T22:22:22.123+08:00[Asia/Shanghai])", Kat.encode(zonedDateTime));
     }
 
+    @Test
+    public void test_string_buffer() {
+        StringBufferSpare spare = StringBufferSpare.INSTANCE;
+
+        StringBuffer sb = spare.read("$(kat)");
+        assertNotNull(sb);
+
+        sb.append(".plus");
+        assertEquals("s(kat.plus)", Kat.encode(sb));
+    }
+
+    @Test
+    public void test_string_builder() {
+        StringBuilderSpare spare = StringBuilderSpare.INSTANCE;
+
+        StringBuilder sb = spare.read("$(kat)");
+        assertNotNull(sb);
+
+        sb.append(".plus");
+        assertEquals("s(kat.plus)", Kat.encode(sb));
+    }
+
     static class Hook {
         public void on(
             ArrayList<Integer> data,
