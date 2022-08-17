@@ -23,9 +23,11 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.security.*;
 import java.nio.charset.Charset;
+import java.util.concurrent.atomic.*;
 
 import plus.kat.crash.*;
 import plus.kat.stream.*;
+import plus.kat.utils.Config;
 
 import static plus.kat.stream.Binary.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -2059,10 +2061,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     protected void clear() {
         this.clean();
-        if (bucket == null) {
+        Bucket bt = bucket;
+        if (bt == null) {
             value = EMPTY_BYTES;
         } else {
-            byte[] it = bucket.revert(value);
+            byte[] it = bt.revert(value);
             value = it != null ? it : EMPTY_BYTES;
         }
     }
@@ -2075,8 +2078,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         Bucket bt = bucket;
         if (bt != null) {
             bucket = null;
-            if (value.length != 0) {
-                bt.push(value);
+            byte[] it = value;
+            if (it.length != 0) {
+                bt.push(it);
             }
         }
         value = EMPTY_BYTES;
@@ -2141,6 +2145,110 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         public void close() {
             l = 0;
             b = null;
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.3
+     */
+    public static class Buffer extends AtomicReferenceArray<byte[]> implements plus.kat.stream.Bucket {
+
+        public static final int SIZE, SCALE;
+
+        static {
+            SIZE = Config.get(
+                "kat.buffer.size", 4
+            );
+            SCALE = Config.get(
+                "kat.buffer.scale", 1024 * 4
+            );
+        }
+
+        public static final Buffer
+            INS = new Buffer();
+
+        private Buffer() {
+            super(SIZE);
+        }
+
+        @NotNull
+        public byte[] alloc() {
+            Thread th = Thread.currentThread();
+            int tr = th.hashCode() & 0xFFFFFF;
+
+            byte[] it = getAndSet(
+                tr % SIZE, null
+            );
+
+            if (it != null &&
+                SCALE <= it.length) {
+                return it;
+            }
+
+            return new byte[SCALE];
+        }
+
+        @NotNull
+        @Override
+        public byte[] alloc(
+            @NotNull byte[] it, int len, int min
+        ) {
+            Thread th = Thread.currentThread();
+            int ts = (th.hashCode() & 0xFFFFFF) % SIZE;
+
+            byte[] data;
+            if (min <= SCALE) {
+                data = getAndSet(
+                    ts, null
+                );
+                if (data == null ||
+                    SCALE > it.length) {
+                    data = new byte[SCALE];
+                }
+                if (it.length != 0) {
+                    System.arraycopy(
+                        it, 0, data, 0, len
+                    );
+                }
+            } else {
+                int cap = it.length +
+                    (it.length >> 1);
+                if (cap < min) {
+                    cap = min;
+                }
+                data = new byte[cap];
+                if (it.length != 0) {
+                    System.arraycopy(
+                        it, 0, data, 0, len
+                    );
+
+                    if (SCALE == it.length) {
+                        set(ts, it);
+                    }
+                }
+            }
+
+            return data;
+        }
+
+        @Override
+        public void push(
+            @Nullable byte[] it
+        ) {
+            if (it != null && SCALE == it.length) {
+                Thread th = Thread.currentThread();
+                set((th.hashCode() & 0xFFFFFF) % SIZE, it);
+            }
+        }
+
+        @Nullable
+        @Override
+        public byte[] revert(
+            @Nullable byte[] it
+        ) {
+            push(it);
+            return EMPTY_BYTES;
         }
     }
 }

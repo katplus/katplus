@@ -19,7 +19,7 @@ import plus.kat.crash.UnexpectedCrash;
 
 import java.io.IOException;
 
-import static plus.kat.stream.Reader.Bucket.INS;
+import static plus.kat.kernel.Chain.Buffer;
 
 /**
  * @author kraity
@@ -105,13 +105,13 @@ public abstract class AbstractReader implements Reader {
     protected byte[] alloc() {
         int r = range;
         if (r == 0) {
-            return INS.alloc();
+            return Buffer.INS.alloc();
         } else {
-            int s = Bucket.SCALE;
+            int s = Buffer.SCALE;
             if (r > s) {
                 return new byte[r];
             } else {
-                return INS.alloc();
+                return Buffer.INS.alloc();
             }
         }
     }

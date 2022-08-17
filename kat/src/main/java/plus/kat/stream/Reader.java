@@ -15,14 +15,9 @@
  */
 package plus.kat.stream;
 
-import plus.kat.anno.NotNull;
-import plus.kat.anno.Nullable;
-
 import plus.kat.crash.*;
-import plus.kat.utils.Config;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.*;
 
 /**
  * @author kraity
@@ -64,55 +59,5 @@ public interface Reader {
      */
     default void close() {
         // nothing
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.2
-     */
-    class Bucket extends AtomicReferenceArray<byte[]> {
-
-        static final int SIZE, SCALE;
-
-        static {
-            SIZE = Config.get(
-                "kat.reader.size", 4
-            );
-            SCALE = Config.get(
-                "kat.reader.scale", 1024 * 4
-            );
-        }
-
-        static final Bucket
-            INS = new Bucket();
-
-        private Bucket() {
-            super(SIZE);
-        }
-
-        @NotNull
-        public byte[] alloc() {
-            Thread th = Thread.currentThread();
-            int tr = th.hashCode() & 0xFFFFFF;
-
-            byte[] it = getAndSet(
-                tr % SIZE, null
-            );
-
-            if (it != null) {
-                return it;
-            }
-
-            return new byte[SCALE];
-        }
-
-        public void revert(
-            @Nullable byte[] it
-        ) {
-            if (it != null && SCALE == it.length) {
-                Thread th = Thread.currentThread();
-                set((th.hashCode() & 0xFFFFFF) % SIZE, it);
-            }
-        }
     }
 }
