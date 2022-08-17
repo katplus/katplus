@@ -24,13 +24,8 @@ import plus.kat.crash.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.*;
+import java.net.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -44,6 +39,11 @@ public class Client extends Chain {
     protected Supplier supplier;
     protected HttpURLConnection conn;
 
+    /**
+     * @param url the url to parse as a URL
+     * @throws IOException           If an I/O error occurs
+     * @throws MalformedURLException If no protocol is specified, or an unknown protocol is found, or spec is null
+     */
     public Client(
         @NotNull String url
     ) throws IOException {
@@ -52,14 +52,69 @@ public class Client extends Chain {
         );
     }
 
+    /**
+     * @throws IOException If an I/O error occurs
+     */
     public Client(
         @NotNull URL url
     ) throws IOException {
         this(
-            (HttpURLConnection) url.openConnection()
+            url.openConnection()
         );
     }
 
+    /**
+     * @param proxy the specified proxy
+     * @throws IOException If an I/O error occurs
+     */
+    public Client(
+        @NotNull URL url,
+        @NotNull Proxy proxy
+    ) throws IOException {
+        this(
+            url.openConnection(proxy)
+        );
+    }
+
+    /**
+     * @param url   the url to parse as a URL
+     * @param proxy the specified proxy
+     * @throws IOException           If an I/O error occurs
+     * @throws MalformedURLException If no protocol is specified, or an unknown protocol is found, or spec is null
+     */
+    public Client(
+        @NotNull String url,
+        @NotNull Proxy proxy
+    ) throws IOException {
+        this(
+            new URL(url).openConnection(proxy)
+        );
+    }
+
+    /**
+     * @param conn the specified {@link URLConnection}
+     * @throws IOException     If an I/O error occurs
+     * @throws UnexpectedCrash If the {@code conn} is not {@link HttpURLConnection}
+     */
+    public Client(
+        @NotNull URLConnection conn
+    ) throws IOException {
+        super(Buffer.INS);
+        if (conn instanceof HttpURLConnection) {
+            this.conn = (HttpURLConnection) conn;
+            this.supplier = Supplier.ins();
+        } else {
+            throw new UnexpectedCrash(
+                conn + " is not an HttpURLConnection"
+            );
+        }
+    }
+
+    /**
+     * @param conn the specified {@link HttpURLConnection}
+     * @throws IOException     If an I/O error occurs
+     * @throws UnexpectedCrash If the {@code conn} is null
+     */
     public Client(
         @NotNull HttpURLConnection conn
     ) throws IOException {
@@ -74,6 +129,11 @@ public class Client extends Chain {
         }
     }
 
+    /**
+     * Use the specified {@link Supplier}
+     *
+     * @param target the specified supplier
+     */
     public Client with(
         @NotNull Supplier target
     ) {
@@ -87,6 +147,9 @@ public class Client extends Chain {
         return this;
     }
 
+    /**
+     * Parse this {@link Client} and convert result to {@link T}
+     */
     @Nullable
     public <E, T extends E> T to(
         @NotNull Class<E> klass
@@ -144,6 +207,9 @@ public class Client extends Chain {
         );
     }
 
+    /**
+     * Parse this {@link Client} and convert result to {@link T}
+     */
     @Nullable
     public <E, T extends E> T to(
         @NotNull Job job,
@@ -161,6 +227,13 @@ public class Client extends Chain {
         );
     }
 
+    /**
+     * Returns a {@link Value} of this {@link Client}
+     *
+     * @param start the start index, inclusive
+     * @param end   the end index, exclusive
+     */
+    @NotNull
     @Override
     public Value subSequence(
         int start, int end
