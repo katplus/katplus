@@ -375,6 +375,32 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     }
 
     /**
+     * @param key the alias of getter
+     * @since 0.0.3
+     */
+    public boolean contains(
+        @NotNull Object key
+    ) {
+        Node<T>[] tab = table;
+        if (tab == null) {
+            return false;
+        }
+
+        int h = key.hashCode() & 0xFFFF;
+        Node<T> e = tab[h % tab.length];
+
+        while (e != null) {
+            if (e.hash == h &&
+                key.equals(e.key)) {
+                return true;
+            }
+            e = e.next;
+        }
+
+        return false;
+    }
+
+    /**
      * @param supplier the specified supplier
      * @param result   the specified result
      * @since 0.0.3

@@ -86,6 +86,8 @@ public abstract class Builder<K> {
 
     /**
      * Create a branch of this {@link Builder}
+     *
+     * @throws IOException If an I/O error occurs
      */
     @Nullable
     public abstract Builder<?> getBuilder(
@@ -98,9 +100,12 @@ public abstract class Builder<K> {
      * <p>
      * May be called multiple times,
      * when implementing this method, make sure that the {@link K} returned each time is the same
+     *
+     * @throws IOException If a packaging error or IO error
      */
     @Nullable
-    public abstract K getResult();
+    public abstract K getResult()
+        throws IOException;
 
     /**
      * Close the resources of this {@link Builder}

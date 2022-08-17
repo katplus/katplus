@@ -320,7 +320,7 @@ public class ArraySpare implements Spare<Object> {
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) {
+        ) throws IOException {
             if (length == size) {
                 enlarge();
             }
@@ -401,7 +401,7 @@ public class ArraySpare implements Spare<Object> {
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) {
+        ) throws IOException {
             list[index] = child.getResult();
         }
 

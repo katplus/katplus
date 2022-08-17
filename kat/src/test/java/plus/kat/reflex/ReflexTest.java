@@ -365,4 +365,35 @@ public class ReflexTest {
         assertEquals("kraity", bean.name);
         assertEquals("{\"name\":\"kraity\",\"id\":1,\"one\":1}", Json.encode(bean));
     }
+
+    static class User1 {
+        private int id;
+        private String name;
+
+        public User1(
+            @Expose("id")
+                int id,
+            @Expose("name")
+                String name
+        ) {
+            this.id = id;
+            this.name = name;
+        }
+    }
+
+    @Test
+    public void test9() {
+        Supplier supplier = Supplier.ins();
+
+        User1 user = supplier.read(
+            User1.class, new Event<>(
+                "{:id(1):name(kraity)}"
+            )
+        );
+
+        assertNotNull(user);
+        assertEquals(1, user.id);
+        assertEquals("kraity", user.name);
+        assertEquals("{}", Json.encode(user));
+    }
 }

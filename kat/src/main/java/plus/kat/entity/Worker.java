@@ -348,14 +348,17 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
         @Nullable
         @Override
-        public K getResult() {
+        public K getResult()
+            throws IOException {
             if (entity == null) {
                 try {
                     entity = worker.apply(
                         getAlias(), data
                     );
                 } catch (Crash e) {
-                    return null;
+                    throw new UnexpectedCrash(
+                        "Error creating entity", e
+                    );
                 }
             }
             return entity;
@@ -378,11 +381,8 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         protected K entity;
         protected int index;
 
-        protected int count;
         protected Object[] data;
-
-        protected int range;
-        protected Class<?> owner;
+        protected Class<?> master;
 
         protected Target target;
         protected Setter<K, ?> setter;
@@ -395,20 +395,17 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Object[] data
         ) {
             this(
-                worker, data,
-                data.length, null
+                worker, data, null
             );
         }
 
         public Builder2(
             @NotNull Worker<K> worker,
             @NotNull Object[] data,
-            @NotNull int range,
-            @Nullable Class<?> owner
+            @Nullable Class<?> master
         ) {
             this.data = data;
-            this.owner = owner;
-            this.range = range;
+            this.master = master;
             this.worker = worker;
         }
 
@@ -416,7 +413,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         public void onCreate(
             @NotNull Alias alias
         ) throws Crash, IOException {
-            Class<?> o = owner;
+            Class<?> o = master;
             if (o != null) {
                 Object res = getParent().getResult();
                 if (res == null) {
@@ -425,10 +422,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                     );
                 } else {
                     if (o.isInstance(res)) {
-                        data[count++] = res;
-                        if (range == 1) {
-                            onApply(alias);
-                        }
+                        data[0] = res;
                     } else {
                         throw new UnexpectedCrash(
                             "Unexpectedly, the parent is not " + o
@@ -459,20 +453,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                     cache.next = c;
                 }
             } else {
-                int r = range;
+                int r = data.length;
                 int i = target.getIndex();
                 if (i < r) {
                     target = null;
-                    if (data[i] != null) {
-                        data[i] = value;
-                    } else {
-                        data[i] = value;
-                        if (r == ++count) try {
-                            onApply(null);
-                        } catch (Crash e) {
-                            throw new IOCrash(e);
-                        }
-                    }
+                    data[i] = value;
                 } else {
                     throw new UnexpectedCrash(
                         "Unexpectedly, (" + i + ") out of range(" + r + ")"
@@ -566,33 +551,6 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             return null;
         }
 
-        @Override
-        public K getResult() {
-            if (entity == null &&
-                range != data.length) {
-                try {
-                    onApply(null);
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-            return entity;
-        }
-
-        @Override
-        public void onDestroy() {
-            index = 0;
-            count = 0;
-            range = 0;
-
-            data = null;
-            cache = null;
-
-            setter = null;
-            target = null;
-            entity = null;
-        }
-
         /**
          * @author kraity
          * @since 0.0.3
@@ -603,26 +561,39 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             Setter<K, ?> setter;
         }
 
-        /**
-         * Apply for it
-         *
-         * @throws Crash If a failure occurs
-         */
-        protected void onApply(
-            @Nullable Alias alias
-        ) throws Crash {
-            if (alias == null) {
-                alias = getAlias();
+        @Override
+        public K getResult()
+            throws IOException {
+            if (entity == null) {
+                try {
+                    entity = worker.apply(
+                        getAlias(), data
+                    );
+                    while (cache != null) {
+                        cache.setter.onAccept(
+                            entity, cache.value
+                        );
+                        cache = cache.next;
+                    }
+                } catch (Crash e) {
+                    throw new UnexpectedCrash(
+                        "Error creating entity", e
+                    );
+                }
             }
-            entity = worker.apply(
-                alias, data
-            );
-            while (cache != null) {
-                cache.setter.onAccept(
-                    entity, cache.value
-                );
-                cache = cache.next;
-            }
+            return entity;
+        }
+
+        @Override
+        public void onDestroy() {
+            index = 0;
+            data = null;
+            cache = null;
+            master = null;
+
+            setter = null;
+            target = null;
+            entity = null;
         }
     }
 

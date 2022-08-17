@@ -48,7 +48,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
     private Constructor<T> builder;
 
     private int edge;
-    private Class<?> owner;
+    private Class<?> master;
 
     private Class<?>[] args;
     private KatMap<Object, Target> params;
@@ -81,15 +81,16 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         onConstructors(
             clazz.getDeclaredConstructors()
         );
-        while (clazz != Object.class) {
+        do {
             onFields(
                 clazz.getDeclaredFields()
             );
             onMethods(
                 clazz.getDeclaredMethods()
             );
-            clazz = clazz.getSuperclass();
-        }
+        } while (
+            (clazz = clazz.getSuperclass()) != Object.class
+        );
     }
 
     @Override
@@ -184,7 +185,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 supplier, data
             );
         } else {
-            if (size() != 0 || owner != null) {
+            if (size() != 0 || master != null) {
                 throw new Crash(
                     "Not currently supported"
                 );
@@ -205,7 +206,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 supplier, resultSet
             );
         } else {
-            if (size() != 0 || owner != null) {
+            if (size() != 0 || master != null) {
                 throw new SQLCrash(
                     "Not currently supported"
                 );
@@ -224,9 +225,17 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
             return new Builder0<>(this);
         }
 
-        int size = args.length;
+        Class<?> main = master;
+        int size = args.length + edge;
+
+        if (main == null && size() == 0) {
+            return new Builder1<>(
+                this, new Object[size]
+            );
+        }
+
         return new Builder2<>(
-            this, new Object[size + edge], size, owner
+            this, new Object[size], main
         );
     }
 
@@ -234,10 +243,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
     public Target target(
         Object alias
     ) {
-        if (params == null) {
-            return null;
-        }
-        return params.get(alias);
+        KatMap<Object, Target> map = params;
+        return map == null ?
+            null : map.get(alias);
     }
 
     @Override
@@ -245,10 +253,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         @NotNull int index,
         @NotNull Alias alias
     ) {
-        if (params == null) {
-            return null;
-        }
-        return params.get(
+        KatMap<Object, Target> map = params;
+        return map == null ?
+            null : map.get(
             alias.isEmpty() ? index : alias
         );
     }
@@ -313,7 +320,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
 
                 if (expose == null) {
                     name = field.getName();
-                    if (get(name) != null) {
+                    if (containsKey(name)) {
                         continue;
                     }
 
@@ -336,7 +343,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                         name = field.getName();
                     }
 
-                    if (get(name) != null) {
+                    if (containsKey(name)) {
                         continue;
                     }
 
@@ -347,11 +354,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
 
                 // check whether to use direct index
                 if (direct) {
-                    int index = node.getIndex();
-                    if (index > -1) {
-                        super.put(
-                            index, node
-                        );
+                    int i = node.getIndex();
+                    if (i >= 0) {
+                        super.put(i, node);
                     }
                 }
 
@@ -432,7 +437,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                     String[] keys = expose.value();
                     if (keys.length != 0) {
                         if (count == 0) {
-                            if (getter(keys[0]) != null) {
+                            if (contains(keys[0])) {
                                 continue;
                             }
 
@@ -447,7 +452,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                                 );
                             }
                         } else {
-                            if (get(keys[0]) != null) {
+                            if (containsKey(keys[0])) {
                                 continue;
                             }
 
@@ -457,11 +462,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
 
                             // check whether to use direct index
                             if (direct) {
-                                int index = node.getIndex();
-                                if (index > -1) {
-                                    super.put(
-                                        index, node
-                                    );
+                                int i = node.getIndex();
+                                if (i >= 0) {
+                                    super.put(i, node);
                                 }
                             }
 
@@ -479,27 +482,27 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 }
 
                 String key = method.getName();
-                int i = 0, l = key.length();
+                int k = 0, l = key.length();
                 if (l < 4) {
                     continue;
                 }
 
-                char ch = key.charAt(i++);
+                char ch = key.charAt(k++);
                 if (ch == 's') {
                     if (count == 0 ||
-                        key.charAt(i++) != 'e' ||
-                        key.charAt(i++) != 't') {
+                        key.charAt(k++) != 'e' ||
+                        key.charAt(k++) != 't') {
                         continue;
                     }
                 } else if (ch == 'g') {
                     if (count != 0 ||
-                        key.charAt(i++) != 'e' ||
-                        key.charAt(i++) != 't') {
+                        key.charAt(k++) != 'e' ||
+                        key.charAt(k++) != 't') {
                         continue;
                     }
                 } else if (ch == 'i') {
                     if (count != 0 ||
-                        key.charAt(i++) != 's') {
+                        key.charAt(k++) != 's') {
                         continue;
                     }
                 } else {
@@ -507,31 +510,31 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 }
 
                 byte[] name;
-                char c1 = key.charAt(i++);
+                char c1 = key.charAt(k++);
                 if (c1 < 'A' || 'Z' < c1) {
                     continue;
                 }
 
-                if (i == l) {
+                if (k == l) {
                     name = new byte[]{
                         (byte) (c1 + 0x20)
                     };
                 } else {
                     // See: java.beans.Introspector#decapitalize(String)
-                    char c2 = key.charAt(i);
+                    char c2 = key.charAt(k);
                     if (c2 < 'A' || 'Z' < c2) {
                         c1 += 0x20;
                     }
 
-                    name = new byte[l - i + 1];
+                    name = new byte[l - k + 1];
                     name[0] = (byte) c1;
-                    key.getBytes(i, l, name, 1);
+                    key.getBytes(k, l, name, 1);
                 }
 
                 if (count == 0) {
                     String id = Binary
                         .ascii(name);
-                    if (getter(id) != null) {
+                    if (contains(id)) {
                         continue;
                     }
 
@@ -543,7 +546,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 } else {
                     Alias id = Binary
                         .alias(name);
-                    if (get(id) != null) {
+                    if (containsKey(id)) {
                         continue;
                     }
 
@@ -557,11 +560,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
 
                     // check whether to use direct index
                     if (direct) {
-                        int index = node.getIndex();
-                        if (index > -1) {
-                            super.put(
-                                index, node
-                            );
+                        int i = node.getIndex();
+                        if (i >= 0) {
+                            super.put(i, node);
                         }
                     }
                 }
@@ -630,7 +631,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 (klass.getModifiers() & Modifier.STATIC) == 0) {
                 if (enclosingClass == args[0]) {
                     i++;
-                    owner = enclosingClass;
+                    master = enclosingClass;
                 }
             }
 

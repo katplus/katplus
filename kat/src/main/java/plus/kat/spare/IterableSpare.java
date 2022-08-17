@@ -261,7 +261,7 @@ public class IterableSpare implements Spare<Iterable> {
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) throws IOCrash {
+        ) throws IOException {
             entity.add(
                 child.getResult()
             );
