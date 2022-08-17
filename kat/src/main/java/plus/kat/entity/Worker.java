@@ -261,8 +261,8 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         @Override
         public void onDestroy() {
             index = 0;
-            entity = null;
             setter = null;
+            entity = null;
         }
     }
 
@@ -367,8 +367,9 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
         @Override
         public void onDestroy() {
             index = 0;
-            entity = null;
+            data = null;
             target = null;
+            entity = null;
         }
     }
 
@@ -437,11 +438,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Target tag,
             @NotNull Object value
         ) throws IOException {
-            if (entity != null) {
-                setter.onAccept(
-                    entity, value
-                );
-            } else if (target == null) {
+            if (target == null) {
                 Cache<K> c = new Cache<>();
                 c.value = value;
                 c.setter = setter;
@@ -483,7 +480,14 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Value value
         ) throws IOException {
             int i = index++;
-            if (entity != null) {
+            target = worker.target(
+                i, alias
+            );
+            if (target != null) {
+                onAccept(
+                    space, value, target
+                );
+            } else {
                 setter = worker.setter(
                     i, alias
                 );
@@ -491,24 +495,6 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                     onAccept(
                         space, value, setter
                     );
-                }
-            } else {
-                target = worker.target(
-                    i, alias
-                );
-                if (target != null) {
-                    onAccept(
-                        space, value, target
-                    );
-                } else {
-                    setter = worker.setter(
-                        i, alias
-                    );
-                    if (setter != null) {
-                        onAccept(
-                            space, value, setter
-                        );
-                    }
                 }
             }
         }
@@ -519,7 +505,14 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias
         ) throws IOException {
             int i = index++;
-            if (entity != null) {
+            target = worker.target(
+                i, alias
+            );
+            if (target != null) {
+                return getBuilder(
+                    space, target
+                );
+            } else {
                 setter = worker.setter(
                     i, alias
                 );
@@ -527,24 +520,6 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                     return getBuilder(
                         space, setter
                     );
-                }
-            } else {
-                target = worker.target(
-                    i, alias
-                );
-                if (target != null) {
-                    return getBuilder(
-                        space, target
-                    );
-                } else {
-                    setter = worker.setter(
-                        i, alias
-                    );
-                    if (setter != null) {
-                        return getBuilder(
-                            space, setter
-                        );
-                    }
                 }
             }
 
@@ -569,17 +544,18 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                     entity = worker.apply(
                         getAlias(), data
                     );
-                    while (cache != null) {
-                        cache.setter.onAccept(
-                            entity, cache.value
-                        );
-                        cache = cache.next;
-                    }
                 } catch (Crash e) {
                     throw new UnexpectedCrash(
                         "Error creating entity", e
                     );
                 }
+            }
+
+            while (cache != null) {
+                cache.setter.onAccept(
+                    entity, cache.value
+                );
+                cache = cache.next;
             }
             return entity;
         }
@@ -590,7 +566,6 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             data = null;
             cache = null;
             master = null;
-
             setter = null;
             target = null;
             entity = null;
