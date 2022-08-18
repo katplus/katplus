@@ -2108,21 +2108,39 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         }
 
         /**
+         * Check {@link Reader} for readable bytes
+         *
+         * @throws NullPointerException If this has been closed
+         */
+        @Override
+        public boolean also() {
+            return i < l;
+        }
+
+        /**
          * Read a byte and cursor switch to next
          *
          * @throws NullPointerException If this has been closed
          */
+        @Override
         public byte read() {
             return b[i++];
         }
 
         /**
-         * Check {@link Reader} for readable bytes
+         * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOCrash
          *
-         * @throws NullPointerException If this has been closed
+         * @throws IOException If this has been closed
          */
-        public boolean also() {
-            return i < l;
+        @Override
+        public byte next() throws IOException {
+            if (i < l) {
+                return b[i++];
+            }
+
+            throw new UnexpectedCrash(
+                "Unexpectedly, no readable byte"
+            );
         }
 
         /**
@@ -2142,6 +2160,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         /**
          * close this {@link Reader}
          */
+        @Override
         public void close() {
             l = 0;
             b = null;

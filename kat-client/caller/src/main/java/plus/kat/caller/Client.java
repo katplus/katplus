@@ -22,7 +22,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.kernel.*;
-import plus.kat.stream.*;
 
 import java.io.*;
 import java.net.*;
@@ -33,10 +32,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author kraity
  * @since 0.0.3
  */
-public class Client extends Chain {
+public class Client extends Caller {
 
     protected int code;
-    protected Supplier supplier;
     protected HttpURLConnection conn;
 
     /**
@@ -102,7 +100,6 @@ public class Client extends Chain {
         super(Buffer.INS);
         if (conn instanceof HttpURLConnection) {
             this.conn = (HttpURLConnection) conn;
-            this.supplier = Supplier.ins();
         } else {
             throw new UnexpectedCrash(
                 conn + " is not an HttpURLConnection"
@@ -130,27 +127,10 @@ public class Client extends Chain {
     }
 
     /**
-     * Use the specified {@link Supplier}
-     *
-     * @param target the specified supplier
-     */
-    public Client with(
-        @NotNull Supplier target
-    ) {
-        if (target != null) {
-            supplier = target;
-        } else {
-            throw new NullPointerException(
-                "Supplier must not be null"
-            );
-        }
-        return this;
-    }
-
-    /**
      * Parse this {@link Client} and convert result to {@link T}
      */
     @Nullable
+    @Override
     public <E, T extends E> T to(
         @NotNull Class<E> klass
     ) {
@@ -199,47 +179,11 @@ public class Client extends Chain {
         }
 
         return supplier.solve(
-            klass, job, new Event<>(
-                new ByteReader(
-                    value, 0, count
-                )
+            klass, job, new Event<T>(
+                reader()
+            ).with(
+                plan.getReadFlags()
             )
-        );
-    }
-
-    /**
-     * Parse this {@link Client} and convert result to {@link T}
-     */
-    @Nullable
-    public <E, T extends E> T to(
-        @NotNull Job job,
-        @NotNull Class<E> klass
-    ) {
-        if (count == 0) {
-            return null;
-        }
-        return supplier.solve(
-            klass, job, new Event<>(
-                new ByteReader(
-                    value, 0, count
-                )
-            )
-        );
-    }
-
-    /**
-     * Returns a {@link Value} of this {@link Client}
-     *
-     * @param start the start index, inclusive
-     * @param end   the end index, exclusive
-     */
-    @NotNull
-    @Override
-    public Value subSequence(
-        int start, int end
-    ) {
-        return new Value(
-            copyBytes(start, end)
         );
     }
 
@@ -705,27 +649,9 @@ public class Client extends Chain {
             }
             num -= dig;
         }
+
         this.code = -num;
-
-        if (in != null && isSuccess()) {
-            byte[] data;
-            try {
-                chain(in, 1024);
-                data = copyBytes();
-            } catch (Exception e) {
-                data = EMPTY_BYTES;
-            } finally {
-                try {
-                    close();
-                    in.close();
-                } catch (Exception e) {
-                    // Nothing
-                }
-            }
-
-            value = data;
-            count = data.length;
-        }
+        if (in != null && isSuccess()) stream(in);
     }
 
     /**
