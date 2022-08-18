@@ -127,65 +127,6 @@ public class Client extends Caller {
     }
 
     /**
-     * Parse this {@link Client} and convert result to {@link T}
-     */
-    @Nullable
-    @Override
-    public <E, T extends E> T to(
-        @NotNull Class<E> klass
-    ) {
-        if (count == 0) {
-            return null;
-        }
-
-        String type = contentType();
-        if (type == null ||
-            type.length() < 7) {
-            throw new RunCrash(
-                "The content type(" + type + ") is illegal"
-            );
-        }
-
-        Job job = null;
-        switch (type.charAt(0)) {
-            // text
-            case 't': {
-                if (type.startsWith("text/kat")) {
-                    job = Job.KAT;
-                } else if (type.startsWith("text/xml")) {
-                    job = Job.DOC;
-                }
-                break;
-            }
-            // application
-            case 'a': {
-                if (type.startsWith("application/json")) {
-                    job = Job.JSON;
-                } else if (type.startsWith("application/kat")) {
-                    job = Job.KAT;
-                } else if (type.startsWith("application/xml")) {
-                    job = Job.DOC;
-                }
-                break;
-            }
-        }
-
-        if (job == null) {
-            throw new RunCrash(
-                "Cannot find " + type + "'s Job"
-            );
-        }
-
-        return supplier.solve(
-            klass, job, new Event<T>(
-                reader()
-            ).with(
-                plan.getReadFlags()
-            )
-        );
-    }
-
-    /**
      * Returns the code of {@code status}
      *
      * @see Client#resolve(URLConnection)
@@ -219,18 +160,6 @@ public class Client extends Caller {
         @NotNull String key
     ) {
         return conn.getHeaderField(key);
-    }
-
-    /**
-     * Set the method for the URL request
-     *
-     * @see HttpURLConnection#setRequestMethod(String)
-     */
-    public Client method(
-        @NotNull String method
-    ) throws ProtocolException {
-        conn.setRequestMethod(method);
-        return this;
     }
 
     /**
@@ -352,6 +281,53 @@ public class Client extends Caller {
     }
 
     /**
+     * Sets the request property of {@code Accept}
+     *
+     * @see HttpURLConnection#setRequestProperty(String, String)
+     */
+    public Client accept(
+        @Nullable String value
+    ) {
+        conn.setRequestProperty(
+            "Accept", value
+        );
+        return this;
+    }
+
+    /**
+     * Sets the request property of {@code Accept}
+     *
+     * @see Client#accept(String)
+     */
+    public Client accept(
+        @NotNull Job job
+    ) {
+        this.job = job;
+        switch (job) {
+            case JSON: {
+                return accept(
+                    "application/json"
+                );
+            }
+            case KAT: {
+                return accept(
+                    "text/kat,application/kat"
+                );
+            }
+            case DOC: {
+                return accept(
+                    "text/xml,application/xml"
+                );
+            }
+            default: {
+                throw new RunCrash(
+                    "Unexpectedly, Client does not support " + job
+                );
+            }
+        }
+    }
+
+    /**
      * Returns the value of the {@code Content-Type} header field
      *
      * @return {@link String} or {@code null}
@@ -362,38 +338,6 @@ public class Client extends Caller {
         return conn.getHeaderField(
             "Content-Type"
         );
-    }
-
-    /**
-     * Sets the request property of {@code Content-Type}
-     *
-     * @see Client#contentType(String)
-     */
-    public Client contentType(
-        @NotNull Job job
-    ) {
-        switch (job) {
-            case KAT: {
-                return contentType(
-                    "application/kat"
-                );
-            }
-            case DOC: {
-                return contentType(
-                    "application/xml"
-                );
-            }
-            case JSON: {
-                return contentType(
-                    "application/json"
-                );
-            }
-            default: {
-                throw new RunCrash(
-                    "Unexpectedly, Client did not find " + job
-                );
-            }
-        }
     }
 
     /**
@@ -411,28 +355,87 @@ public class Client extends Caller {
     }
 
     /**
-     * Returns the value of the {@code Content-Length} header field
+     * Sets the request property of {@code Content-Type}
      *
-     * @return {@link String} or {@code null}
-     * @see URLConnection#getHeaderField(String)
+     * @see Client#contentType(String)
      */
-    @Nullable
-    public String contentLength() {
-        return conn.getHeaderField(
-            "Content-Length"
-        );
+    public Client contentType(
+        @NotNull Job job
+    ) {
+        switch (job) {
+            case JSON: {
+                return contentType(
+                    "application/json; charset=utf-8"
+                );
+            }
+            case KAT: {
+                return contentType(
+                    "application/kat; charset=utf-8"
+                );
+            }
+            case DOC: {
+                return contentType(
+                    "application/xml; charset=utf-8"
+                );
+            }
+            default: {
+                throw new RunCrash(
+                    "Unexpectedly, Client does not support " + job
+                );
+            }
+        }
     }
 
     /**
-     * Returns the value of the {@code Content-Encoding} header field
+     * Returns the specified {@link Job}
      *
-     * @return {@link String} or {@code null}
-     * @see URLConnection#getHeaderField(String)
+     * @throws RunCrash If no specified job
      */
-    @Nullable
-    public String contentEncoding() {
-        return conn.getHeaderField(
-            "Content-Encoding"
+    @NotNull
+    @Override
+    public Job job() {
+        Job j = job;
+        if (j != null) {
+            return j;
+        }
+
+        String type = contentType();
+        if (type == null ||
+            type.length() < 7) {
+            throw new RunCrash(
+                "The content type(" + type + ") is illegal"
+            );
+        }
+
+        char c = type.charAt(0);
+        // text
+        if (c == 't') {
+            if (type.startsWith("text/kat")) {
+                return Job.KAT;
+            }
+
+            if (type.startsWith("text/xml")) {
+                return Job.DOC;
+            }
+        }
+
+        // application
+        else if (c == 'a') {
+            if (type.startsWith("application/json")) {
+                return Job.JSON;
+            }
+
+            if (type.startsWith("application/kat")) {
+                return Job.KAT;
+            }
+
+            if (type.startsWith("application/xml")) {
+                return Job.DOC;
+            }
+        }
+
+        throw new RunCrash(
+            "Could not find the specified Job of " + type
         );
     }
 
@@ -488,7 +491,15 @@ public class Client extends Caller {
      */
     public Client get()
         throws IOException {
-        request("GET");
+        try {
+            // connect
+            conn.connect();
+            // resolve
+            resolve(conn);
+        } finally {
+            // disconnect
+            conn.disconnect();
+        }
         return this;
     }
 
@@ -577,14 +588,14 @@ public class Client extends Caller {
     }
 
     /**
-     * @param paper the specified paper
+     * @param flow the specified paper
      * @throws IOException If an I/O error occurs
      */
     public Client post(
-        Paper paper
+        Paper flow
     ) throws IOException {
         return send(
-            "POST", paper
+            "POST", flow
         );
     }
 
@@ -601,21 +612,21 @@ public class Client extends Caller {
     }
 
     /**
-     * @param paper the specified paper
+     * @param flow the specified flow
      * @throws IOException If an I/O error occurs
      */
     public Client send(
-        String method, Paper paper
+        String method, Paper flow
     ) throws IOException {
         try {
             contentType(
-                paper.getJob()
+                flow.getJob()
             );
             request(
-                method, paper
+                method, flow
             );
         } finally {
-            paper.close();
+            flow.close();
         }
         return this;
     }
@@ -775,25 +786,6 @@ public class Client extends Caller {
 
     /**
      * @param method the specified method
-     * @throws IOException If an I/O error occurs
-     */
-    protected void request(
-        String method
-    ) throws IOException {
-        try {
-            conn.setRequestMethod(method);
-            // connect
-            conn.connect();
-            // resolve
-            resolve(conn);
-        } finally {
-            // disconnect
-            conn.disconnect();
-        }
-    }
-
-    /**
-     * @param method the specified method
      * @param chain  the specified chain
      * @throws IOException If an I/O error occurs
      */
@@ -839,8 +831,7 @@ public class Client extends Caller {
             conn.connect();
 
             if (data != null) {
-                OutputStream out = conn.getOutputStream();
-                out.write(
+                conn.getOutputStream().write(
                     data, i, l
                 );
             }

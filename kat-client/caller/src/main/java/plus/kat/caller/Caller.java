@@ -33,6 +33,7 @@ import java.lang.reflect.Type;
  */
 public abstract class Caller extends Chain {
 
+    protected Job job;
     protected Plan plan;
     protected Supplier supplier;
 
@@ -86,6 +87,18 @@ public abstract class Caller extends Chain {
         return new Value(
             copyBytes(start, end)
         );
+    }
+
+    /**
+     * Use the specified {@link Job}
+     *
+     * @param target the specified job
+     */
+    public Caller with(
+        @NotNull Job target
+    ) {
+        job = target;
+        return this;
     }
 
     /**
@@ -148,6 +161,8 @@ public abstract class Caller extends Chain {
 
     /**
      * Parse this {@link Client} and convert result to {@link T}
+     *
+     * @throws RunCrash If no specified job
      */
     @Nullable
     public <E, T extends E> T to(
@@ -157,8 +172,13 @@ public abstract class Caller extends Chain {
             return null;
         }
 
-        throw new RunCrash(
-            "Unrealized the method"
+        Job job = job();
+        return supplier.solve(
+            klass, job, new Event<T>(
+                reader()
+            ).with(
+                plan.getReadFlags()
+            )
         );
     }
 
@@ -203,6 +223,30 @@ public abstract class Caller extends Chain {
                 plan.getReadFlags()
             )
         );
+    }
+
+    /**
+     * Returns the specified {@link Job}
+     *
+     * @throws RunCrash If no specified job
+     */
+    @NotNull
+    public Job job() {
+        Job j = job;
+        if (j != null) {
+            return j;
+        }
+
+        throw new RunCrash(
+            "Could not find the specified Job"
+        );
+    }
+
+    /**
+     * Returns the internal {@link Job}
+     */
+    public Job getJob() {
+        return job;
     }
 
     /**
