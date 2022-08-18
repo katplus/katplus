@@ -79,19 +79,19 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
         switch (job) {
             case KAT: {
                 chan = new Chan(
-                    plan.getWriteFlags(), supplier
+                    plan, supplier
                 );
                 break;
             }
             case DOC: {
                 chan = new Doc(
-                    plan.getWriteFlags(), supplier
+                    plan, supplier
                 );
                 break;
             }
             case JSON: {
                 chan = new Json(
-                    plan.getWriteFlags(), supplier
+                    plan, supplier
                 );
                 break;
             }
@@ -128,11 +128,7 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
         }
 
         return supplier.solve(
-            type, job, new Event<T>(
-                data
-            ).with(
-                plan.getReadFlags()
-            )
+            type, job, new Event<T>(data).with(plan)
         );
     }
 

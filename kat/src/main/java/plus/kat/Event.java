@@ -351,10 +351,11 @@ public class Event<T> implements Flag {
      * Use the specified feature {@link Plan}
      *
      * @param plan the specified {@code plan}
+     * @throws NullPointerException If the {@code plan} is null
      * @since 0.0.3
      */
     public Event<T> with(
-        @Nullable Plan plan
+        @NotNull Plan plan
     ) {
         flags |= plan.readFlags;
         return this;

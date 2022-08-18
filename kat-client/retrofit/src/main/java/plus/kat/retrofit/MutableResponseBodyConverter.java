@@ -54,9 +54,7 @@ public class MutableResponseBodyConverter<T> implements Converter<ResponseBody, 
         return supplier.solve(
             type, job, new Event<T>(
                 value.byteStream()
-            ).with(
-                plan.getReadFlags()
-            )
+            ).with(plan)
         );
     }
 }

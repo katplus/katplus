@@ -132,9 +132,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         return supplier.solve(
             clazz, job, new Event<>(
                 in.getBody()
-            ).with(
-                plan.getReadFlags()
-            )
+            ).with(plan)
         );
     }
 
@@ -146,9 +144,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         return supplier.solve(
             clazz, job, new Event<>(
                 in.getBody()
-            ).with(
-                plan.getReadFlags()
-            )
+            ).with(plan)
         );
     }
 
@@ -179,19 +175,19 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         switch (job) {
             case KAT: {
                 chan = new Chan(
-                    plan.getWriteFlags(), supplier
+                    plan, supplier
                 );
                 break;
             }
             case DOC: {
                 chan = new Doc(
-                    plan.getWriteFlags(), supplier
+                    plan, supplier
                 );
                 break;
             }
             case JSON: {
                 chan = new Json(
-                    plan.getWriteFlags(), supplier
+                    plan, supplier
                 );
                 break;
             }

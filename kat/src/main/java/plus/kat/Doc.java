@@ -61,8 +61,18 @@ public class Doc extends Chan {
         @NotNull long flags,
         @Nullable Supplier supplier
     ) {
-        this.flow = new Flow(flags);
-        this.supplier = supplier == null ? INS : supplier;
+        this(new Flow(flags), supplier);
+    }
+
+    /**
+     * @param plan     the specified {@code plan}
+     * @param supplier the specified {@code supplier}
+     */
+    public Doc(
+        @NotNull Plan plan,
+        @Nullable Supplier supplier
+    ) {
+        this(plan.writeFlags, supplier);
     }
 
     /**

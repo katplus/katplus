@@ -291,7 +291,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 // its modifier
                 int mod = field.getModifiers();
 
-                // check its modifier
+                // filter invalid
                 if ((mod & Modifier.STATIC) != 0) {
                     continue;
                 }
@@ -308,7 +308,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                         continue;
                     }
 
-                    // check its modifier
+                    // filter invalid
                     if ((mod & Modifier.PUBLIC) == 0 ||
                         (mod & Modifier.TRANSIENT) != 0) {
                         continue;
@@ -412,8 +412,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 // its modifier
                 int mod = method.getModifiers();
 
-                // check its modifier
-                if ((mod & Modifier.STATIC) != 0) {
+                // filter invalid
+                if ((mod & Modifier.STATIC) != 0 ||
+                    (mod & Modifier.ABSTRACT) != 0) {
                     continue;
                 }
 
@@ -429,7 +430,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                         continue;
                     }
 
-                    // check its modifier
+                    // filter invalid
                     if ((mod & Modifier.PUBLIC) == 0) {
                         continue;
                     }

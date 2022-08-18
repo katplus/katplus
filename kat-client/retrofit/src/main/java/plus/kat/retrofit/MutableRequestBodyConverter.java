@@ -60,21 +60,21 @@ public class MutableRequestBodyConverter<T> implements Converter<T, RequestBody>
             case KAT: {
                 media = MediaTypes.APPLICATION_KAT;
                 chan = new Chan(
-                    plan.getWriteFlags(), supplier
+                    plan, supplier
                 );
                 break;
             }
             case DOC: {
                 media = MediaTypes.APPLICATION_DOC;
                 chan = new Doc(
-                    plan.getWriteFlags(), supplier
+                    plan, supplier
                 );
                 break;
             }
             case JSON: {
                 media = MediaTypes.APPLICATION_JSON;
                 chan = new Json(
-                    plan.getWriteFlags(), supplier
+                    plan, supplier
                 );
                 break;
             }

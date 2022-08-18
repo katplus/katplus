@@ -153,9 +153,7 @@ public abstract class Caller extends Chain {
         return supplier.solve(
             type, job, new Event<T>(
                 reader()
-            ).with(
-                plan.getReadFlags()
-            )
+            ).with(plan)
         );
     }
 
@@ -176,9 +174,7 @@ public abstract class Caller extends Chain {
         return supplier.solve(
             klass, job, new Event<T>(
                 reader()
-            ).with(
-                plan.getReadFlags()
-            )
+            ).with(plan)
         );
     }
 
@@ -197,9 +193,7 @@ public abstract class Caller extends Chain {
         return supplier.solve(
             klass, job, new Event<T>(
                 reader()
-            ).with(
-                plan.getReadFlags()
-            )
+            ).with(plan)
         );
     }
 
@@ -219,9 +213,7 @@ public abstract class Caller extends Chain {
         return supplier.solve(
             klass, job, event.with(
                 reader()
-            ).with(
-                plan.getReadFlags()
-            )
+            ).with(plan)
         );
     }
 
