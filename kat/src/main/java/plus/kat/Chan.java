@@ -241,6 +241,49 @@ public class Chan implements Flag {
     }
 
     /**
+     * Serializes the specified {@code alias}, {@code klass} and {@code value} at the current hierarchy
+     *
+     * <pre>{@code
+     *  Chan chan = ...
+     *  chan.set("id", Integer.class, 1);
+     *  chan.set("name", CharSequence.class, "kraity");
+     * }</pre>
+     *
+     * @return {@code true} if successful
+     * @throws IOException        If an I/O error occurs
+     * @throws ClassCastException If the {@code value} is not an instance of {@code klass}
+     * @since 0.0.3
+     */
+    public boolean set(
+        @Nullable CharSequence alias,
+        @Nullable Class<?> klass,
+        @Nullable Object value
+    ) throws IOException {
+        if (klass == null) {
+            return set(
+                alias, value
+            );
+        }
+
+        if (value == null) {
+            return coding(alias);
+        }
+
+        // get spare specified
+        Spare<?> spare = supplier.lookup(klass);
+
+        if (spare == null) {
+            return coding(
+                alias, value
+            );
+        }
+
+        return coding(
+            alias, spare, value
+        );
+    }
+
+    /**
      * Writes the specified {@code alias}
      *
      * @return {@code true} if successful
