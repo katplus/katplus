@@ -25,6 +25,7 @@ import plus.kat.stream.*;
 import java.io.IOException;
 import java.io.Serializable;
 
+import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
 
 /**
@@ -419,7 +420,9 @@ public class Json extends Chan {
     public static String pretty(
         @Nullable Object value
     ) {
-        return new Json(value, Flag.PRETTY).toString();
+        return encode(
+            value, Flag.PRETTY | DEF.writeFlags
+        );
     }
 
     /**
@@ -431,7 +434,9 @@ public class Json extends Chan {
     public static String encode(
         @Nullable Object value
     ) {
-        return new Json(value).toString();
+        return encode(
+            value, DEF.writeFlags
+        );
     }
 
     /**

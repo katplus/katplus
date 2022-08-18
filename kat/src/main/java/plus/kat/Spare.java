@@ -39,6 +39,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.function.BiConsumer;
 
+import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl;
 
 /**
@@ -228,7 +229,9 @@ public interface Spare<K> extends Coder<K> {
     default Chan write(
         @Nullable K value
     ) {
-        return new Chan(this, value);
+        return write(
+            value, DEF.writeFlags
+        );
     }
 
     /**
@@ -240,7 +243,9 @@ public interface Spare<K> extends Coder<K> {
     default Chan write(
         @Nullable K value, long flags
     ) {
-        return new Chan(this, value, flags);
+        return new Chan(
+            this, value, flags
+        );
     }
 
     /**
@@ -282,7 +287,9 @@ public interface Spare<K> extends Coder<K> {
     default Doc mark(
         @Nullable K value
     ) {
-        return new Doc(this, value);
+        return mark(
+            value, DEF.writeFlags
+        );
     }
 
     /**
@@ -294,7 +301,9 @@ public interface Spare<K> extends Coder<K> {
     default Doc mark(
         @Nullable K value, long flags
     ) {
-        return new Doc(this, value, flags);
+        return new Doc(
+            this, value, flags
+        );
     }
 
     /**
@@ -336,7 +345,9 @@ public interface Spare<K> extends Coder<K> {
     default Json serial(
         @Nullable K value
     ) {
-        return new Json(this, value);
+        return serial(
+            value, DEF.writeFlags
+        );
     }
 
     /**
@@ -348,7 +359,9 @@ public interface Spare<K> extends Coder<K> {
     default Json serial(
         @Nullable K value, long flags
     ) {
-        return new Json(this, value, flags);
+        return new Json(
+            this, value, flags
+        );
     }
 
     /**

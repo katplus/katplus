@@ -44,7 +44,7 @@ public abstract class Caller extends Chain {
         @Nullable Bucket bucket
     ) {
         super(bucket);
-        this.plan = Plan.INS;
+        this.plan = Plan.DEF;
         this.supplier = Supplier.ins();
     }
 

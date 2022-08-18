@@ -22,6 +22,7 @@ import plus.kat.spare.*;
 
 import java.io.IOException;
 
+import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
 
 /**
@@ -78,7 +79,9 @@ public interface Kat {
     static String pretty(
         @Nullable Object value
     ) {
-        return new Chan(value, Flag.PRETTY).toString();
+        return encode(
+            null, value, Flag.PRETTY | DEF.writeFlags
+        );
     }
 
     /**
@@ -90,7 +93,9 @@ public interface Kat {
     static String encode(
         @Nullable Object value
     ) {
-        return new Chan(value).toString();
+        return encode(
+            null, value, DEF.writeFlags
+        );
     }
 
     /**
@@ -102,7 +107,9 @@ public interface Kat {
     static String encode(
         @Nullable Object value, long flags
     ) {
-        return new Chan(value, flags).toString();
+        return encode(
+            null, value, flags
+        );
     }
 
     /**
@@ -115,7 +122,9 @@ public interface Kat {
         @Nullable CharSequence alias,
         @Nullable Object value
     ) {
-        return new Chan(alias, value).toString();
+        return encode(
+            alias, value, DEF.writeFlags
+        );
     }
 
     /**

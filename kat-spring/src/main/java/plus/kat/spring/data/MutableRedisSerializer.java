@@ -33,7 +33,7 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
     protected final Job job;
     protected Supplier supplier;
 
-    protected Plan plan = Plan.INS;
+    protected Plan plan = Plan.DEF;
     protected final Class<T> type;
 
     /**

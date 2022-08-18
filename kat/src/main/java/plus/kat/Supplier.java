@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.*;
 
+import static plus.kat.Plan.DEF;
 import static plus.kat.chain.Space.*;
 import static plus.kat.Spare.Cluster;
 
@@ -283,7 +284,9 @@ public interface Supplier {
     default Chan write(
         @Nullable Object value
     ) {
-        return new Chan(this, value);
+        return write(
+            value, DEF.writeFlags
+        );
     }
 
     /**
@@ -295,7 +298,9 @@ public interface Supplier {
     default Chan write(
         @Nullable Object value, long flags
     ) {
-        return new Chan(this, value, flags);
+        return new Chan(
+            this, value, flags
+        );
     }
 
     /**
@@ -341,7 +346,9 @@ public interface Supplier {
     default Doc mark(
         @Nullable Object value
     ) {
-        return new Doc(this, value);
+        return mark(
+            value, DEF.writeFlags
+        );
     }
 
     /**
@@ -353,7 +360,9 @@ public interface Supplier {
     default Doc mark(
         @Nullable Object value, long flags
     ) {
-        return new Doc(this, value, flags);
+        return new Doc(
+            this, value, flags
+        );
     }
 
     /**
@@ -399,7 +408,9 @@ public interface Supplier {
     default Json serial(
         @Nullable Object value
     ) {
-        return new Json(this, value);
+        return serial(
+            value, DEF.writeFlags
+        );
     }
 
     /**
@@ -411,7 +422,9 @@ public interface Supplier {
     default Json serial(
         @Nullable Object value, long flags
     ) {
-        return new Json(this, value, flags);
+        return new Json(
+            this, value, flags
+        );
     }
 
     /**

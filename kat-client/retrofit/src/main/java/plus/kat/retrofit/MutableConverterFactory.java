@@ -33,7 +33,7 @@ public class MutableConverterFactory extends Converter.Factory {
 
     protected final Job job;
     protected Supplier supplier;
-    protected Plan plan = Plan.INS;
+    protected Plan plan = Plan.DEF;
 
     /**
      * @param job      the specified job

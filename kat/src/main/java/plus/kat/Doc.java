@@ -24,6 +24,7 @@ import plus.kat.stream.*;
 
 import java.io.IOException;
 
+import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
 
 /**
@@ -461,7 +462,9 @@ public class Doc extends Chan {
     public static String pretty(
         @Nullable Object value
     ) {
-        return new Doc(value, Flag.PRETTY).toString();
+        return encode(
+            null, value, Flag.PRETTY | DEF.writeFlags
+        );
     }
 
     /**
@@ -473,7 +476,9 @@ public class Doc extends Chan {
     public static String encode(
         @Nullable Object value
     ) {
-        return new Doc(value).toString();
+        return encode(
+            null, value, DEF.writeFlags
+        );
     }
 
     /**
@@ -486,7 +491,9 @@ public class Doc extends Chan {
     public static String encode(
         @Nullable Object value, long flags
     ) {
-        return new Doc(value, flags).toString();
+        return encode(
+            null, value, flags
+        );
     }
 
     /**
@@ -499,7 +506,23 @@ public class Doc extends Chan {
         @Nullable CharSequence alias,
         @Nullable Object value
     ) {
-        return new Doc(alias, value).toString();
+        return encode(
+            alias, value, DEF.writeFlags
+        );
+    }
+
+    /**
+     * Serialize to {@link Doc} String
+     *
+     * @param value specify serialized value
+     * @since 0.0.3
+     */
+    @NotNull
+    public static String encode(
+        @Nullable CharSequence alias,
+        @Nullable Object value, long flags
+    ) {
+        return new Doc(alias, value, flags).toString();
     }
 
     /**

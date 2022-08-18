@@ -22,7 +22,7 @@ package plus.kat;
 public class Plan {
 
     public static final Plan
-        INS = new Plan();
+        DEF = new Plan();
 
     protected long readFlags;
     protected long writeFlags;

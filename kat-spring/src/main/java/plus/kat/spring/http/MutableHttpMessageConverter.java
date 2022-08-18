@@ -39,7 +39,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     protected final Job job;
     protected Supplier supplier;
 
-    protected Plan plan = Plan.INS;
+    protected Plan plan = Plan.DEF;
     protected MediaType[] mediaTypes;
 
     /**

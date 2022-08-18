@@ -348,6 +348,19 @@ public class Event<T> implements Flag {
     }
 
     /**
+     * Use the specified feature {@link Plan}
+     *
+     * @param plan the specified {@code plan}
+     * @since 0.0.3
+     */
+    public Event<T> with(
+        @Nullable Plan plan
+    ) {
+        flags |= plan.readFlags;
+        return this;
+    }
+
+    /**
      * Use the specified {@link Type}
      *
      * @param type the specified type
