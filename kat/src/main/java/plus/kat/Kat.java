@@ -137,7 +137,15 @@ public interface Kat {
         @Nullable CharSequence alias,
         @Nullable Object value, long flags
     ) {
-        return new Chan(alias, value, flags).toString();
+        Chan chan = new Chan(flags);
+        try {
+            chan.set(
+                alias, value
+            );
+        } catch (Exception e) {
+            // Nothing
+        }
+        return chan.toString();
     }
 
     /**

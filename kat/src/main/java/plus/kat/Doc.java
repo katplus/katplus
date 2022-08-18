@@ -39,32 +39,18 @@ public class Doc extends Chan {
      * default
      */
     public Doc() {
-        this(new Flow(), (Supplier) null);
-    }
-
-    /**
-     * @param flow the specified {@code page}
-     */
-    public Doc(
-        @NotNull Flow flow
-    ) {
-        this(flow, (Supplier) null);
+        this.flow = new Flow();
+        this.supplier = INS;
     }
 
     /**
      * @param flags the specified {@code flags}
      */
-    public Doc(long flags) {
-        this(flags, null);
-    }
-
-    /**
-     * @param supplier the specified {@code supplier}
-     */
     public Doc(
-        @Nullable Supplier supplier
+        long flags
     ) {
-        this(new Flow(), supplier);
+        this.flow = new Flow(flags);
+        this.supplier = INS;
     }
 
     /**
@@ -72,10 +58,11 @@ public class Doc extends Chan {
      * @param supplier the specified {@code supplier}
      */
     public Doc(
-        long flags,
+        @NotNull long flags,
         @Nullable Supplier supplier
     ) {
-        this(new Flow(flags), supplier);
+        this.flow = new Flow(flags);
+        this.supplier = supplier == null ? INS : supplier;
     }
 
     /**
@@ -88,166 +75,6 @@ public class Doc extends Chan {
     ) {
         this.flow = flow;
         this.supplier = supplier == null ? INS : supplier;
-    }
-
-    /**
-     * @param value the specified {@code value}
-     */
-    public Doc(
-        @Nullable Object value
-    ) {
-        this();
-        try {
-            set(null, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param alias the alias
-     * @param value the specified {@code value}
-     */
-    public Doc(
-        @Nullable CharSequence alias,
-        @Nullable Object value
-    ) {
-        this();
-        try {
-            set(alias, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param value the specified {@code value}
-     */
-    public Doc(
-        @Nullable Object value, long flags
-    ) {
-        this(flags);
-        try {
-            set(null, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param flags the flags
-     * @param alias the alias
-     * @param value the specified {@code value}
-     */
-    public Doc(
-        @Nullable CharSequence alias,
-        @Nullable Object value, long flags
-    ) {
-        this(flags);
-        try {
-            set(alias, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param alias  the alias
-     * @param action the specified {@code action}
-     */
-    public Doc(
-        @Nullable CharSequence alias,
-        @Nullable Action action
-    ) {
-        this();
-        try {
-            set(alias, action);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param flags  the flags
-     * @param alias  the alias
-     * @param action the specified {@code action}
-     */
-    public Doc(
-        @Nullable CharSequence alias,
-        @Nullable Action action, long flags
-    ) {
-        this(flags);
-        try {
-            set(alias, action);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param coder the specified {@code coder}
-     * @param value the specified {@code value}
-     */
-    public Doc(
-        @Nullable Coder<?> coder,
-        @Nullable Object value
-    ) {
-        this();
-        try {
-            set(null, coder, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param flags the flags
-     * @param coder the specified {@code coder}
-     * @param value the specified {@code value}
-     */
-    public Doc(
-        @Nullable Coder<?> coder,
-        @Nullable Object value, long flags
-    ) {
-        this(flags);
-        try {
-            set(null, coder, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param value    the specified {@code value}
-     * @param supplier the specified {@code supplier}
-     */
-    public Doc(
-        @Nullable Supplier supplier,
-        @Nullable Object value
-    ) {
-        this(supplier);
-        try {
-            set(null, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param flags    the flags
-     * @param value    the specified {@code value}
-     * @param supplier the specified {@code supplier}
-     */
-    public Doc(
-        @Nullable Supplier supplier,
-        @Nullable Object value, long flags
-    ) {
-        this(flags, supplier);
-        try {
-            set(null, value);
-        } catch (Exception e) {
-            // Nothing
-        }
     }
 
     /**
@@ -522,7 +349,15 @@ public class Doc extends Chan {
         @Nullable CharSequence alias,
         @Nullable Object value, long flags
     ) {
-        return new Doc(alias, value, flags).toString();
+        Doc chan = new Doc(flags);
+        try {
+            chan.set(
+                alias, value
+            );
+        } catch (Exception e) {
+            // Nothing
+        }
+        return chan.toString();
     }
 
     /**

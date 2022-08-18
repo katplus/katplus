@@ -22,7 +22,7 @@ inline fun kat(
     space: CharSequence? = null,
     alias: CharSequence? = null,
     crossinline block: (Chan) -> Unit
-) = Chan(space, alias) { block(it) }.toString()
+) = Chan().apply { set(alias, space) { block(it) } }.toString()
 
 /**
  * @receiver Any?
@@ -30,7 +30,9 @@ inline fun kat(
  */
 fun Any?.toKat(
     flags: Long = 0
-) = Chan(this, flags).toString()
+): String = Kat.encode(
+    null, this, flags
+)
 
 /**
  * @receiver Any?
@@ -38,14 +40,16 @@ fun Any?.toKat(
  */
 fun Any?.toKat(
     alias: CharSequence? = null, flags: Long = 0
-) = Chan(alias, this, flags).toString()
+): String = Kat.encode(
+    alias, this, flags
+)
 
 /**
  * @return String
  */
 inline fun json(
     crossinline block: (Chan) -> Unit
-) = Json { block(it) }.toString()
+) = Json().apply { set(null) { block(it) } }.toString()
 
 /**
  * @receiver Any?
@@ -53,7 +57,9 @@ inline fun json(
  */
 fun Any?.toJson(
     flags: Long = 0
-) = Json(this, flags).toString()
+): String = Json.encode(
+    this, flags
+)
 
 /**
  * @return String
@@ -61,7 +67,7 @@ fun Any?.toJson(
 inline fun doc(
     name: CharSequence,
     crossinline block: (Chan) -> Unit
-) = Doc(name) { block(it) }.toString()
+) = Doc().apply { set(name) { block(it) } }.toString()
 
 /**
  * @receiver Any?
@@ -69,7 +75,9 @@ inline fun doc(
  */
 fun Any?.toDoc(
     flags: Long = 0
-) = Doc(this, flags).toString()
+): String = Doc.encode(
+    null, this, flags
+)
 
 /**
  * @receiver Any?
@@ -77,4 +85,6 @@ fun Any?.toDoc(
  */
 fun Any?.toDoc(
     alias: CharSequence? = null, flags: Long = 0
-) = Doc(alias, this, flags).toString()
+): String = Doc.encode(
+    alias, this, flags
+)

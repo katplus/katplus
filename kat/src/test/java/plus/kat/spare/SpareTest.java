@@ -9,6 +9,7 @@ import plus.kat.anno.Format;
 import plus.kat.reflex.ArrayType;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -106,7 +107,7 @@ public class SpareTest {
     }
 
     @Test
-    public void test_date() {
+    public void test_date() throws IOException {
         Spare<Role> spare =
             Spare.lookup(Role.class);
 
@@ -162,7 +163,7 @@ public class SpareTest {
     }
 
     @Test
-    public void test_record() {
+    public void test_record() throws IOException {
         Spare<Art> spare = new RecordSpare<>(
             Art.class, Supplier.ins()
         );

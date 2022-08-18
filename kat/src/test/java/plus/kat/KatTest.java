@@ -6,6 +6,7 @@ import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 import plus.kat.crash.Crash;
 
+import java.io.*;
 import java.util.*;
 
 import static plus.kat.Spare.lookup;
@@ -97,7 +98,7 @@ public class KatTest {
     }
 
     @Test
-    public void test_decode_string() {
+    public void test_decode_string() throws IOException {
         Spare<String> spare =
             lookup(String.class);
 
@@ -113,7 +114,7 @@ public class KatTest {
     }
 
     @Test
-    public void test_decode_integer() {
+    public void test_decode_integer() throws IOException {
         Spare<Integer> spare =
             lookup(Integer.class);
 
@@ -129,7 +130,7 @@ public class KatTest {
     }
 
     @Test
-    public void test_decode_long() {
+    public void test_decode_long() throws IOException {
         Spare<Long> spare =
             lookup(Long.class);
 
@@ -145,7 +146,7 @@ public class KatTest {
     }
 
     @Test
-    public void test_write() {
+    public void test_write() throws IOException {
         Spare<User> spare =
             lookup(User.class);
 
@@ -254,8 +255,9 @@ public class KatTest {
     }
 
     @Test
-    public void test_channel() {
-        Chan chan = new Chan(c -> {
+    public void test_channel() throws IOException {
+        Chan chan = new Chan();
+        chan.set(null, c -> {
             c.set("id", 100001);
             c.set("title", "KAT+");
             c.set("meta", $ -> {
@@ -354,7 +356,7 @@ public class KatTest {
     }
 
     @Test
-    public void test_reflect() {
+    public void test_reflect() throws IOException {
         Spare<Note> spare =
             lookup(Note.class);
 

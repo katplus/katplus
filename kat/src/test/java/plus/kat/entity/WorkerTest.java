@@ -4,10 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import plus.kat.Event;
 import plus.kat.Spare;
-import plus.kat.Supplier;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
-import plus.kat.reflex.ReflectSpare;
 
 import static plus.kat.anno.Embed.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class WorkerTest {
 
     @Test
-    public void test() throws NoSuchMethodException {
+    public void test() throws Exception {
         Spare<User> spare = Spare.lookup(User.class);
 
         User user = spare.read(

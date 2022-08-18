@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -217,8 +218,9 @@ public class JsonTest {
     }
 
     @Test
-    public void test_json_channel() {
-        Json chan = new Json(c -> {
+    public void test_json_channel() throws IOException {
+        Json chan = new Json();
+        chan.set(null, c -> {
             c.set("id", 100001);
             c.set("title", "KAT+");
             c.set("meta", $ -> {

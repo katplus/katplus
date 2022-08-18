@@ -3,6 +3,8 @@ package plus.kat;
 import org.junit.jupiter.api.Test;
 import plus.kat.kernel.Chain;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -11,8 +13,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class ChanTest {
     @Test
-    public void test_chan_toString() {
-        Chan chan = new Chan(c ->
+    public void test_chan_toString() throws IOException {
+        Chan chan = new Chan();
+        chan.set(null, c ->
             c.set("id", 1)
         );
 
@@ -24,8 +27,9 @@ public class ChanTest {
     }
 
     @Test
-    public void test_chan_toBytes() {
-        Chan chan = new Chan(c ->
+    public void test_chan_toBytes() throws IOException {
+        Chan chan = new Chan();
+        chan.set(null, c ->
             c.set("id", 1)
         );
 
@@ -37,8 +41,9 @@ public class ChanTest {
     }
 
     @Test
-    public void test_json_toString() {
-        Json json = new Json(c ->
+    public void test_json_toString() throws IOException {
+        Json json = new Json();
+        json.set(null, c ->
             c.set("id", 1)
         );
 
@@ -50,8 +55,9 @@ public class ChanTest {
     }
 
     @Test
-    public void test_json_toBytes() {
-        Json json = new Json(c ->
+    public void test_json_toBytes() throws IOException {
+        Json json = new Json();
+        json.set(null, c ->
             c.set("id", 1)
         );
 
@@ -63,8 +69,9 @@ public class ChanTest {
     }
 
     @Test
-    public void test_doc_toString() {
-        Doc doc = new Doc("User", c ->
+    public void test_doc_toString() throws IOException {
+        Doc doc = new Doc();
+        doc.set("User", c ->
             c.set("id", 1)
         );
 
@@ -76,8 +83,9 @@ public class ChanTest {
     }
 
     @Test
-    public void test_doc_toBytes() {
-        Doc doc = new Doc("User", c ->
+    public void test_doc_toBytes() throws IOException {
+        Doc doc = new Doc();
+        doc.set("User", c ->
             c.set("id", 1)
         );
 

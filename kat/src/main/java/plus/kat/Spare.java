@@ -25,6 +25,7 @@ import plus.kat.reflex.*;
 import plus.kat.utils.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -224,11 +225,12 @@ public interface Spare<K> extends Coder<K> {
      * Serialize to {@link Chan}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Chan write(
         @Nullable K value
-    ) {
+    ) throws IOException {
         return write(
             value, DEF.writeFlags
         );
@@ -238,14 +240,15 @@ public interface Spare<K> extends Coder<K> {
      * Serialize to {@link Chan}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Chan write(
         @Nullable K value, long flags
-    ) {
-        return new Chan(
-            this, value, flags
-        );
+    ) throws IOException {
+        Chan chan = new Chan(flags);
+        chan.set(null, this, value);
+        return chan;
     }
 
     /**
@@ -282,11 +285,12 @@ public interface Spare<K> extends Coder<K> {
      * Serialize to {@link Doc}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Doc mark(
         @Nullable K value
-    ) {
+    ) throws IOException {
         return mark(
             value, DEF.writeFlags
         );
@@ -296,14 +300,15 @@ public interface Spare<K> extends Coder<K> {
      * Serialize to {@link Doc}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Doc mark(
         @Nullable K value, long flags
-    ) {
-        return new Doc(
-            this, value, flags
-        );
+    ) throws IOException {
+        Doc chan = new Doc(flags);
+        chan.set(null, this, value);
+        return chan;
     }
 
     /**
@@ -340,11 +345,12 @@ public interface Spare<K> extends Coder<K> {
      * Serialize to {@link Json}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Json serial(
         @Nullable K value
-    ) {
+    ) throws IOException {
         return serial(
             value, DEF.writeFlags
         );
@@ -354,14 +360,15 @@ public interface Spare<K> extends Coder<K> {
      * Serialize to {@link Json}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Json serial(
         @Nullable K value, long flags
-    ) {
-        return new Json(
-            this, value, flags
-        );
+    ) throws IOException {
+        Json chan = new Json(flags);
+        chan.set(null, this, value);
+        return chan;
     }
 
     /**

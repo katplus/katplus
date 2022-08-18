@@ -139,6 +139,6 @@ public class Crash extends Exception implements Kat {
      */
     @Override
     public String toString() {
-        return new Chan(this).toString();
+        return Kat.encode(this);
     }
 }

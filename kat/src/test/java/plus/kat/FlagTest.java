@@ -1,6 +1,8 @@
 package plus.kat;
 
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 
@@ -17,13 +19,13 @@ public class FlagTest {
     }
 
     @Test
-    public void test_date_as_timestamp() {
+    public void test_date_as_timestamp() throws IOException {
         Meta meta = new Meta();
         meta.date = new Date(1641871353000L);
         meta.instant = Instant.ofEpochMilli(1641871353123L);
 
         assertEquals(
-            "{\"date\":\"2022-01-11 11:22:33\",\"instant\":\"2022-01-11T03:22:33.123Z\"}", new Json(meta).toString()
+            "{\"date\":\"2022-01-11 11:22:33\",\"instant\":\"2022-01-11T03:22:33.123Z\"}", Json.encode(meta)
         );
 
         assertEquals(

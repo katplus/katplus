@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class CoderTest {
     @Test
-    public void test() {
+    public void test() throws IOException {
         Spare<Note> spare =
             Spare.lookup(Note.class);
 

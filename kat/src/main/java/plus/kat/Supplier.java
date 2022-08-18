@@ -23,6 +23,7 @@ import plus.kat.crash.*;
 import plus.kat.spare.*;
 import plus.kat.utils.*;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -279,11 +280,12 @@ public interface Supplier {
      * Serialize to {@link Chan}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Chan write(
         @Nullable Object value
-    ) {
+    ) throws IOException {
         return write(
             value, DEF.writeFlags
         );
@@ -293,14 +295,17 @@ public interface Supplier {
      * Serialize to {@link Chan}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Chan write(
         @Nullable Object value, long flags
-    ) {
-        return new Chan(
-            this, value, flags
+    ) throws IOException {
+        Chan chan = new Chan(
+            flags, this
         );
+        chan.set(null, value);
+        return chan;
     }
 
     /**
@@ -341,11 +346,12 @@ public interface Supplier {
      * Serialize to {@link Doc}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Doc mark(
         @Nullable Object value
-    ) {
+    ) throws IOException {
         return mark(
             value, DEF.writeFlags
         );
@@ -355,14 +361,17 @@ public interface Supplier {
      * Serialize to {@link Doc}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Doc mark(
         @Nullable Object value, long flags
-    ) {
-        return new Doc(
-            this, value, flags
+    ) throws IOException {
+        Doc chan = new Doc(
+            flags, this
         );
+        chan.set(null, value);
+        return chan;
     }
 
     /**
@@ -403,11 +412,12 @@ public interface Supplier {
      * Serialize to {@link Json}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Json serial(
         @Nullable Object value
-    ) {
+    ) throws IOException {
         return serial(
             value, DEF.writeFlags
         );
@@ -417,14 +427,17 @@ public interface Supplier {
      * Serialize to {@link Json}
      *
      * @param value specify serialized value
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     default Json serial(
         @Nullable Object value, long flags
-    ) {
-        return new Json(
-            this, value, flags
+    ) throws IOException {
+        Json chan = new Json(
+            flags, this
         );
+        chan.set(null, value);
+        return chan;
     }
 
     /**

@@ -41,7 +41,8 @@ public class Chan implements Flag {
      * default
      */
     public Chan() {
-        this(new Flow(), (Supplier) null);
+        this.flow = new Flow();
+        this.supplier = INS;
     }
 
     /**
@@ -50,25 +51,8 @@ public class Chan implements Flag {
     public Chan(
         long flags
     ) {
-        this(flags, null);
-    }
-
-    /**
-     * @param flow the specified {@code page}
-     */
-    public Chan(
-        @NotNull Flow flow
-    ) {
-        this(flow, (Supplier) null);
-    }
-
-    /**
-     * @param supplier the specified {@code supplier}
-     */
-    public Chan(
-        @Nullable Supplier supplier
-    ) {
-        this(new Flow(), supplier);
+        this.flow = new Flow(flags);
+        this.supplier = INS;
     }
 
     /**
@@ -76,10 +60,11 @@ public class Chan implements Flag {
      * @param supplier the specified {@code supplier}
      */
     public Chan(
-        long flags,
+        @NotNull long flags,
         @Nullable Supplier supplier
     ) {
-        this(new Flow(flags), supplier);
+        this.flow = new Flow(flags);
+        this.supplier = supplier == null ? INS : supplier;
     }
 
     /**
@@ -92,182 +77,6 @@ public class Chan implements Flag {
     ) {
         this.flow = flow;
         this.supplier = supplier == null ? INS : supplier;
-    }
-
-    /**
-     * @param value the specified {@code value}
-     */
-    public Chan(
-        @Nullable Object value
-    ) {
-        this();
-        try {
-            set(null, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param alias the alias
-     * @param value the specified {@code value}
-     */
-    public Chan(
-        @Nullable CharSequence alias,
-        @Nullable Object value
-    ) {
-        this();
-        try {
-            set(alias, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param flags the flags
-     * @param value the specified {@code value}
-     */
-    public Chan(
-        @Nullable Object value, long flags
-    ) {
-        this(flags);
-        try {
-            set(null, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param flags the flags
-     * @param alias the alias
-     * @param value the specified {@code value}
-     */
-    public Chan(
-        @Nullable CharSequence alias,
-        @Nullable Object value, long flags
-    ) {
-        this(flags);
-        try {
-            set(alias, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param action the specified {@code action}
-     */
-    public Chan(
-        @Nullable Action action
-    ) {
-        this();
-        try {
-            set(null, action);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param space  the space
-     * @param action the specified {@code action}
-     */
-    public Chan(
-        @Nullable CharSequence space,
-        @Nullable Action action
-    ) {
-        this();
-        try {
-            set(null, space, action);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param alias  the alias
-     * @param space  the space
-     * @param action the specified {@code action}
-     */
-    public Chan(
-        @Nullable CharSequence space,
-        @Nullable CharSequence alias,
-        @Nullable Action action
-    ) {
-        this();
-        try {
-            set(alias, space, action);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param coder the specified {@code coder}
-     * @param value the specified {@code value}
-     */
-    public Chan(
-        @Nullable Coder<?> coder,
-        @Nullable Object value
-    ) {
-        this();
-        try {
-            set(null, coder, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param flags the flags
-     * @param coder the specified {@code coder}
-     * @param value the specified {@code value}
-     */
-    public Chan(
-        @Nullable Coder<?> coder,
-        @Nullable Object value, long flags
-    ) {
-        this(flags);
-        try {
-            set(null, coder, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param value    the specified {@code value}
-     * @param supplier the specified {@code supplier}
-     */
-    public Chan(
-        @Nullable Supplier supplier,
-        @Nullable Object value
-    ) {
-        this(supplier);
-        try {
-            set(null, value);
-        } catch (Exception e) {
-            // Nothing
-        }
-    }
-
-    /**
-     * @param flags    the flags
-     * @param value    the specified {@code value}
-     * @param supplier the specified {@code supplier}
-     */
-    public Chan(
-        @Nullable Supplier supplier,
-        @Nullable Object value, long flags
-    ) {
-        this(flags, supplier);
-        try {
-            set(null, value);
-        } catch (Exception e) {
-            // Nothing
-        }
     }
 
     /**
