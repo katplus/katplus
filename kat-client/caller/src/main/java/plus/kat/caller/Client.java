@@ -138,9 +138,7 @@ public class Client extends Caller {
             return null;
         }
 
-        String type = head(
-            "content-type"
-        );
+        String type = contentType();
         if (type == null ||
             type.length() < 7) {
             throw new RunCrash(
@@ -189,6 +187,9 @@ public class Client extends Caller {
 
     /**
      * Returns the code of {@code status}
+     *
+     * @see Client#resolve(URLConnection)
+     * @see HttpURLConnection#getResponseCode()
      */
     public int code() {
         return code;
@@ -199,10 +200,10 @@ public class Client extends Caller {
      *
      * @param n an index, where {@code n>=0}
      * @return {@link String} or {@code null}
+     * @see HttpURLConnection#getHeaderField(int)
      */
-    public String head(
-        int n
-    ) {
+    @Nullable
+    public String head(int n) {
         return conn.getHeaderField(n);
     }
 
@@ -211,7 +212,9 @@ public class Client extends Caller {
      *
      * @param key the name of a header field
      * @return {@link String} or {@code null}
+     * @see HttpURLConnection#getHeaderField(String)
      */
+    @Nullable
     public String head(
         @NotNull String key
     ) {
@@ -220,6 +223,8 @@ public class Client extends Caller {
 
     /**
      * Set the method for the URL request
+     *
+     * @see HttpURLConnection#setRequestMethod(String)
      */
     public Client method(
         @NotNull String method
@@ -229,7 +234,21 @@ public class Client extends Caller {
     }
 
     /**
-     * Sets a specified timeout value, in milliseconds
+     * Sets a specified read timeout value, in milliseconds
+     *
+     * @see URLConnection#setReadTimeout(int)
+     */
+    public Client readout(
+        int timeout
+    ) {
+        conn.setReadTimeout(timeout);
+        return this;
+    }
+
+    /**
+     * Sets a specified connect timeout value, in milliseconds
+     *
+     * @see URLConnection#setConnectTimeout(int)
      */
     public Client timeout(
         int timeout
@@ -239,31 +258,73 @@ public class Client extends Caller {
     }
 
     /**
-     * Sets the request property of {@code user-agent}
+     * Sets the value of the {@code useCaches} field
+     *
+     * @see URLConnection#setUseCaches(boolean)
+     */
+    public Client cache(
+        boolean status
+    ) {
+        conn.setUseCaches(status);
+        return this;
+    }
+
+    /**
+     * Sets whether HTTP redirects (code 3xx) should be automatically followed
+     *
+     * @see HttpURLConnection#setInstanceFollowRedirects(boolean)
+     */
+    public Client redirect(
+        boolean status
+    ) {
+        conn.setInstanceFollowRedirects(status);
+        return this;
+    }
+
+    /**
+     * Sets the request property of {@code User-Agent}
+     *
+     * @see HttpURLConnection#setRequestProperty(String, String)
      */
     public Client agent(
         @Nullable String value
     ) {
         conn.setRequestProperty(
-            "user-agent", value
+            "User-Agent", value
         );
         return this;
     }
 
     /**
-     * Sets the request property of {@code referer}
+     * Sets the request property of {@code Referer}
+     *
+     * @see HttpURLConnection#setRequestProperty(String, String)
      */
     public Client referer(
         @Nullable String value
     ) {
         conn.setRequestProperty(
-            "referer", value
+            "Referer", value
         );
         return this;
     }
 
     /**
+     * Returns the value of the named general request property for this connection
+     *
+     * @return {@link String} or {@code null}
+     * @see URLConnection#getRequestProperty(String)
+     */
+    public String header(
+        @NotNull String key
+    ) {
+        return conn.getRequestProperty(key);
+    }
+
+    /**
      * Sets the general request property
+     *
+     * @see HttpURLConnection#setRequestProperty(String, String)
      */
     public Client header(
         @NotNull String key,
@@ -277,6 +338,8 @@ public class Client extends Caller {
 
     /**
      * Sets the general request property
+     *
+     * @see HttpURLConnection#setRequestProperty(String, String)
      */
     public Client header(
         @NotNull String key,
@@ -289,24 +352,41 @@ public class Client extends Caller {
     }
 
     /**
-     * Sets the request property of {@code content-type}
+     * Returns the value of the {@code Content-Type} header field
+     *
+     * @return {@link String} or {@code null}
+     * @see URLConnection#getHeaderField(String)
+     */
+    @Nullable
+    public String contentType() {
+        return conn.getHeaderField(
+            "Content-Type"
+        );
+    }
+
+    /**
+     * Sets the request property of {@code Content-Type}
+     *
+     * @see Client#contentType(String)
      */
     public Client contentType(
         @NotNull Job job
     ) {
-        String type;
         switch (job) {
             case KAT: {
-                type = "application/kat";
-                break;
+                return contentType(
+                    "application/kat"
+                );
             }
             case DOC: {
-                type = "application/xml";
-                break;
+                return contentType(
+                    "application/xml"
+                );
             }
             case JSON: {
-                type = "application/json";
-                break;
+                return contentType(
+                    "application/json"
+                );
             }
             default: {
                 throw new RunCrash(
@@ -314,22 +394,46 @@ public class Client extends Caller {
                 );
             }
         }
-        conn.setRequestProperty(
-            "content-type", type
-        );
-        return this;
     }
 
     /**
-     * Sets the request property of {@code content-type}
+     * Sets the request property of {@code Content-Type}
+     *
+     * @see HttpURLConnection#setRequestProperty(String, String)
      */
     public Client contentType(
         @Nullable String value
     ) {
         conn.setRequestProperty(
-            "content-type", value
+            "Content-Type", value
         );
         return this;
+    }
+
+    /**
+     * Returns the value of the {@code Content-Length} header field
+     *
+     * @return {@link String} or {@code null}
+     * @see URLConnection#getHeaderField(String)
+     */
+    @Nullable
+    public String contentLength() {
+        return conn.getHeaderField(
+            "Content-Length"
+        );
+    }
+
+    /**
+     * Returns the value of the {@code Content-Encoding} header field
+     *
+     * @return {@link String} or {@code null}
+     * @see URLConnection#getHeaderField(String)
+     */
+    @Nullable
+    public String contentEncoding() {
+        return conn.getHeaderField(
+            "Content-Encoding"
+        );
     }
 
     /**
@@ -596,8 +700,7 @@ public class Client extends Caller {
             conn.getHeaderField(0);
         if (status == null) {
             if (crash == null) {
-                code = -1;
-                return;
+                throw new IOCrash();
             }
             if (crash instanceof IOException) {
                 throw (IOException) crash;
@@ -606,11 +709,17 @@ public class Client extends Caller {
             }
         }
 
-        int index;
-        if (!status.startsWith("HTTP/1.") ||
-            (index = status.indexOf(' ')) <= 0) {
-            code = -1;
-            return;
+        if (!status.startsWith("HTTP/1.")) {
+            throw new IOCrash(
+                "Not support status(" + status + ") currently"
+            );
+        }
+
+        int index = status.indexOf(' ');
+        if (index < 0) {
+            throw new IOCrash(
+                "Response status(" + status + ") is incomplete"
+            );
         }
 
         int offset = status.indexOf(
@@ -639,19 +748,29 @@ public class Client extends Caller {
             if (dig < 0 ||
                 num < mul ||
                 dig >= 10) {
-                code = -1;
-                return;
+                throw new IOCrash(
+                    "Status(" + status + ": '" + (char) dig + "')"
+                );
             }
             num *= 10;
             if (num < lim + dig) {
-                code = -1;
-                return;
+                throw new IOCrash(
+                    "Status(" + status + ": " + -num + ")  is out of range"
+                );
             }
             num -= dig;
         }
 
         this.code = -num;
-        if (in != null && isSuccess()) stream(in);
+        if (isSuccess()) {
+            if (in != null) {
+                stream(in);
+            }
+        } else {
+            throw new UnexpectedCrash(
+                "Unexpectedly, code: " + code + ", message:" + status.substring(offset)
+            );
+        }
     }
 
     /**
@@ -661,10 +780,16 @@ public class Client extends Caller {
     protected void request(
         String method
     ) throws IOException {
-        conn.setRequestMethod(method);
-        conn.connect();
-        resolve(conn);
-        conn.disconnect();
+        try {
+            conn.setRequestMethod(method);
+            // connect
+            conn.connect();
+            // resolve
+            resolve(conn);
+        } finally {
+            // disconnect
+            conn.disconnect();
+        }
     }
 
     /**
@@ -675,24 +800,26 @@ public class Client extends Caller {
     protected void request(
         String method, Chain chain
     ) throws IOException {
-        conn.setDoInput(true);
-        conn.setDoOutput(true);
-        conn.setRequestMethod(method);
+        try {
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+            conn.setRequestMethod(method);
 
-        // connect
-        conn.connect();
+            // connect
+            conn.connect();
 
-        if (chain != null) {
-            chain.update(
-                conn.getOutputStream()
-            );
+            if (chain != null) {
+                chain.update(
+                    conn.getOutputStream()
+                );
+            }
+
+            // resolve
+            resolve(conn);
+        } finally {
+            // disconnect
+            conn.disconnect();
         }
-
-        // resolve
-        resolve(conn);
-
-        // disconnect
-        conn.disconnect();
     }
 
     /**
@@ -703,24 +830,26 @@ public class Client extends Caller {
     protected void request(
         String method, byte[] data, int i, int l
     ) throws IOException {
-        conn.setDoInput(true);
-        conn.setDoOutput(true);
-        conn.setRequestMethod(method);
+        try {
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+            conn.setRequestMethod(method);
 
-        // connect
-        conn.connect();
+            // connect
+            conn.connect();
 
-        if (data != null) {
-            OutputStream out = conn.getOutputStream();
-            out.write(
-                data, i, l
-            );
+            if (data != null) {
+                OutputStream out = conn.getOutputStream();
+                out.write(
+                    data, i, l
+                );
+            }
+
+            // resolve
+            resolve(conn);
+        } finally {
+            // disconnect
+            conn.disconnect();
         }
-
-        // resolve
-        resolve(conn);
-
-        // disconnect
-        conn.disconnect();
     }
 }
