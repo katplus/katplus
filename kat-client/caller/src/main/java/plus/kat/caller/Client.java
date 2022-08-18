@@ -504,51 +504,124 @@ public class Client extends Caller {
     }
 
     /**
-     * @param content the specified content
+     * <pre>{@code
+     *  new Client("https://kat.plus/test/user").view();
+     * }</pre>
+     *
      * @throws IOException If an I/O error occurs
      */
+    public Client view()
+        throws IOException {
+        try {
+            // method
+            conn.setRequestMethod("HEAD");
+            // connect
+            conn.connect();
+            // resolve
+            resolve(conn);
+        } finally {
+            // disconnect
+            conn.disconnect();
+        }
+        return this;
+    }
+
+    /**
+     * <pre>{@code
+     *  new Client("https://kat.plus/test/del-user").delete();
+     * }</pre>
+     *
+     * @throws IOException If an I/O error occurs
+     */
+    public Client delete()
+        throws IOException {
+        try {
+            // method
+            conn.setRequestMethod("DELETE");
+            // connect
+            conn.connect();
+            // resolve
+            resolve(conn);
+        } finally {
+            // disconnect
+            conn.disconnect();
+        }
+        return this;
+    }
+
+    /**
+     * <pre>{@code
+     *  String url = "https://kat.plus/test/add-user";
+     *  String data = "{:id(1):name(kraity)}";
+     *  User user = new Client(url).put(data).to(User.class);
+     * }</pre>
+     *
+     * @param data the specified content
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the {@code data} is null
+     */
     public Client put(
-        byte[] content
+        String data
     ) throws IOException {
-        return send(
-            "PUT", content
+        return put(
+            data.getBytes(UTF_8)
         );
     }
 
     /**
-     * @param paper the specified paper
+     * @param data the specified content
      * @throws IOException If an I/O error occurs
      */
     public Client put(
-        Paper paper
+        byte[] data
     ) throws IOException {
-        return send(
-            "PUT", paper
+        return request(
+            "PUT", data, 0, data.length
         );
     }
 
     /**
-     * @param content the specified content
+     * @param data the specified content
      * @throws IOException If an I/O error occurs
      */
     public Client put(
-        String content
+        byte[] data, int i, int l
     ) throws IOException {
-        return send(
-            "PUT", content
+        check(data, i, l);
+        return request(
+            "PUT", data, i, l
         );
     }
 
     /**
-     * @param content the specified content
+     * @param chan the specified chan
      * @throws IOException If an I/O error occurs
      */
-    public Client post(
-        byte[] content
+    public Client put(
+        Chan chan
     ) throws IOException {
-        return send(
-            "POST", content
+        return put(
+            chan.getFlow()
         );
+    }
+
+    /**
+     * @param flow the specified paper
+     * @throws IOException If an I/O error occurs
+     */
+    public Client put(
+        Paper flow
+    ) throws IOException {
+        try {
+            contentType(
+                flow.getJob()
+            );
+            return request(
+                "PUT", flow
+            );
+        } finally {
+            flow.close();
+        }
     }
 
     /**
@@ -558,14 +631,15 @@ public class Client extends Caller {
      *  User user = new Client(url).post(data).to(User.class);
      * }</pre>
      *
-     * @param content the specified content
-     * @throws IOException If an I/O error occurs
+     * @param data the specified content
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the {@code data} is null
      */
     public Client post(
-        String content
+        String data
     ) throws IOException {
-        return send(
-            "POST", content
+        return post(
+            data.getBytes(UTF_8)
         );
     }
 
@@ -594,90 +668,41 @@ public class Client extends Caller {
     public Client post(
         Paper flow
     ) throws IOException {
-        return send(
-            "POST", flow
-        );
-    }
-
-    /**
-     * @param content the specified content
-     * @throws IOException If an I/O error occurs
-     */
-    public Client post(
-        byte[] content, int offset, int length
-    ) throws IOException {
-        return send(
-            "POST", content, offset, length
-        );
-    }
-
-    /**
-     * @param flow the specified flow
-     * @throws IOException If an I/O error occurs
-     */
-    public Client send(
-        String method, Paper flow
-    ) throws IOException {
         try {
             contentType(
                 flow.getJob()
             );
-            request(
-                method, flow
+            return request(
+                "POST", flow
             );
         } finally {
             flow.close();
         }
-        return this;
-    }
-
-    /**
-     * @param content the specified content
-     * @throws IOException If an I/O error occurs
-     */
-    public Client send(
-        String method, String content
-    ) throws IOException {
-        if (content == null ||
-            content.isEmpty()) {
-            request(
-                method, null, 0, 0
-            );
-        } else {
-            byte[] data = content
-                .getBytes(UTF_8);
-            request(
-                method, data, 0, data.length
-            );
-        }
-        return this;
     }
 
     /**
      * @param data the specified content
      * @throws IOException If an I/O error occurs
      */
-    public Client send(
-        String method, byte[] data
+    public Client post(
+        byte[] data
     ) throws IOException {
-        request(
-            method, data, 0, data.length
+        return request(
+            "POST", data, 0, data.length
         );
-        return this;
     }
 
     /**
      * @param data the specified content
      * @throws IOException If an I/O error occurs
      */
-    public Client send(
-        String method, byte[] data, int i, int l
+    public Client post(
+        byte[] data, int i, int l
     ) throws IOException {
         check(data, i, l);
-        request(
-            method, data, i, l
+        return request(
+            "POST", data, i, l
         );
-        return this;
     }
 
     /**
@@ -733,9 +758,10 @@ public class Client extends Caller {
             );
         }
 
-        int offset = status.indexOf(
-            ' ', ++index
-        );
+        int offset = status
+            .indexOf(
+                ' ', ++index
+            );
         if (offset < 0) {
             offset = status.length();
         }
@@ -789,7 +815,7 @@ public class Client extends Caller {
      * @param chain  the specified chain
      * @throws IOException If an I/O error occurs
      */
-    protected void request(
+    protected Client request(
         String method, Chain chain
     ) throws IOException {
         try {
@@ -801,9 +827,11 @@ public class Client extends Caller {
             conn.connect();
 
             if (chain != null) {
+                OutputStream out;
                 chain.update(
-                    conn.getOutputStream()
+                    out = conn.getOutputStream()
                 );
+                out.close();
             }
 
             // resolve
@@ -812,6 +840,7 @@ public class Client extends Caller {
             // disconnect
             conn.disconnect();
         }
+        return this;
     }
 
     /**
@@ -819,7 +848,7 @@ public class Client extends Caller {
      * @param data   the specified content
      * @throws IOException If an I/O error occurs
      */
-    protected void request(
+    protected Client request(
         String method, byte[] data, int i, int l
     ) throws IOException {
         try {
@@ -831,9 +860,12 @@ public class Client extends Caller {
             conn.connect();
 
             if (data != null) {
-                conn.getOutputStream().write(
+                OutputStream out =
+                    conn.getOutputStream();
+                out.write(
                     data, i, l
                 );
+                out.close();
             }
 
             // resolve
@@ -842,5 +874,6 @@ public class Client extends Caller {
             // disconnect
             conn.disconnect();
         }
+        return this;
     }
 }
