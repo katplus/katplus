@@ -483,27 +483,29 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 }
 
                 String key = method.getName();
-                int k = 0, l = key.length();
-                if (l < 4) {
-                    continue;
-                }
+                int k = 1, l = key.length();
 
-                char ch = key.charAt(k++);
+                char ch = key.charAt(0);
                 if (ch == 's') {
-                    if (count == 0 ||
+                    if (count == 0 || l < 4 ||
                         key.charAt(k++) != 'e' ||
                         key.charAt(k++) != 't') {
                         continue;
                     }
                 } else if (ch == 'g') {
-                    if (count != 0 ||
+                    if (count != 0 || l < 4 ||
                         key.charAt(k++) != 'e' ||
                         key.charAt(k++) != 't') {
                         continue;
                     }
                 } else if (ch == 'i') {
-                    if (count != 0 ||
+                    if (count != 0 || l < 3 ||
                         key.charAt(k++) != 's') {
+                        continue;
+                    }
+                    Class<?> cls = method.getReturnType();
+                    if (cls != boolean.class &&
+                        cls != Boolean.class) {
                         continue;
                     }
                 } else {

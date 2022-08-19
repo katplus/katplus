@@ -259,14 +259,13 @@ public class Chan implements Flag {
         @Nullable Class<?> klass,
         @Nullable Object value
     ) throws IOException {
-        if (klass == null) {
-            return set(
-                alias, value
-            );
-        }
-
         if (value == null) {
             return coding(alias);
+        }
+
+        // get class specified
+        if (klass == null) {
+            klass = value.getClass();
         }
 
         // get spare specified
