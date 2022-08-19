@@ -47,6 +47,31 @@ public class Plan {
     }
 
     /**
+     * add the {@code flag} on the basis of {@code readFlags}
+     *
+     * <pre>{@code
+     *  Plan plan = ...
+     *  plan.read(
+     *    Flag.INDEX_AS_ENUM | Flag.STRING_AS_OBJECT, false
+     *  );
+     * }</pre>
+     *
+     * @param flag  the specified {@code flag}
+     * @param allow enable this feature if and only if {@code allow} is {@code true}, disable otherwise
+     * @since 0.0.3
+     */
+    public void read(
+        long flag,
+        boolean allow
+    ) {
+        if (allow) {
+            readFlags |= flag;
+        } else {
+            readFlags &= ~flag;
+        }
+    }
+
+    /**
      * Overwrite {@code readFlags} over the specified {@code flags}
      *
      * <pre>{@code
@@ -91,6 +116,31 @@ public class Plan {
         long flag
     ) {
         writeFlags |= flag;
+    }
+
+    /**
+     * add the {@code flag} on the basis of {@code writeFlags}
+     *
+     * <pre>{@code
+     *  Plan plan = ...
+     *  plan.write(
+     *    Flag.ENUM_AS_INDEX | Flag.DATE_AS_TIMESTAMP, false
+     *  );
+     * }</pre>
+     *
+     * @param flag  the specified {@code flag}
+     * @param allow enable this feature if and only if {@code allow} is {@code true}, disable otherwise
+     * @since 0.0.3
+     */
+    public void write(
+        long flag,
+        boolean allow
+    ) {
+        if (allow) {
+            writeFlags |= flag;
+        } else {
+            writeFlags &= ~flag;
+        }
     }
 
     /**
