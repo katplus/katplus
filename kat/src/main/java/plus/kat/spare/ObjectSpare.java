@@ -51,14 +51,6 @@ public class ObjectSpare extends Property<Object> {
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public Builder<Map> getBuilder(
-        @Nullable Type type
-    ) {
-        return new MapSpare.Builder0(type);
-    }
-
-    @Override
     public Object cast(
         @NotNull Supplier supplier,
         @Nullable Object data
@@ -240,5 +232,13 @@ public class ObjectSpare extends Property<Object> {
                 );
             }
         }
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    public Builder<Map> getBuilder(
+        @Nullable Type type
+    ) {
+        return new MapSpare.Builder0(type);
     }
 }

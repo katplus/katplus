@@ -97,7 +97,7 @@ public class ShortSpare extends Property<Short> implements Serializable {
         @NotNull Flag flag,
         @NotNull Alias alias
     ) {
-        return alias.toShort();
+        return (short) alias.toInt();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class ShortSpare extends Property<Short> implements Serializable {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.toShort();
+        return (short) value.toInt();
     }
 
     @Override

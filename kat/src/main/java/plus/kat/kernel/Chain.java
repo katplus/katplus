@@ -1725,6 +1725,184 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Parses this {@code UTF8} {@link Chain} as a {@code char}
+     *
+     * @since 0.0.3
+     */
+    public char toChar() {
+        return Convert.toChar(
+            value, count, '?'
+        );
+    }
+
+    /**
+     * Parses this {@code UTF8} {@link Chain} as a {@code char}
+     *
+     * @since 0.0.3
+     */
+    public char toChar(
+        char def
+    ) {
+        return Convert.toChar(
+            value, count, def
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a signed decimal {@code int}
+     *
+     * @since 0.0.3
+     */
+    public int toInt() {
+        return Convert.toInt(
+            value, count, 10, 0
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a signed decimal {@code int}
+     *
+     * @since 0.0.3
+     */
+    public int toInt(
+        int def
+    ) {
+        return Convert.toInt(
+            value, count, 10, def
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a signed decimal {@code int}
+     *
+     * @param radix the radix to be used while parsing {@link Chain}
+     * @since 0.0.3
+     */
+    public int toInt(
+        int def, int radix
+    ) {
+        if (radix < 2 || radix > 36) {
+            return def;
+        }
+        return Convert.toInt(
+            value, count, radix, def
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a signed decimal {@code long}
+     *
+     * @since 0.0.3
+     */
+    public long toLong() {
+        return Convert.toLong(
+            value, count, 10L, 0L
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a signed decimal {@code long}
+     *
+     * @since 0.0.3
+     */
+    public long toLong(
+        long def
+    ) {
+        return Convert.toLong(
+            value, count, 10L, def
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a signed decimal {@code long}
+     *
+     * @param radix the radix to be used while parsing {@link Chain}
+     * @since 0.0.3
+     */
+    public long toLong(
+        long def, long radix
+    ) {
+        if (radix < 2L || radix > 36L) {
+            return def;
+        }
+        return Convert.toLong(
+            value, count, radix, def
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@code float}
+     *
+     * @since 0.0.3
+     */
+    public float toFloat() {
+        return Convert.toFloat(
+            value, count, 0F
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@code float}
+     *
+     * @since 0.0.3
+     */
+    public float toFloat(
+        float def
+    ) {
+        return Convert.toFloat(
+            value, count, def
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@code double}
+     *
+     * @since 0.0.3
+     */
+    public double toDouble() {
+        return Convert.toDouble(
+            value, count, 0D
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@code double}
+     *
+     * @since 0.0.3
+     */
+    public double toDouble(
+        double def
+    ) {
+        return Convert.toDouble(
+            value, count, def
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@code boolean}
+     *
+     * @since 0.0.3
+     */
+    public boolean toBoolean() {
+        return Convert.toBoolean(
+            value, count, false
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@code boolean}
+     *
+     * @since 0.0.3
+     */
+    public boolean toBoolean(
+        boolean def
+    ) {
+        return Convert.toBoolean(
+            value, count, def
+        );
+    }
+
+    /**
      * @param c the specified {@link Chain}
      */
     protected void chain(

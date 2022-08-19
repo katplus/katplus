@@ -454,7 +454,7 @@ public class SupplierTest {
 
     static class Service {
         public Model model;
-        public CharSequence master;
+        public Number version;
     }
 
     @Test
@@ -463,11 +463,13 @@ public class SupplierTest {
 
         Service s0 = supplier.read(
             Service.class, new Event<>(
-                "{:model{:id(1):name(kraity)}}"
+                "{:model{:id(1):name(kraity)}:version(1)}"
             )
         );
         assertNotNull(s0);
         assertNull(s0.model);
+        assertEquals(1, s0.version);
+        assertEquals("{\"model\":null,\"version\":1}", Json.encode(s0));
 
         Service s1 = supplier.read(
             Service.class, new Event<>(
@@ -476,6 +478,7 @@ public class SupplierTest {
         );
         assertNotNull(s1);
         assertNotNull(s1.model);
+        assertNull(s1.version);
         assertEquals(1, s1.model.getId());
         assertEquals("kraity", s1.model.getName());
     }

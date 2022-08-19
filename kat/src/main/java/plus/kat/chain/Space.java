@@ -48,6 +48,7 @@ public final class Space extends Chain implements Type {
     public static final Space $S = new Space(new byte[]{'S'}, Set.class);
     public static final Space $E = new Space(new byte[]{'E'}, Crash.class);
     public static final Space $s = new Space(new byte[]{'s'}, String.class);
+    public static final Space $n = new Space(new byte[]{'n'}, Number.class);
     public static final Space $i = new Space(new byte[]{'i'}, int.class);
     public static final Space $l = new Space(new byte[]{'l'}, long.class);
     public static final Space $f = new Space(new byte[]{'f'}, float.class);
@@ -80,17 +81,15 @@ public final class Space extends Chain implements Type {
     private Space(
         byte[] b, Type t
     ) {
-        super();
+        this(b);
         actual = t;
-        value = b;
-        count = b.length;
     }
 
     /**
      * @param data the initial byte array
      */
     private Space(
-        @NotNull byte[] data
+        byte[] data
     ) {
         super(data);
         count = data.length;

@@ -97,7 +97,7 @@ public class ByteSpare extends Property<Byte> implements Serializable {
         @NotNull Flag flag,
         @NotNull Alias alias
     ) {
-        return alias.toByte();
+        return (byte) alias.toInt();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class ByteSpare extends Property<Byte> implements Serializable {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.toByte();
+        return (byte) value.toInt();
     }
 
     @Override
