@@ -404,4 +404,25 @@ public class SupplierTest {
             this.tag = tag;
         }
     }
+
+    static class Entity {
+        public int id;
+        public String name;
+    }
+
+    @Test
+    public void test_lookup_name() {
+        Supplier supplier = Supplier.ins();
+
+        Entity entity = supplier.read(
+            "plus.kat.SupplierTest$Entity",
+            new Event<>(
+                "{:id(1):name(kraity)}"
+            )
+        );
+
+        assertNotNull(entity);
+        assertEquals(1, entity.id);
+        assertEquals("kraity", entity.name);
+    }
 }

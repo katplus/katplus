@@ -205,6 +205,7 @@ public interface Supplier {
      * Convert the {@link Object} to {@code K}
      *
      * @param data specify the {@code data} to convert
+     * @throws ClassCastException If {@link E} is not an instance of {@code klass}
      * @see Spare#cast(Supplier, Object)
      */
     @Nullable
@@ -225,6 +226,7 @@ public interface Supplier {
      * Parse {@link Kat} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
+     * @throws ClassCastException   If {@link T} is not an instance of {@code klass}
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(CharSequence, Job, Event)
      */

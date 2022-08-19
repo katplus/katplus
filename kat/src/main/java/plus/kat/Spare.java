@@ -657,13 +657,19 @@ public interface Spare<K> extends Coder<K> {
                         return load(
                             target, supplier
                         );
-                    } else {
-                        if (target.isInterface()) {
-                            return null;
-                        } else {
-                            return Reflect.apply(target);
-                        }
                     }
+
+                    if (target.isInterface()) {
+                        return null;
+                    }
+
+                    spare = Reflect.apply(target);
+                    if (spare != null) {
+                        putIfAbsent(
+                            klass, spare
+                        );
+                    }
+                    return spare;
                 }
             }
 
@@ -706,20 +712,18 @@ public interface Spare<K> extends Coder<K> {
             @NotNull String name,
             @NotNull Supplier supplier
         ) {
-            if (name.startsWith("java.")) {
-                try {
-                    Spare<?> spare = load(
-                        Class.forName(name), supplier
+            try {
+                Spare<?> spare = load(
+                    Class.forName(name), supplier
+                );
+                if (spare != null) {
+                    Impl.INS.put(
+                        name, spare
                     );
-                    if (spare != null) {
-                        Impl.INS.put(
-                            name, spare
-                        );
-                    }
-                    return spare;
-                } catch (Exception e) {
-                    // Nothing
                 }
+                return spare;
+            } catch (Exception e) {
+                // Nothing
             }
             return null;
         }
