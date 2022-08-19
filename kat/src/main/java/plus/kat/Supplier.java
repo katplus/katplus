@@ -633,6 +633,11 @@ public interface Supplier {
                 return (Spare<T>) spare;
             }
 
+            int i = klass.length();
+            if (i < 2 || i > 191) {
+                return null;
+            }
+
             Cluster ins = Cluster.INS;
             String name = klass.toString();
 

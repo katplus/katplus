@@ -61,7 +61,8 @@ public interface Spare<K> extends Coder<K> {
     Boolean getFlag();
 
     /**
-     * Check if this {@link Spare} can build this {@code klass}
+     * Check if {@code klass} is a parent Class of {@link K}
+     * or this {@link Spare} can create an instance of {@code klass}
      *
      * @param klass specify the {@link Class} to compare
      * @throws NullPointerException If the specified {@code klass} is null
@@ -702,6 +703,17 @@ public interface Spare<K> extends Coder<K> {
         }
 
         /**
+         * auto lookup spare
+         */
+        static final boolean AUTO;
+
+        static {
+            AUTO = Config.get(
+                "kat.spare.lookup", true
+            );
+        }
+
+        /**
          * Returns {@link Spare} of the specified {@code klass}
          *
          * @throws RunCrash             The Provider signals to interrupt subsequent lookup
@@ -712,7 +724,7 @@ public interface Spare<K> extends Coder<K> {
             @NotNull String name,
             @NotNull Supplier supplier
         ) {
-            try {
+            if (AUTO) try {
                 Spare<?> spare = load(
                     Class.forName(name), supplier
                 );

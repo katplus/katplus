@@ -628,13 +628,13 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
             Annotation[][] as = b.getParameterAnnotations();
 
             int i = 0, j = as.length - args.length;
-            Class<?> enclosingClass = klass.getEnclosingClass();
+            Class<?> declaringClass = klass.getDeclaringClass();
 
-            if (enclosingClass != null &&
+            if (declaringClass != null &&
                 (klass.getModifiers() & Modifier.STATIC) == 0) {
-                if (enclosingClass == args[0]) {
+                if (declaringClass == args[0]) {
                     i++;
-                    master = enclosingClass;
+                    master = declaringClass;
                 }
             }
 

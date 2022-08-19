@@ -405,9 +405,35 @@ public class SupplierTest {
         }
     }
 
-    static class Entity {
-        public int id;
-        public String name;
+    interface Model {
+        int getId();
+
+        String getName();
+    }
+
+    static class Entity implements Model {
+        private int id;
+        private String name;
+
+        public void setId(
+            int id
+        ) {
+            this.id = id;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public void setName(
+            String name
+        ) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 
     @Test
@@ -424,5 +450,33 @@ public class SupplierTest {
         assertNotNull(entity);
         assertEquals(1, entity.id);
         assertEquals("kraity", entity.name);
+    }
+
+    static class Service {
+        public Model model;
+        public CharSequence master;
+    }
+
+    @Test
+    public void test_lookup_read() {
+        Supplier supplier = Supplier.ins();
+
+        Service s0 = supplier.read(
+            Service.class, new Event<>(
+                "{:model{:id(1):name(kraity)}}"
+            )
+        );
+        assertNotNull(s0);
+        assertNull(s0.model);
+
+        Service s1 = supplier.read(
+            Service.class, new Event<>(
+                "{plus.kat.SupplierTest$Entity:model{:id(1):name(kraity)}}"
+            )
+        );
+        assertNotNull(s1);
+        assertNotNull(s1.model);
+        assertEquals(1, s1.model.getId());
+        assertEquals("kraity", s1.model.getName());
     }
 }
