@@ -49,7 +49,7 @@ public @interface Embed {
     boolean expose() default true;
 
     /**
-     * Returns the specified {@link Spare}
+     * Returns the specified {@link Spare} or the pointing {@link Class}
      */
-    Class<? extends Spare> with() default Spare.class;
+    Class<?> with() default Spare.class;
 }

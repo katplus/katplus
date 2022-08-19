@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.concurrent.*;
 
 import static plus.kat.Plan.DEF;
@@ -46,6 +47,7 @@ public interface Supplier {
      * @param spare specify the {@code spare} of {@code klass}
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
+     * @see Impl#embed(Class, Spare)
      * @see Spare#embed(Class, Spare)
      * @since 0.0.2
      */
@@ -61,6 +63,7 @@ public interface Supplier {
      * @param klass specify the klass of revoking
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code type} is null
+     * @see Impl#revoke(Class)
      * @see Spare#revoke(Class)
      */
     @Nullable
@@ -76,6 +79,7 @@ public interface Supplier {
      * @param spare specify the {@code spare} of {@code klass}
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
+     * @see Impl#embed(CharSequence, Spare)
      */
     @Nullable
     Spare<?> embed(
@@ -89,6 +93,7 @@ public interface Supplier {
      * @param klass specify the klass of revoking
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
+     * @see Impl#revoke(CharSequence)
      */
     @Nullable
     Spare<?> revoke(
@@ -101,6 +106,7 @@ public interface Supplier {
      * @param klass specify the type of lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
+     * @see Impl#lookup(CharSequence)
      */
     @Nullable <T> Spare<T> lookup(
         @NotNull CharSequence klass
@@ -112,6 +118,7 @@ public interface Supplier {
      * @param klass specify the type of lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
+     * @see Impl#lookup(Class)
      * @see Spare#lookup(Class)
      */
     @Nullable <T> Spare<T> lookup(
@@ -124,29 +131,11 @@ public interface Supplier {
      * @param klass specify the type of apply
      * @return {@link Coder} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
+     * @see Impl#activate(Class)
      */
-    @Nullable
-    default <T> Coder<T> activate(
+    @Nullable <T> Coder<T> activate(
         @NotNull Class<?> klass
-    ) {
-        return Plug.INS.load(klass);
-    }
-
-    /**
-     * Register an instance of {@link Coder}
-     *
-     * @param klass specify the type of embedding
-     * @param coder specify the {@code spare} of {@link Class}
-     * @return {@link Coder} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
-     */
-    @Nullable
-    default Coder<?> activate(
-        @NotNull Class<?> klass,
-        @NotNull Coder<?> coder
-    ) {
-        return Plug.INS.put(klass, coder);
-    }
+    );
 
     /**
      * Deactivate the {@code klass} and returns the previous value associated with {@code klass}
@@ -154,21 +143,11 @@ public interface Supplier {
      * @param klass specify the type of revoking
      * @return {@link Coder} or {@code null}
      * @throws NullPointerException If the specified {@code type} is null
+     * @see Impl#deactivate(Class)
      */
-    @Nullable
-    default Coder<?> deactivate(
+    @Nullable Coder<?> deactivate(
         @NotNull Class<?> klass
-    ) {
-        return Plug.INS.remove(klass);
-    }
-
-    /**
-     * Returns the default plugins
-     */
-    @NotNull
-    static Plug plug() {
-        return Plug.INS;
-    }
+    );
 
     /**
      * Returns the default {@link Supplier}
@@ -519,6 +498,22 @@ public interface Supplier {
     }
 
     /**
+     * Register an instance of {@link Coder}
+     *
+     * @param klass specify the type of embedding
+     * @param coder specify the {@code spare} of {@link Class}
+     * @return {@link Coder} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @see Impl#register(Class, Coder)
+     * @since 0.0.3
+     */
+    @Nullable
+    Coder<?> register(
+        @NotNull Class<?> klass,
+        @NotNull Coder<?> coder
+    );
+
+    /**
      * Register the {@link Spare} of {@link Class} with {@link Embed}
      *
      * @param embed specify the {@link Embed}
@@ -664,53 +659,60 @@ public interface Supplier {
         ) {
             return Cluster.INS.load(klass, this);
         }
-    }
 
-    /**
-     * @author kraity
-     * @since 0.0.1
-     */
-    class Plug extends ConcurrentHashMap<Class<?>, Coder<?>> {
         /**
          * default cluster
          */
-        static final Plug INS = new Plug();
+        static final Map<Class<?>, Coder<?>> PLUG;
 
         static {
-            INS.put(ByteArrayCoder.class, ByteArrayCoder.INSTANCE);
+            PLUG = new ConcurrentHashMap<>(
+                Config.get(
+                    "kat.coder.capacity", 16
+                )
+            );
+            PLUG.put(ByteArrayCoder.class, ByteArrayCoder.INSTANCE);
         }
 
-        private Plug() {
-            super(Config.get(
-                "kat.coder.capacity", 8
-            ));
-        }
-
-        /**
-         * Apply an instance of the specified {@link Coder}
-         *
-         * @throws NullPointerException If the specified {@code klass} is null
-         */
-        @Nullable
-        @SuppressWarnings("unchecked")
-        public <T> Coder<T> load(
-            @NotNull Class<?> klass
+        @Override
+        public Coder<?> register(
+            Class<?> klass,
+            Coder<?> coder
         ) {
-            Coder<?> coder = get(klass);
+            return PLUG.put(klass, coder);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> Coder<T> activate(
+            Class<?> klass
+        ) {
+            if (klass == Coder.class) {
+                return null;
+            }
+
+            Coder<?> coder = PLUG.get(klass);
 
             if (coder != null) {
                 return (Coder<T>) coder;
             }
 
-            if (klass.isInterface()) {
-                return null;
+            if (Coder.class.isAssignableFrom(klass)) {
+                if (klass.isInterface()) {
+                    return null;
+                } else {
+                    return Reflect.apply(klass);
+                }
             }
 
-            if (!Coder.class.isAssignableFrom(klass)) {
-                return null;
-            }
+            return (Coder<T>) Cluster.INS.load(klass, this);
+        }
 
-            return Reflect.apply(klass);
+        @Override
+        public Coder<?> deactivate(
+            Class<?> klass
+        ) {
+            return PLUG.remove(klass);
         }
     }
 }

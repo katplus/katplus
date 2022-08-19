@@ -641,10 +641,8 @@ public interface Spare<K> extends Coder<K> {
                 );
 
             if (embed != null) {
-                Class<? extends Spare>
-                    with = embed.with();
-
-                if (with != Spare.class) {
+                Class<?> target = embed.with();
+                if (target != Spare.class) {
                     // static inject
                     // and double-checking
                     Spare<?> spare =
@@ -654,8 +652,17 @@ public interface Spare<K> extends Coder<K> {
                         return spare;
                     }
 
-                    if (!with.isInterface()) {
-                        return Reflect.apply(with);
+                    if (!Spare.class.
+                        isAssignableFrom(target)) {
+                        return load(
+                            target, supplier
+                        );
+                    } else {
+                        if (target.isInterface()) {
+                            return null;
+                        } else {
+                            return Reflect.apply(target);
+                        }
                     }
                 }
             }

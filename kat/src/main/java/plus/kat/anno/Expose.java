@@ -47,7 +47,7 @@ public @interface Expose {
     boolean export() default true;
 
     /**
-     * Returns the specified {@link Coder}
+     * Returns the specified {@link Coder} or the pointing {@link Class}
      */
-    Class<? extends Coder> with() default Coder.class;
+    Class<?> with() default Coder.class;
 }
