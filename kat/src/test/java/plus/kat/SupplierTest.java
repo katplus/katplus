@@ -30,7 +30,7 @@ public class SupplierTest {
         Supplier supplier = Supplier.ins();
         for (String o : list) {
             assertNotNull(
-                supplier.lookup(o, true)
+                supplier.lookup(o, Object.class)
             );
         }
     }

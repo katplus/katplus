@@ -425,7 +425,13 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Register the {@link Spare} of {@link Class}
+     * Register the {@link Spare} of {@code klass}
+     * and returns the previous value associated with {@code klass}
+     *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  Spare.embed(User.class, spare);
+     * }</pre>
      *
      * @param klass specify the type of embedding
      * @param spare specify the {@code spare} of {@link Class}
@@ -443,7 +449,12 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Removes the {@code klass} and returns the previous value associated with {@code type}
+     * Removes the {@link Spare} cache for {@code klass}
+     * and returns the previous value associated with {@code klass}
+     *
+     * <pre>{@code
+     *  Spare.revoke(User.class);
+     * }</pre>
      *
      * @param klass specify the type of revoking
      * @return {@link Spare} or {@code null}
@@ -457,7 +468,12 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Returns the {@link Spare} of {@link Class}
+     * Returns the {@link Spare} of {@code klass}, if not cached first through
+     * the custom {@link Provider} set and then through default {@link Supplier} final lookup
+     *
+     * <pre>{@code
+     *  Spare<User> spare = Spare.lookup(User.class);
+     * }</pre>
      *
      * @param klass specify the type of lookup
      * @return {@link Spare} or {@code null}

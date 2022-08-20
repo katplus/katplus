@@ -47,6 +47,7 @@ public interface Provider {
      */
     @Nullable
     default Spare<?> lookup(
+        @Nullable Class<?> parent,
         @NotNull String klass,
         @NotNull Supplier supplier
     ) {

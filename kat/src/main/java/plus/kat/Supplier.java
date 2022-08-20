@@ -40,8 +40,14 @@ import static plus.kat.Spare.Cluster;
  */
 public interface Supplier {
     /**
-     * Register the {@link Spare} of {@link Class}
+     * Register the {@link Spare} of {@code klass}
      * and returns the previous value associated with {@code klass}
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = ...
+     *  supplier.embed(User.class, spare);
+     * }</pre>
      *
      * @param klass specify the type of embedding
      * @param spare specify the {@code spare} of {@code klass}
@@ -58,7 +64,13 @@ public interface Supplier {
     );
 
     /**
-     * Removes the {@code type} and returns the previous value associated with {@code type}
+     * Removes the {@link Spare} cache for {@code klass}
+     * and returns the previous value associated with {@code klass}
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  supplier.revoke(User.class);
+     * }</pre>
      *
      * @param klass specify the klass of revoking
      * @return {@link Spare} or {@code null}
@@ -75,6 +87,14 @@ public interface Supplier {
      * Register the {@link Spare} of {@code klass}
      * and returns the previous value associated with {@code klass}
      *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = ...
+     *  supplier.embed(
+     *      "plus.kat.entity.User", spare
+     *  );
+     * }</pre>
+     *
      * @param klass specify the type of embedding
      * @param spare specify the {@code spare} of {@code klass}
      * @return {@link Spare} or {@code null}
@@ -88,7 +108,15 @@ public interface Supplier {
     );
 
     /**
-     * Removes the {@code klass} and returns the previous value associated with {@code klass}
+     * Removes the {@link Spare} cache for {@code klass}
+     * and returns the previous value associated with {@code klass}
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  supplier.revoke(
+     *      "plus.kat.entity.User"
+     *  );
+     * }</pre>
      *
      * @param klass specify the klass of revoking
      * @return {@link Spare} or {@code null}
@@ -101,7 +129,13 @@ public interface Supplier {
     );
 
     /**
-     * Returns the {@link Spare} of {@link Class}
+     * Returns the {@link Spare} of {@code klass}, if not cached first through
+     * the custom {@link Provider} set and then through this {@link Supplier} final lookup
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = supplier.lookup(User.class);
+     * }</pre>
      *
      * @param klass specify the type of lookup
      * @return {@link Spare} or {@code null}
@@ -109,56 +143,105 @@ public interface Supplier {
      * @see Impl#lookup(Class)
      * @see Spare#lookup(Class)
      */
-    @Nullable <T> Spare<T> lookup(
+    @Nullable <T>
+    Spare<T> lookup(
         @NotNull Class<T> klass
     );
 
     /**
-     * Returns the {@link Spare} of {@link CharSequence}
+     * Returns the {@link Spare} of {@code klass}
+     * and then you actively call {@link Spare#accept(Class)} to check.
+     * If there is no cache, use a custom {@link Provider} set to look up.
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = supplier.lookup(
+     *      "plus.kat.entity.User"
+     *  );
+     *
+     *  // check for match
+     *  boolean status = spare.accept(User.class); // status may be false
+     * }</pre>
      *
      * @param klass specify the type of lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#lookup(CharSequence)
      */
-    @Nullable <T> Spare<T> lookup(
+    @Nullable <T>
+    Spare<T> lookup(
         @NotNull CharSequence klass
     );
 
     /**
-     * Returns the {@link Spare} of {@link CharSequence}
+     * Returns the {@link Spare} of {@code klass}
+     * and then you actively call {@link Spare#accept(Class)} to check.
+     * <p>
+     * If not cached first through the custom {@link Provider} set to look up,
+     * if not, then use {@link Class#forName(String, boolean, ClassLoader)}
+     * to find and judge whether it is a subclass of {@code parent} and then find its {@link Spare}.
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = supplier.lookup(
+     *      "plus.kat.entity.User", User.class
+     *  );
+     *
+     *  // check for match
+     *  boolean status = spare.accept(User.class); // status may be false
+     * }</pre>
      *
      * @param klass specify the type of lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Impl#lookup(CharSequence, boolean)
+     * @see Spare#accept(Class)
+     * @see Impl#lookup(CharSequence, Class)
      * @since 0.0.3
      */
-    @Nullable <T> Spare<T> lookup(
-        @NotNull CharSequence klass, boolean search
+    @Nullable <K, T extends K>
+    Spare<T> lookup(
+        @NotNull CharSequence klass,
+        @Nullable Class<K> parent
     );
 
     /**
-     * Activate an instance of {@link Coder}
+     * Returns the {@link Coder} of {@code klass}.
+     * if there is no cache, then judge whether {@code klass} is a subclass of {@link Coder},
+     * if so, instantiate and return it, otherwise point to find the {@link Spare} of {@code klass}
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Coder<User> coder0 = supplier.activate(User.class);
+     *  Coder<User> coder1 = supplier.activate(UserCoder.class);
+     * }</pre>
      *
      * @param klass specify the type of apply
      * @return {@link Coder} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#activate(Class)
      */
-    @Nullable <T> Coder<T> activate(
+    @Nullable <T>
+    Coder<T> activate(
         @NotNull Class<?> klass
     );
 
     /**
-     * Deactivate the {@code klass} and returns the previous value associated with {@code klass}
+     * Deactivates the {@link Coder} cache for {@code klass}
+     * and returns the previous value associated with {@code klass}
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  supplier.deactivate(User.class);
+     *  supplier.deactivate(UserCoder.class);
+     * }</pre>
      *
      * @param klass specify the type of revoking
      * @return {@link Coder} or {@code null}
      * @throws NullPointerException If the specified {@code type} is null
      * @see Impl#deactivate(Class)
      */
-    @Nullable Coder<?> deactivate(
+    @Nullable
+    Coder<?> deactivate(
         @NotNull Class<?> klass
     );
 
@@ -227,7 +310,7 @@ public interface Supplier {
         @NotNull Object data
     ) {
         Spare<E> spare = lookup(
-            klass, true
+            klass, Object.class
         );
 
         if (spare == null) {
@@ -451,7 +534,7 @@ public interface Supplier {
         @NotNull Event<T> event
     ) {
         Spare<T> spare = lookup(
-            klass, true
+            klass, Object.class
         );
 
         if (spare == null) {
@@ -650,24 +733,13 @@ public interface Supplier {
         public <T> Spare<T> lookup(
             CharSequence klass
         ) {
-            return lookup(klass, false);
-        }
-
-        /**
-         * auto search
-         */
-        static final boolean AUTO;
-
-        static {
-            AUTO = Config.get(
-                "kat.supplier.search", true
-            );
+            return lookup(klass, null);
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public <T> Spare<T> lookup(
-            CharSequence klass, boolean search
+        public <K, T extends K> Spare<T> lookup(
+            CharSequence klass, Class<K> parent
         ) {
             Spare<?> spare = get(klass);
 
@@ -684,7 +756,7 @@ public interface Supplier {
             for (Provider p : Cluster.PRO) {
                 try {
                     spare = p.lookup(
-                        name, this
+                        parent, name, this
                     );
                 } catch (RunCrash e) {
                     return null;
@@ -697,7 +769,7 @@ public interface Supplier {
                 }
             }
 
-            if (search && AUTO) try {
+            if (parent != null) {
                 ClassLoader loader = Thread
                     .currentThread()
                     .getContextClassLoader();
@@ -706,17 +778,27 @@ public interface Supplier {
                     loader = ClassLoader.getSystemClassLoader();
                 }
 
-                spare = Cluster.INS.load(
-                    Class.forName(name, false, loader), this
-                );
-                if (spare != null) {
-                    putIfAbsent(
-                        name, spare
+                Class<?> child;
+                try {
+                    child = Class.forName(
+                        name, false, loader
                     );
+                } catch (LinkageError |
+                    ClassNotFoundException e) {
+                    return null;
                 }
-                return (Spare<T>) spare;
-            } catch (Exception e) {
-                // Nothing
+
+                if (parent.isAssignableFrom(child)) {
+                    spare = Cluster.INS.load(
+                        child, this
+                    );
+                    if (spare != null) {
+                        putIfAbsent(
+                            name, spare
+                        );
+                    }
+                    return (Spare<T>) spare;
+                }
             }
 
             return null;
