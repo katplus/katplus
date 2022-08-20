@@ -38,10 +38,21 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
 
     public EnumSpare(
         @NotNull Class<K> klass,
-        @Nullable Embed embed,
         @NotNull Supplier supplier
     ) {
-        super(klass);
+        this(
+            klass.getAnnotation(Embed.class),
+            klass, supplier, null
+        );
+    }
+
+    public EnumSpare(
+        @Nullable Embed embed,
+        @NotNull Class<K> klass,
+        @NotNull Supplier supplier,
+        @Nullable Provider provider
+    ) {
+        super(klass, provider);
         try {
             Method values = klass
                 .getMethod("values");

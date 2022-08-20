@@ -32,12 +32,21 @@ import java.sql.SQLException;
  */
 public abstract class Property<T> implements Spare<T> {
 
+    protected Provider provider;
     protected final Class<T> klass;
 
     protected Property(
         @NotNull Class<T> klass
     ) {
         this.klass = klass;
+    }
+
+    protected Property(
+        @NotNull Class<T> klass,
+        @Nullable Provider provider
+    ) {
+        this.klass = klass;
+        this.provider = provider;
     }
 
     @Override
@@ -96,6 +105,11 @@ public abstract class Property<T> implements Spare<T> {
         throw new SQLCrash(
             "Cannot convert the type from " + val.getClass() + " to " + klass
         );
+    }
+
+    @Override
+    public Provider getProvider() {
+        return provider;
     }
 
     @Override

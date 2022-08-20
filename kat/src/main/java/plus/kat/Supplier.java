@@ -680,14 +680,8 @@ public interface Supplier {
                 return null;
             }
 
-            Cluster ins = Cluster.INS;
             String name = klass.toString();
-
-            Provider[] $ = ins.providers;
-            int j = 0, k = $.length - 1;
-
-            for (; j < k; j++) {
-                Provider p = $[j];
+            for (Provider p : Cluster.PRO) {
                 try {
                     spare = p.lookup(
                         name, this
@@ -712,7 +706,7 @@ public interface Supplier {
                     loader = ClassLoader.getSystemClassLoader();
                 }
 
-                spare = ins.load(
+                spare = Cluster.INS.load(
                     Class.forName(name, false, loader), this
                 );
                 if (spare != null) {

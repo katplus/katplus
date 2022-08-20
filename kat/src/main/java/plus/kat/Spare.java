@@ -486,29 +486,6 @@ public interface Spare<K> extends Coder<K> {
             super(Config.get(
                 "kat.spare.capacity", 32
             ));
-
-            KatLoader<Provider> loader =
-                new KatLoader<>(Provider.class);
-
-            try {
-                loader.load(
-                    Config.get(
-                        "kat.spare.provider",
-                        "plus.kat.spare.Provider"
-                    )
-                );
-
-                int size = loader.size();
-                providers = new Provider[size + 1];
-
-                int i = 0;
-                while (loader.hasNext()) {
-                    providers[i++] = loader.next();
-                }
-                providers[i] = this;
-            } catch (Exception e) {
-                throw new Error(e);
-            }
         }
 
         static {
@@ -545,9 +522,35 @@ public interface Spare<K> extends Coder<K> {
         }
 
         /**
-         * spare providers
+         * default providers
          */
-        final Provider[] providers;
+        static final Provider[] PRO;
+
+        static {
+            KatLoader<Provider> loader =
+                new KatLoader<>(Provider.class);
+
+            try {
+                loader.load(
+                    Config.get(
+                        "kat.spare.provider",
+                        "plus.kat.spare.Provider"
+                    )
+                );
+
+                int size = loader.size();
+                PRO = new Provider[size];
+
+                int i = 0;
+                while (loader.hasNext()) {
+                    PRO[i++] = loader.next();
+                }
+            } catch (Exception e) {
+                throw new Error(
+                    "Unexpectedly, cannot be loaded", e
+                );
+            }
+        }
 
         /**
          * Embeds {@link Spare} of the specified {@link Class}
@@ -566,7 +569,7 @@ public interface Spare<K> extends Coder<K> {
                 return (Spare<T>) spare;
             }
 
-            for (Provider p : providers) {
+            for (Provider p : PRO) {
                 try {
                     spare = p.lookup(
                         klass, supplier
@@ -582,7 +585,9 @@ public interface Spare<K> extends Coder<K> {
                 }
             }
 
-            return null;
+            return (Spare<T>) lookup(
+                klass, supplier
+            );
         }
 
         /**
@@ -682,14 +687,14 @@ public interface Spare<K> extends Coder<K> {
                 return null;
             }
 
-            Class<?> sc = klass.getSuperclass();
-            if (sc == Enum.class) {
-                return new EnumSpare(
-                    klass, embed, supplier
-                );
-            }
-
             try {
+                Class<?> sc = klass.getSuperclass();
+                if (sc == Enum.class) {
+                    return new EnumSpare(
+                        embed, klass, supplier, this
+                    );
+                }
+
                 String sn = sc.getName();
                 if (sn.equals("java.lang.Record")) {
                     return new RecordSpare<>(
