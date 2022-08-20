@@ -40,9 +40,49 @@ public interface Flag {
     /**
      * Check if this {@link Object} use the {@code flag}
      *
+     * <pre>{@code
+     *  Flag flag = ...
+     *  boolean status = flag.isFlag(Flag.UNICODE);
+     * }</pre>
+     *
      * @param flag the specified {@code flag}
      */
     boolean isFlag(
         long flag
     );
+
+    /**
+     * Check if this {@link Object} use the {@code flag}.
+     * The method is to extend {@link Flag#isFlag(long)} to derive custom {@code flags}.
+     *
+     * <pre>{@code
+     *  Flag flag = ...
+     *  boolean status = flag.isFlag(Flag.UNICODE, 0); // equivalent to 'flag.isFlag(Flag.UNICODE);'
+     *
+     *  // custom
+     *  int kat = 1;
+     *  int json = 2;
+     *
+     *  long ASM = 0x1L;
+     *  boolean status = flag.isFlag(ASM, kat);
+     *  boolean status = flag.isFlag(ASM, json);
+     *
+     *  long AUTO = 0x2L;
+     *  boolean status = flag.isFlag(AUTO, kat);
+     *  boolean status = flag.isFlag(AUTO, json);
+     * }</pre>
+     * <p>
+     * Use {@code code} as the distinguishing mark,
+     * when code is 0, check whether to use official {@code flags},
+     * otherwise use {@code code} as branch to check custom {@code flags}
+     *
+     * @param flag the specified {@code flag}
+     * @param code the specified {@code code}
+     * @since 0.0.3
+     */
+    default boolean isFlag(
+        long flag, int code
+    ) {
+        return code == 0 && isFlag(flag);
+    }
 }
