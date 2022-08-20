@@ -16,16 +16,17 @@
 package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
+import plus.kat.anno.Nullable;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public interface Convert {
+public final class Convert {
     /**
      * Parses the {@code UTF8} {@code byte[]} as a {@code char} or {@code def} value
      */
-    static char toChar(
+    public static char toChar(
         @NotNull byte[] it, int len, char def
     ) {
         if (len == 0) {
@@ -55,7 +56,7 @@ public interface Convert {
      *
      * @param rad the radix to be used while parsing {@code byte[]}
      */
-    static int toInt(
+    public static int toInt(
         @NotNull byte[] it, int len, int rad, int def
     ) {
         if (len == 0) {
@@ -144,7 +145,7 @@ public interface Convert {
      * @param rad the radix to be used while parsing {@link CharSequence}
      * @see #toInt(byte[], int, int, int)
      */
-    static int toInt(
+    public static int toInt(
         @NotNull CharSequence it, int len, int rad, int def
     ) {
         if (len == 0) {
@@ -232,7 +233,7 @@ public interface Convert {
      *
      * @param rad radix the radix to be used while parsing {@code byte[]}
      */
-    static long toLong(
+    public static long toLong(
         @NotNull byte[] it, int len, long rad, long def
     ) {
         if (len == 0) {
@@ -321,7 +322,7 @@ public interface Convert {
      * @param rad radix the radix to be used while parsing {@link CharSequence}
      * @see #toLong(byte[], int, long, long)
      */
-    static long toLong(
+    public static long toLong(
         @NotNull CharSequence it, int len, long rad, long def
     ) {
         if (len == 0) {
@@ -408,7 +409,7 @@ public interface Convert {
      * Parses the {@code byte[]} as a {@code float} or {@code def} value
      */
     @SuppressWarnings("deprecation")
-    static float toFloat(
+    public static float toFloat(
         @NotNull byte[] it, int len, float def
     ) {
         switch (len) {
@@ -469,7 +470,7 @@ public interface Convert {
      * Parses the {@code byte[]} as a {@code double} or {@code def} value
      */
     @SuppressWarnings("deprecation")
-    static double toDouble(
+    public static double toDouble(
         @NotNull byte[] it, int len, double def
     ) {
         switch (len) {
@@ -530,9 +531,10 @@ public interface Convert {
      * Parses the {@code byte[]} as a {@code int},
      * {@code long}, {@code double}, or {@code def} value
      */
+    @Nullable
     @SuppressWarnings("deprecation")
-    static Number toNumber(
-        @NotNull byte[] it, int len, Number def
+    public static Number toNumber(
+        @NotNull byte[] it, int len, @Nullable Number def
     ) {
         if (len == 0) {
             return def;
@@ -616,7 +618,7 @@ public interface Convert {
     /**
      * Parses the {@code byte[]} as a {@code boolean} or {@code def} value
      */
-    static boolean toBoolean(
+    public static boolean toBoolean(
         @NotNull byte[] it, int len, boolean def
     ) {
         switch (len) {
@@ -659,7 +661,7 @@ public interface Convert {
     /**
      * Parses the {@link CharSequence} as a {@code boolean} or {@code def} value
      */
-    static boolean toBoolean(
+    public static boolean toBoolean(
         @NotNull CharSequence it, int len, boolean def
     ) {
         switch (len) {
