@@ -18,6 +18,7 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.chain.Space;
 import plus.kat.spare.*;
 
 import java.io.IOException;
@@ -29,46 +30,24 @@ import static plus.kat.Supplier.Impl.INS;
  * @author kraity
  * @since 0.0.1
  */
+@FunctionalInterface
 public interface Kat {
     /**
      * Returns the space of {@link Kat}
-     */
-    @Nullable
-    default CharSequence getSpace() {
-        return null;
-    }
-
-    /**
-     * Returns the flag of {@link Kat}
-     */
-    @Nullable
-    default Boolean getFlag() {
-        return Boolean.TRUE;
-    }
-
-    /**
-     * Serialization if {@link #getSpace()} is not null
      *
-     * @param chan the specified {@link Chan}
+     * @return {@link CharSequence}
+     */
+    @NotNull
+    default CharSequence space() {
+        return Space.$M;
+    }
+
+    /**
      * @throws IOException If an I/O error occurs
      */
-    default void onCoding(
+    void coding(
         @NotNull Chan chan
-    ) throws IOException {
-        // nothing
-    }
-
-    /**
-     * Serialization if {@link #getSpace()} is not null
-     *
-     * @param flow the specified {@link Flow}
-     * @throws IOException If an I/O error occurs
-     */
-    default void onCoding(
-        @NotNull Flow flow
-    ) throws IOException {
-        // nothing
-    }
+    ) throws IOException;
 
     /**
      * Serialize to pretty {@link Kat} String

@@ -89,7 +89,7 @@ public class Json extends Chan {
     }
 
     /**
-     * Serializes the specified {@code alias} and {@code action} at the current hierarchy
+     * Serializes the specified {@code alias} and {@code kat} at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -97,15 +97,15 @@ public class Json extends Chan {
     @Override
     public boolean set(
         @Nullable CharSequence alias,
-        @Nullable Action action
+        @Nullable Kat kat
     ) throws IOException {
-        if (action != null) {
+        if (kat != null) {
             flow.addComma();
             if (alias != null) {
                 flow.addAlias(alias);
             }
             flow.leftBrace();
-            action.accept(this);
+            kat.coding(this);
             flow.rightBrace();
             return true;
         }
@@ -113,7 +113,7 @@ public class Json extends Chan {
     }
 
     /**
-     * Serializes the specified {@code alias}, {@code space} and {@code action} at the current hierarchy
+     * Serializes the specified {@code alias}, {@code space} and {@code kat} at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -122,10 +122,10 @@ public class Json extends Chan {
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable CharSequence space,
-        @Nullable Action action
+        @Nullable Kat kat
     ) throws IOException {
         return set(
-            alias, action
+            alias, kat
         );
     }
 
@@ -141,50 +141,6 @@ public class Json extends Chan {
         flow.addComma();
         flow.addAlias(alias);
         flow.addNull();
-        return true;
-    }
-
-    /**
-     * Writes the specified {@code alias} and {@code value}
-     *
-     * @return {@code true} if successful
-     * @throws IOException If an I/O error occurs
-     */
-    @Override
-    protected boolean coding(
-        @Nullable CharSequence alias,
-        @NotNull Kat value
-    ) throws IOException {
-        CharSequence space =
-            value.getSpace();
-        if (space == null) {
-            return coding(alias);
-        }
-
-        flow.addComma();
-        flow.addAlias(alias);
-
-        Boolean flag =
-            value.getFlag();
-        if (flag != null) {
-            if (flag) {
-                flow.leftBrace();
-                value.onCoding(this);
-                flow.rightBrace();
-            } else {
-                flow.leftBracket();
-                value.onCoding(this);
-                flow.rightBracket();
-            }
-        } else {
-            if (value instanceof Serializable) {
-                value.onCoding(flow);
-            } else {
-                flow.addQuote();
-                value.onCoding(flow);
-                flow.addQuote();
-            }
-        }
         return true;
     }
 

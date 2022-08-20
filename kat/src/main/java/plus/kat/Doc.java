@@ -88,7 +88,7 @@ public class Doc extends Chan {
     }
 
     /**
-     * Serializes the specified {@code alias} and {@code action} at the current hierarchy
+     * Serializes the specified {@code alias} and {@code kat} at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -96,20 +96,20 @@ public class Doc extends Chan {
     @Override
     public boolean set(
         @Nullable CharSequence alias,
-        @Nullable Action action
+        @Nullable Kat kat
     ) throws IOException {
         if (alias == null) {
-            return false;
+            alias = kat.space();
         }
 
-        if (action == null) {
+        if (kat == null) {
             flow.leftAlias(alias, null);
             flow.rightAlias(alias, null);
         } else {
             flow.leftAlias(
                 alias, Boolean.TRUE
             );
-            action.accept(this);
+            kat.coding(this);
             flow.rightAlias(
                 alias, Boolean.TRUE
             );
@@ -118,7 +118,7 @@ public class Doc extends Chan {
     }
 
     /**
-     * Serializes the specified {@code alias}, {@code space} and {@code action} at the current hierarchy
+     * Serializes the specified {@code alias}, {@code space} and {@code kat} at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -127,16 +127,20 @@ public class Doc extends Chan {
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable CharSequence space,
-        @Nullable Action action
+        @Nullable Kat kat
     ) throws IOException {
-        if (alias == null)
-            if ((alias = space) == null)
-                return false;
+        if (alias == null) {
+            if (space != null) {
+                alias = space;
+            } else {
+                alias = kat.space();
+            }
+        }
         flow.leftAlias(
             alias, Boolean.TRUE
         );
-        if (action != null) {
-            action.accept(this);
+        if (kat != null) {
+            kat.coding(this);
         }
         flow.rightAlias(
             alias, Boolean.TRUE
@@ -159,36 +163,6 @@ public class Doc extends Chan {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Writes the specified {@code alias} and {@code value}
-     *
-     * @return {@code true} if successful
-     * @throws IOException If an I/O error occurs
-     */
-    @Override
-    protected boolean coding(
-        @Nullable CharSequence alias,
-        @NotNull Kat value
-    ) throws IOException {
-        CharSequence space =
-            value.getSpace();
-        if (alias == null) {
-            return false;
-        }
-
-        Boolean flag = value.getFlag();
-        flow.leftAlias(alias, flag);
-        if (space != null) {
-            if (flag != null) {
-                value.onCoding(this);
-            } else {
-                value.onCoding(flow);
-            }
-        }
-        flow.rightAlias(alias, flag);
-        return true;
     }
 
     /**

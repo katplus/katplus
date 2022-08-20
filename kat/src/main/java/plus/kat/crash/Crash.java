@@ -111,11 +111,11 @@ public class Crash extends Exception implements Kat {
     }
 
     /**
-     * Returns the message of this
+     * Returns the space of this
      */
-    @Override
     @Nullable
-    public Space getSpace() {
+    @Override
+    public Space space() {
         return Space.$E;
     }
 
@@ -123,7 +123,7 @@ public class Crash extends Exception implements Kat {
      * @param chan the specified chan
      */
     @Override
-    public void onCoding(
+    public void coding(
         @NotNull Chan chan
     ) throws IOException {
         chan.set(

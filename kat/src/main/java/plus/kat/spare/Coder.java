@@ -87,7 +87,7 @@ public interface Coder<K> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        // nothing
+        // Nothing
     }
 
     /**
@@ -98,6 +98,6 @@ public interface Coder<K> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        // nothing
+        // Nothing
     }
 }

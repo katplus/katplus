@@ -90,20 +90,6 @@ public class Chan implements Flag {
     }
 
     /**
-     * @author kraity
-     * @since 0.0.2
-     */
-    @FunctionalInterface
-    public interface Action {
-        /**
-         * @throws IOException If an I/O error occurs
-         */
-        void accept(
-            @NotNull Chan chan
-        ) throws IOException;
-    }
-
-    /**
      * Serializes the specified {@code alias} and {@code value} at the current hierarchy
      *
      * <pre>{@code
@@ -141,7 +127,7 @@ public class Chan implements Flag {
     }
 
     /**
-     * Serializes the specified {@code alias} and {@code action} at the current hierarchy
+     * Serializes the specified {@code alias} and {@code kat} at the current hierarchy
      *
      * <pre>{@code
      *  Chan chan = ...
@@ -160,13 +146,15 @@ public class Chan implements Flag {
      */
     public boolean set(
         @Nullable CharSequence alias,
-        @Nullable Action action
+        @Nullable Kat kat
     ) throws IOException {
-        if (action != null) {
-            flow.addSpace($M);
+        if (kat != null) {
+            flow.addSpace(
+                kat.space()
+            );
             flow.addAlias(alias);
             flow.leftBrace();
-            action.accept(this);
+            kat.coding(this);
             flow.rightBrace();
             return true;
         }
@@ -174,7 +162,7 @@ public class Chan implements Flag {
     }
 
     /**
-     * Serializes the specified {@code alias}, {@code space} and {@code action} at the current hierarchy
+     * Serializes the specified {@code alias}, {@code space} and {@code kat} at the current hierarchy
      *
      * <pre>{@code
      *  Chan chan = ...
@@ -190,15 +178,16 @@ public class Chan implements Flag {
     public boolean set(
         @Nullable CharSequence alias,
         @Nullable CharSequence space,
-        @Nullable Action action
+        @Nullable Kat kat
     ) throws IOException {
-        if (action != null) {
-            flow.addSpace(
-                space == null ? $M : space
-            );
+        if (kat != null) {
+            if (space == null) {
+                space = kat.space();
+            }
+            flow.addSpace(space);
             flow.addAlias(alias);
             flow.leftBrace();
-            action.accept(this);
+            kat.coding(this);
             flow.rightBrace();
             return true;
         }
@@ -308,7 +297,7 @@ public class Chan implements Flag {
         @NotNull Object value
     ) throws IOException {
         if (value instanceof Kat) {
-            return coding(
+            return set(
                 alias, (Kat) value
             );
         }
@@ -338,36 +327,6 @@ public class Chan implements Flag {
         }
 
         return coding(alias);
-    }
-
-    /**
-     * Writes the specified {@code alias} and {@code value}
-     *
-     * @return {@code true} if successful
-     * @throws IOException If an I/O error occurs
-     */
-    protected boolean coding(
-        @Nullable CharSequence alias,
-        @NotNull Kat value
-    ) throws IOException {
-        CharSequence space =
-            value.getSpace();
-        if (space == null) {
-            return coding(alias);
-        }
-
-        flow.addSpace(space);
-        flow.addAlias(alias);
-        if (value.getFlag() != null) {
-            flow.leftBrace();
-            value.onCoding(this);
-            flow.rightBrace();
-        } else {
-            flow.leftParen();
-            value.onCoding(flow);
-            flow.rightParen();
-        }
-        return true;
     }
 
     /**

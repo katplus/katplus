@@ -585,7 +585,7 @@ public interface Spare<K> extends Coder<K> {
                 return (Spare<T>) spare;
             }
 
-            for (Provider p : PRO) {
+            for (Provider p : Cluster.PRO) {
                 try {
                     spare = p.lookup(
                         klass, supplier
