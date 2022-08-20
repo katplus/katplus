@@ -641,9 +641,27 @@ public interface Supplier {
 
         @Override
         public <T> Spare<T> lookup(
+            Class<T> klass
+        ) {
+            return Cluster.INS.load(klass, this);
+        }
+
+        @Override
+        public <T> Spare<T> lookup(
             CharSequence klass
         ) {
             return lookup(klass, false);
+        }
+
+        /**
+         * auto search
+         */
+        static final boolean AUTO;
+
+        static {
+            AUTO = Config.get(
+                "kat.supplier.search", true
+            );
         }
 
         @Override
@@ -685,7 +703,7 @@ public interface Supplier {
                 }
             }
 
-            if (search) try {
+            if (search && AUTO) try {
                 ClassLoader loader = Thread
                     .currentThread()
                     .getContextClassLoader();
@@ -708,13 +726,6 @@ public interface Supplier {
             }
 
             return null;
-        }
-
-        @Override
-        public <T> Spare<T> lookup(
-            Class<T> klass
-        ) {
-            return Cluster.INS.load(klass, this);
         }
 
         /**

@@ -610,7 +610,8 @@ public interface Spare<K> extends Coder<K> {
                             name, klass
                         );
                     }
-                    if (name.startsWith("javax.")) {
+                    if (name.startsWith("jdk.") ||
+                        name.startsWith("javax.")) {
                         return null;
                     }
                     break;
@@ -623,7 +624,8 @@ public interface Spare<K> extends Coder<K> {
                     break;
                 }
                 case 's': {
-                    if (name.startsWith("scala.")) {
+                    if (name.startsWith("sun.") ||
+                        name.startsWith("scala.")) {
                         return null;
                     }
                     break;
