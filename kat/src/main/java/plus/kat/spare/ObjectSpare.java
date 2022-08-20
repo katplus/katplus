@@ -72,60 +72,11 @@ public class ObjectSpare extends Property<Object> {
         byte b = value.at(0);
 
         if (b < 0x3A) {
-            if (b > 0x2F) {
-                if (length < 10) {
-                    int num = value.toInt(-1);
-                    if (num != -1) {
-                        return num;
-                    }
-                } else {
-                    long num = value.toLong(-1);
-                    if (num > Integer.MAX_VALUE) {
-                        return num;
-                    } else if (num != -1) {
-                        return (int) num;
-                    }
-                }
-            } else if (b != 0x2D) {
-                return value.toString();
-            } else {
-                if (length < 11) {
-                    int num = value.toInt(1);
-                    if (num != 1) {
-                        return num;
-                    }
-                } else {
-                    long num = value.toLong(1);
-                    if (num < Integer.MIN_VALUE) {
-                        return num;
-                    } else if (num != 1) {
-                        return (int) num;
-                    }
-                }
+            Number num = value.toNumber();
+            if (num != null) {
+                return num;
             }
-
-            int i = 1, r = 0;
-            while (i < length) {
-                byte t = value.at(i++);
-                if (t > 0x39) {
-                    return value.toString();
-                }
-
-                if (t < 0x30) {
-                    if (t != '.' ||
-                        ++r == 2) {
-                        return value.toString();
-                    }
-                }
-            }
-
-            try {
-                return Double.parseDouble(
-                    value.string()
-                );
-            } catch (Exception e) {
-                return value.toString();
-            }
+            return value.toString();
         }
 
         switch (length) {

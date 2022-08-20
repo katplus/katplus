@@ -704,13 +704,13 @@ public interface Spare<K> extends Coder<K> {
         }
 
         /**
-         * auto lookup spare
+         * auto search spare
          */
         static final boolean AUTO;
 
         static {
             AUTO = Config.get(
-                "kat.spare.lookup", true
+                "kat.spare.search", true
             );
         }
 
@@ -726,8 +726,16 @@ public interface Spare<K> extends Coder<K> {
             @NotNull Supplier supplier
         ) {
             if (AUTO) try {
+                ClassLoader loader = Thread
+                    .currentThread()
+                    .getContextClassLoader();
+
+                if (loader == null) {
+                    loader = ClassLoader.getSystemClassLoader();
+                }
+
                 Spare<?> spare = load(
-                    Class.forName(name), supplier
+                    Class.forName(name, false, loader), supplier
                 );
                 if (spare != null) {
                     Impl.INS.put(

@@ -473,7 +473,7 @@ public class SupplierTest {
 
         Service s1 = supplier.read(
             Service.class, new Event<>(
-                "{plus.kat.SupplierTest$Entity:model{:id(1):name(kraity)}}"
+                "{plus.kat.SupplierTest$Entity:model{:id(1):name(kraity)}:version()}"
             )
         );
         assertNotNull(s1);

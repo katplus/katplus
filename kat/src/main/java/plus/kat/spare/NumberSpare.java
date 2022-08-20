@@ -39,11 +39,6 @@ public class NumberSpare extends Property<Number> implements Serializable {
     }
 
     @Override
-    public Number apply() {
-        return 0;
-    }
-
-    @Override
     public Space getSpace() {
         return Space.$n;
     }
@@ -77,9 +72,7 @@ public class NumberSpare extends Property<Number> implements Serializable {
         Flag flag,
         Alias alias
     ) {
-        return solve(
-            flag, alias
-        );
+        return alias.toNumber();
     }
 
     @Override
@@ -87,9 +80,7 @@ public class NumberSpare extends Property<Number> implements Serializable {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return solve(
-            flag, value
-        );
+        return value.toNumber();
     }
 
     @Override
@@ -126,77 +117,5 @@ public class NumberSpare extends Property<Number> implements Serializable {
                 value.toString()
             );
         }
-    }
-
-    public Number solve(
-        @NotNull Flag flag,
-        @NotNull Chain chain
-    ) {
-        int length = chain.length();
-
-        if (length == 0) {
-            return 0;
-        }
-
-        byte b = chain.at(0);
-
-        if (b < 0x3A) {
-            if (b > 0x2F) {
-                if (length < 10) {
-                    int num = chain.toInt(-1);
-                    if (num != -1) {
-                        return num;
-                    }
-                } else {
-                    long num = chain.toLong(-1);
-                    if (num > Integer.MAX_VALUE) {
-                        return num;
-                    } else if (num != -1) {
-                        return (int) num;
-                    }
-                }
-            } else if (b != 0x2D) {
-                return 0;
-            } else {
-                if (length < 11) {
-                    int num = chain.toInt(1);
-                    if (num != 1) {
-                        return num;
-                    }
-                } else {
-                    long num = chain.toLong(1);
-                    if (num < Integer.MIN_VALUE) {
-                        return num;
-                    } else if (num != 1) {
-                        return (int) num;
-                    }
-                }
-            }
-
-            int i = 1, r = 0;
-            while (i < length) {
-                byte t = chain.at(i++);
-                if (t > 0x39) {
-                    return 0;
-                }
-
-                if (t < 0x30) {
-                    if (t != '.' ||
-                        ++r == 2) {
-                        return 0;
-                    }
-                }
-            }
-
-            try {
-                return Double.parseDouble(
-                    chain.string()
-                );
-            } catch (Exception e) {
-                // Nothing
-            }
-        }
-
-        return 0;
     }
 }

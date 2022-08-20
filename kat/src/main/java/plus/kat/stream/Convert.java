@@ -23,7 +23,7 @@ import plus.kat.anno.NotNull;
  */
 public interface Convert {
     /**
-     * Parses the {@code UTF8} {@code byte[]} as a {@code char}
+     * Parses the {@code UTF8} {@code byte[]} as a {@code char} or {@code def} value
      */
     static char toChar(
         @NotNull byte[] it, int len, char def
@@ -51,7 +51,7 @@ public interface Convert {
     }
 
     /**
-     * Parses the {@code byte[]} as a signed decimal {@code int}
+     * Parses the {@code byte[]} as a signed decimal {@code int} or {@code def} value
      *
      * @param rad the radix to be used while parsing {@code byte[]}
      */
@@ -139,7 +139,7 @@ public interface Convert {
     }
 
     /**
-     * Parses the {@link CharSequence} as a signed decimal {@code int}
+     * Parses the {@link CharSequence} as a signed decimal {@code int} or {@code def} value
      *
      * @param rad the radix to be used while parsing {@link CharSequence}
      * @see #toInt(byte[], int, int, int)
@@ -228,7 +228,7 @@ public interface Convert {
     }
 
     /**
-     * Parses the {@code byte[]} as a signed decimal {@code long}
+     * Parses the {@code byte[]} as a signed decimal {@code long} or {@code def} value
      *
      * @param rad radix the radix to be used while parsing {@code byte[]}
      */
@@ -316,7 +316,7 @@ public interface Convert {
     }
 
     /**
-     * Parses the {@link CharSequence} as a signed decimal {@code long}
+     * Parses the {@link CharSequence} as a signed decimal {@code long} or {@code def} value
      *
      * @param rad radix the radix to be used while parsing {@link CharSequence}
      * @see #toLong(byte[], int, long, long)
@@ -405,7 +405,7 @@ public interface Convert {
     }
 
     /**
-     * Parses the {@code byte[]} as a {@code float}
+     * Parses the {@code byte[]} as a {@code float} or {@code def} value
      */
     @SuppressWarnings("deprecation")
     static float toFloat(
@@ -466,7 +466,7 @@ public interface Convert {
     }
 
     /**
-     * Parses the {@code byte[]} as a {@code double}
+     * Parses the {@code byte[]} as a {@code double} or {@code def} value
      */
     @SuppressWarnings("deprecation")
     static double toDouble(
@@ -527,7 +527,94 @@ public interface Convert {
     }
 
     /**
-     * Parses the {@code byte[]} as a {@code boolean}
+     * Parses the {@code byte[]} as a {@code int},
+     * {@code long}, {@code double}, or {@code def} value
+     */
+    @SuppressWarnings("deprecation")
+    static Number toNumber(
+        @NotNull byte[] it, int len, Number def
+    ) {
+        if (len == 0) {
+            return def;
+        }
+
+        byte b = it[0];
+        if (b > 0x39) {
+            return def;
+        }
+
+        if (b > 0x2F) {
+            if (len < 10) {
+                int num = toInt(
+                    it, len, 10, -1
+                );
+                if (num != -1) {
+                    return num;
+                }
+            } else {
+                long num = toLong(
+                    it, len, 10, -1
+                );
+                if (num > Integer.MAX_VALUE) {
+                    return num;
+                } else if (num != -1) {
+                    return (int) num;
+                }
+            }
+        } else {
+            if (b != 0x2D) {
+                return def;
+            }
+
+            if (len < 11) {
+                int num = toInt(
+                    it, len, 10, 1
+                );
+                if (num != 1) {
+                    return num;
+                }
+            } else {
+                long num = toLong(
+                    it, len, 10, 1
+                );
+                if (num < Integer.MIN_VALUE) {
+                    return num;
+                } else if (num != 1) {
+                    return (int) num;
+                }
+            }
+        }
+
+        int i = 1, r = 0;
+        while (i < len) {
+            byte t = it[i++];
+            if (t > 0x39) {
+                return def;
+            }
+
+            if (t < 0x30) {
+                if (t != '.' ||
+                    ++r == 2) {
+                    return def;
+                }
+            }
+        }
+
+        try {
+            return Double.parseDouble(
+                new String(
+                    it, 0, 0, len
+                )
+            );
+        } catch (Exception e) {
+            // Nothing
+        }
+
+        return def;
+    }
+
+    /**
+     * Parses the {@code byte[]} as a {@code boolean} or {@code def} value
      */
     static boolean toBoolean(
         @NotNull byte[] it, int len, boolean def
@@ -570,7 +657,7 @@ public interface Convert {
     }
 
     /**
-     * Parses the {@link CharSequence} as a {@code boolean}
+     * Parses the {@link CharSequence} as a {@code boolean} or {@code def} value
      */
     static boolean toBoolean(
         @NotNull CharSequence it, int len, boolean def

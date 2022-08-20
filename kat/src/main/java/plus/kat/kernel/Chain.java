@@ -1738,6 +1738,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@code UTF8} {@link Chain} as a {@code char}
      *
+     * @see Convert#toChar(byte[], int, char)
      * @since 0.0.3
      */
     public char toChar(
@@ -1751,6 +1752,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@link Chain} as a signed decimal {@code int}
      *
+     * @see Convert#toInt(byte[], int, int, int)
      * @since 0.0.3
      */
     public int toInt() {
@@ -1762,6 +1764,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@link Chain} as a signed decimal {@code int}
      *
+     * @see Convert#toInt(byte[], int, int, int)
      * @since 0.0.3
      */
     public int toInt(
@@ -1776,6 +1779,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Parses this {@link Chain} as a signed decimal {@code int}
      *
      * @param radix the radix to be used while parsing {@link Chain}
+     * @see Convert#toInt(byte[], int, int, int)
      * @since 0.0.3
      */
     public int toInt(
@@ -1792,6 +1796,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@link Chain} as a signed decimal {@code long}
      *
+     * @see Convert#toLong(byte[], int, long, long)
      * @since 0.0.3
      */
     public long toLong() {
@@ -1803,6 +1808,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@link Chain} as a signed decimal {@code long}
      *
+     * @see Convert#toLong(byte[], int, long, long)
      * @since 0.0.3
      */
     public long toLong(
@@ -1817,6 +1823,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Parses this {@link Chain} as a signed decimal {@code long}
      *
      * @param radix the radix to be used while parsing {@link Chain}
+     * @see Convert#toLong(byte[], int, long, long)
      * @since 0.0.3
      */
     public long toLong(
@@ -1833,6 +1840,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@link Chain} as a {@code float}
      *
+     * @see Convert#toFloat(byte[], int, float)
      * @since 0.0.3
      */
     public float toFloat() {
@@ -1844,6 +1852,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@link Chain} as a {@code float}
      *
+     * @see Convert#toFloat(byte[], int, float)
      * @since 0.0.3
      */
     public float toFloat(
@@ -1857,6 +1866,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@link Chain} as a {@code double}
      *
+     * @see Convert#toDouble(byte[], int, double)
      * @since 0.0.3
      */
     public double toDouble() {
@@ -1868,6 +1878,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@link Chain} as a {@code double}
      *
+     * @see Convert#toDouble(byte[], int, double)
      * @since 0.0.3
      */
     public double toDouble(
@@ -1879,8 +1890,37 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Parses this {@link Chain} as a {@code int},
+     * {@code long}, {@code double}, or {@code null}
+     *
+     * @see Convert#toNumber(byte[], int, Number)
+     * @since 0.0.3
+     */
+    public Number toNumber() {
+        return Convert.toNumber(
+            value, count, null
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@code int},
+     * {@code long}, {@code double}, or {@code def} value
+     *
+     * @see Convert#toNumber(byte[], int, Number)
+     * @since 0.0.3
+     */
+    public Number toNumber(
+        Number def
+    ) {
+        return Convert.toNumber(
+            value, count, def
+        );
+    }
+
+    /**
      * Parses this {@link Chain} as a {@code boolean}
      *
+     * @see Convert#toBoolean(byte[], int, boolean)
      * @since 0.0.3
      */
     public boolean toBoolean() {
@@ -1892,6 +1932,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@link Chain} as a {@code boolean}
      *
+     * @see Convert#toBoolean(byte[], int, boolean)
      * @since 0.0.3
      */
     public boolean toBoolean(
