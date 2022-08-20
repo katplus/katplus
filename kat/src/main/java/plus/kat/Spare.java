@@ -704,52 +704,6 @@ public interface Spare<K> extends Coder<K> {
         }
 
         /**
-         * auto search spare
-         */
-        static final boolean AUTO;
-
-        static {
-            AUTO = Config.get(
-                "kat.spare.search", true
-            );
-        }
-
-        /**
-         * Returns {@link Spare} of the specified {@code klass}
-         *
-         * @throws RunCrash             The Provider signals to interrupt subsequent lookup
-         * @throws NullPointerException If the specified {@code klass} is null
-         */
-        @Nullable
-        public Spare<?> lookup(
-            @NotNull String name,
-            @NotNull Supplier supplier
-        ) {
-            if (AUTO) try {
-                ClassLoader loader = Thread
-                    .currentThread()
-                    .getContextClassLoader();
-
-                if (loader == null) {
-                    loader = ClassLoader.getSystemClassLoader();
-                }
-
-                Spare<?> spare = load(
-                    Class.forName(name, false, loader), supplier
-                );
-                if (spare != null) {
-                    Impl.INS.put(
-                        name, spare
-                    );
-                }
-                return spare;
-            } catch (Exception e) {
-                // Nothing
-            }
-            return null;
-        }
-
-        /**
          * Returns {@link Spare} of the specified {@link Class}
          *
          * @throws NullPointerException If the specified {@code klass} is null

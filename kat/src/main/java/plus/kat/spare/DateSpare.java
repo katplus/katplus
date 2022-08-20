@@ -78,7 +78,8 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
     public boolean accept(
         @NotNull Class<?> klass
     ) {
-        return klass.isAssignableFrom(Date.class);
+        return klass == Date.class
+            || klass == Object.class;
     }
 
     @Override

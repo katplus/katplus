@@ -62,11 +62,6 @@ public final class RecordSpare<T> extends Workman<T> implements Worker<T> {
     }
 
     @Override
-    public T apply() {
-        return null;
-    }
-
-    @Override
     public T apply(
         @NotNull Alias alias
     ) throws Crash {

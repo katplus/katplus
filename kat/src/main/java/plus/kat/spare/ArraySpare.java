@@ -49,7 +49,8 @@ public class ArraySpare implements Spare<Object> {
     public boolean accept(
         @NotNull Class<?> klass
     ) {
-        return klass.isArray();
+        return klass.isArray()
+            || klass == Object.class;
     }
 
     @Override

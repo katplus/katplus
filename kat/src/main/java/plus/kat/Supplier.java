@@ -101,6 +101,19 @@ public interface Supplier {
     );
 
     /**
+     * Returns the {@link Spare} of {@link Class}
+     *
+     * @param klass specify the type of lookup
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @see Impl#lookup(Class)
+     * @see Spare#lookup(Class)
+     */
+    @Nullable <T> Spare<T> lookup(
+        @NotNull Class<T> klass
+    );
+
+    /**
      * Returns the {@link Spare} of {@link CharSequence}
      *
      * @param klass specify the type of lookup
@@ -113,16 +126,16 @@ public interface Supplier {
     );
 
     /**
-     * Returns the {@link Spare} of {@link Class}
+     * Returns the {@link Spare} of {@link CharSequence}
      *
      * @param klass specify the type of lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Impl#lookup(Class)
-     * @see Spare#lookup(Class)
+     * @see Impl#lookup(CharSequence, boolean)
+     * @since 0.0.3
      */
     @Nullable <T> Spare<T> lookup(
-        @NotNull Class<T> klass
+        @NotNull CharSequence klass, boolean search
     );
 
     /**
@@ -213,7 +226,9 @@ public interface Supplier {
         @NotNull CharSequence klass,
         @NotNull Object data
     ) {
-        Spare<E> spare = lookup(klass);
+        Spare<E> spare = lookup(
+            klass, true
+        );
 
         if (spare == null) {
             return null;
@@ -435,7 +450,9 @@ public interface Supplier {
         @NotNull Job job,
         @NotNull Event<T> event
     ) {
-        Spare<T> spare = lookup(klass);
+        Spare<T> spare = lookup(
+            klass, true
+        );
 
         if (spare == null) {
             return null;
@@ -623,9 +640,16 @@ public interface Supplier {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public <T> Spare<T> lookup(
             CharSequence klass
+        ) {
+            return lookup(klass, false);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> Spare<T> lookup(
+            CharSequence klass, boolean search
         ) {
             Spare<?> spare = get(klass);
 
@@ -641,7 +665,11 @@ public interface Supplier {
             Cluster ins = Cluster.INS;
             String name = klass.toString();
 
-            for (Provider p : ins.providers) {
+            Provider[] $ = ins.providers;
+            int j = 0, k = $.length - 1;
+
+            for (; j < k; j++) {
+                Provider p = $[j];
                 try {
                     spare = p.lookup(
                         name, this
@@ -655,6 +683,28 @@ public interface Supplier {
                 if (spare != null) {
                     return (Spare<T>) spare;
                 }
+            }
+
+            if (search) try {
+                ClassLoader loader = Thread
+                    .currentThread()
+                    .getContextClassLoader();
+
+                if (loader == null) {
+                    loader = ClassLoader.getSystemClassLoader();
+                }
+
+                spare = ins.load(
+                    Class.forName(name, false, loader), this
+                );
+                if (spare != null) {
+                    putIfAbsent(
+                        name, spare
+                    );
+                }
+                return (Spare<T>) spare;
+            } catch (Exception e) {
+                // Nothing
             }
 
             return null;
