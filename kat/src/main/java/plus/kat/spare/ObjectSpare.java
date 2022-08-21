@@ -190,6 +190,8 @@ public class ObjectSpare extends Property<Object> {
     public Builder<Map> getBuilder(
         @Nullable Type type
     ) {
-        return new MapSpare.Builder0(type);
+        return new MapSpare.Builder0(
+            Map.class, type
+        );
     }
 }

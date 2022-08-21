@@ -308,12 +308,6 @@ public class Chan implements Flag {
             );
         }
 
-        if (value instanceof List) {
-            return coding(
-                alias, ListSpare.INSTANCE, value
-            );
-        }
-
         if (value instanceof Set) {
             return coding(
                 alias, SetSpare.INSTANCE, value
@@ -322,7 +316,7 @@ public class Chan implements Flag {
 
         if (value instanceof Iterable) {
             return coding(
-                alias, IterableSpare.INSTANCE, value
+                alias, ListSpare.INSTANCE, value
             );
         }
 

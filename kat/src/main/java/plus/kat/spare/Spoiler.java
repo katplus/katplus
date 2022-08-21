@@ -31,13 +31,13 @@ public interface Spoiler {
     boolean hasNext();
 
     /**
-     * Returns the key corresponding to this {@link Spoiler}
+     * Returns the current key corresponding to this {@link Spoiler}
      */
     @NotNull
     String getKey();
 
     /**
-     * Returns the value corresponding to this {@link Spoiler}
+     * Returns the current value corresponding to this {@link Spoiler}
      */
     @Nullable
     Object getValue();

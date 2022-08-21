@@ -41,9 +41,24 @@ public class SetSpare implements Spare<Set> {
     public static final SetSpare
         INSTANCE = new SetSpare();
 
+    protected final Class<Set> klass;
+
+    public SetSpare() {
+        this(
+            HashSet.class
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    public SetSpare(
+        @NotNull Class<?> klass
+    ) {
+        this.klass = (Class<Set>) klass;
+    }
+
     @Override
     public Set apply() {
-        return new HashSet();
+        return apply(klass);
     }
 
     @Override
@@ -53,9 +68,9 @@ public class SetSpare implements Spare<Set> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return Set.class.isAssignableFrom(klass);
+        return clazz.isAssignableFrom(klass);
     }
 
     @Override
@@ -65,7 +80,7 @@ public class SetSpare implements Spare<Set> {
 
     @Override
     public Class<Set> getType() {
-        return Set.class;
+        return klass;
     }
 
     @Override
@@ -103,8 +118,25 @@ public class SetSpare implements Spare<Set> {
             return null;
         }
 
-        if (data instanceof Set) {
+        Class<?> clazz = data.getClass();
+        if (clazz == klass) {
             return (Set) data;
+        }
+
+        if (data instanceof Collection) {
+            Set set = apply();
+            set.addAll(
+                (Set) data
+            );
+            return set;
+        }
+
+        if (data instanceof Iterable) {
+            Set set = apply();
+            for (Object o : (Iterable) data) {
+                set.add(o);
+            }
+            return set;
         }
 
         if (data instanceof CharSequence) {
@@ -113,23 +145,9 @@ public class SetSpare implements Spare<Set> {
             );
         }
 
-        if (data instanceof Collection) {
-            return new HashSet(
-                (Collection) data
-            );
-        }
-
-        if (data instanceof Iterable) {
-            Set set = new HashSet();
-            for (Object o : (Iterable) data) {
-                set.add(o);
-            }
-            return set;
-        }
-
-        if (data.getClass().isArray()) {
+        if (clazz.isArray()) {
             int size = Array.getLength(data);
-            Set set = new HashSet(size);
+            Set set = apply();
 
             for (int i = 0; i < size; i++) {
                 set.add(
@@ -142,23 +160,71 @@ public class SetSpare implements Spare<Set> {
         return null;
     }
 
+    @NotNull
+    public static Set apply(
+        @Nullable Type type
+    ) {
+        if (type == Set.class ||
+            type == HashSet.class) {
+            return new HashSet<>();
+        }
+
+        if (type == LinkedHashSet.class) {
+            return new LinkedHashSet<>();
+        }
+
+        if (type == TreeSet.class ||
+            type == SortedSet.class ||
+            type == NavigableSet.class) {
+            return new TreeSet<>();
+        }
+
+        if (type == ConcurrentSkipListSet.class) {
+            return new ConcurrentSkipListSet<>();
+        }
+
+        if (type == AbstractSet.class) {
+            return new HashSet<>();
+        }
+
+        throw new RunCrash(
+            "Can't create instance of '" + type + "'", false
+        );
+    }
+
+    public static Spare<Set> of(
+        @NotNull Class<?> type
+    ) {
+        if (type == Set.class ||
+            type == HashSet.class) {
+            return INSTANCE;
+        }
+        return new SetSpare(type);
+    }
+
     @Override
     public Builder<Set> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder0(type);
+        return new Builder0(
+            klass, type
+        );
     }
 
     public static class Builder0 extends Builder<Set> {
 
-        private Set entity;
-        private Type type;
-        private Type param;
-        private Spare<?> v;
+        protected Type type;
+        protected Type tag;
+        protected Set entity;
+
+        protected Type param;
+        protected Spare<?> v;
 
         public Builder0(
+            @NotNull Type tag,
             @Nullable Type type
         ) {
+            this.tag = tag;
             this.type = type;
         }
 
@@ -167,50 +233,17 @@ public class SetSpare implements Spare<Set> {
             @NotNull Alias alias
         ) throws Crash, IOException {
             Type raw = type;
-            if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
+            if (raw instanceof ParameterizedType) {
+                ParameterizedType p = (ParameterizedType) raw;
                 raw = p.getRawType();
                 param = p.getActualTypeArguments()[0];
                 v = Reflect.lookup(
                     param, supplier
                 );
             }
-
-            // hash
-            if (raw == null ||
-                raw == Set.class ||
-                raw == HashSet.class) {
-                entity = new HashSet<>();
-            }
-
-            // linked
-            else if (raw == LinkedHashSet.class) {
-                entity = new LinkedHashSet<>();
-            }
-
-            // tree
-            else if (raw == TreeSet.class ||
-                raw == SortedSet.class ||
-                raw == NavigableSet.class) {
-                entity = new TreeSet<>();
-            }
-
-            // concurrent
-            else if (raw == ConcurrentSkipListSet.class) {
-                entity = new ConcurrentSkipListSet<>();
-            }
-
-            // abstract
-            else if (raw == AbstractSet.class) {
-                entity = new HashSet<>();
-            }
-
-            // crash
-            else {
-                throw new Crash(
-                    "Can't create instance of '" + raw + "'", false
-                );
-            }
+            entity = apply(
+                raw == null ? tag : raw
+            );
         }
 
         @Override
@@ -280,9 +313,6 @@ public class SetSpare implements Spare<Set> {
 
         @Override
         public void onDestroy() {
-            type = null;
-            v = null;
-            param = null;
             entity = null;
         }
     }

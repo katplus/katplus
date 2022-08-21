@@ -554,7 +554,6 @@ public interface Spare<K> extends Coder<K> {
             INS.put(Map.class, MapSpare.INSTANCE);
             INS.put(Set.class, SetSpare.INSTANCE);
             INS.put(List.class, ListSpare.INSTANCE);
-            INS.put(Iterable.class, IterableSpare.INSTANCE);
             INS.put(BigInteger.class, BigIntegerSpare.INSTANCE);
             INS.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
             INS.put(StringBuffer.class, StringBufferSpare.INSTANCE);
@@ -835,11 +834,11 @@ public interface Spare<K> extends Coder<K> {
                             } else if (klass == Locale.class) {
                                 spare = LocaleSpare.INSTANCE;
                             } else if (Map.class.isAssignableFrom(klass)) {
-                                spare = MapSpare.INSTANCE;
+                                spare = MapSpare.of(klass);
                             } else if (Set.class.isAssignableFrom(klass)) {
-                                spare = SetSpare.INSTANCE;
+                                spare = SetSpare.of(klass);
                             } else if (List.class.isAssignableFrom(klass)) {
-                                spare = ListSpare.INSTANCE;
+                                spare = ListSpare.of(klass);
                             } else {
                                 return null;
                             }
@@ -852,11 +851,11 @@ public interface Spare<K> extends Coder<K> {
                         // java.util.concurrent.
                         case 20: {
                             if (Map.class.isAssignableFrom(klass)) {
-                                spare = MapSpare.INSTANCE;
+                                spare = MapSpare.of(klass);
                             } else if (Set.class.isAssignableFrom(klass)) {
-                                spare = SetSpare.INSTANCE;
+                                spare = SetSpare.of(klass);
                             } else if (List.class.isAssignableFrom(klass)) {
-                                spare = ListSpare.INSTANCE;
+                                spare = ListSpare.of(klass);
                             } else {
                                 return null;
                             }

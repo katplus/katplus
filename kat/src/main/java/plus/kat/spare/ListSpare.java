@@ -41,9 +41,24 @@ public class ListSpare implements Spare<List> {
     public static final ListSpare
         INSTANCE = new ListSpare();
 
+    protected final Class<List> klass;
+
+    public ListSpare() {
+        this(
+            ArrayList.class
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    public ListSpare(
+        @NotNull Class<?> klass
+    ) {
+        this.klass = (Class<List>) klass;
+    }
+
     @Override
     public List apply() {
-        return new ArrayList();
+        return apply(klass);
     }
 
     @Override
@@ -53,9 +68,9 @@ public class ListSpare implements Spare<List> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return List.class.isAssignableFrom(klass);
+        return clazz.isAssignableFrom(klass);
     }
 
     @Override
@@ -65,7 +80,7 @@ public class ListSpare implements Spare<List> {
 
     @Override
     public Class<List> getType() {
-        return List.class;
+        return klass;
     }
 
     @Override
@@ -86,16 +101,11 @@ public class ListSpare implements Spare<List> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        List<?> val =
-            (List<?>) value;
+        Iterable<?> val =
+            (Iterable<?>) value;
 
-        int i = 0,
-            l = val.size();
-
-        while (i < l) {
-            chan.set(
-                null, val.get(i++)
-            );
+        for (Object v : val) {
+            chan.set(null, v);
         }
     }
 
@@ -109,8 +119,25 @@ public class ListSpare implements Spare<List> {
             return null;
         }
 
-        if (data instanceof List) {
+        Class<?> clazz = data.getClass();
+        if (clazz == klass) {
             return (List) data;
+        }
+
+        if (data instanceof Collection) {
+            List list = apply();
+            list.addAll(
+                (Collection) data
+            );
+            return list;
+        }
+
+        if (data instanceof Iterable) {
+            List list = apply();
+            for (Object o : (Iterable) data) {
+                list.add(o);
+            }
+            return list;
         }
 
         if (data instanceof CharSequence) {
@@ -119,21 +146,7 @@ public class ListSpare implements Spare<List> {
             );
         }
 
-        if (data instanceof Collection) {
-            return new ArrayList(
-                (Collection) data
-            );
-        }
-
-        if (data instanceof Iterable) {
-            List list = new ArrayList();
-            for (Object o : (Iterable) data) {
-                list.add(o);
-            }
-            return list;
-        }
-
-        if (data.getClass().isArray()) {
+        if (clazz.isArray()) {
             int size = Array.getLength(data);
             List list = new ArrayList(size);
 
@@ -148,23 +161,74 @@ public class ListSpare implements Spare<List> {
         return null;
     }
 
+    @NotNull
+    public static List apply(
+        @Nullable Type type
+    ) {
+        if (type == null ||
+            type == List.class ||
+            type == ArrayList.class) {
+            return new ArrayList<>();
+        }
+
+        if (type == Stack.class) {
+            return new Stack<>();
+        }
+
+        if (type == Vector.class) {
+            return new Vector<>();
+        }
+
+        if (type == LinkedList.class) {
+            return new LinkedList<>();
+        }
+
+        if (type == CopyOnWriteArrayList.class) {
+            return new CopyOnWriteArrayList<>();
+        }
+
+        if (type == AbstractList.class) {
+            return new ArrayList<>();
+        }
+
+        throw new RunCrash(
+            "Can't create instance of '" + type + "'", false
+        );
+    }
+
+    public static Spare<List> of(
+        @NotNull Class<?> type
+    ) {
+        if (type == List.class ||
+            type == ArrayList.class) {
+            return INSTANCE;
+        }
+        return new ListSpare(type);
+    }
+
     @Override
     public Builder<List> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder0(type);
+        return new Builder0(
+            klass, type
+        );
     }
 
     public static class Builder0 extends Builder<List> {
 
-        private List entity;
-        private Type type;
-        private Type param;
-        private Spare<?> v;
+        protected Type type;
+        protected Type tag;
+        protected List entity;
+
+        protected Type param;
+        protected Spare<?> v;
 
         public Builder0(
+            @NotNull Type tag,
             @Nullable Type type
         ) {
+            this.tag = tag;
             this.type = type;
         }
 
@@ -173,53 +237,17 @@ public class ListSpare implements Spare<List> {
             @NotNull Alias alias
         ) throws Crash, IOException {
             Type raw = type;
-            if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
+            if (raw instanceof ParameterizedType) {
+                ParameterizedType p = (ParameterizedType) raw;
                 raw = p.getRawType();
                 param = p.getActualTypeArguments()[0];
                 v = Reflect.lookup(
                     param, supplier
                 );
             }
-
-            // array
-            if (raw == null ||
-                raw == List.class ||
-                raw == ArrayList.class) {
-                entity = new ArrayList<>();
-            }
-
-            // stack
-            else if (raw == Stack.class) {
-                entity = new Stack<>();
-            }
-
-            // vector
-            else if (raw == Vector.class) {
-                entity = new Vector<>();
-            }
-
-            // linked
-            else if (raw == LinkedList.class) {
-                entity = new LinkedList<>();
-            }
-
-            // concurrent
-            else if (raw == CopyOnWriteArrayList.class) {
-                entity = new CopyOnWriteArrayList<>();
-            }
-
-            // abstract
-            else if (raw == AbstractList.class) {
-                entity = new ArrayList<>();
-            }
-
-            // crash
-            else {
-                throw new Crash(
-                    "Can't create instance of '" + raw + "'", false
-                );
-            }
+            entity = apply(
+                raw == null ? tag : raw
+            );
         }
 
         @Override
@@ -289,9 +317,6 @@ public class ListSpare implements Spare<List> {
 
         @Override
         public void onDestroy() {
-            type = null;
-            v = null;
-            param = null;
             entity = null;
         }
     }

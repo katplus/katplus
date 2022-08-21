@@ -2,7 +2,6 @@ package plus.kat;
 
 import org.junit.jupiter.api.Test;
 import plus.kat.anno.Expose;
-import plus.kat.spare.IterableSpare;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -311,68 +310,6 @@ public class SupplierTest {
             assertTrue(klass.isInstance(list));
             assertEquals(1, list.get(0));
             assertEquals("kat", list.get(1));
-        }
-    }
-
-    @Test
-    public void test_read_Iterable() {
-        IterableSpare spare = IterableSpare.INSTANCE;
-
-        Class<Iterable<Object>>[] cls = new Class[]{
-            Iterable.class,
-            ArrayList.class,
-            HashSet.class,
-            Collection.class,
-            Deque.class,
-            ArrayDeque.class
-        };
-
-        for (Class<Iterable<Object>> klass : cls) {
-            Iterable<Object> iterable = spare.read(
-                new Event<Iterable<Object>>(
-                    "{i(1)s(kat)}"
-                ).with(
-                    klass
-                )
-            );
-
-            assertNotNull(iterable);
-            assertTrue(klass.isInstance(iterable));
-
-            Iterator<?> it = iterable.iterator();
-
-            assertTrue(it.hasNext());
-            assertEquals(1, it.next());
-
-            assertTrue(it.hasNext());
-            assertEquals("kat", it.next());
-        }
-
-        Class<Iterable<Object>>[] cls2 = new Class[]{
-            Queue.class,
-            PriorityQueue.class,
-            AbstractQueue.class
-        };
-
-        for (Class<Iterable<Object>> klass : cls2) {
-            Iterable<Object> iterable = spare.read(
-                new Event<Iterable<Object>>(
-                    "{i(123)i(456)}"
-                ).with(
-                    klass
-                )
-            );
-
-            assertNotNull(iterable);
-            assertTrue(klass.isInstance(iterable));
-
-            Iterator<?> it = iterable.iterator();
-
-            assertTrue(it.hasNext());
-            assertEquals(123, it.next());
-
-            assertTrue(it.hasNext());
-            assertEquals(456, it.next());
         }
     }
 

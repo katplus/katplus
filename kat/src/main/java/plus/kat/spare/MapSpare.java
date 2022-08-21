@@ -43,9 +43,24 @@ public class MapSpare implements Spare<Map> {
     public static final MapSpare
         INSTANCE = new MapSpare();
 
+    protected final Class<Map> klass;
+
+    public MapSpare() {
+        this(
+            LinkedHashMap.class
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    public MapSpare(
+        @NotNull Class<?> klass
+    ) {
+        this.klass = (Class<Map>) klass;
+    }
+
     @Override
     public Map apply() {
-        return new LinkedHashMap<>();
+        return apply(klass);
     }
 
     @Override
@@ -55,9 +70,9 @@ public class MapSpare implements Spare<Map> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return Map.class.isAssignableFrom(klass);
+        return clazz.isAssignableFrom(klass);
     }
 
     @Override
@@ -67,7 +82,7 @@ public class MapSpare implements Spare<Map> {
 
     @Override
     public Class<Map> getType() {
-        return Map.class;
+        return klass;
     }
 
     @Override
@@ -102,7 +117,7 @@ public class MapSpare implements Spare<Map> {
         @NotNull Supplier supplier,
         @NotNull ResultSet data
     ) throws SQLException {
-        Map entity = apply();
+        Map map = apply();
         ResultSetMetaData meta =
             data.getMetaData();
 
@@ -112,15 +127,16 @@ public class MapSpare implements Spare<Map> {
             if (key == null) {
                 key = meta.getColumnName(i);
             }
-            entity.put(
+            map.put(
                 key, data.getObject(i)
             );
         }
 
-        return entity;
+        return map;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map cast(
         @NotNull Supplier supplier,
         @Nullable Object data
@@ -129,14 +145,35 @@ public class MapSpare implements Spare<Map> {
             return null;
         }
 
-        if (data instanceof Map) {
+        Class<?> clazz = data.getClass();
+        if (clazz == klass) {
             return (Map) data;
+        }
+
+        if (data instanceof Map) {
+            Map map = apply();
+            map.putAll(
+                (Map<?, ?>) data
+            );
+            return map;
         }
 
         if (data instanceof CharSequence) {
             return Casting.cast(
                 this, (CharSequence) data, null, supplier
             );
+        }
+
+        Spoiler spoiler = supplier.flat(data);
+        if (spoiler != null) {
+            Map map = apply();
+            while (spoiler.hasNext()) {
+                map.put(
+                    spoiler.getKey(),
+                    spoiler.getValue()
+                );
+            }
+            return map;
         }
 
         return null;
@@ -163,11 +200,76 @@ public class MapSpare implements Spare<Map> {
         return true;
     }
 
+    @NotNull
+    public static Map apply(
+        @Nullable Type type
+    ) {
+        if (type == Map.class ||
+            type == LinkedHashMap.class) {
+            return new LinkedHashMap<>();
+        }
+
+        if (type == HashMap.class) {
+            return new HashMap<>();
+        }
+
+        if (type == ConcurrentHashMap.class ||
+            type == ConcurrentMap.class) {
+            return new ConcurrentHashMap<>();
+        }
+
+        if (type == TreeMap.class) {
+            return new TreeMap<>();
+        }
+
+        if (type == Hashtable.class) {
+            return new Hashtable<>();
+        }
+
+        if (type == WeakHashMap.class) {
+            return new WeakHashMap<>();
+        }
+
+        if (type == SortedMap.class ||
+            type == NavigableMap.class) {
+            return new TreeMap<>();
+        }
+
+        if (type == Properties.class) {
+            return new Properties();
+        }
+
+        if (type == AbstractMap.class) {
+            return new HashMap<>();
+        }
+
+        if (type == ConcurrentSkipListMap.class ||
+            type == ConcurrentNavigableMap.class) {
+            return new ConcurrentSkipListMap<>();
+        }
+
+        throw new RunCrash(
+            "Can't create instance of '" + type + "'", false
+        );
+    }
+
+    public static Spare<Map> of(
+        @NotNull Class<?> type
+    ) {
+        if (type == Map.class ||
+            type == LinkedHashMap.class) {
+            return INSTANCE;
+        }
+        return new MapSpare(type);
+    }
+
     @Override
     public Builder<Map> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder0(type);
+        return new Builder0(
+            klass, type
+        );
     }
 
     public static class Spoiler0 implements Spoiler {
@@ -209,14 +311,18 @@ public class MapSpare implements Spare<Map> {
 
     public static class Builder0 extends Builder<Map> {
 
-        private Map entity;
-        private Type type;
-        private Type tk, tv;
-        private Spare<?> k, v;
+        protected Type type;
+        protected Type tag;
+        protected Map entity;
+
+        protected Type tk, tv;
+        protected Spare<?> k, v;
 
         public Builder0(
+            @NotNull Type tag,
             @Nullable Type type
         ) {
+            this.tag = tag;
             this.type = type;
         }
 
@@ -225,8 +331,8 @@ public class MapSpare implements Spare<Map> {
             @NotNull Alias alias
         ) throws Crash, IOException {
             Type raw = type;
-            if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
+            if (raw instanceof ParameterizedType) {
+                ParameterizedType p = (ParameterizedType) raw;
                 raw = p.getRawType();
                 Type[] ary = p.getActualTypeArguments();
                 k = Reflect.lookup(
@@ -236,72 +342,9 @@ public class MapSpare implements Spare<Map> {
                     tv = ary[1], supplier
                 );
             }
-
-            // linked
-            if (raw == null ||
-                raw == Map.class) {
-                entity = new LinkedHashMap<>();
-            }
-
-            // hash
-            else if (raw == HashMap.class) {
-                entity = new HashMap<>();
-            }
-
-            // linked
-            else if (raw == LinkedHashMap.class) {
-                entity = new LinkedHashMap<>();
-            }
-
-            // concurrent
-            else if (raw == ConcurrentHashMap.class ||
-                raw == ConcurrentMap.class) {
-                entity = new ConcurrentHashMap<>();
-            }
-
-            // tree
-            else if (raw == TreeMap.class) {
-                entity = new TreeMap<>();
-            }
-
-            // table
-            else if (raw == Hashtable.class) {
-                entity = new Hashtable<>();
-            }
-
-            // weak
-            else if (raw == WeakHashMap.class) {
-                entity = new WeakHashMap<>();
-            }
-
-            // sorted
-            else if (raw == SortedMap.class ||
-                raw == NavigableMap.class) {
-                entity = new TreeMap<>();
-            }
-
-            // property
-            else if (raw == Properties.class) {
-                entity = new Properties();
-            }
-
-            // abstract
-            else if (raw == AbstractMap.class) {
-                entity = new HashMap<>();
-            }
-
-            // concurrent
-            else if (raw == ConcurrentSkipListMap.class ||
-                raw == ConcurrentNavigableMap.class) {
-                entity = new ConcurrentSkipListMap<>();
-            }
-
-            // crash
-            else {
-                throw new Crash(
-                    "Can't create instance of '" + raw + "'", false
-                );
-            }
+            entity = apply(
+                raw == null ? tag : raw
+            );
         }
 
         @Override
@@ -395,11 +438,6 @@ public class MapSpare implements Spare<Map> {
 
         @Override
         public void onDestroy() {
-            type = null;
-            k = null;
-            v = null;
-            tv = null;
-            tk = null;
             entity = null;
         }
     }

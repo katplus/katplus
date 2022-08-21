@@ -58,7 +58,6 @@ public class SpareTest {
             MapSpare.INSTANCE,
             SetSpare.INSTANCE,
             ListSpare.INSTANCE,
-            IterableSpare.INSTANCE,
             BigIntegerSpare.INSTANCE,
             BigDecimalSpare.INSTANCE,
         };
