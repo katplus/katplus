@@ -38,7 +38,6 @@ import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
-import java.util.function.BiConsumer;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl;
@@ -165,8 +164,33 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
+     * If {@link K} is a Bean, then returns
+     * a spoiler over all elements of the {@code bean}
+     *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  Spoiler spoiler = spare.flat(user);
+     *
+     *  while (spoiler.hasNext()) {
+     *      String key = spoiler.getKey();
+     *      Object val = spoiler.getValue();
+     *  }
+     * }</pre>
+     *
+     * @return {@link Spoiler} or {@code null}
+     * @throws NullPointerException If the {@code bean} is null
+     * @since 0.0.3
+     */
+    @Nullable
+    default Spoiler flat(
+        @NotNull K bean
+    ) {
+        return null;
+    }
+
+    /**
      * If {@link K} is a Bean, then perform a given
-     * action in each item until all entries are processed.
+     * visitor in each item until all entries are processed
      *
      * <pre>{@code
      *  Spare<User> spare = ...
@@ -182,12 +206,12 @@ public interface Spare<K> extends Coder<K> {
      * }</pre>
      *
      * @return {@code true} if the bean can be flattened otherwise {@code false}
-     * @throws NullPointerException If the {@code bean} or {@code action} is null
+     * @throws NullPointerException If the {@code bean} or {@code visitor} is null
      * @since 0.0.3
      */
     default boolean flat(
         @NotNull K bean,
-        @NotNull BiConsumer<String, Object> action
+        @NotNull Visitor visitor
     ) {
         return false;
     }

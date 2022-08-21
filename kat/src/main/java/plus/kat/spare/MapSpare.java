@@ -26,7 +26,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.BiConsumer;
 
 import plus.kat.*;
 import plus.kat.chain.*;
@@ -144,13 +143,20 @@ public class MapSpare implements Spare<Map> {
     }
 
     @Override
+    public Spoiler flat(
+        @NotNull Map bean
+    ) {
+        return new Spoiler0(bean);
+    }
+
+    @Override
     public boolean flat(
         @NotNull Map bean,
-        @NotNull BiConsumer<String, Object> action
+        @NotNull Visitor visitor
     ) {
         for (Map.Entry<?, ?> entry : ((Map<?, ?>) bean).entrySet()) {
-            action.accept(
-                entry.getKey().toString(),
+            visitor.accept(
+                entry.getKey(),
                 entry.getValue()
             );
         }
@@ -162,6 +168,43 @@ public class MapSpare implements Spare<Map> {
         @Nullable Type type
     ) {
         return new Builder0(type);
+    }
+
+    public static class Spoiler0 implements Spoiler {
+
+        private Map.Entry entry;
+        private final Iterator<Map.Entry> it;
+
+        @SuppressWarnings("unchecked")
+        public Spoiler0(
+            @NotNull Map map
+        ) {
+            it = map.entrySet().iterator();
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (it.hasNext()) {
+                entry = it.next();
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public String getKey() {
+            Object key = entry.getKey();
+            if (key == null) {
+                return "";
+            }
+            return key.toString();
+        }
+
+        @Override
+        public Object getValue() {
+            return entry.getValue();
+        }
     }
 
     public static class Builder0 extends Builder<Map> {

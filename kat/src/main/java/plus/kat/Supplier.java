@@ -321,6 +321,78 @@ public interface Supplier {
     }
 
     /**
+     * If {@link K} is a Bean, then returns
+     * a spoiler over all elements of the {@code bean}
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spoiler spoiler = supplier.flat(user);
+     *
+     *  while (spoiler.hasNext()) {
+     *      String key = spoiler.getKey();
+     *      Object val = spoiler.getValue();
+     *  }
+     * }</pre>
+     *
+     * @return {@link Spoiler} or {@code null}
+     * @throws NullPointerException If the {@code bean} is null
+     * @since 0.0.3
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    default <K> Spoiler flat(
+        @NotNull K bean
+    ) {
+        Class<K> klass = (Class<K>)
+            bean.getClass();
+        Spare<K> spare = lookup(klass);
+
+        if (spare == null) {
+            return null;
+        }
+
+        return spare.flat(bean);
+    }
+
+    /**
+     * If {@link K} is a Bean, then perform a given
+     * visitor in each item until all entries are processed
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Map<String, Object> collector = ...
+     *
+     *  User user = ...
+     *  supplier.flat(
+     *    user, collector::put
+     *  );
+     *
+     *  int id = (int) collector.get("id");
+     *  String name = (String) collector.get("name");
+     * }</pre>
+     *
+     * @return {@code true} if the bean can be flattened otherwise {@code false}
+     * @throws NullPointerException If the {@code bean} or {@code visitor} is null
+     * @see Spare#flat(Object, Visitor)
+     * @since 0.0.3
+     */
+    @SuppressWarnings("unchecked")
+    default <K> boolean flat(
+        @NotNull K bean,
+        @NotNull Visitor visitor
+    ) {
+        Class<K> klass = (Class<K>)
+            bean.getClass();
+        Spare<K> spare = lookup(klass);
+
+        if (spare == null) {
+            return false;
+        }
+
+        return spare.flat(bean, visitor);
+    }
+
+    /**
      * Parse {@link Kat} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled

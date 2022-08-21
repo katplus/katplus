@@ -23,8 +23,6 @@ import java.lang.invoke.*;
 import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.function.BiConsumer;
 
 import plus.kat.*;
 import plus.kat.anno.*;
@@ -198,7 +196,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
     }
 
     @Override
-    public <K> T apply(
+    public T apply(
         @NotNull Object result,
         @NotNull Supplier supplier
     ) {

@@ -31,8 +31,6 @@ import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.function.BiConsumer;
 
 /**
  * @author kraity
@@ -206,15 +204,26 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     }
 
     @Override
+    public Spoiler flat(
+        @NotNull T bean
+    ) {
+        assert bean != null;
+        return new Iter<>(
+            bean, this
+        );
+    }
+
+    @Override
     public boolean flat(
         @NotNull T bean,
-        @NotNull BiConsumer<String, Object> action
+        @NotNull Visitor visitor
     ) {
+        assert bean != null;
         Node<T> node = head;
         while (node != null) {
-            Object val = node.onApply(bean);
+            Object val = node.apply(bean);
             if (val != null || node.nullable) {
-                action.accept(
+                visitor.visit(
                     node.key, val
                 );
             }
@@ -571,40 +580,64 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @since 0.0.3
      */
     @Nullable
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public <K> T apply(
+    public T apply(
         @NotNull Object result,
         @NotNull Supplier supplier
     ) {
-        Class<K> clazz = (Class<K>)
-            result.getClass();
-        Spare<K> spare = supplier.lookup(clazz);
-
-        if (spare != null &&
-            spare.getFlag() == Boolean.TRUE) {
-            try {
-                T entity = apply(
-                    Alias.EMPTY
-                );
-
-                Factory0<T> it =
-                    new Factory0<>(
-                        this, supplier
-                    );
-
-                it.attach(entity);
-
-                spare.flat(
-                    (K) result, (BiConsumer) it
-                );
-
-                return it.detach();
-            } catch (Exception e) {
-                return null;
-            }
+        Spoiler it = supplier.flat(result);
+        if (it == null) {
+            return null;
         }
 
-        return null;
+        try {
+            T entity = apply(
+                Alias.EMPTY
+            );
+
+            while (it.hasNext()) {
+                // check the key
+                String key = it.getKey();
+
+                // try lookup
+                Setter<T, ?> setter = setter(key);
+                if (setter == null) {
+                    continue;
+                }
+
+                // check the value
+                Object val = it.getValue();
+                if (val == null) {
+                    continue;
+                }
+
+                // get class specified
+                Class<?> klass = setter.getType();
+
+                // update field
+                if (klass.isInstance(val)) {
+                    setter.onAccept(
+                        entity, val
+                    );
+                    continue;
+                }
+
+                // get spare specified
+                Spare<?> spare = supplier.lookup(klass);
+
+                // update field
+                if (spare != null) {
+                    setter.onAccept(
+                        entity, spare.cast(
+                            supplier, val
+                        )
+                    );
+                }
+            }
+
+            return entity;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -614,39 +647,114 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @since 0.0.3
      */
     @Nullable
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public <K> T apply(
+    public T apply(
         @NotNull Object result,
         @NotNull int range,
         @NotNull Supplier supplier
     ) {
-        Class<K> clazz = (Class<K>)
-            result.getClass();
-        Spare<K> spare = supplier.lookup(clazz);
-
-        if (spare != null &&
-            spare.getFlag() == Boolean.TRUE) {
-            try {
-                Factory1<T> it =
-                    new Factory1<>(
-                        this, supplier
-                    );
-
-                it.attach(
-                    new Object[range]
-                );
-
-                spare.flat(
-                    (K) result, (BiConsumer) it
-                );
-
-                return it.detach();
-            } catch (Exception e) {
-                return null;
-            }
+        Spoiler it = supplier.flat(result);
+        if (it == null) {
+            return null;
         }
 
-        return null;
+        try {
+            Object[] data =
+                new Object[range];
+            while (it.hasNext()) {
+                // check the key
+                String key = it.getKey();
+
+                // try lookup
+                Target target = target(key);
+                if (target == null) {
+                    continue;
+                }
+
+                // check index
+                int k = target.getIndex();
+                if (k < 0 || k >= data.length) {
+                    throw new RunCrash(
+                        "'" + k + "' out of range"
+                    );
+                }
+
+                // check the value
+                Object val = it.getValue();
+                if (val == null) {
+                    continue;
+                }
+
+                // get class specified
+                Class<?> klass = target.getType();
+
+                // update field
+                if (klass.isInstance(val)) {
+                    data[k] = val;
+                    continue;
+                }
+
+                // get spare specified
+                Spare<?> spare = supplier.lookup(klass);
+
+                // update field
+                if (spare != null) {
+                    data[k] = spare.cast(
+                        supplier, val
+                    );
+                }
+            }
+
+            return apply(
+                Alias.EMPTY, data
+            );
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.3
+     */
+    public static class Iter<K>
+        implements Spoiler {
+
+        protected Node<K> node;
+        protected Node<K> next;
+
+        protected K bean;
+        protected Workman<K> workman;
+
+        public Iter(
+            @NotNull K bean,
+            @NotNull Workman<K> workman
+        ) {
+            this.bean = bean;
+            next = workman.head;
+            this.workman = workman;
+        }
+
+        @Override
+        public String getKey() {
+            return node.key;
+        }
+
+        @Override
+        public Object getValue() {
+            return node.apply(bean);
+        }
+
+        @Override
+        public boolean hasNext() {
+            Node<K> n = next;
+            if (n != null) {
+                node = n;
+                next = n.later;
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     /**

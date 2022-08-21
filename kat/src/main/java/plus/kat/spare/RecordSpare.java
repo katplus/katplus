@@ -98,7 +98,7 @@ public final class RecordSpare<T> extends Workman<T> implements Worker<T> {
     }
 
     @Override
-    public <K> T apply(
+    public T apply(
         @NotNull Object result,
         @NotNull Supplier supplier
     ) {
