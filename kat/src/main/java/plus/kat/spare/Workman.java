@@ -137,14 +137,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             return (T) data;
         }
 
-        if (data instanceof Map) try {
-            return apply(
-                supplier, (Map<?, ?>) data
-            );
-        } catch (Exception e) {
-            return null;
-        }
-
         if (data instanceof ResultSet) try {
             return apply(
                 supplier, (ResultSet) data
@@ -159,7 +151,9 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             );
         }
 
-        return null;
+        return apply(
+            data, supplier
+        );
     }
 
     @Override
@@ -401,131 +395,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     }
 
     /**
-     * @param supplier the specified supplier
-     * @param result   the specified result
-     * @since 0.0.3
-     */
-    @Nullable
-    public T apply(
-        @NotNull Supplier supplier,
-        @NotNull Map<?, ?> result
-    ) throws Crash {
-        T entity = apply(
-            Alias.EMPTY
-        );
-
-        for (Map.Entry<?, ?> entry : result.entrySet()) {
-            // get its key
-            Object key = entry.getKey();
-            if (key == null) {
-                continue;
-            }
-
-            // try lookup
-            Setter<T, ?> setter = setter(key);
-            if (setter == null) {
-                continue;
-            }
-
-            // get the value
-            Object val = entry.getValue();
-            if (val == null) {
-                continue;
-            }
-
-            // get class specified
-            Class<?> klass = setter.getType();
-
-            // update field
-            if (klass.isInstance(val)) {
-                setter.onAccept(
-                    entity, val
-                );
-                continue;
-            }
-
-            // get spare specified
-            Spare<?> spare = supplier.lookup(klass);
-
-            // update field
-            if (spare != null) {
-                setter.onAccept(
-                    entity, spare.cast(
-                        supplier, val
-                    )
-                );
-            }
-        }
-
-        return entity;
-    }
-
-    /**
-     * @param supplier the specified supplier
-     * @param data     the specified params
-     * @param result   the specified result
-     * @since 0.0.3
-     */
-    @Nullable
-    public T apply(
-        @NotNull Supplier supplier,
-        @NotNull Object[] data,
-        @NotNull Map<?, ?> result
-    ) throws Crash {
-        for (Map.Entry<?, ?> entry : result.entrySet()) {
-            // get its key
-            Object key = entry.getKey();
-            if (key == null) {
-                continue;
-            }
-
-            // try lookup
-            Target target = target(key);
-            if (target == null) {
-                continue;
-            }
-
-            // check index
-            int k = target.getIndex();
-            if (k < 0 || k >= data.length) {
-                throw new Crash(
-                    "'" + k + "' out of range"
-                );
-            }
-
-            // get the value
-            Object val = entry.getValue();
-            if (val == null) {
-                continue;
-            }
-
-            // get class specified
-            Class<?> klass = target.getType();
-
-            // update field
-            if (klass.isInstance(val)) {
-                data[k] = val;
-                continue;
-            }
-
-            // get spare specified
-            Spare<?> spare = supplier.lookup(klass);
-
-            // update field
-            if (spare != null) {
-                data[k] = spare.cast(
-                    supplier, val
-                );
-            }
-        }
-
-        return apply(
-            Alias.EMPTY, data
-        );
-    }
-
-
-    /**
      * @param supplier  the specified supplier
      * @param resultSet the specified resultSet
      * @since 0.0.3
@@ -694,6 +563,90 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 "Error creating " + getType(), e
             );
         }
+    }
+
+    /**
+     * @param result   the specified result
+     * @param supplier the specified supplier
+     * @since 0.0.3
+     */
+    @Nullable
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public <K> T apply(
+        @NotNull Object result,
+        @NotNull Supplier supplier
+    ) {
+        Class<K> clazz = (Class<K>)
+            result.getClass();
+        Spare<K> spare = supplier.lookup(clazz);
+
+        if (spare != null &&
+            spare.getFlag() == Boolean.TRUE) {
+            try {
+                T entity = apply(
+                    Alias.EMPTY
+                );
+
+                Factory0<T> it =
+                    new Factory0<>(
+                        this, supplier
+                    );
+
+                it.attach(entity);
+
+                spare.flat(
+                    (K) result, (BiConsumer) it
+                );
+
+                return it.detach();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param result   the specified result
+     * @param range    the specified range
+     * @param supplier the specified supplier
+     * @since 0.0.3
+     */
+    @Nullable
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public <K> T apply(
+        @NotNull Object result,
+        @NotNull int range,
+        @NotNull Supplier supplier
+    ) {
+        Class<K> clazz = (Class<K>)
+            result.getClass();
+        Spare<K> spare = supplier.lookup(clazz);
+
+        if (spare != null &&
+            spare.getFlag() == Boolean.TRUE) {
+            try {
+                Factory1<T> it =
+                    new Factory1<>(
+                        this, supplier
+                    );
+
+                it.attach(
+                    new Object[range]
+                );
+
+                spare.flat(
+                    (K) result, (BiConsumer) it
+                );
+
+                return it.detach();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     /**

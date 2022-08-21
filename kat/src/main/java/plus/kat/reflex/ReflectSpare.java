@@ -24,6 +24,7 @@ import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import plus.kat.*;
 import plus.kat.anno.*;
@@ -178,27 +179,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
     @Override
     public T apply(
         @NotNull Supplier supplier,
-        @NotNull Map<?, ?> data
-    ) throws Crash {
-        if (params == null) {
-            return super.apply(
-                supplier, data
-            );
-        } else {
-            if (size() != 0 || master != null) {
-                throw new Crash(
-                    "Not currently supported"
-                );
-            }
-            return super.apply(
-                supplier, new Object[args.length], data
-            );
-        }
-    }
-
-    @Override
-    public T apply(
-        @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
         if (params == null) {
@@ -215,6 +195,27 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                 supplier, new Object[args.length], resultSet
             );
         }
+    }
+
+    @Override
+    public <K> T apply(
+        @NotNull Object result,
+        @NotNull Supplier supplier
+    ) {
+        if (params == null) {
+            return super.apply(
+                result, supplier
+            );
+        }
+
+        if (size() != 0 ||
+            master != null) {
+            return null;
+        }
+
+        return super.apply(
+            result, args.length, supplier
+        );
     }
 
     @Override

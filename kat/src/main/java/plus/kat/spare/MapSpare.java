@@ -26,6 +26,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.BiConsumer;
 
 import plus.kat.*;
 import plus.kat.chain.*;
@@ -140,6 +141,20 @@ public class MapSpare implements Spare<Map> {
         }
 
         return null;
+    }
+
+    @Override
+    public boolean flat(
+        @NotNull Map bean,
+        @NotNull BiConsumer<String, Object> action
+    ) {
+        for (Map.Entry<?, ?> entry : ((Map<?, ?>) bean).entrySet()) {
+            action.accept(
+                entry.getKey().toString(),
+                entry.getValue()
+            );
+        }
+        return true;
     }
 
     @Override

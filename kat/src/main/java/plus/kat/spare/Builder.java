@@ -61,6 +61,8 @@ public abstract class Builder<K> {
     }
 
     /**
+     * Prepare before parsing
+     *
      * @throws IOException If an I/O error occurs
      */
     public abstract void onCreate(
@@ -68,6 +70,8 @@ public abstract class Builder<K> {
     ) throws Crash, IOException;
 
     /**
+     * Receive according to requirements and then parse
+     *
      * @throws IOException If an I/O error occurs
      */
     public abstract void onAccept(
@@ -76,6 +80,8 @@ public abstract class Builder<K> {
     ) throws IOException;
 
     /**
+     * Receive according to requirements and then parse
+     *
      * @throws IOException If an I/O error occurs
      */
     public abstract void onAccept(

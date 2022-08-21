@@ -26,7 +26,6 @@ import plus.kat.utils.Reflect;
 import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import static plus.kat.reflex.ReflectSpare.Task;
 
@@ -91,20 +90,20 @@ public final class RecordSpare<T> extends Workman<T> implements Worker<T> {
     @Override
     public T apply(
         @NotNull Supplier supplier,
-        @NotNull Map<?, ?> data
-    ) throws Crash {
-        return super.apply(
-            supplier, new Object[width], data
-        );
-    }
-
-    @Override
-    public T apply(
-        @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
         return super.apply(
             supplier, new Object[width], resultSet
+        );
+    }
+
+    @Override
+    public <K> T apply(
+        @NotNull Object result,
+        @NotNull Supplier supplier
+    ) {
+        return super.apply(
+            result, width, supplier
         );
     }
 

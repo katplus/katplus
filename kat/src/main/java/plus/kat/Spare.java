@@ -181,7 +181,7 @@ public interface Spare<K> extends Coder<K> {
      *  String name = (String) collector.get("name");
      * }</pre>
      *
-     * @return {@code true} if the action is consumed otherwise {@code false}
+     * @return {@code true} if the bean can be flattened otherwise {@code false}
      * @throws NullPointerException If the {@code bean} or {@code action} is null
      * @since 0.0.3
      */

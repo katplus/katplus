@@ -62,7 +62,7 @@ public class SpareTest {
     }
 
     @Test
-    public void test_casting() {
+    public void test_cast0() {
         Spare<User> spare =
             lookup(User.class);
 
@@ -73,6 +73,45 @@ public class SpareTest {
         assertNotNull(user);
         assertEquals(1, user.id);
         assertEquals("kraity", user.name);
+    }
+
+    @Test
+    public void test_cast1() {
+        Spare<User> spare =
+            lookup(User.class);
+
+        HashMap<String, Object>
+            data = new HashMap<>();
+
+        data.put("id", 1);
+        data.put("name", "kraity");
+
+        User user = spare.cast(data);
+        assertNotNull(user);
+
+        assertEquals(1, user.id);
+        assertEquals("kraity", user.name);
+    }
+
+    static class Entity {
+        public int id;
+        public String name;
+    }
+
+    @Test
+    public void test_cast2() {
+        Spare<Entity> spare =
+            lookup(Entity.class);
+
+        User user = new User();
+        user.id = 1;
+        user.name = "kraity";
+
+        Entity entity = spare.cast(user);
+        assertNotNull(entity);
+
+        assertEquals(user.id, entity.id);
+        assertEquals(user.name, entity.name);
     }
 
     @Test

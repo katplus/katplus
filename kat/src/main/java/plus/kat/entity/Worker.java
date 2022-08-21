@@ -25,6 +25,7 @@ import plus.kat.spare.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.function.BiConsumer;
 
 /**
  * @author kraity
@@ -165,6 +166,184 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
     /**
      * @author kraity
+     * @since 0.0.3
+     */
+    class Factory0<K> extends Factory<K> {
+
+        protected K entity;
+
+        public Factory0(
+            @NotNull Worker<K> worker,
+            @NotNull Supplier supplier
+        ) {
+            super(worker, supplier);
+        }
+
+        /**
+         * @param bean the specified bean
+         */
+        public void attach(
+            @NotNull K bean
+        ) {
+            entity = bean;
+        }
+
+        /**
+         * Performs this operation on the given arguments
+         *
+         * @param key the specified key
+         * @param val the specified val
+         */
+        @Override
+        public void accept(
+            @Nullable Object key,
+            @Nullable Object val
+        ) {
+            // check the key
+            if (key == null) {
+                return;
+            }
+
+            // try lookup
+            Setter<K, ?> setter =
+                worker.setter(key);
+            if (setter == null) {
+                return;
+            }
+
+            // check the value
+            if (val == null) {
+                return;
+            }
+
+            // get class specified
+            Class<?> klass = setter.getType();
+
+            // update field
+            if (klass.isInstance(val)) {
+                setter.onAccept(
+                    entity, val
+                );
+                return;
+            }
+
+            // get spare specified
+            Spare<?> spare = supplier.lookup(klass);
+
+            // update field
+            if (spare != null) {
+                setter.onAccept(
+                    entity, spare.cast(
+                        supplier, val
+                    )
+                );
+            }
+        }
+
+        /**
+         * Returns the result of building {@link K}
+         */
+        @Override
+        public K detach() {
+            return entity;
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.3
+     */
+    class Factory1<K> extends Factory<K> {
+
+        protected Object[] data;
+
+        public Factory1(
+            @NotNull Worker<K> worker,
+            @NotNull Supplier supplier
+        ) {
+            super(worker, supplier);
+        }
+
+        /**
+         * @param params the specified params
+         */
+        public void attach(
+            @NotNull Object[] params
+        ) {
+            data = params;
+        }
+
+        /**
+         * Performs this operation on the given arguments
+         *
+         * @param key the specified key
+         * @param val the specified val
+         */
+        @Override
+        public void accept(
+            @Nullable Object key,
+            @Nullable Object val
+        ) {
+            // check the key
+            if (key == null) {
+                return;
+            }
+
+            // try lookup
+            Target target =
+                worker.target(key);
+            if (target == null) {
+                return;
+            }
+
+            // check index
+            int k = target.getIndex();
+            if (k < 0 || k >= data.length) {
+                throw new RunCrash(
+                    "'" + k + "' out of range"
+                );
+            }
+
+            // check the value
+            if (val == null) {
+                return;
+            }
+
+            // get class specified
+            Class<?> klass = target.getType();
+
+            // update field
+            if (klass.isInstance(val)) {
+                data[k] = val;
+                return;
+            }
+
+            // get spare specified
+            Spare<?> spare = supplier.lookup(klass);
+
+            // update field
+            if (spare != null) {
+                data[k] = spare.cast(
+                    supplier, val
+                );
+            }
+        }
+
+        /**
+         * Returns the result of building {@link K}
+         *
+         * @throws Crash If a packaging error
+         */
+        @Override
+        public K detach() throws Crash {
+            return worker.apply(
+                Alias.EMPTY, data
+            );
+        }
+    }
+
+    /**
+     * @author kraity
      * @since 0.0.2
      */
     class Builder0<K> extends Builder$<K> {
@@ -184,6 +363,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             this.worker = worker;
         }
 
+        /**
+         * Prepare before parsing
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onCreate(
             @NotNull Alias alias
@@ -199,6 +383,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             }
         }
 
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onAccept(
             @NotNull Target tag,
@@ -209,6 +398,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             );
         }
 
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onAccept(
             @NotNull Alias alias,
@@ -219,6 +413,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             );
         }
 
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onAccept(
             @NotNull Space space,
@@ -236,6 +435,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             }
         }
 
+        /**
+         * Create a branch of this {@link Builder}
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Nullable
         public Builder<?> getBuilder(
             @NotNull Space space,
@@ -252,12 +456,18 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             return getBuilder(space, setter);
         }
 
+        /**
+         * Returns the result of building {@link K}
+         */
         @Nullable
         @Override
         public K getResult() {
             return entity;
         }
 
+        /**
+         * Close the resources of this {@link Builder}
+         */
         @Override
         public void onDestroy() {
             index = 0;
@@ -287,6 +497,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             this.worker = worker;
         }
 
+        /**
+         * Prepare before parsing
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onCreate(
             @NotNull Alias alias
@@ -294,6 +509,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             // Nothing
         }
 
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onAccept(
             @NotNull Target tag,
@@ -303,6 +523,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             data[i] = value;
         }
 
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onAccept(
             @NotNull Alias alias,
@@ -312,6 +537,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             data[i] = child.getResult();
         }
 
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onAccept(
             @NotNull Space space,
@@ -329,6 +559,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             }
         }
 
+        /**
+         * Create a branch of this {@link Builder}
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Nullable
         @Override
         public Builder<?> getBuilder(
@@ -346,6 +581,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             return getBuilder(space, target);
         }
 
+        /**
+         * Returns the result of building {@link K}
+         *
+         * @throws IOException If a packaging error or IO error
+         */
         @Nullable
         @Override
         public K getResult()
@@ -364,6 +604,9 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             return entity;
         }
 
+        /**
+         * Close the resources of this {@link Builder}
+         */
         @Override
         public void onDestroy() {
             index = 0;
@@ -410,6 +653,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             this.worker = worker;
         }
 
+        /**
+         * Prepare before parsing
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onCreate(
             @NotNull Alias alias
@@ -433,6 +681,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             }
         }
 
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onAccept(
             @NotNull Target tag,
@@ -463,6 +716,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             }
         }
 
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onAccept(
             @NotNull Alias alias,
@@ -473,6 +731,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             );
         }
 
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public void onAccept(
             @NotNull Space space,
@@ -499,6 +762,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             }
         }
 
+        /**
+         * Create a branch of this {@link Builder}
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Override
         public Builder<?> getBuilder(
             @NotNull Space space,
@@ -536,6 +804,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             Setter<K, ?> setter;
         }
 
+        /**
+         * Returns the result of building {@link K}
+         *
+         * @throws IOException If a packaging error or IO error
+         */
         @Override
         public K getResult()
             throws IOException {
@@ -560,6 +833,9 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             return entity;
         }
 
+        /**
+         * Close the resources of this {@link Builder}
+         */
         @Override
         public void onDestroy() {
             index = 0;
@@ -576,8 +852,38 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
      * @author kraity
      * @since 0.0.2
      */
-    abstract class Builder$<K> extends Builder<K> {
+    abstract class Factory<K>
+        implements BiConsumer<Object, Object> {
 
+        protected Worker<K> worker;
+        protected Supplier supplier;
+
+        public Factory(
+            @NotNull Worker<K> worker,
+            @NotNull Supplier supplier
+        ) {
+            this.worker = worker;
+            this.supplier = supplier;
+        }
+
+        /**
+         * Returns the result of building {@link K}
+         *
+         * @throws Crash If a packaging error
+         */
+        public abstract K detach() throws Crash;
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.2
+     */
+    abstract class Builder$<K> extends Builder<K> {
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         public void onAccept(
             @NotNull Target tag,
             @Nullable Object value
@@ -585,6 +891,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             // Nothing
         }
 
+        /**
+         * Receive according to requirements and then parse
+         *
+         * @throws IOException If an I/O error occurs
+         */
         public void onAccept(
             @NotNull Space space,
             @NotNull Value value,
@@ -658,6 +969,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             }
         }
 
+        /**
+         * Create a branch of this {@link Builder}
+         *
+         * @throws IOException If an I/O error occurs
+         */
         @Nullable
         public Builder<?> getBuilder(
             @NotNull Space space,
