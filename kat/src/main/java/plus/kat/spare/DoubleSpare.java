@@ -22,13 +22,12 @@ import plus.kat.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class DoubleSpare extends Property<Double> implements Serializable {
+public class DoubleSpare extends Property<Double> implements Serializer {
 
     public static final DoubleSpare
         INSTANCE = new DoubleSpare();

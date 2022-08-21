@@ -22,13 +22,12 @@ import plus.kat.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * @author kraity
  * @since 0.0.3
  */
-public class NumberSpare extends Property<Number> implements Serializable {
+public class NumberSpare extends Property<Number> implements Serializer {
 
     public static final NumberSpare
         INSTANCE = new NumberSpare();

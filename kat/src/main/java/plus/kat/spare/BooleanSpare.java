@@ -23,13 +23,12 @@ import plus.kat.chain.*;
 import plus.kat.stream.Convert;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class BooleanSpare extends Property<Boolean> implements Serializable {
+public class BooleanSpare extends Property<Boolean> implements Serializer {
 
     public static final BooleanSpare
         INSTANCE = new BooleanSpare();

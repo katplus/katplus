@@ -23,13 +23,12 @@ import plus.kat.chain.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class ShortSpare extends Property<Short> implements Serializable {
+public class ShortSpare extends Property<Short> implements Serializer {
 
     public static final ShortSpare
         INSTANCE = new ShortSpare();

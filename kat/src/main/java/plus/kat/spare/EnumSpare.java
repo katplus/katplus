@@ -23,7 +23,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Method;
 
 /**
@@ -31,7 +30,7 @@ import java.lang.reflect.Method;
  * @since 0.0.1
  */
 @SuppressWarnings("unchecked")
-public class EnumSpare<K extends Enum<K>> extends Property<K> implements Serializable {
+public class EnumSpare<K extends Enum<K>> extends Property<K> implements Serializer {
 
     private K[] enums;
     private final String space;

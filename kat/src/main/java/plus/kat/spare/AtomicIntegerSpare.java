@@ -22,14 +22,13 @@ import plus.kat.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicIntegerSpare extends Property<AtomicInteger> implements Serializable {
+public class AtomicIntegerSpare extends Property<AtomicInteger> implements Serializer {
 
     public static final AtomicIntegerSpare
         INSTANCE = new AtomicIntegerSpare();

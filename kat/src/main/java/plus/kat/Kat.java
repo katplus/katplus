@@ -18,7 +18,7 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.chain.Space;
+import plus.kat.chain.*;
 import plus.kat.spare.*;
 
 import java.io.IOException;
@@ -36,6 +36,7 @@ public interface Kat {
      * Returns the space of {@link Kat}
      *
      * @return {@link CharSequence}
+     * @see Chan#set(CharSequence, CharSequence, Kat)
      */
     @NotNull
     default CharSequence space() {
@@ -43,7 +44,10 @@ public interface Kat {
     }
 
     /**
+     * Serializes this {@link Kat} at the current hierarchy
+     *
      * @throws IOException If an I/O error occurs
+     * @see Chan#set(CharSequence, CharSequence, Kat)
      */
     void coding(
         @NotNull Chan chan

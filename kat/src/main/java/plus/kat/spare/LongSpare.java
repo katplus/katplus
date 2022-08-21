@@ -23,13 +23,12 @@ import plus.kat.chain.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class LongSpare extends Property<Long> implements Serializable {
+public class LongSpare extends Property<Long> implements Serializer {
 
     public static final LongSpare
         INSTANCE = new LongSpare();

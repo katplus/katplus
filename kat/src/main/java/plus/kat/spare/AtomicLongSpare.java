@@ -22,14 +22,13 @@ import plus.kat.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicLongSpare extends Property<AtomicLong> implements Serializable {
+public class AtomicLongSpare extends Property<AtomicLong> implements Serializer {
 
     public static final AtomicLongSpare
         INSTANCE = new AtomicLongSpare();

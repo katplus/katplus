@@ -23,13 +23,12 @@ import plus.kat.chain.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class IntegerSpare extends Property<Integer> implements Serializable {
+public class IntegerSpare extends Property<Integer> implements Serializer {
 
     public static final IntegerSpare
         INSTANCE = new IntegerSpare();

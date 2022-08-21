@@ -22,14 +22,13 @@ import plus.kat.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Serializable {
+public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Serializer {
 
     public static final AtomicBooleanSpare
         INSTANCE = new AtomicBooleanSpare();

@@ -23,7 +23,6 @@ import plus.kat.spare.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
@@ -172,7 +171,7 @@ public class Json extends Chan {
                 flow.rightBracket();
             }
         } else {
-            if (coder instanceof Serializable) {
+            if (coder instanceof Serializer) {
                 coder.write(flow, value);
             } else {
                 flow.addQuote();

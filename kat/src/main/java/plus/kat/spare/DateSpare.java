@@ -25,7 +25,6 @@ import plus.kat.crash.*;
 import plus.kat.utils.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -39,7 +38,7 @@ import java.util.TimeZone;
  * @author kraity
  * @since 0.0.1
  */
-public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializable {
+public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializer {
 
     public static final DateSpare
         INSTANCE = new DateSpare();

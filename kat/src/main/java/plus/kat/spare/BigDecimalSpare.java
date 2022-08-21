@@ -22,7 +22,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -30,7 +29,7 @@ import java.math.BigInteger;
  * @author kraity
  * @since 0.0.1
  */
-public class BigDecimalSpare extends Property<BigDecimal> implements Serializable {
+public class BigDecimalSpare extends Property<BigDecimal> implements Serializer {
 
     public static final BigDecimalSpare
         INSTANCE = new BigDecimalSpare();

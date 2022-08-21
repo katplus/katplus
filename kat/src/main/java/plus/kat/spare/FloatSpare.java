@@ -22,13 +22,12 @@ import plus.kat.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class FloatSpare extends Property<Float> implements Serializable {
+public class FloatSpare extends Property<Float> implements Serializer {
 
     public static final FloatSpare
         INSTANCE = new FloatSpare();

@@ -23,7 +23,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
 
@@ -33,7 +32,7 @@ import static java.time.format.DateTimeFormatter.ISO_INSTANT;
  * @author kraity
  * @since 0.0.2
  */
-public class InstantSpare extends TemporalSpare<Instant> implements Serializable {
+public class InstantSpare extends TemporalSpare<Instant> implements Serializer {
 
     public static final InstantSpare
         INSTANCE = new InstantSpare();
