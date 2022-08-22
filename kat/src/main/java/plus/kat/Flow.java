@@ -17,7 +17,7 @@ package plus.kat;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.crash.*;
+import plus.kat.chain.*;
 
 import java.io.IOException;
 
@@ -45,6 +45,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addByte(byte)
      */
     void addByte(
         byte b
@@ -61,6 +62,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#addBytes(byte[])
      */
     void addBytes(
         @NotNull byte[] data
@@ -77,6 +79,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#addBytes(byte[], int, int)
      */
     void addBytes(
         @NotNull byte[] data, int offset, int length
@@ -91,6 +94,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addShort(short)
      */
     void addShort(
         short num
@@ -106,6 +110,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addInt(int)
      */
     void addInt(
         int num
@@ -125,6 +130,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addInt(int, int)
      */
     void addInt(
         int num, int shift
@@ -144,6 +150,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addInt(int, int, int)
      * @since 0.0.2
      */
     void addInt(
@@ -160,6 +167,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addLong(long)
      */
     void addLong(
         long num
@@ -179,6 +187,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addLong(long, int)
      */
     void addLong(
         long num, int shift
@@ -198,6 +207,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addLong(long, int, int)
      * @since 0.0.2
      */
     void addLong(
@@ -215,6 +225,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addFloat(float)
      */
     void addFloat(
         float num
@@ -233,6 +244,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addFloat(float, boolean)
      */
     void addFloat(
         float num, boolean hint
@@ -249,6 +261,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addDouble(double)
      */
     void addDouble(
         double num
@@ -267,6 +280,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addDouble(double, boolean)
      */
     void addDouble(
         double num, boolean hint
@@ -277,11 +291,12 @@ public interface Flow extends Flag, Appendable {
      *
      * <pre>{@code
      *   Flow flow = ...
-     *   flow.addBoolean(true);
-     *   flow.addBoolean(false);
+     *   flow.addBoolean(true);  // kat:1, xml:true, json:true
+     *   flow.addBoolean(false); // kat:0, xml:false, json:false
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addBoolean(boolean)
      */
     void addBoolean(
         boolean b
@@ -298,6 +313,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#addChar(char)
      */
     void addChar(
         char c
@@ -314,6 +330,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#addChars(char[])
      */
     void addChars(
         @NotNull char[] data
@@ -330,6 +347,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#addChars(char[], int, int)
      */
     void addChars(
         @NotNull char[] data, int offset, int length
@@ -345,6 +363,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#addChars(CharSequence)
      */
     void addChars(
         @NotNull CharSequence data
@@ -360,6 +379,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#addChars(CharSequence, int, int)
      */
     void addChars(
         @NotNull CharSequence data, int offset, int length
@@ -383,6 +403,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#emit(byte)
      */
     void emit(
         byte b
@@ -406,6 +427,7 @@ public interface Flow extends Flag, Appendable {
      * }</pre>
      *
      * @throws IOException If an I/O error occurs
+     * @see Paper#emit(char)
      */
     void emit(
         char c
@@ -417,6 +439,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#emit(byte[])
      */
     void emit(
         @NotNull byte[] data
@@ -428,6 +451,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#emit(byte[], int, int)
      */
     void emit(
         @NotNull byte[] data, int offset, int length
@@ -439,6 +463,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#emit(CharSequence)
      */
     void emit(
         @NotNull CharSequence data
@@ -450,6 +475,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#emit(CharSequence, int, int)
      */
     void emit(
         @NotNull CharSequence data, int offset, int length
@@ -461,6 +487,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#text(char)
      */
     void text(
         char data
@@ -472,6 +499,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#text(byte[])
      */
     void text(
         @NotNull byte[] data
@@ -483,6 +511,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#text(byte[], int, int)
      */
     void text(
         @NotNull byte[] data, int offset, int length
@@ -494,6 +523,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#text(CharSequence)
      */
     void text(
         @NotNull CharSequence data
@@ -505,6 +535,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#text(CharSequence, int, int)
      */
     void text(
         @NotNull CharSequence data, int offset, int length
@@ -516,6 +547,7 @@ public interface Flow extends Flag, Appendable {
      *
      * @return this {@link Flow}
      * @throws IOException If an I/O error occurs
+     * @see Paper#append(char)
      * @since 0.0.2
      */
     @Override
@@ -530,6 +562,7 @@ public interface Flow extends Flag, Appendable {
      * @return this {@link Flow}
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#append(CharSequence)
      * @since 0.0.2
      */
     @Override
@@ -544,6 +577,7 @@ public interface Flow extends Flag, Appendable {
      * @return this {@link Flow}
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#append(CharSequence, int, int)
      * @since 0.0.2
      */
     @Override

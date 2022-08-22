@@ -27,6 +27,9 @@ import java.io.IOException;
  */
 public interface Solver {
     /**
+     * {@link Reader} as the data source and {@link Pipe} as the data consumer.
+     * This {@link Solver} uses reader to read the source, translate it and then stream it to pipe.
+     *
      * @param pipe   specify the data transfer pipeline
      * @param reader specify the source of decoded data
      * @throws IOException Unexpected errors by {@link Pipe} or {@link Reader}
@@ -37,12 +40,12 @@ public interface Solver {
     ) throws IOException;
 
     /**
-     * close this {@link Solver}
+     * Close this {@link Solver}
      */
     void close();
 
     /**
-     * clear this {@link Solver}
+     * Clear this {@link Solver}
      */
     default void clear() {
         // nothing

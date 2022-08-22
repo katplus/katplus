@@ -49,7 +49,7 @@ public class Mage implements Solver {
     private boolean mutable;
 
     /**
-     * @param radar the specified {@link Radar}
+     * @param radar the specified {@code radar}
      */
     public Mage(
         @NotNull Radar radar
@@ -59,6 +59,33 @@ public class Mage implements Solver {
     }
 
     /**
+     * @param b1 the bucket of {@code alias}
+     * @param b2 the bucket of {@code value}
+     */
+    public Mage(
+        @NotNull Bucket b1,
+        @NotNull Bucket b2
+    ) {
+        alias = new Alias(b1);
+        value = new Value(b2);
+    }
+
+    /**
+     * Reads json stream
+     *
+     * <pre>{@code
+     *  {
+     *     "uid": 1,
+     *     "name": "kraity",
+     *     "role": "developer",
+     *     "blocked": 0,
+     *     "resource": {
+     *         "age": 6,
+     *         "devote": 1024
+     *     }
+     *  }
+     * }</pre>
+     *
      * @param p specify the data transfer pipeline
      * @param r specify the source of decoded data
      * @throws IOException Unexpected errors by {@link Pipe} or {@link Reader}
@@ -240,6 +267,12 @@ public class Mage implements Solver {
         }
     }
 
+    /**
+     * Notify to create a receiver
+     *
+     * @param mark is it a map?
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void create(
         Pipe p,
         Reader r,
@@ -274,6 +307,11 @@ public class Mage implements Solver {
         alias.clean();
     }
 
+    /**
+     * Sends data to the current receiver
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void accept(
         Pipe p,
         Space s
@@ -285,6 +323,11 @@ public class Mage implements Solver {
         value.clean();
     }
 
+    /**
+     * Notify the current receiver to end the transmission
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void bundle(
         Pipe p,
         boolean m
@@ -300,6 +343,11 @@ public class Mage implements Solver {
         }
     }
 
+    /**
+     * Escape special character
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void escape(
         Reader r
     ) throws IOException {
@@ -319,6 +367,11 @@ public class Mage implements Solver {
         }
     }
 
+    /**
+     * Escape special character
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void escape(
         Chain c,
         byte e,
@@ -358,6 +411,11 @@ public class Mage implements Solver {
         }
     }
 
+    /**
+     * Filter out the useless
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void dropdown(
         byte a,
         Reader r

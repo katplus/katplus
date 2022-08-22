@@ -52,9 +52,9 @@ public class Radar implements Solver {
     }
 
     /**
-     * @param b1 the specified {@link Bucket} of {@link Space}
-     * @param b2 the specified {@link Bucket} of {@link Alias}
-     * @param b3 the specified {@link Bucket} of {@link Value}
+     * @param b1 the bucket of {@code space}
+     * @param b2 the bucket of {@code alias}
+     * @param b3 the bucket of {@code value}
      */
     public Radar(
         @NotNull Bucket b1,
@@ -67,7 +67,25 @@ public class Radar implements Solver {
     }
 
     /**
-     * decode kat stream
+     * Reads kat stream
+     *
+     * <pre>{@code
+     *  # this is a test entity
+     *  User{
+     *     l:uid(1)
+     *     s:name(kraity)
+     *     s:role(developer)
+     *
+     *     # status
+     *     b:blocked(0)
+     *
+     *     # extra data
+     *     M:resource{
+     *         I:age(6)
+     *         D:devote(1024)
+     *     }
+     *  }
+     * }</pre>
      *
      * @param p specify the data transfer pipeline
      * @param r specify the source of decoded data
@@ -235,7 +253,17 @@ public class Radar implements Solver {
     }
 
     /**
-     * escape special byte
+     * Escape special character
+     *
+     * <pre>{@code
+     *   '^^' -> '^'
+     *   '^s' -> ' '
+     *   '^r' -> '\r'
+     *   '^n' -> '\n'
+     *   '^u' -> unicode
+     * }</pre>
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
      */
     protected void escape(
         @NotNull Chain c,
@@ -268,7 +296,13 @@ public class Radar implements Solver {
     }
 
     /**
-     * drops {@code #comment here#}
+     * Filter comments
+     *
+     * <pre>{@code
+     *   #comment here#
+     * }</pre>
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
      */
     protected void explain(
         @NotNull Reader r
@@ -285,7 +319,13 @@ public class Radar implements Solver {
     }
 
     /**
-     * drops {@code space:alias{...}}
+     * Filter out the useless
+     *
+     * <pre>{@code
+     *   space:alias{...}
+     * }</pre>
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
      */
     protected void dropdown(
         @NotNull Reader r
@@ -342,7 +382,9 @@ public class Radar implements Solver {
     }
 
     /**
-     * escape unicode byte
+     * Escape unicode character
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
      */
     static void uncork(
         @NotNull Chain c,

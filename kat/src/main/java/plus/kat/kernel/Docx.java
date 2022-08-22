@@ -43,7 +43,7 @@ public class Docx implements Solver {
         QUOT = '"', SLASH = '/';
 
     /**
-     * @param radar the specified {@link Radar}
+     * @param radar the specified {@code radar}
      */
     public Docx(
         @NotNull Radar radar
@@ -53,6 +53,37 @@ public class Docx implements Solver {
     }
 
     /**
+     * @param b1 the bucket of {@code alias}
+     * @param b2 the bucket of {@code value}
+     */
+    public Docx(
+        @NotNull Bucket b1,
+        @NotNull Bucket b2
+    ) {
+        alias = new Alias(b1);
+        value = new Value(b2);
+    }
+
+    /**
+     * Reads xml stream
+     *
+     * <pre>{@code
+     *  <User>
+     *     <uid>1</uid>
+     *     <name>kraity</name>
+     *     <role>developer</role>
+     *
+     *     <!-- status -->
+     *     <blocked>0</blocked>
+     *
+     *     <!-- extra data -->
+     *     <resource>
+     *         <age>6</age>
+     *         <devote>1024</devote>
+     *     </resource>
+     *  </User>
+     * }</pre>
+     *
      * @param p specify the data transfer pipeline
      * @param r specify the source of decoded data
      * @throws IOException Unexpected errors by {@link Pipe} or {@link Reader}
@@ -178,6 +209,11 @@ public class Docx implements Solver {
         }
     }
 
+    /**
+     * Collect attribute values
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void collate(
         @NotNull Alias a,
         @NotNull Value v,
@@ -236,6 +272,11 @@ public class Docx implements Solver {
         }
     }
 
+    /**
+     * Filter comments
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void decide(
         @NotNull Reader r
     ) throws IOException {
@@ -257,6 +298,11 @@ public class Docx implements Solver {
         }
     }
 
+    /**
+     * Escape special character
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void escape(
         @NotNull Chain c,
         @NotNull Reader r
@@ -344,6 +390,11 @@ public class Docx implements Solver {
         );
     }
 
+    /**
+     * Filter comments
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void explain(
         @NotNull Value v,
         @NotNull Reader r
@@ -418,6 +469,11 @@ public class Docx implements Solver {
         }
     }
 
+    /**
+     * Filter out the useless
+     *
+     * @throws IOException Unexpected errors by {@link Reader}
+     */
     protected void dropdown(
         int i,
         Reader r

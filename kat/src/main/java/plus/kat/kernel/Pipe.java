@@ -27,6 +27,8 @@ import java.io.IOException;
  */
 public interface Pipe {
     /**
+     * Notify to create a receiver
+     *
      * @throws IOException If an I/O error occurs
      */
     boolean attach(
@@ -35,6 +37,8 @@ public interface Pipe {
     ) throws IOException;
 
     /**
+     * Sends data to the current receiver
+     *
      * @throws IOException If an I/O error occurs
      */
     void accept(
@@ -44,6 +48,8 @@ public interface Pipe {
     ) throws IOException;
 
     /**
+     * Notify the current receiver to end the transmission
+     *
      * @throws IOException If an I/O error occurs
      */
     boolean detach() throws IOException;
