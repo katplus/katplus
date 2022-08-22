@@ -397,6 +397,7 @@ public class MapSpare implements Spare<Map> {
                     child.getResult()
                 );
             } else {
+                alias.setType(tk);
                 entity.put(
                     k.read(
                         event, alias
