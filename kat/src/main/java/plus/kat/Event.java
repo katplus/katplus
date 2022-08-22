@@ -95,7 +95,7 @@ public class Event<T> implements Flag {
         @NotNull Reader reader
     ) {
         this(Event.class);
-        this.setFlag(flag);
+        this.flag = flag;
         this.reader = reader;
     }
 
@@ -327,11 +327,12 @@ public class Event<T> implements Flag {
     public boolean isFlag(
         long flag
     ) {
-        Flag f = this.flag;
-        if (f != null) {
-            return f.isFlag(flag);
+        if ((flags & flag) != 0) {
+            return true;
         }
-        return (flags & flag) != 0;
+
+        Flag f = this.flag;
+        return f != null && f.isFlag(flag);
     }
 
     /**
@@ -347,11 +348,12 @@ public class Event<T> implements Flag {
     public boolean isFlag(
         long flag, int code
     ) {
-        Flag f = this.flag;
-        if (f != null) {
-            return f.isFlag(flag, code);
+        if (code == 0) {
+            return isFlag(flag);
         }
-        return code == 0 && (flags & flag) != 0;
+
+        Flag f = this.flag;
+        return f != null && f.isFlag(flag, code);
     }
 
     /**
@@ -564,7 +566,9 @@ public class Event<T> implements Flag {
     public void setFlag(
         Flag flag
     ) {
-        this.flag = flag;
+        if (flag != this) {
+            this.flag = flag;
+        }
     }
 
     /**
