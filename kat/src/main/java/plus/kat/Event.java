@@ -321,6 +321,7 @@ public class Event<T> implements Flag {
      * Check if this {@link Event} use the {@code flag}
      *
      * @param flag the specified {@code flag}
+     * @see Flag#isFlag(long)
      */
     @Override
     public boolean isFlag(
@@ -328,15 +329,39 @@ public class Event<T> implements Flag {
     ) {
         Flag f = this.flag;
         if (f != null) {
-            return f.isFlag(
-                flag
-            );
+            return f.isFlag(flag);
         }
         return (flags & flag) != 0;
     }
 
     /**
+     * Check if this {@link Object} use the {@code flag}.
+     * The method is to extend {@link Flag#isFlag(long)} to derive custom {@code flags}.
+     *
+     * @param flag the specified {@code flag}
+     * @param code the specified {@code code}
+     * @see Flag#isFlag(long, int)
+     * @since 0.0.3
+     */
+    @Override
+    public boolean isFlag(
+        long flag, int code
+    ) {
+        Flag f = this.flag;
+        if (f != null) {
+            return f.isFlag(flag, code);
+        }
+        return code == 0 && (flags & flag) != 0;
+    }
+
+    /**
      * Use the specified feature {@code flag}
+     *
+     * <pre>{@code
+     *  Event<User> event = ...
+     *  event.with(Flag.INDEX_AS_ENUM);
+     *  event.with(Flag.INDEX_AS_ENUM | Flag.STRING_AS_OBJECT);
+     * }</pre>
      *
      * @param flag the specified {@code flag}
      */
@@ -349,6 +374,13 @@ public class Event<T> implements Flag {
 
     /**
      * Use the specified feature {@link Plan}
+     *
+     * <pre>{@code
+     *  Plan plan = ...
+     *  Event<User> event = ...
+     *  event.with(plan);
+     *  event.with(Plan.DEF);
+     * }</pre>
      *
      * @param plan the specified {@code plan}
      * @throws NullPointerException If the {@code plan} is null
@@ -364,6 +396,15 @@ public class Event<T> implements Flag {
     /**
      * Use the specified {@link Type}
      *
+     * <pre>{@code
+     *  Event<User> event = ...
+     *  event.with(User.class);
+     *  event.with(new ComplexType<Map<Long, User>>().getType());
+     *
+     *  // You can use this:
+     *  // Event<Map<Long, User>> event = new Event<Map<Long, User>>() {};
+     * }</pre>
+     *
      * @param type the specified type
      */
     public Event<T> with(
@@ -375,6 +416,12 @@ public class Event<T> implements Flag {
 
     /**
      * Use the specified {@link Reader}
+     *
+     * <pre>{@code
+     *  Reader reader = ...
+     *  Event<User> event = ...
+     *  event.with(reader);
+     * }</pre>
      *
      * @param reader the specified {@link Reader} to be read
      */
@@ -388,6 +435,12 @@ public class Event<T> implements Flag {
     /**
      * Use the specified {@link Spare}
      *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  Event<User> event = ...
+     *  event.with(spare);
+     * }</pre>
+     *
      * @param spare the specified spare
      */
     public Event<T> with(
@@ -399,6 +452,12 @@ public class Event<T> implements Flag {
 
     /**
      * Use the specified {@link Supplier}
+     *
+     * <pre>{@code
+     *  Supplier<User> supplier = ...
+     *  Event<User> event = ...
+     *  event.with(supplier);
+     * }</pre>
      *
      * @param supplier the specified supplier
      */
