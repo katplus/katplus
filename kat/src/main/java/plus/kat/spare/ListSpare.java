@@ -119,8 +119,7 @@ public class ListSpare implements Spare<List> {
             return null;
         }
 
-        Class<?> clazz = data.getClass();
-        if (clazz == klass) {
+        if (klass.isInstance(data)) {
             return (List) data;
         }
 
@@ -128,6 +127,14 @@ public class ListSpare implements Spare<List> {
             List list = apply();
             list.addAll(
                 (Collection) data
+            );
+            return list;
+        }
+
+        if (data instanceof Map) {
+            List list = apply();
+            list.addAll(
+                ((Map) data).values()
             );
             return list;
         }
@@ -146,13 +153,24 @@ public class ListSpare implements Spare<List> {
             );
         }
 
-        if (clazz.isArray()) {
+        if (data.getClass().isArray()) {
+            List list = apply();
             int size = Array.getLength(data);
-            List list = new ArrayList(size);
 
             for (int i = 0; i < size; i++) {
                 list.add(
                     Array.get(data, i)
+                );
+            }
+            return list;
+        }
+
+        Spoiler spoiler = supplier.flat(data);
+        if (spoiler != null) {
+            List list = apply();
+            while (spoiler.hasNext()) {
+                list.add(
+                    spoiler.getValue()
                 );
             }
             return list;
@@ -165,8 +183,7 @@ public class ListSpare implements Spare<List> {
     public static List apply(
         @Nullable Type type
     ) {
-        if (type == null ||
-            type == List.class ||
+        if (type == List.class ||
             type == ArrayList.class) {
             return new ArrayList<>();
         }
@@ -179,7 +196,8 @@ public class ListSpare implements Spare<List> {
             return new Vector<>();
         }
 
-        if (type == LinkedList.class) {
+        if (type == LinkedList.class ||
+            type == AbstractSequentialList.class) {
             return new LinkedList<>();
         }
 
@@ -203,6 +221,7 @@ public class ListSpare implements Spare<List> {
             type == ArrayList.class) {
             return INSTANCE;
         }
+
         return new ListSpare(type);
     }
 
@@ -210,26 +229,42 @@ public class ListSpare implements Spare<List> {
     public Builder<List> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder0(
+        return new Builder$<List>(
             klass, type
-        );
+        ) {
+            @Override
+            public List onCreate(
+                @NotNull Type type
+            ) {
+                return apply(type);
+            }
+        };
     }
 
-    public static class Builder0 extends Builder<List> {
+    public static class Builder$<T extends Collection> extends Builder<T> {
 
-        protected Type type;
         protected Type tag;
-        protected List entity;
+        protected Type type;
 
         protected Type param;
-        protected Spare<?> v;
+        protected T entity;
+        protected Spare<?> spare;
 
-        public Builder0(
+        public Builder$(
             @NotNull Type tag,
             @Nullable Type type
         ) {
             this.tag = tag;
             this.type = type;
+        }
+
+        @NotNull
+        public T onCreate(
+            @NotNull Type type
+        ) throws Crash {
+            throw new Crash(
+                "Failed to create"
+            );
         }
 
         @Override
@@ -241,11 +276,11 @@ public class ListSpare implements Spare<List> {
                 ParameterizedType p = (ParameterizedType) raw;
                 raw = p.getRawType();
                 param = p.getActualTypeArguments()[0];
-                v = Reflect.lookup(
+                spare = Reflect.lookup(
                     param, supplier
                 );
             }
-            entity = apply(
+            entity = onCreate(
                 raw == null ? tag : raw
             );
         }
@@ -257,16 +292,16 @@ public class ListSpare implements Spare<List> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            if (v != null) {
+            if (spare != null) {
                 value.setType(param);
                 entity.add(
-                    v.read(
+                    spare.read(
                         event, value
                     )
                 );
             } else {
-                Spare<?> spare = supplier
-                    .lookup(space);
+                Spare<?> spare =
+                    supplier.lookup(space);
 
                 if (spare != null) {
                     value.setType(param);
@@ -295,12 +330,12 @@ public class ListSpare implements Spare<List> {
             @NotNull Space space,
             @NotNull Alias alias
         ) {
-            if (v != null) {
-                return v.getBuilder(param);
+            if (spare != null) {
+                return spare.getBuilder(param);
             }
 
-            Spare<?> spare = supplier
-                .lookup(space);
+            Spare<?> spare =
+                supplier.lookup(space);
 
             if (spare == null) {
                 return null;
@@ -311,7 +346,7 @@ public class ListSpare implements Spare<List> {
 
         @Nullable
         @Override
-        public List getResult() {
+        public T getResult() {
             return entity;
         }
 

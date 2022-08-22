@@ -20,7 +20,6 @@ import plus.kat.anno.Nullable;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.*;
@@ -29,7 +28,8 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.utils.Casting;
-import plus.kat.utils.Reflect;
+
+import static plus.kat.spare.ListSpare.Builder$;
 
 /**
  * @author kraity
@@ -118,8 +118,7 @@ public class SetSpare implements Spare<Set> {
             return null;
         }
 
-        Class<?> clazz = data.getClass();
-        if (clazz == klass) {
+        if (klass.isInstance(data)) {
             return (Set) data;
         }
 
@@ -127,6 +126,14 @@ public class SetSpare implements Spare<Set> {
             Set set = apply();
             set.addAll(
                 (Set) data
+            );
+            return set;
+        }
+
+        if (data instanceof Map) {
+            Set set = apply();
+            set.addAll(
+                ((Map) data).values()
             );
             return set;
         }
@@ -145,13 +152,24 @@ public class SetSpare implements Spare<Set> {
             );
         }
 
-        if (clazz.isArray()) {
-            int size = Array.getLength(data);
+        if (data.getClass().isArray()) {
             Set set = apply();
+            int size = Array.getLength(data);
 
             for (int i = 0; i < size; i++) {
                 set.add(
                     Array.get(data, i)
+                );
+            }
+            return set;
+        }
+
+        Spoiler spoiler = supplier.flat(data);
+        if (spoiler != null) {
+            Set set = apply();
+            while (spoiler.hasNext()) {
+                set.add(
+                    spoiler.getValue()
                 );
             }
             return set;
@@ -199,6 +217,7 @@ public class SetSpare implements Spare<Set> {
             type == HashSet.class) {
             return INSTANCE;
         }
+
         return new SetSpare(type);
     }
 
@@ -206,114 +225,15 @@ public class SetSpare implements Spare<Set> {
     public Builder<Set> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder0(
+        return new Builder$<Set>(
             klass, type
-        );
-    }
-
-    public static class Builder0 extends Builder<Set> {
-
-        protected Type type;
-        protected Type tag;
-        protected Set entity;
-
-        protected Type param;
-        protected Spare<?> v;
-
-        public Builder0(
-            @NotNull Type tag,
-            @Nullable Type type
         ) {
-            this.tag = tag;
-            this.type = type;
-        }
-
-        @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) throws Crash, IOException {
-            Type raw = type;
-            if (raw instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) raw;
-                raw = p.getRawType();
-                param = p.getActualTypeArguments()[0];
-                v = Reflect.lookup(
-                    param, supplier
-                );
+            @Override
+            public Set onCreate(
+                @NotNull Type type
+            ) {
+                return apply(type);
             }
-            entity = apply(
-                raw == null ? tag : raw
-            );
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public void onAccept(
-            @NotNull Space space,
-            @NotNull Alias alias,
-            @NotNull Value value
-        ) throws IOException {
-            if (v != null) {
-                value.setType(param);
-                entity.add(
-                    v.read(
-                        event, value
-                    )
-                );
-            } else {
-                Spare<?> spare = supplier
-                    .lookup(space);
-
-                if (spare != null) {
-                    value.setType(param);
-                    entity.add(
-                        spare.read(
-                            event, value
-                        )
-                    );
-                }
-            }
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public void onAccept(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) throws IOException {
-            entity.add(
-                child.getResult()
-            );
-        }
-
-        @Override
-        public Builder<?> getBuilder(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) {
-            if (v != null) {
-                return v.getBuilder(param);
-            }
-
-            Spare<?> spare = supplier
-                .lookup(space);
-
-            if (spare == null) {
-                return null;
-            }
-
-            return spare.getBuilder(param);
-        }
-
-        @Nullable
-        @Override
-        public Set getResult() {
-            return entity;
-        }
-
-        @Override
-        public void onDestroy() {
-            entity = null;
-        }
+        };
     }
 }

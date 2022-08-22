@@ -30,8 +30,7 @@ import java.util.concurrent.*;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.utils.Casting;
-import plus.kat.utils.Reflect;
+import plus.kat.utils.*;
 
 /**
  * @author kraity
@@ -145,15 +144,14 @@ public class MapSpare implements Spare<Map> {
             return null;
         }
 
-        Class<?> clazz = data.getClass();
-        if (clazz == klass) {
+        if (klass.isInstance(data)) {
             return (Map) data;
         }
 
         if (data instanceof Map) {
             Map map = apply();
             map.putAll(
-                (Map<?, ?>) data
+                (Map) data
             );
             return map;
         }
@@ -260,6 +258,7 @@ public class MapSpare implements Spare<Map> {
             type == LinkedHashMap.class) {
             return INSTANCE;
         }
+
         return new MapSpare(type);
     }
 
@@ -311,11 +310,11 @@ public class MapSpare implements Spare<Map> {
 
     public static class Builder0 extends Builder<Map> {
 
-        protected Type type;
         protected Type tag;
-        protected Map entity;
+        protected Type type;
 
         protected Type tk, tv;
+        protected Map entity;
         protected Spare<?> k, v;
 
         public Builder0(
@@ -341,6 +340,11 @@ public class MapSpare implements Spare<Map> {
                 v = Reflect.lookup(
                     tv = ary[1], supplier
                 );
+                if (v != null && k == null) {
+                    throw new UnexpectedCrash(
+                        "Key's spare does not exist"
+                    );
+                }
             }
             entity = apply(
                 raw == null ? tag : raw
@@ -357,26 +361,17 @@ public class MapSpare implements Spare<Map> {
             if (v != null) {
                 alias.setType(tk);
                 value.setType(tv);
-                if (k == null) {
-                    entity.put(
-                        alias.toString(),
-                        v.read(
-                            event, value
-                        )
-                    );
-                } else {
-                    entity.put(
-                        k.read(
-                            event, alias
-                        ),
-                        v.read(
-                            event, value
-                        )
-                    );
-                }
+                entity.put(
+                    k.read(
+                        event, alias
+                    ),
+                    v.read(
+                        event, value
+                    )
+                );
             } else {
-                Spare<?> spare = supplier
-                    .lookup(space);
+                Spare<?> spare =
+                    supplier.lookup(space);
 
                 if (spare != null) {
                     value.setType(tv);
@@ -420,8 +415,8 @@ public class MapSpare implements Spare<Map> {
                 return v.getBuilder(tv);
             }
 
-            Spare<?> spare = supplier
-                .lookup(space);
+            Spare<?> spare =
+                supplier.lookup(space);
 
             if (spare == null) {
                 return null;
