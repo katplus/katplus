@@ -3,7 +3,7 @@ package plus.kat.reflex;
 import org.junit.jupiter.api.Test;
 
 import plus.kat.*;
-import plus.kat.anno.Embed;
+import plus.kat.anno.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -53,6 +53,9 @@ public class ProxyTest {
 
     @Embed("Meta")
     interface Meta {
+        @Expose(
+            index = 0
+        )
         int getId();
 
         void setId(
