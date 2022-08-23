@@ -17,7 +17,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
 </dependency>
 ```
 
@@ -25,7 +25,7 @@ Gradle:
 
 ```groovy
 dependencies {
-    implementation 'plus.kat:kat:0.0.2'
+    implementation 'plus.kat:kat:0.0.3'
 }
 ```
 
@@ -33,7 +33,7 @@ Kotlin Gradle:
 
 ```kotlin
 dependencies {
-    implementation("plus.kat:kat:0.0.2")
+    implementation("plus.kat:kat:0.0.3")
 }
 ```
 
@@ -47,7 +47,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-netty</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
 </dependency>
 ```
 
@@ -78,7 +78,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-spring</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
 </dependency>
 ```
 
@@ -107,6 +107,57 @@ public class Application implements WebMvcConfigurer {
 }
 ```
 
+### 1.2.3 Client
+
+#### 1.2.3.1 Caller
+
+Maven:
+
+```xml
+<dependency>
+    <groupId>plus.kat</groupId>
+    <artifactId>kat-caller</artifactId>
+    <version>0.0.3</version>
+</dependency>
+```
+
+Java:
+
+```java
+String url = "https://kat.plus/test/user";
+User user = new Client(url).get().to(User.class);
+
+Supplier supplier = Supplier.ins();
+User bean = new User(1, "kraity");
+
+Json json = supplier.serial(bean);
+User user = new Client(url).post(json).to(User.class);
+```
+
+#### 1.2.3.2 Okhttp
+
+Maven:
+
+```xml
+<dependency>
+    <groupId>plus.kat</groupId>
+    <artifactId>kat-okhttp</artifactId>
+    <version>0.0.3</version>
+</dependency>
+```
+
+#### 1.2.3.3 Retrofit
+
+Maven:
+
+```xml
+<dependency>
+    <groupId>plus.kat</groupId>
+    <artifactId>kat-retrofit</artifactId>
+    <version>0.0.3</version>
+</dependency>
+```
+
 # 2. 简单使用
 
 ### 2.1 **Data** to **Text**
@@ -131,23 +182,17 @@ Java:
 ```java
 // kat
 HashMap<String, Object> data = Kat.decode(
-    HashMap.class, new Event<>(
-        "{:id(1):name(kraity)}"
-    )
+    HashMap.class, "{:id(1):name(kraity)}"
 );
 
 // xml
 HashMap<String, String> data = Doc.decode(
-    HashMap.class, new Event<>(
-        "<user><id>1</id><name>kraity</name></user>"
-    )
+    HashMap.class, "<user><id>1</id><name>kraity</name></user>"
 );
 
 // json
 HashMap<String, Object> data = Json.decode(
-    HashMap.class, new Event<>(
-        "{\"id\":1,\"name\":\"kraity\"}"
-    )
+    HashMap.class, "{\"id\":1,\"name\":\"kraity\"}"
 );
 ```
 
@@ -158,27 +203,23 @@ Java:
 ```java
 // kat
 ArrayList<Integer> data = Kat.decode(
-    ArrayList.class, new Event<>(
-        "{i(1)i(2)i(3)}"
-    )
+    ArrayList.class, "{i(1)i(2)i(3)}"
 );
 
 // xml
 ArrayList<String> data = Doc.decode(
-    ArrayList.class, new Event<>(
-        "<list><item>1</item><item>2</item></list>"
-    )
+    ArrayList.class, "<list><item>1</item><item>2</item></list>"
 );
 
 // json
 ArrayList<Integer> data = Json.decode(
-    ArrayList.class, new Event<>(
-        "[1,2,3]"
-    )
+    ArrayList.class,  "[1,2,3]"
 );
 ```
 
 ### 2.4 **Text** to **Object**
+
+Bean:
 
 ```java
 @Embed
@@ -209,6 +250,8 @@ User user = Json.decode(
     User.class, "{\"id\":1,\"name\":\"kraity\"}"
 );
 ```
+
+Bean:
 
 ```java
 @Embed
@@ -335,6 +378,8 @@ val text = doc("Story") {
 # 3. 基础使用
 
 ### 3.1 Use **Spare**
+
+Bean:
 
 ```java
 @Embed
@@ -564,6 +609,8 @@ Event<User> event = new Event<>(stream, cipher);
 
 ### 4.1 Use **Supplier**
 
+Bean:
+
 ```java
 @Embed("plus.kat.entity.User")
 class User {
@@ -676,6 +723,8 @@ supplier.revoke("plus.kat.entity.User");
 
 ### 4.2 Use custom **Coder**
 
+Bean:
+
 ```java
 @Embed
 class User {
@@ -734,6 +783,8 @@ class StatusCoder implements Coder<String> {
 ```
 
 ### 4.3 Use custom **Coder** and **Builder**
+
+Bean:
 
 ```java
 // POJO
@@ -865,6 +916,8 @@ class AuthorBuilder extends Builder<User> {
 ```
 
 ### 4.4 Use custom **Spare**
+
+Bean:
 
 ```java
 @Embed(with = UserSpare.class)
