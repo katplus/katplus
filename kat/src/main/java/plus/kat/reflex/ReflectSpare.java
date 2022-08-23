@@ -143,23 +143,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                 flag |= (1 << i);
                 Class<?> c = as[i];
                 if (c.isPrimitive()) {
-                    if (c == int.class) {
-                        data[i] = 0;
-                    } else if (c == long.class) {
-                        data[i] = 0L;
-                    } else if (c == float.class) {
-                        data[i] = 0F;
-                    } else if (c == double.class) {
-                        data[i] = 0D;
-                    } else if (c == boolean.class) {
-                        data[i] = false;
-                    } else if (c == byte.class) {
-                        data[i] = (byte) 0;
-                    } else if (c == char.class) {
-                        data[i] = (char) 0;
-                    } else if (c == short.class) {
-                        data[i] = (short) 0;
-                    }
+                    data[i] = Reflect.def(c);
                 }
             }
         }

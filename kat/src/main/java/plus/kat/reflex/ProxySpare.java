@@ -257,7 +257,7 @@ public final class ProxySpare extends Workman<Object> {
             if (!name.startsWith("set")) {
                 alias = name;
             } else {
-                alias = "g" + name.substring(1);
+                alias = 'g' + name.substring(1);
             }
         }
 
@@ -271,9 +271,19 @@ public final class ProxySpare extends Workman<Object> {
                     return method.invoke(it);
                 }
 
-                return ((Explorer) Proxy
+                Object val = ((Explorer) Proxy
                     .getInvocationHandler(it)
                 ).get(alias);
+                if (val != null) {
+                    return val;
+                }
+
+                Class<?> c = method
+                    .getReturnType();
+                if (c.isPrimitive()) {
+                    return Reflect.def(c);
+                }
+                return null;
             } catch (Throwable e) {
                 // Nothing
             }
@@ -316,26 +326,41 @@ public final class ProxySpare extends Workman<Object> {
         public Object invoke(
             Object proxy,
             Method method,
-            Object[] args
+            Object[] data
         ) {
             String name = method.getName();
-            if (args == null) {
+            if (data == null) {
                 if (name.equals("hashCode")) {
                     return hashCode();
-                } else {
-                    return super.get(name);
                 }
+
+                Object val = get(name);
+                if (val != null) {
+                    return val;
+                }
+
+                Class<?> c = method
+                    .getReturnType();
+                if (c.isPrimitive()) {
+                    return Reflect.def(c);
+                }
+                return null;
             }
 
-            if (args.length == 1) {
+            if (data.length == 1) {
                 if (name.startsWith("set")) {
                     super.put(
-                        "g" + name.substring(1), args[0]
+                        'g' + name.substring(1), data[0]
                     );
+                    return null;
                 }
+
                 if (name.equals("equals")) {
-                    return proxy == args[0] ||
-                        super.equals(args[0]);
+                    Object v = data[0];
+                    if (v == null) {
+                        return false;
+                    }
+                    return proxy == v || super.equals(v);
                 }
             }
 

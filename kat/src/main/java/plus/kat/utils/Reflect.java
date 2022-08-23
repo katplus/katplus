@@ -22,6 +22,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.RunCrash;
 import plus.kat.spare.*;
 import plus.kat.reflex.*;
 
@@ -140,6 +141,46 @@ public final class Reflect {
         }
 
         return null;
+    }
+
+    /**
+     * @since 0.0.3
+     */
+    @Nullable
+    public static Object def(
+        @NotNull Class<?> type
+    ) {
+        if (type == int.class) {
+            return 0;
+        }
+        if (type == long.class) {
+            return 0L;
+        }
+        if (type == boolean.class) {
+            return false;
+        }
+        if (type == byte.class) {
+            return (byte) 0;
+        }
+        if (type == short.class) {
+            return (short) 0;
+        }
+        if (type == float.class) {
+            return 0F;
+        }
+        if (type == double.class) {
+            return 0D;
+        }
+        if (type == void.class) {
+            return null;
+        }
+        if (type == char.class) {
+            return (char) 0;
+        }
+
+        throw new RunCrash(
+            "Not support type:" + type
+        );
     }
 
     /**
