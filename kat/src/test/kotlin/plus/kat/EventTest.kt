@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test
  * @author kraity
  */
 class EventKtTest {
-
     @Test
-    fun test_char_reader_0() {
-        val map = read<Map<*, *>>(
+    fun test_reader() {
+        val supplier = Supplier.ins()
+        val map = supplier.read(
             object : Event<Map<Int, Long>>(
                 "\${d:16(123)b:32(456)}"
             ) {}

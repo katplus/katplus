@@ -9,7 +9,9 @@ class DocKtTest {
     fun test_toJson() {
         assertEquals(
             "<User><id>1</id><name>kraity</name></User>",
-            mapOf("id" to 1, "name" to "kraity").toDoc("User")
+            Doc.encode(
+                "User", mapOf("id" to 1, "name" to "kraity")
+            )
         )
     }
 

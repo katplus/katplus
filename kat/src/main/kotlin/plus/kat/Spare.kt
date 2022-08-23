@@ -13,128 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress(
+    "HasPlatformType"
+)
+
 package plus.kat
 
-import plus.kat.anno.Nullable
-
-import kotlin.reflect.KClass
-
 /**
- * @param klass KClass<T>
- * @return Spare<T>?
- */
-@Nullable
-@Suppress("HasPlatformType")
-fun <T : Any> lookup(
-    klass: KClass<T>
-) = Spare.lookup(
-    klass.java
-)
-
-/**
- * @param data ByteArray?
+ * @receiver Event<out T>?
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> read(
-    data: ByteArray?
-) = Kat.decode(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    Event<out T>?.read() = Kat.decode(T::class.java, this)
 
 /**
- * @param data CharSequence?
+ * @receiver ByteArray?
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> read(
-    data: CharSequence?
-) = Kat.decode(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    ByteArray?.read() = Kat.decode(T::class.java, this)
 
 /**
- * @param data Event?
+ * @receiver CharSequence?
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> read(
-    data: Event<out T>?
-) = Kat.decode(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    CharSequence?.read() = Kat.decode(T::class.java, this)
 
 /**
- * @param data ByteArray?
+ * @receiver Event?
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> down(
-    data: ByteArray?
-) = Doc.decode(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    Event<out T>?.down() = Doc.decode(T::class.java, this)
 
 /**
- * @param data CharSequence?
+ * @receiver ByteArray?
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> down(
-    data: CharSequence?
-) = Doc.decode(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    ByteArray?.down() = Doc.decode(T::class.java, this)
 
 /**
- * @param data Event?
+ * @receiver CharSequence?
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> down(
-    data: Event<out T>?
-) = Doc.decode(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    CharSequence?.down() = Doc.decode(T::class.java, this)
 
 /**
- * @param data ByteArray?
+ * @receiver Event?
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> parse(
-    data: ByteArray?
-) = Json.decode(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    Event<out T>?.parse() = Json.decode(T::class.java, this)
 
 /**
- * @param data CharSequence?
+ * @receiver ByteArray?
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> parse(
-    data: CharSequence?
-) = Json.decode(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    ByteArray?.parse() = Json.decode(T::class.java, this)
 
 /**
- * @param data Event?
+ * @receiver CharSequence?
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> parse(
-    data: Event<out T>?
-) = Json.decode(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    CharSequence?.parse() = Json.decode(T::class.java, this)

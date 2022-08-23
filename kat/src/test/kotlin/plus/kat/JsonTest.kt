@@ -17,9 +17,8 @@ class JsonKtTest {
 
     @Test
     fun test_read() {
-        val user = parse<User>(
-            """{"id":1,"name":"kraity"}"""
-        )
+        val text = """{"id":1,"name":"kraity"}"""
+        val user = text.parse<User>()
 
         assertEquals(1, user.id)
         assertEquals("kraity", user.name)

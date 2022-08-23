@@ -10,6 +10,14 @@ import plus.kat.anno.Expose
 class SupplierKtTest {
 
     @Test
+    fun test_lookup() {
+        val supplier = Supplier.ins()
+        assertNotNull(
+            supplier.lookup<User>()
+        )
+    }
+
+    @Test
     fun test() {
         val supplier = Supplier.ins()
         val user = supplier.read<User>(

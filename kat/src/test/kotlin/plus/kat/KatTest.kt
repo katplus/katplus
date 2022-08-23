@@ -11,7 +11,7 @@ class KatKtTest {
     @Test
     fun test_to() {
         val text = "User{i:id(1)s:name(kraity)b:disabled(1)}"
-        val user = read<User>(text)
+        val user = text.read<User>()
 
         assertEquals(1, user.id)
         assertTrue(user.blocked)
@@ -28,9 +28,8 @@ class KatKtTest {
 
     @Test
     fun test_read() {
-        val user = read<User>(
-            "User{i:id(1)s:name(kraity)b:disabled(1)}"
-        )
+        val text = "User{i:id(1)s:name(kraity)b:disabled(1)}"
+        val user = text.read<User>()
 
         assertEquals(1, user.id)
         assertTrue(user.blocked)
@@ -40,8 +39,8 @@ class KatKtTest {
     @Test
     fun test_read1() {
         val supplier = Supplier.ins()
-        val user = supplier.read(
-            User::class.java, Event(
+        val user = supplier.read<User>(
+            Event(
                 "User{i:id(1)s:name(kraity)b:disabled(1)}"
             )
         )

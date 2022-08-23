@@ -8,15 +8,9 @@ import plus.kat.anno.Expose
 class SpareKtTest {
 
     @Test
-    fun test_lookup() {
-        assertNotNull(
-            lookup(User::class)
-        )
-    }
-
-    @Test
     fun test_marker() {
-        val spare = lookup(User::class)
+        val supplier = Supplier.ins()
+        val spare = supplier.lookup<User>()
         val u1 = spare.read(
             "User{}"
         )

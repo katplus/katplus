@@ -13,54 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress(
+    "HasPlatformType"
+)
+
 package plus.kat
 
-import plus.kat.anno.Nullable
+/**
+ * @receiver Supplier
+ * @param spare Spare<*>
+ * @return Spare<T>?
+ */
+inline fun <reified T : Any>
+    Supplier.embed(spare: Spare<*>) = embed(T::class.java, spare)
+
+/**
+ * @receiver Supplier
+ * @return Spare<T>?
+ */
+inline fun <reified T : Any>
+    Supplier.lookup() = lookup(T::class.java)
 
 /**
  * @param data Any?
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> Supplier.cast(
-    data: Any?
-) = cast(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    Supplier.cast(data: Any?) = cast(T::class.java, data)
 
 /**
  * @param data Event
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> Supplier.read(
-    data: Event<out T>
-) = read(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    Supplier.read(data: Event<out T>) = read(T::class.java, data)
 
 /**
  * @param data Event
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> Supplier.down(
-    data: Event<out T>
-) = down(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    Supplier.down(data: Event<out T>) = down(T::class.java, data)
 
 /**
  * @param data Event
  * @return T?
  */
-@Nullable
-@Suppress("HasPlatformType")
-inline fun <reified T : Any> Supplier.parse(
-    data: Event<out T>
-) = parse(
-    T::class.java, data
-)
+inline fun <reified T : Any>
+    Supplier.parse(data: Event<out T>) = parse(T::class.java, data)
