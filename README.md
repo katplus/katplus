@@ -132,7 +132,7 @@ Java:
 // kat
 HashMap<String, Object> data = Kat.decode(
     HashMap.class, new Event<>(
-        "${i:id(1)s:name(kraity)}"
+        "{:id(1):name(kraity)}"
     )
 );
 
@@ -159,7 +159,7 @@ Java:
 // kat
 ArrayList<Integer> data = Kat.decode(
     ArrayList.class, new Event<>(
-        "${i(1)i(2)i(3)}"
+        "{i(1)i(2)i(3)}"
     )
 );
 
@@ -181,7 +181,7 @@ ArrayList<Integer> data = Json.decode(
 ### 2.4 **Text** to **Object**
 
 ```java
-@Embed()
+@Embed
 class User {
     @Expose("id")
     private int id;
@@ -196,7 +196,7 @@ Java:
 ```java
 // kat
 User user = Kat.decode(
-    User.class, "${i:id(1)s:name(kraity)}"
+    User.class, "{:id(1):name(kraity)}"
 );
 
 // xml
@@ -210,50 +210,83 @@ User user = Json.decode(
 );
 ```
 
+```java
+@Embed
+interface Meta {
+    int getId();
+
+    String getTag();
+}
+```
+
+Java:
+
+```java
+// kat
+Meta meta = Kat.decode(
+    Meta.class, "{:id(1):tag(kat.plus)}"
+);
+
+// xml
+Meta meta = Doc.decode(
+    Meta.class, "<meta><id>1</id><tag>kat.plus</tag></meta>"
+);
+
+// json
+Meta meta = Json.decode(
+    Meta.class, "{\"id\":1,\"tag\":\"kat.plus\"}"
+);
+```
+
 ### 2.5 **Chan** to **Text**
 
 Java:
 
 ```java
 // kat
-Chan chan = new Chan(c -> {
+Chan chan = new Chan();
+chan.set("meta", c -> {
     c.set("id", 100001);
     c.set("title", "kat");
-    c.set("author", "User", $ -> {
-        $.set("id", 1);
-        $.set("name", "kraity");
+    c.set("author", "User", user -> {
+        user.set("id", 1);
+        user.set("name", "kraity");
     });
 });
 
-// M{i:id(100001)s:title(kat)User:author{i:id(1)s:name(kraity)}}
-byte[] src = chan.getFlow.copyBytes();
-String text = chan.toString()
+// M:meta{i:id(100001)s:title(kat)User:author{i:id(1)s:name(kraity)}}
+byte[] src = chan.toBytes();
+String text = chan.toString();
 
 // json
-Json json = new Json(c -> {
+Json json = new Json();
+json.set("meta", c -> {
     c.set("id", 100001);
     c.set("title", "kat");
-    c.set("author", "User", $ -> {
-        $.set("id", 1);
-        $.set("name", "kraity");
+    c.set("author", "User", user -> {
+        user.set("id", 1);
+        user.set("name", "kraity");
     });
 });
+
 // {"id":100001,"title":"kat","author":{"id":1,"name":"kraity"}}
-byte[] src = json.getFlow.copyBytes();
-String text = json.toString()
+byte[] src = json.toBytes();
+String text = json.toString();
 
 // xml
-Doc doc = new Doc("Story", c -> {
+Doc doc = new Doc();
+doc.set("Story", c -> {
     c.set("id", 100001);
     c.set("title", "kat");
-    c.set("author", "User", $ -> {
-        $.set("id", 1);
-        $.set("name", "kraity");
+    c.set("author", "User", user -> {
+        user.set("id", 1);
+        user.set("name", "kraity");
     });
 });
+
 // <Story><id>100001</id><title>kat</title><author><id>1</id><name>kraity</name></author></Story>
-byte[] src = doc.getFlow.copyBytes();
-String text = doc.toString()
+byte[] src = doc.toBytes();
+String text = doc.toString();
 ```
 
 Kotlin:
@@ -304,7 +337,7 @@ val text = doc("Story") {
 ### 3.1 Use **Spare**
 
 ```java
-@Embed()
+@Embed
 class User {
     @Expose("id")
     private int id;
@@ -322,7 +355,7 @@ Spare<User> spare = Spare.lookup(User.class);
 
 // kat
 User user = spare.read(
-    "${i:id(1)s:name(kraity)}"
+    "{:id(1):name(kraity)}"
 );
 Chan chan = spare.write(user);
 
@@ -340,7 +373,7 @@ Json json = spare.serial(user);
 
 // cast
 User user = spare.cast(
-    "${i:id(1)s:name(kraity)}"
+    "{:id(1):name(kraity)}"
 );
 
 // cast
@@ -357,21 +390,44 @@ User user = spare.cast(
 User user = spare.cast(
     Map.of("id", 1, "name", "kraity")
 );
+
+
+// convert between beans
+Bean bean = new Bean(
+    1, "kraity"
+);
+User user = spare.cast(bean);
 ```
 
 FLAT:
 
 ```java
-Spare<User> spare = ...
-Map<String, Object> collector = ...
-
 User user = ...
+Spare<User> spare = ...
+
+// Visitor
+spare.flat(
+    user, (key, val) -> {
+        String k = key;
+        Object v = val;
+    }
+);
+
+// Visitor
+Map<String, Object> collector = ...
 spare.flat(
     user, collector::put
 );
 
 int id = (int) collector.get("id");
 String name = (String) collector.get("name");
+
+// Spoiler
+Spoiler spoiler = spare.flat(user);
+while (spoiler.hasNext()) {
+    String key = spoiler.getKey();
+    Object val = spoiler.getValue();
+}
 ```
 
 JDBC:
@@ -427,12 +483,12 @@ event.with(
     Supplier.ins()
 );
 
-// specify type
-event.with(User.class);
-
 // specify reader
 Reader reader = ...;
-event.setReader(reader);
+event.with(reader);
+
+// specify type
+event.with(User.class);
 
 // specify flag
 event.with(Flag.INDEX_AS_ENUM);
@@ -473,11 +529,6 @@ Event<User> event = Event.remote("https://kat.plus/test/entity/user.kat");
 // use String
 String data = ...;
 Event<User> event = new Event<>(data);
-
-// use String with Cipher
-String data = ...;
-Cipher cipher = ...;
-Event<User> event = new Event<>(data, cipher);
 
 // use byte array
 byte[] data = ...;
@@ -540,7 +591,7 @@ User user = supplier.cast(
 // kat
 User user = supplier.read(
     User.class, new Event<>(
-        "${i:id(1)s:name(kraity)}"
+        "{:id(1):name(kraity)}"
     );
 );
 
@@ -578,7 +629,7 @@ User user = supplier.cast(
 // kat
 User user = supplier.read(
     "plus.kat.entity.User", new Event<>(
-        "${i:id(1)s:name(kraity)}"
+        "{i:id(1):name(kraity)}"
     );
 );
 
@@ -626,7 +677,7 @@ supplier.revoke("plus.kat.entity.User");
 ### 4.2 Use custom **Coder**
 
 ```java
-@Embed()
+@Embed
 class User {
     @Expose("id")
     private int id;
@@ -648,7 +699,7 @@ class StatusCoder implements Coder<String> {
     public String read(
         Flag flag,
         Value value
-    ) {
+    ) throws IOException {
         if (value.is("PUBLISH")) {
             return "open";
         }
@@ -664,7 +715,7 @@ class StatusCoder implements Coder<String> {
     public void write(
         Flow flow,
         Object value
-    ) throws IOCrash {
+    ) throws IOException {
         switch ((String) value) {
             case "open": {
                 flow.emit("PUBLISH");
@@ -693,7 +744,7 @@ class User {
     private User collaborator;
 }
 
-@Embed()
+@Embed
 class Note {
     @Expose("id")
     private int id;
@@ -717,7 +768,7 @@ class AuthorCoder implements Coder<User> {
     public void write(
         Chan chan,
         Object value
-    ) throws IOCrash {
+    ) throws IOException {
         User user = (User) value;
 
         chan.set("id", user.getId());
@@ -737,7 +788,7 @@ class AuthorBuilder extends Builder<User> {
     @Override
     public void onCreate(
         Alias alias
-    ) throws Crash, IOCrash {
+    ) throws Crash, IOException {
         user = new User();
     }
 
@@ -745,7 +796,7 @@ class AuthorBuilder extends Builder<User> {
     public void onAccept(
         Alias alias,
         Builder<?> child
-    ) throws IOCrash {
+    ) throws IOException {
         // check key
         if (alias.is("collaborator")) {
             user.setCollaborator(
@@ -759,7 +810,7 @@ class AuthorBuilder extends Builder<User> {
         Space space,
         Alias alias,
         Value value
-    ) throws IOCrash {
+    ) throws IOException {
         if (alias.is("id")) {
             user.setId(
                 value.toInt()
@@ -783,19 +834,20 @@ class AuthorBuilder extends Builder<User> {
     public Builder<?> getBuilder(
         Space space,
         Alias alias
-    ) throws IOCrash {
+    ) throws IOException {
         // check key
         if (alias.is("collaborator")) {
             // by supplier
-            Spare<?> spare = supplier.lookup(User.class);
+            Spare<?> spare =
+                supplier.lookup(User.class);
 
             // skip if null
-            if (spare != null) {
-                return spare.getBuilder(User.class);
+            if (spare == null) {
+                // by custom builder
+                return new AuthorBuilder();
             }
 
-            // by custom builder
-            return new AuthorBuilder();
+            return spare.getBuilder(User.class);
         }
         return null;
     }
@@ -868,7 +920,7 @@ class UserSpare implements Spare<User> {
     public void write(
         Chan chan,
         Object value
-    ) throws IOCrash {
+    ) throws IOException {
         // see: 4.3 Use custom Coder
     }
 

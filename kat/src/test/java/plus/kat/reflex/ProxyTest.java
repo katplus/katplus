@@ -53,9 +53,7 @@ public class ProxyTest {
 
     @Embed("Meta")
     interface Meta {
-        @Expose(
-            index = 0
-        )
+        @Expose(index = 0)
         int getId();
 
         void setId(
