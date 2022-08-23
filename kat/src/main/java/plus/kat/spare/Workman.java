@@ -15,10 +15,7 @@
  */
 package plus.kat.spare;
 
-import plus.kat.anno.Embed;
-import plus.kat.anno.Expose;
-import plus.kat.anno.NotNull;
-import plus.kat.anno.Nullable;
+import plus.kat.anno.*;
 
 import plus.kat.*;
 import plus.kat.chain.*;
@@ -27,6 +24,8 @@ import plus.kat.entity.*;
 import plus.kat.utils.*;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -881,6 +880,90 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             Expose expose
         ) {
             super(expose == null ? -1 : expose.index());
+        }
+
+        /**
+         * @param expose the specified {@link Expose}
+         */
+        protected Node(
+            Expose expose,
+            Field field,
+            Supplier supplier
+        ) {
+            this(expose);
+            klass = field.getType();
+            actual = field.getGenericType();
+
+            if (klass.isPrimitive()) {
+                klass = Reflect.wrap(klass);
+                coder = Reflect.activate(expose, supplier);
+            } else {
+                nullable = field.getAnnotation(NotNull.class) == null;
+                unwrapped = field.getAnnotation(Unwrapped.class) != null;
+
+                Format format = field
+                    .getAnnotation(
+                        Format.class
+                    );
+                if (format != null) {
+                    coder = Reflect.activate(
+                        klass, format
+                    );
+                } else {
+                    coder = Reflect.activate(
+                        expose, supplier
+                    );
+                }
+            }
+        }
+
+        /**
+         * @param expose the specified {@link Expose}
+         */
+        protected Node(
+            Expose expose,
+            Method method,
+            Supplier supplier
+        ) {
+            this(expose);
+            switch (method.getParameterCount()) {
+                case 0: {
+                    actual = klass = method.getReturnType();
+                    break;
+                }
+                case 1: {
+                    klass = method.getParameterTypes()[0];
+                    actual = method.getGenericParameterTypes()[0];
+                    break;
+                }
+                default: {
+                    throw new NullPointerException(
+                        "Unexpectedly, the parameter length of '" + method.getName() + "' is greater than '1'"
+                    );
+                }
+            }
+
+            if (klass.isPrimitive()) {
+                klass = Reflect.wrap(klass);
+                coder = Reflect.activate(expose, supplier);
+            } else {
+                nullable = method.getAnnotation(NotNull.class) == null;
+                unwrapped = method.getAnnotation(Unwrapped.class) != null;
+
+                Format format = method
+                    .getAnnotation(
+                        Format.class
+                    );
+                if (format != null) {
+                    coder = Reflect.activate(
+                        klass, format
+                    );
+                } else {
+                    coder = Reflect.activate(
+                        expose, supplier
+                    );
+                }
+            }
         }
     }
 }

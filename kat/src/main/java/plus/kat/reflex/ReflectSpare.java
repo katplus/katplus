@@ -40,8 +40,8 @@ import static plus.kat.utils.Reflect.lookup;
  * @author kraity
  * @since 0.0.2
  */
-@SuppressWarnings("unchecked")
-public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worker<T> {
+@SuppressWarnings({"rawtypes", "unchecked"})
+public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
 
     private MethodHandle handle;
     private Constructor<T> builder;
@@ -118,7 +118,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         try {
             return (T) m.invoke();
         } catch (Throwable e) {
-            throw new Crash(e);
+            throw new Crash(
+                "Failed to create", e
+            );
         }
     }
 
@@ -170,7 +172,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
         try {
             return b.newInstance(data);
         } catch (Throwable e) {
-            throw new Crash(e);
+            throw new Crash(
+                "Failed to create", e
+            );
         }
     }
 
@@ -260,18 +264,18 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
     }
 
     @Override
-    public Setter<T, ?> setter(
+    public Setter setter(
         @NotNull Object alias
     ) {
-        return (Setter<T, ?>) get(alias);
+        return (Setter) get(alias);
     }
 
     @Override
-    public Setter<T, ?> setter(
+    public Setter setter(
         @NotNull int index,
         @NotNull Alias alias
     ) {
-        return (Setter<T, ?>) get(
+        return (Setter) get(
             alias.isEmpty() ? index : alias
         );
     }
@@ -393,7 +397,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
     /**
      * @param methods the specified {@link Method} collection
      */
-    @SuppressWarnings("deprecation")
     private void onMethods(
         @NotNull Method[] methods
     ) {
@@ -481,56 +484,10 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
                     }
                 }
 
-                String key = method.getName();
-                int k = 1, l = key.length();
-
-                char ch = key.charAt(0);
-                if (ch == 's') {
-                    if (count == 0 || l < 4 ||
-                        key.charAt(k++) != 'e' ||
-                        key.charAt(k++) != 't') {
-                        continue;
-                    }
-                } else if (ch == 'g') {
-                    if (count != 0 || l < 4 ||
-                        key.charAt(k++) != 'e' ||
-                        key.charAt(k++) != 't') {
-                        continue;
-                    }
-                } else if (ch == 'i') {
-                    if (count != 0 || l < 3 ||
-                        key.charAt(k++) != 's') {
-                        continue;
-                    }
-                    Class<?> cls = method.getReturnType();
-                    if (cls != boolean.class &&
-                        cls != Boolean.class) {
-                        continue;
-                    }
-                } else {
+                byte[] name = Reflect
+                    .alias(method);
+                if (name == null) {
                     continue;
-                }
-
-                byte[] name;
-                char c1 = key.charAt(k++);
-                if (c1 < 'A' || 'Z' < c1) {
-                    continue;
-                }
-
-                if (k == l) {
-                    name = new byte[]{
-                        (byte) (c1 + 0x20)
-                    };
-                } else {
-                    // See: java.beans.Introspector#decapitalize(String)
-                    char c2 = key.charAt(k);
-                    if (c2 < 'A' || 'Z' < c2) {
-                        c1 += 0x20;
-                    }
-
-                    name = new byte[l - k + 1];
-                    name[0] = (byte) c1;
-                    key.getBytes(k, l, name, 1);
                 }
 
                 if (count == 0) {
@@ -708,31 +665,10 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
             Expose expose,
             Supplier supplier
         ) throws IllegalAccessException {
-            super(expose);
+            super(expose, field, supplier);
             field.setAccessible(true);
             getter = lookup.unreflectGetter(field);
             setter = lookup.unreflectSetter(field);
-
-            klass = field.getType();
-            actual = field.getGenericType();
-
-            if (klass.isPrimitive()) {
-                klass = Reflect.wrap(klass);
-                coder = Reflect.activate(expose, supplier);
-            } else {
-                nullable = field.getAnnotation(NotNull.class) == null;
-                unwrapped = field.getAnnotation(Unwrapped.class) != null;
-
-                Format format = field
-                    .getAnnotation(
-                        Format.class
-                    );
-                if (format != null) {
-                    coder = Reflect.activate(klass, format);
-                } else {
-                    coder = Reflect.activate(expose, supplier);
-                }
-            }
         }
 
         public Task(
@@ -740,45 +676,14 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T>, Worke
             Expose expose,
             Supplier supplier
         ) throws IllegalAccessException {
-            super(expose);
+            super(expose, method, supplier);
             method.setAccessible(true);
-            switch (method.getParameterCount()) {
-                case 0: {
-                    setter = null;
-                    getter = lookup.unreflect(method);
-                    actual = klass = method.getReturnType();
-                    break;
-                }
-                case 1: {
-                    getter = null;
-                    setter = lookup.unreflect(method);
-                    klass = method.getParameterTypes()[0];
-                    actual = method.getGenericParameterTypes()[0];
-                    break;
-                }
-                default: {
-                    throw new NullPointerException(
-                        "Unexpectedly, the parameter length of '" + method.getName() + "' is greater than '1'"
-                    );
-                }
-            }
-
-            if (klass.isPrimitive()) {
-                klass = Reflect.wrap(klass);
-                coder = Reflect.activate(expose, supplier);
+            if (method.getParameterCount() == 0) {
+                setter = null;
+                getter = lookup.unreflect(method);
             } else {
-                nullable = method.getAnnotation(NotNull.class) == null;
-                unwrapped = method.getAnnotation(Unwrapped.class) != null;
-
-                Format format = method
-                    .getAnnotation(
-                        Format.class
-                    );
-                if (format != null) {
-                    coder = Reflect.activate(klass, format);
-                } else {
-                    coder = Reflect.activate(expose, supplier);
-                }
+                getter = null;
+                setter = lookup.unreflect(method);
             }
         }
 

@@ -180,6 +180,85 @@ public final class Reflect {
     }
 
     /**
+     * Convert name of method to alias
+     *
+     * <pre>{@code
+     *   // getId() -> "id"
+     *   // getId(Param) -> null
+     *
+     *   // getURL() -> "URL"
+     *   // getUrl() -> "url"
+     *
+     *   // isEmpty() -> "empty"
+     *   // isEmpty(Param) -> null
+     *
+     *   // setName() -> null
+     *   // setName(Param) -> "name"
+     *   // setName(Param, Param) -> null
+     * }</pre>
+     *
+     * @see java.beans.Introspector#decapitalize(String)
+     * @since 0.0.3
+     */
+    @Nullable
+    @SuppressWarnings("deprecation")
+    public static byte[] alias(
+        @NotNull Method method
+    ) {
+        String name = method.getName();
+        int i = 1, l = name.length();
+
+        char ch = name.charAt(0);
+        if (ch == 's') {
+            if (method.getParameterCount() == 0 || l < 4 ||
+                name.charAt(i++) != 'e' ||
+                name.charAt(i++) != 't') {
+                return null;
+            }
+        } else if (ch == 'g') {
+            if (method.getParameterCount() != 0 || l < 4 ||
+                name.charAt(i++) != 'e' ||
+                name.charAt(i++) != 't') {
+                return null;
+            }
+        } else if (ch == 'i') {
+            if (method.getParameterCount() != 0 || l < 3 ||
+                name.charAt(i++) != 's') {
+                return null;
+            }
+            Class<?> cls = method.getReturnType();
+            if (cls != boolean.class &&
+                cls != Boolean.class) {
+                return null;
+            }
+        } else {
+            return null;
+        }
+
+        char c1 = name.charAt(i++);
+        if (c1 < 'A' || 'Z' < c1) {
+            return null;
+        }
+
+        byte[] alias;
+        if (i == l) {
+            alias = new byte[]{
+                (byte) (c1 + 0x20)
+            };
+        } else {
+            char c2 = name.charAt(i);
+            if (c2 < 'A' || 'Z' < c2) {
+                c1 += 0x20;
+            }
+
+            alias = new byte[l - i + 1];
+            alias[0] = (byte) c1;
+            name.getBytes(i, l, alias, 1);
+        }
+        return alias;
+    }
+
+    /**
      * @since 0.0.3
      */
     @Nullable

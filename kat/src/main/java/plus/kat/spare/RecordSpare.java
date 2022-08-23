@@ -33,7 +33,7 @@ import static plus.kat.reflex.ReflectSpare.Task;
  * @author kraity
  * @since 0.0.2
  */
-public final class RecordSpare<T> extends Workman<T> implements Worker<T> {
+public final class RecordSpare<T> extends Workman<T> {
 
     private int width;
     private Constructor<T> ctor;
@@ -83,7 +83,9 @@ public final class RecordSpare<T> extends Workman<T> implements Worker<T> {
         try {
             return b.newInstance(params);
         } catch (Throwable e) {
-            throw new Crash(e);
+            throw new Crash(
+                "Failed to create", e
+            );
         }
     }
 

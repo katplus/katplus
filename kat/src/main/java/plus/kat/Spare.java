@@ -688,7 +688,12 @@ public interface Spare<K> extends Coder<K> {
                     Embed.class
                 );
 
-            if (embed != null) {
+            if (embed == null) {
+                if (klass.isInterface() ||
+                    Kat.class.isAssignableFrom(klass)) {
+                    return null;
+                }
+            } else {
                 Class<?> target = embed.with();
                 if (target != Spare.class) {
                     // static inject
@@ -719,11 +724,12 @@ public interface Spare<K> extends Coder<K> {
                     }
                     return spare;
                 }
-            }
 
-            if (klass.isInterface() ||
-                Kat.class.isAssignableFrom(klass)) {
-                return null;
+                if (klass.isInterface()) {
+                    return new ProxySpare(
+                        embed, klass, supplier, this
+                    );
+                }
             }
 
             try {
