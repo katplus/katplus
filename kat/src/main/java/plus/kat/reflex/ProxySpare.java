@@ -37,9 +37,8 @@ import java.lang.reflect.*;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class ProxySpare extends Workman<Object> {
 
-    private Class<?>[] interfaces;
     private Class<?> proxy;
-    private ClassLoader classLoader;
+    private Constructor<?> cons;
 
     public ProxySpare(
         @NotNull Class klass,
@@ -80,8 +79,8 @@ public final class ProxySpare extends Workman<Object> {
         Alias alias
     ) throws Crash {
         try {
-            Class<?>[] is = interfaces;
-            if (is == null) {
+            Constructor<?> c = cons;
+            if (c == null) {
                 ClassLoader cl = klass.getClassLoader();
                 if (cl == null) {
                     cl = Thread.currentThread()
@@ -90,21 +89,18 @@ public final class ProxySpare extends Workman<Object> {
                         cl = ClassLoader.getSystemClassLoader();
                     }
                 }
-                classLoader = cl;
-                interfaces = is = new Class[]{klass};
 
-                Object o = Proxy
-                    .newProxyInstance(
-                        cl, is, new Explorer()
-                    );
-
-                supplier.embed(
-                    proxy = o.getClass(), this
+                proxy = Proxy.getProxyClass(cl, klass);
+                cons = c = proxy.getConstructor(
+                    InvocationHandler.class
                 );
-                return o;
+
+                c.setAccessible(true);
+                supplier.embed(proxy, this);
             }
-            return Proxy.newProxyInstance(
-                classLoader, is, new Explorer()
+
+            return c.newInstance(
+                new Explorer()
             );
         } catch (Exception e) {
             throw new Crash(
@@ -150,22 +146,24 @@ public final class ProxySpare extends Workman<Object> {
                     continue;
                 }
 
-                byte[] name = Reflect
-                    .alias(method);
-                if (name == null) {
-                    continue;
-                }
-
                 Expose expose = method
                     .getAnnotation(
                         Expose.class
                     );
 
+                String id;
+                byte[] name = Reflect
+                    .alias(method);
+                if (name == null) {
+                    id = method.getName();
+                } else {
+                    id = Binary.ascii(name);
+                }
+
                 Task node = new Task(
                     method, expose, this
                 );
 
-                String id = Binary.ascii(name);
                 if (count != 0) {
                     if (expose == null) {
                         super.put(
@@ -328,13 +326,13 @@ public final class ProxySpare extends Workman<Object> {
             Method method,
             Object[] data
         ) {
-            String name = method.getName();
+            String key = method.getName();
             if (data == null) {
-                if (name.equals("hashCode")) {
+                if (key.equals("hashCode")) {
                     return hashCode();
                 }
 
-                Object val = get(name);
+                Object val = get(key);
                 if (val != null) {
                     return val;
                 }
@@ -348,23 +346,41 @@ public final class ProxySpare extends Workman<Object> {
             }
 
             if (data.length == 1) {
-                if (name.startsWith("set")) {
+                Object val = data[0];
+                if (key.equals("equals")) {
+                    return proxy == val ||
+                        super.equals(val);
+                }
+
+                if (!key.startsWith("set")) {
                     super.put(
-                        'g' + name.substring(1), data[0]
+                        key, val
                     );
+                } else {
+                    super.put(
+                        'g' + key.substring(1), val
+                    );
+                }
+
+                Class<?> c = method
+                    .getReturnType();
+                if (c == void.class ||
+                    c == Void.class) {
                     return null;
                 }
 
-                if (name.equals("equals")) {
-                    Object v = data[0];
-                    if (v == null) {
-                        return false;
-                    }
-                    return proxy == v || super.equals(v);
+                if (c.isInstance(proxy)) {
+                    return proxy;
                 }
+
+                throw new RunCrash(
+                    c + " not supported"
+                );
             }
 
-            return null;
+            throw new RunCrash(
+                "Unexpectedly, Not currently supported: " + method
+            );
         }
     }
 }

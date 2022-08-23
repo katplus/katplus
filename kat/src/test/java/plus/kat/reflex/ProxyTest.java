@@ -92,4 +92,60 @@ public class ProxyTest {
             this.tag = tag;
         }
     }
+
+    @Embed
+    interface User {
+        int id();
+
+        String name();
+    }
+
+    @Test
+    public void test2() {
+        Supplier supplier = Supplier.ins();
+        User user = supplier.read(
+            User.class, new Event<>(
+                "{:id(1):name(kraity)}"
+            )
+        );
+
+        assertNotNull(user);
+        assertEquals(1, user.id());
+        assertEquals("kraity", user.name());
+    }
+
+    @Embed
+    interface Bean {
+        int id();
+
+        Bean id(
+            int id
+        );
+
+        String name();
+
+        Bean name(
+            String name
+        );
+    }
+
+    @Test
+    public void test3() {
+        Supplier supplier = Supplier.ins();
+        Bean bean = supplier.read(
+            Bean.class, new Event<>(
+                "{:id(1):name(kraity)}"
+            )
+        );
+
+        assertNotNull(bean);
+        assertEquals(1, bean.id());
+        assertEquals("kraity", bean.name());
+
+        assertSame(
+            bean, bean.id(2).name("kat.plus")
+        );
+        assertEquals(2, bean.id());
+        assertEquals("kat.plus", bean.name());
+    }
 }
