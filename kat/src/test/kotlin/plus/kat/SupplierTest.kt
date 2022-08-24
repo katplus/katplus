@@ -21,9 +21,7 @@ class SupplierKtTest {
     fun test() {
         val supplier = Supplier.ins()
         val user = supplier.read<User>(
-            Event(
-                "{$:arg0(1)$:arg1(kraity)}"
-            )
+            Event("{$:arg0(1)$:arg1(kraity)}")
         )
 
         assertEquals(1, user.id)
@@ -34,9 +32,7 @@ class SupplierKtTest {
     fun test1() {
         val supplier = Supplier.ins()
         val meta = supplier.read<Meta>(
-            Event(
-                "{$:id(1)$:tag{$:1(2)$:3(4)}}"
-            )
+            Event("{$:id(1)$:tag{$:1(2)$:3(4)}}")
         )
 
         assertEquals(1, meta.id)

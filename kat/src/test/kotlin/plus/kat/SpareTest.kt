@@ -8,9 +8,24 @@ import plus.kat.anno.Expose
 class SpareKtTest {
 
     @Test
+    fun test_flat() {
+        val user = User()
+        val data = HashMap<String, Any>()
+
+        val spare = lookup<User>()
+        assertTrue(
+            spare.flat(
+                user
+            ) { key, value ->
+                data[key] = value
+            }
+        )
+        assertEquals("{name=kraity, id=1}", data.toString())
+    }
+
+    @Test
     fun test_marker() {
-        val supplier = Supplier.ins()
-        val spare = supplier.lookup<User>()
+        val spare = lookup<User>()
         val u1 = spare.read(
             "User{}"
         )
@@ -31,8 +46,8 @@ class SpareKtTest {
     @Embed("User")
     class User(
         @Expose("id")
-        val id: Int = 1,
+        var id: Int = 1,
         @Expose("name")
-        val name: String = "kraity"
+        var name: String = "kraity"
     )
 }

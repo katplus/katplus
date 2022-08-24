@@ -24,10 +24,7 @@ public class SpareTest {
         assertNotNull(
             lookup(User.class)
         );
-    }
 
-    @Test
-    public void test_embed2() {
         Object[] list = new Object[]{
             Collections.EMPTY_MAP,
             Collections.EMPTY_SET,

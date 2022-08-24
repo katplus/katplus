@@ -9,6 +9,30 @@ import plus.kat.anno.Expose
 class KatKtTest {
 
     @Test
+    fun test_kat() {
+        assertEquals(
+            "User{i:id(1)s:name(kraity)}",
+            kat("User") {
+                it["id"] = 1
+                it["name"] = "kraity"
+            }
+        )
+    }
+
+    @Test
+    fun test_Kat() {
+        val kat = Kat("User") {
+            it["id"] = 1
+            it["name"] = "kraity"
+        }
+
+        assertSame(Chan::class.java, kat::class.java)
+        assertEquals(
+            "User{i:id(1)s:name(kraity)}", kat.toString()
+        )
+    }
+
+    @Test
     fun test_to() {
         val text = "User{i:id(1)s:name(kraity)b:disabled(1)}"
         val user = text.read<User>()
@@ -54,11 +78,12 @@ class KatKtTest {
     @Test
     fun test_read2() {
         val supplier = Supplier.ins()
-        val data = mapOf(
-            "id" to 1,
-            "name" to "kraity"
+        val user = supplier.cast<User>(
+            mapOf(
+                "id" to 1,
+                "name" to "kraity"
+            )
         )
-        val user = supplier.cast<User>(data)
 
         assertEquals(1, user.id)
         assertEquals("kraity", user.name)

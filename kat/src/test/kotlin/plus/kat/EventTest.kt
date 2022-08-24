@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
  * @author kraity
  */
 class EventKtTest {
+
     @Test
     fun test_reader() {
         val supplier = Supplier.ins()
@@ -16,9 +17,8 @@ class EventKtTest {
             ) {}
         )
 
-        map!!.let {
-            assertEquals(123L, it[16])
-            assertEquals(456L, it[32])
-        }
+        assertNotNull(map)
+        assertEquals(123L, map[16])
+        assertEquals(456L, map[32])
     }
 }
