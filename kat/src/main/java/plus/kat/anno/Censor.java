@@ -19,16 +19,19 @@ import java.lang.annotation.*;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.4
  */
 @Documented
 @Target({
     ElementType.METHOD,
     ElementType.FIELD,
-    ElementType.TYPE_USE,
-    ElementType.PARAMETER,
     ElementType.LOCAL_VARIABLE
 })
-@Retention(RetentionPolicy.SOURCE)
-public @interface Nullable {
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Censor {
+    /**
+     * Allow null value when
+     * serializing and deserializing
+     */
+    boolean nullable() default false;
 }

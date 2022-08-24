@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author kraity
  */
-public class NotNullTest {
+public class CensorTest {
 
     @Test
     public void test() {
@@ -31,13 +31,13 @@ public class NotNullTest {
 
     @Embed("User")
     static class User {
-        @NotNull
+        @Censor
         @Expose("date")
         private Date date = new Date(1645539742000L);
 
         private Date time = new Date(1645539742000L);
 
-        @NotNull
+        @Censor
         @Expose("time")
         public void setTime(
             Date time

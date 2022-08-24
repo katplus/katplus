@@ -4,10 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import plus.kat.*;
 
-import plus.kat.anno.Embed;
-import plus.kat.anno.Expose;
-import plus.kat.anno.NotNull;
-import plus.kat.anno.Unwrapped;
+import plus.kat.anno.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -191,7 +188,7 @@ public class ReflexTest {
 
     @Embed("Tag")
     static class Tag {
-        @NotNull
+        @Censor
         @Expose("id")
         private String id;
         private String name;
@@ -202,7 +199,7 @@ public class ReflexTest {
             this.name = name;
         }
 
-        @NotNull
+        @Censor
         public String getName() {
             return name;
         }

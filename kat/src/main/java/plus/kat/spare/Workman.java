@@ -898,7 +898,12 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 klass = Reflect.wrap(klass);
                 coder = Reflect.activate(expose, supplier);
             } else {
-                nullable = field.getAnnotation(NotNull.class) == null;
+                Censor censor = field.getAnnotation(Censor.class);
+                if (censor == null) {
+                    nullable = true;
+                } else {
+                    nullable = censor.nullable();
+                }
                 unwrapped = field.getAnnotation(Unwrapped.class) != null;
 
                 Format format = field
@@ -947,7 +952,12 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 klass = Reflect.wrap(klass);
                 coder = Reflect.activate(expose, supplier);
             } else {
-                nullable = method.getAnnotation(NotNull.class) == null;
+                Censor censor = method.getAnnotation(Censor.class);
+                if (censor == null) {
+                    nullable = true;
+                } else {
+                    nullable = censor.nullable();
+                }
                 unwrapped = method.getAnnotation(Unwrapped.class) != null;
 
                 Format format = method

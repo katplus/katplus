@@ -29,6 +29,6 @@ import java.lang.annotation.*;
     ElementType.PARAMETER,
     ElementType.LOCAL_VARIABLE
 })
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 public @interface NotNull {
 }
