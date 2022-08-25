@@ -159,7 +159,7 @@ public class Mage implements Solver {
                         }
                         case '}': {
                             bundle(p, true);
-                            break Alias;
+                            continue Boot;
                         }
                         case '"':
                         case '\'': {
@@ -182,7 +182,9 @@ public class Mage implements Solver {
                         case 0x0A:
                         case 0x0D:
                         case 0x20: {
-                            continue;
+                            if (mask != 1) {
+                                continue;
+                            } else break Boot;
                         }
                     }
                     throw new UnexpectedCrash(
@@ -456,7 +458,7 @@ public class Mage implements Solver {
     }
 
     /**
-     * clear this {@link Mage}
+     * Clear this {@link Mage}
      */
     @Override
     public void clear() {
@@ -467,7 +469,7 @@ public class Mage implements Solver {
     }
 
     /**
-     * close this {@link Mage}
+     * Close this {@link Mage}
      */
     @Override
     public void close() {

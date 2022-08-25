@@ -483,7 +483,7 @@ public class Radar implements Solver {
     }
 
     /**
-     * clear this {@link Radar}
+     * Clear this {@link Radar}
      */
     @Override
     public void clear() {
@@ -493,7 +493,7 @@ public class Radar implements Solver {
     }
 
     /**
-     * close this {@link Radar}
+     * Close this {@link Radar}
      */
     @Override
     public void close() {

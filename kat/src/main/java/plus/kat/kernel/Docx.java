@@ -544,7 +544,7 @@ public class Docx implements Solver {
     }
 
     /**
-     * clear this {@link Docx}
+     * Clear this {@link Docx}
      */
     @Override
     public void clear() {
@@ -553,7 +553,7 @@ public class Docx implements Solver {
     }
 
     /**
-     * close this {@link Docx}
+     * Close this {@link Docx}
      */
     @Override
     public void close() {
