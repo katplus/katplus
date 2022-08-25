@@ -19,6 +19,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
 
@@ -348,6 +349,8 @@ public class Doc extends Chan {
      * Parse {@link Doc} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
+     * @throws SolverCrash If parsing fails
+     * @see Spare#solve(Job, Event)
      */
     @Nullable
     public static Object decode(
@@ -365,6 +368,8 @@ public class Doc extends Chan {
      * Parse {@link Doc} {@link CharSequence}
      *
      * @param event specify the {@code event} to be handled
+     * @throws SolverCrash If parsing fails
+     * @see Spare#solve(Job, Event)
      */
     @Nullable
     public static <T> T decode(
@@ -382,6 +387,8 @@ public class Doc extends Chan {
      * Parse {@link Doc} byte array
      *
      * @param text specify the {@code text} to be parsed
+     * @throws SolverCrash If parsing fails
+     * @see Supplier#down(Class, Event)
      */
     @Nullable
     public static <T> T decode(
@@ -402,6 +409,8 @@ public class Doc extends Chan {
      * Parse {@link Doc} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
+     * @throws SolverCrash If parsing fails
+     * @see Supplier#down(Class, Event)
      */
     @Nullable
     public static <T> T decode(
@@ -422,6 +431,8 @@ public class Doc extends Chan {
      * Parse {@link Doc} {@link CharSequence}
      *
      * @param event specify the {@code event} to be handled
+     * @throws SolverCrash If parsing fails
+     * @see Supplier#down(Class, Event)
      */
     @Nullable
     public static <E, T extends E> T decode(

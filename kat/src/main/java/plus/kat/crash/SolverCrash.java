@@ -15,17 +15,22 @@
  */
 package plus.kat.crash;
 
-import java.io.IOException;
-
 /**
  * @author kraity
  * @since 0.0.4
  */
 public class SolverCrash extends RunCrash {
     /**
+     * @param m the detail message
+     */
+    public SolverCrash(String m) {
+        super(m);
+    }
+
+    /**
      * @param e the cause saved for later retrieval by the {@link #getCause()} method
      */
-    public SolverCrash(IOException e) {
+    public SolverCrash(Throwable e) {
         super(e);
     }
 
@@ -33,7 +38,7 @@ public class SolverCrash extends RunCrash {
      * @param m the detail message
      * @param e the cause saved for later retrieval by the {@link #getCause()} method
      */
-    public SolverCrash(String m, IOException e) {
+    public SolverCrash(String m, Throwable e) {
         super(m, e);
     }
 }

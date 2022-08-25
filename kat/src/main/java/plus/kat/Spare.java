@@ -221,6 +221,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Kat} {@link CharSequence} and convert result to {@link K}
      *
      * @param text specify the {@code text} to be parsed
+     * @throws SolverCrash          If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
@@ -236,6 +237,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Kat} {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
+     * @throws SolverCrash          If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -281,6 +283,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Doc} {@link CharSequence} and convert result to {@link K}
      *
      * @param text specify the {@code text} to be parsed
+     * @throws SolverCrash          If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
@@ -296,6 +299,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Doc} {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
+     * @throws SolverCrash          If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -341,6 +345,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Json} {@link CharSequence} and convert result to {@link K}
      *
      * @param text specify the {@code text} to be parsed
+     * @throws SolverCrash          If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
@@ -356,6 +361,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Json} {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
+     * @throws SolverCrash          If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -401,6 +407,7 @@ public interface Spare<K> extends Coder<K> {
      * Convert the {@link Object} to {@code K}
      *
      * @param data specify the {@code data} to convert
+     * @return {@link K} or {@code null}
      * @see Spare#cast(Supplier, Object)
      */
     @Nullable
@@ -417,6 +424,7 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param supplier the specified {@code supplier}
      * @param data     specify the {@code data} to convert
+     * @return {@link K} or {@code null}
      */
     @Nullable
     default K cast(
@@ -435,6 +443,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
+     * @throws SolverCrash          If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      * @since 0.0.2
      */
@@ -454,7 +463,7 @@ public interface Spare<K> extends Coder<K> {
             return parser.read(
                 job, event
             );
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new SolverCrash(
                 "Failed to solve " + job, e
             );

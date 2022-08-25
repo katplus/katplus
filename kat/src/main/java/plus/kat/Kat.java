@@ -19,6 +19,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.spare.*;
 
 import java.io.IOException;
@@ -135,6 +136,8 @@ public interface Kat {
      * Parse {@link Kat} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
+     * @throws SolverCrash If parsing fails
+     * @see Spare#solve(Job, Event)
      */
     @Nullable
     static Object decode(
@@ -152,6 +155,8 @@ public interface Kat {
      * Parse {@link Kat} {@link CharSequence}
      *
      * @param event specify the {@code event} to be handled
+     * @throws SolverCrash If parsing fails
+     * @see Spare#solve(Job, Event)
      */
     @Nullable
     static <T> T decode(
@@ -169,6 +174,8 @@ public interface Kat {
      * Parse {@link Kat} byte array
      *
      * @param text specify the {@code text} to be parsed
+     * @throws SolverCrash If parsing fails
+     * @see Supplier#read(Class, Event)
      */
     @Nullable
     static <T> T decode(
@@ -189,6 +196,8 @@ public interface Kat {
      * Parse {@link Kat} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
+     * @throws SolverCrash If parsing fails
+     * @see Supplier#read(Class, Event)
      */
     @Nullable
     static <T> T decode(
@@ -209,6 +218,8 @@ public interface Kat {
      * Parse {@link Kat} {@link CharSequence}
      *
      * @param event specify the {@code event} to be handled
+     * @throws SolverCrash If parsing fails
+     * @see Supplier#read(Class, Event)
      */
     @Nullable
     static <E, T extends E> T decode(
