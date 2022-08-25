@@ -23,7 +23,6 @@ import plus.kat.stream.*;
 
 import java.io.IOException;
 
-import static plus.kat.kernel.Radar.Event.*;
 import static plus.kat.stream.Binary.hex;
 
 /**
@@ -37,10 +36,6 @@ public class Radar implements Solver {
     protected final Space space;
     protected final Alias alias;
     protected final Value value;
-
-    enum Event {
-        SPACE, ALIAS, VALUE
-    }
 
     /**
      * default
@@ -97,7 +92,7 @@ public class Radar implements Solver {
         @NotNull Reader r
     ) throws IOException {
         // event status
-        Event event = SPACE;
+        byte event = 0;
 
         // local access
         Space s = space;
@@ -107,7 +102,7 @@ public class Radar implements Solver {
         Radar:
         // decode kat stream
         while (r.also()) switch (event) {
-            case SPACE: {
+            case 0: {
                 while (true) {
                     byte b = r.next();
                     if (b <= 0x20) {
@@ -137,11 +132,11 @@ public class Radar implements Solver {
                             continue;
                         }
                         case '(': {
-                            event = VALUE;
+                            event = 2;
                             continue Radar;
                         }
                         case ':': {
-                            event = ALIAS;
+                            event = 1;
                             continue Radar;
                         }
                         case '#': {
@@ -177,7 +172,7 @@ public class Radar implements Solver {
                     }
                 }
             }
-            case ALIAS: {
+            case 1: {
                 while (true) {
                     byte b = r.next();
                     if (b <= 0x20) {
@@ -187,7 +182,7 @@ public class Radar implements Solver {
                     }
                     switch (b) {
                         case '{': {
-                            event = SPACE;
+                            event = 0;
                             if (p.attach(s, a)) {
                                 s.clean();
                                 a.clean();
@@ -199,7 +194,7 @@ public class Radar implements Solver {
                             continue Radar;
                         }
                         case '(': {
-                            event = VALUE;
+                            event = 2;
                             continue Radar;
                         }
                         case '^': {
@@ -220,7 +215,7 @@ public class Radar implements Solver {
                     }
                 }
             }
-            case VALUE: {
+            case 2: {
                 while (true) {
                     byte b = r.next();
                     switch (b) {
@@ -235,7 +230,7 @@ public class Radar implements Solver {
                             s.clean();
                             a.clean();
                             v.clean();
-                            event = SPACE;
+                            event = 0;
                             continue Radar;
                         }
                         case '(': {
