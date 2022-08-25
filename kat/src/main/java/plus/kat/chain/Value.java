@@ -28,7 +28,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
  * @author kraity
@@ -339,15 +338,15 @@ public class Value extends Chain {
      */
     public static Value apply() {
         return new Value(
-            $Bucket.INS
+            Buffer.INS
         );
     }
 
     /**
      * @author kraity
-     * @since 0.0.1
+     * @since 0.0.4
      */
-    private static class $Bucket extends AtomicReferenceArray<byte[]> implements Bucket {
+    public static class Buffer implements Bucket {
 
         private static final int SIZE, LIMIT, SCALE;
 
@@ -370,12 +369,11 @@ public class Value extends Chain {
             );
         }
 
-        private static final $Bucket
-            INS = new $Bucket();
+        public static final Buffer
+            INS = new Buffer();
 
-        private $Bucket() {
-            super(SIZE);
-        }
+        private final byte[][]
+            bucket = new byte[SIZE][];
 
         @NotNull
         @Override
@@ -386,7 +384,10 @@ public class Value extends Chain {
             int i = min / SCALE;
 
             if (i < SIZE) {
-                data = getAndSet(i, null);
+                synchronized (this) {
+                    data = bucket[i];
+                    bucket[i] = null;
+                }
                 if (data == null ||
                     data.length < min) {
                     data = new byte[(i + 1) * SCALE - 1];
@@ -408,7 +409,9 @@ public class Value extends Chain {
 
                 int k = it.length / SCALE;
                 if (k < SIZE) {
-                    set(k, it);
+                    synchronized (this) {
+                        bucket[k] = it;
+                    }
                 }
             }
 
@@ -421,7 +424,9 @@ public class Value extends Chain {
         ) {
             int i = it.length / SCALE;
             if (i < SIZE) {
-                set(i, it);
+                synchronized (this) {
+                    bucket[i] = it;
+                }
             }
         }
 
@@ -435,11 +440,15 @@ public class Value extends Chain {
                 return it;
             }
 
-            if (i < SIZE) {
-                set(i, it);
+            byte[] data;
+            synchronized (this) {
+                if (i < SIZE) {
+                    bucket[i] = it;
+                }
+                data = bucket[i];
+                bucket[i] = null;
             }
-
-            return getAndSet(0, null);
+            return data;
         }
     }
 }

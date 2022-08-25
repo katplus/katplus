@@ -23,8 +23,6 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.Config;
 
-import java.util.concurrent.atomic.*;
-
 import static plus.kat.stream.Binary.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -41,7 +39,7 @@ public abstract class Paper extends Chain implements Flow {
      * default
      */
     public Paper() {
-        super($Bucket.INS);
+        super(Buffer.INS);
     }
 
     /**
@@ -50,7 +48,7 @@ public abstract class Paper extends Chain implements Flow {
     public Paper(
         long flags
     ) {
-        super($Bucket.INS);
+        super(Buffer.INS);
         this.flags = flags;
         if ((flags & Flow.PRETTY) != 0) ++depth;
     }
@@ -61,7 +59,7 @@ public abstract class Paper extends Chain implements Flow {
     public Paper(
         @Nullable Bucket bucket
     ) {
-        super(bucket == null ? $Bucket.INS : bucket);
+        super(bucket == null ? Buffer.INS : bucket);
     }
 
     /**
@@ -1000,9 +998,9 @@ public abstract class Paper extends Chain implements Flow {
 
     /**
      * @author kraity
-     * @since 0.0.2
+     * @since 0.0.4
      */
-    private static class $Bucket extends AtomicReferenceArray<byte[]> implements Bucket {
+    public static class Buffer implements Bucket {
 
         private static final int SIZE, GROUP, SCALE;
 
@@ -1018,12 +1016,11 @@ public abstract class Paper extends Chain implements Flow {
             );
         }
 
-        private static final $Bucket
-            INS = new $Bucket();
+        public static final Buffer
+            INS = new Buffer();
 
-        private $Bucket() {
-            super(SIZE * GROUP);
-        }
+        private final byte[][]
+            bucket = new byte[SIZE * GROUP][];
 
         @NotNull
         @Override
@@ -1039,9 +1036,11 @@ public abstract class Paper extends Chain implements Flow {
             if (i >= GROUP) {
                 data = new byte[(i + 1) * SCALE - 1];
             } else {
-                data = getAndSet(
-                    i * GROUP + tr % SIZE, null
-                );
+                int ix = i * GROUP + tr % SIZE;
+                synchronized (this) {
+                    data = bucket[ix];
+                    bucket[ix] = null;
+                }
                 if (data == null ||
                     data.length < min) {
                     data = new byte[(i + 1) * SCALE - 1];
@@ -1055,9 +1054,10 @@ public abstract class Paper extends Chain implements Flow {
 
                 i = it.length / SCALE;
                 if (i < GROUP) {
-                    set(
-                        i * GROUP + tr % SIZE, it
-                    );
+                    int ix = i * GROUP + tr % SIZE;
+                    synchronized (this) {
+                        bucket[ix] = it;
+                    }
                 }
             }
 
@@ -1073,9 +1073,10 @@ public abstract class Paper extends Chain implements Flow {
                 Thread th = Thread.currentThread();
                 int tr = th.hashCode() & 0xFFFFFF;
 
-                set(
-                    i * GROUP + tr % SIZE, it
-                );
+                int ix = i * GROUP + tr % SIZE;
+                synchronized (this) {
+                    bucket[ix] = it;
+                }
             }
         }
 
@@ -1085,9 +1086,9 @@ public abstract class Paper extends Chain implements Flow {
             @NotNull byte[] it
         ) {
             if (it.length != 0) {
-                push(it);
+                this.push(it);
             }
-            return Chain.EMPTY_BYTES;
+            return EMPTY_BYTES;
         }
     }
 }

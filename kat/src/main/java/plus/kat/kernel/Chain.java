@@ -23,7 +23,6 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.security.*;
 import java.nio.charset.Charset;
-import java.util.concurrent.atomic.*;
 
 import plus.kat.crash.*;
 import plus.kat.stream.*;
@@ -2407,9 +2406,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     /**
      * @author kraity
-     * @since 0.0.3
+     * @since 0.0.4
      */
-    public static class Buffer extends AtomicReferenceArray<byte[]> implements plus.kat.stream.Bucket {
+    public static class Buffer implements Bucket {
 
         public static final int SIZE, SCALE;
 
@@ -2425,18 +2424,21 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         public static final Buffer
             INS = new Buffer();
 
-        private Buffer() {
-            super(SIZE);
-        }
+        private final byte[][]
+            bucket = new byte[SIZE][];
 
         @NotNull
         public byte[] alloc() {
             Thread th = Thread.currentThread();
             int tr = th.hashCode() & 0xFFFFFF;
 
-            byte[] it = getAndSet(
-                tr % SIZE, null
-            );
+            byte[] it;
+            int ix = tr % SIZE;
+
+            synchronized (this) {
+                it = bucket[ix];
+                bucket[ix] = null;
+            }
 
             if (it != null &&
                 SCALE <= it.length) {
@@ -2452,13 +2454,14 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             @NotNull byte[] it, int len, int min
         ) {
             Thread th = Thread.currentThread();
-            int ts = (th.hashCode() & 0xFFFFFF) % SIZE;
+            int ix = (th.hashCode() & 0xFFFFFF) % SIZE;
 
             byte[] data;
             if (min <= SCALE) {
-                data = getAndSet(
-                    ts, null
-                );
+                synchronized (this) {
+                    data = bucket[ix];
+                    bucket[ix] = null;
+                }
                 if (data == null ||
                     SCALE > it.length) {
                     data = new byte[SCALE];
@@ -2481,7 +2484,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                     );
 
                     if (SCALE == it.length) {
-                        set(ts, it);
+                        synchronized (this) {
+                            bucket[ix] = it;
+                        }
                     }
                 }
             }
@@ -2495,7 +2500,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         ) {
             if (it != null && SCALE == it.length) {
                 Thread th = Thread.currentThread();
-                set((th.hashCode() & 0xFFFFFF) % SIZE, it);
+                int ix = (th.hashCode() & 0xFFFFFF) % SIZE;
+                synchronized (this) {
+                    bucket[ix] = it;
+                }
             }
         }
 
@@ -2504,7 +2512,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         public byte[] revert(
             @Nullable byte[] it
         ) {
-            push(it);
+            this.push(it);
             return EMPTY_BYTES;
         }
     }
