@@ -169,10 +169,10 @@ public class SpareTest {
         for (Type type : types) {
             Event<CharSequence> event =
                 new Event<>("$(test)");
-            event.with(type).with(spare);
+            event.with(type);
 
             assertEquals(
-                type, Kat.decode(event).getClass()
+                type, spare.read(event).getClass()
             );
         }
     }

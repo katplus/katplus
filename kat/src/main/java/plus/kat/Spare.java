@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.*;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl;
+import static plus.kat.spare.Parser.Group;
 
 /**
  * @author kraity
@@ -222,7 +223,7 @@ public interface Spare<K> extends Coder<K> {
      * @param text specify the {@code text} to be parsed
      * @throws NullPointerException If the specified {@code text} is null
      */
-    @Nullable
+    @NotNull
     default K read(
         @NotNull CharSequence text
     ) {
@@ -237,7 +238,7 @@ public interface Spare<K> extends Coder<K> {
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code event} is null
      */
-    @Nullable
+    @NotNull
     default <T extends K> T read(
         @NotNull Event<T> event
     ) {
@@ -282,7 +283,7 @@ public interface Spare<K> extends Coder<K> {
      * @param text specify the {@code text} to be parsed
      * @throws NullPointerException If the specified {@code text} is null
      */
-    @Nullable
+    @NotNull
     default K down(
         @NotNull CharSequence text
     ) {
@@ -297,7 +298,7 @@ public interface Spare<K> extends Coder<K> {
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code event} is null
      */
-    @Nullable
+    @NotNull
     default <T extends K> T down(
         @NotNull Event<T> event
     ) {
@@ -342,7 +343,7 @@ public interface Spare<K> extends Coder<K> {
      * @param text specify the {@code text} to be parsed
      * @throws NullPointerException If the specified {@code text} is null
      */
-    @Nullable
+    @NotNull
     default K parse(
         @NotNull CharSequence text
     ) {
@@ -357,7 +358,7 @@ public interface Spare<K> extends Coder<K> {
      * @param event specify the {@code event} to be handled
      * @throws NullPointerException If the specified {@code event} is null
      */
-    @Nullable
+    @NotNull
     default <T extends K> T parse(
         @NotNull Event<T> event
     ) {
@@ -437,15 +438,30 @@ public interface Spare<K> extends Coder<K> {
      * @throws NullPointerException If the specified {@code event} is null
      * @since 0.0.2
      */
-    @Nullable
+    @NotNull
     default <T extends K> T solve(
         @NotNull Job job,
         @NotNull Event<T> event
     ) {
-        event.with(this);
-        return Parser.solve(
-            job, event
-        );
+        // parser pool
+        Group group = Group.INS;
+
+        // borrow parser
+        Parser parser = group.borrow();
+
+        try {
+            event.with(this);
+            return parser.read(
+                job, event
+            );
+        } catch (IOException e) {
+            throw new SolverCrash(
+                "Failed to solve " + job, e
+            );
+        } finally {
+            // returns parser
+            group.retreat(parser);
+        }
     }
 
     /**

@@ -79,12 +79,13 @@ public class Parser implements Pipe {
      * Parses the {@link Event} by using {@link Radar}
      *
      * @param event specify the {@code event} to be handled
+     * @throws IOException          Unexpected errors by {@link Pipe} or {@link Reader}
      * @throws NullPointerException If the specified {@code event} is null
      */
-    @Nullable
-    public Object read(
-        @NotNull Event<?> event
-    ) {
+    @NotNull
+    public <T> T read(
+        @NotNull Event<T> event
+    ) throws IOException {
         return read(
             radar, event
         );
@@ -94,13 +95,15 @@ public class Parser implements Pipe {
      * Parses the {@link Event} by using specified {@link Solver}
      *
      * @param event specify the {@code event} to be handled
+     * @throws IOException          Unexpected errors by {@link Pipe} or {@link Reader}
      * @throws NullPointerException If the specified {@code coder} or {@code event} is null
      */
-    @Nullable
-    public Object read(
+    @NotNull
+    @SuppressWarnings("unchecked")
+    public <T> T read(
         @NotNull Solver coder,
-        @NotNull Event<?> event
-    ) {
+        @NotNull Event<T> event
+    ) throws IOException {
         Reader reader =
             event.getReader();
 
@@ -115,8 +118,6 @@ public class Parser implements Pipe {
             coder.read(
                 this, reader
             );
-        } catch (Exception e) {
-            event.onError(e);
         } finally {
             coder.clear();
             reader.close();
@@ -129,20 +130,29 @@ public class Parser implements Pipe {
             }
         }
 
-        return bundle;
+        Object data = bundle;
+        if (data != null) {
+            return (T) data;
+        }
+
+        throw new UnexpectedCrash(
+            "Unexpectedly, depth is " + depth
+                + ", range is " + range + ", result is null"
+        );
     }
 
     /**
      * Parses the {@link Event} with specified {@link Job}
      *
      * @param event specify the {@code event} to be handled
+     * @throws IOException          Unexpected errors by {@link Pipe} or {@link Reader}
      * @throws NullPointerException If the specified {@code job} or {@code event} is null
      */
     @Nullable
-    public Object read(
+    public <T> T read(
         @NotNull Job job,
-        @NotNull Event<?> event
-    ) {
+        @NotNull Event<T> event
+    ) throws IOException {
         switch (job) {
             case KAT: {
                 return read(
@@ -173,36 +183,6 @@ public class Parser implements Pipe {
                 );
             }
         }
-    }
-
-    /**
-     * Parse {@link Event} and convert result to {@link T}
-     *
-     * @param event specify the {@code event} to be handled
-     * @throws NullPointerException If the specified {@code event} is null
-     */
-    @Nullable
-    @SuppressWarnings("unchecked")
-    public static <T> T solve(
-        @NotNull Job job,
-        @NotNull Event<T> event
-    ) {
-        // parser pool
-        Cluster cluster = Cluster.INS;
-
-        // borrow parser
-        Parser parser = cluster.borrow();
-
-        // solve
-        Object data = parser.read(
-            job, event
-        );
-
-        // returns parser
-        cluster.retreat(parser);
-
-        // convert result
-        return data == null ? null : (T) data;
     }
 
     /**
@@ -367,7 +347,7 @@ public class Parser implements Pipe {
      * @author kraity
      * @since 0.0.1
      */
-    public static class Cluster {
+    public static class Group {
 
         private int grow;
         private final int size;
@@ -379,10 +359,10 @@ public class Parser implements Pipe {
         /**
          * default cluster
          */
-        private static final Cluster
-            INS = new Cluster();
+        public static final Group
+            INS = new Group();
 
-        public Cluster() {
+        public Group() {
             this(Config.get(
                 "kat.parser.capacity", 16
             ), Config.get(
@@ -390,7 +370,7 @@ public class Parser implements Pipe {
             ));
         }
 
-        public Cluster(
+        public Group(
             int size, boolean block
         ) {
             this.size = size;

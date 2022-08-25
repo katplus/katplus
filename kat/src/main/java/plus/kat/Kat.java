@@ -143,7 +143,7 @@ public interface Kat {
         if (text == null) {
             return null;
         }
-        return Parser.solve(
+        return ObjectSpare.INSTANCE.solve(
             Job.KAT, new Event<>(text)
         );
     }
@@ -160,7 +160,7 @@ public interface Kat {
         if (event == null) {
             return null;
         }
-        return Parser.solve(
+        return ObjectSpare.INSTANCE.solve(
             Job.KAT, event
         );
     }

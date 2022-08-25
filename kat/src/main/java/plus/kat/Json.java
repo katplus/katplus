@@ -315,7 +315,7 @@ public class Json extends Chan {
         if (text == null) {
             return null;
         }
-        return Parser.solve(
+        return ObjectSpare.INSTANCE.solve(
             Job.JSON, new Event<>(text)
         );
     }
@@ -332,7 +332,7 @@ public class Json extends Chan {
         if (event == null) {
             return null;
         }
-        return Parser.solve(
+        return ObjectSpare.INSTANCE.solve(
             Job.JSON, event
         );
     }

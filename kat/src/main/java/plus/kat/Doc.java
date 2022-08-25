@@ -356,7 +356,7 @@ public class Doc extends Chan {
         if (text == null) {
             return null;
         }
-        return Parser.solve(
+        return ObjectSpare.INSTANCE.solve(
             Job.DOC, new Event<>(text)
         );
     }
@@ -373,7 +373,7 @@ public class Doc extends Chan {
         if (event == null) {
             return null;
         }
-        return Parser.solve(
+        return ObjectSpare.INSTANCE.solve(
             Job.DOC, event
         );
     }

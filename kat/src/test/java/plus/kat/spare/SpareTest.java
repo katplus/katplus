@@ -111,14 +111,9 @@ public class SpareTest {
             Spare.lookup(Role.class);
 
         Role role = spare.read(
-            new Event<Role>(
+            new Event<>(
                 "${$:now(2022-01-11 11:11:11)$:time(1641871353000)$:date(2022-02-22T22:22:22.222Z)$:just(03,三月 2022)$:instant(2022-02-22 22:33)$:localDate(2022-02-22)$:localTime(22:33)$:localDateTime(2022-02-22 22:33)}"
-            ) {
-                @Override
-                public void onError(Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            )
         );
 
         assertNotNull(role);
