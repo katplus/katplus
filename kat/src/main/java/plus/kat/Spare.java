@@ -575,10 +575,12 @@ public interface Spare<K> extends Coder<K> {
             INS.put(Number.class, NumberSpare.INSTANCE);
             INS.put(byte[].class, ByteArraySpare.INSTANCE);
             INS.put(Object[].class, ArraySpare.INSTANCE);
-            INS.put(CharSequence.class, StringSpare.INSTANCE);
             INS.put(Map.class, MapSpare.INSTANCE);
             INS.put(Set.class, SetSpare.INSTANCE);
             INS.put(List.class, ListSpare.INSTANCE);
+            INS.put(void.class, VoidSpare.INSTANCE);
+            INS.put(Void.class, VoidSpare.INSTANCE);
+            INS.put(CharSequence.class, StringSpare.INSTANCE);
             INS.put(BigInteger.class, BigIntegerSpare.INSTANCE);
             INS.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
             INS.put(StringBuffer.class, StringBufferSpare.INSTANCE);
