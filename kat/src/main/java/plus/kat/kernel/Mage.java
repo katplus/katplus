@@ -95,6 +95,10 @@ public class Mage implements Solver {
         @NotNull Pipe p,
         @NotNull Reader r
     ) throws IOException {
+        // local access
+        Alias a = alias;
+        Value v = value;
+
         Boot:
         // decode json stream
         while (r.also()) {
@@ -115,11 +119,15 @@ public class Mage implements Solver {
 
             switch (b) {
                 case '{': {
-                    create(p, r, true);
+                    attach(
+                        p, r, a, true
+                    );
                     break Boot;
                 }
                 case '[': {
-                    create(p, r, false);
+                    attach(
+                        p, r, a, false
+                    );
                     break Boot;
                 }
                 default: {
@@ -154,17 +162,29 @@ public class Mage implements Solver {
                         case ':': {
                             break Alias;
                         }
-                        case ',': {
-                            continue;
-                        }
-                        case '}': {
-                            bundle(p, true);
-                            continue Boot;
-                        }
                         case '"':
                         case '\'': {
-                            escape(alias, b, r);
+                            escape(a, b, r);
                             continue;
+                        }
+                        case ',': {
+                            if (a.isEmpty()) {
+                                continue;
+                            } else {
+                                throw new UnexpectedCrash(
+                                    "Unexpectedly, ',' is not ':'"
+                                );
+                            }
+                        }
+                        case '}': {
+                            if (a.isEmpty()) {
+                                detach(p, true);
+                                continue Boot;
+                            } else {
+                                throw new UnexpectedCrash(
+                                    "Unexpectedly, '}' is not ':'"
+                                );
+                            }
                         }
                         default: {
                             throw new UnexpectedCrash(
@@ -194,38 +214,68 @@ public class Mage implements Solver {
 
                 switch (b) {
                     case '{': {
-                        create(p, r, true);
+                        attach(
+                            p, r, a, true
+                        );
                         continue Boot;
                     }
                     case '[': {
-                        create(p, r, false);
+                        attach(
+                            p, r, a, false
+                        );
                         continue Boot;
-                    }
-                    case '}': {
-                        bundle(p, true);
-                        continue Boot;
-                    }
-                    case ']': {
-                        bundle(p, false);
-                        continue Boot;
-                    }
-                    case ',': {
-                        continue;
                     }
                     case 'n':
                     case 'N': {
                         escape(r);
-                        accept(p, $);
+                        p.accept(
+                            $, a, v
+                        );
+                        a.clean();
+                        v.clean();
                         continue;
                     }
                     case '"':
                     case '\'': {
-                        escape(value, b, r);
-                        accept(p, $s);
+                        escape(v, b, r);
+                        p.accept(
+                            $s, a, v
+                        );
+                        a.clean();
+                        v.clean();
                         continue Boot;
                     }
+                    case ',': {
+                        if (a.isEmpty()) {
+                            continue;
+                        } else {
+                            throw new UnexpectedCrash(
+                                "Unexpectedly, ',' is not a value"
+                            );
+                        }
+                    }
+                    case '}': {
+                        if (a.isEmpty()) {
+                            detach(p, true);
+                            continue Boot;
+                        } else {
+                            throw new UnexpectedCrash(
+                                "Unexpectedly, '}' is not a value"
+                            );
+                        }
+                    }
+                    case ']': {
+                        if (a.isEmpty()) {
+                            detach(p, false);
+                            continue Boot;
+                        } else {
+                            throw new UnexpectedCrash(
+                                "Unexpectedly, ']' is not a value"
+                            );
+                        }
+                    }
                     default: {
-                        value.chain(b);
+                        v.chain(b);
                     }
                 }
 
@@ -247,21 +297,33 @@ public class Mage implements Solver {
 
                     switch (c) {
                         case ',': {
-                            accept(p, $);
+                            p.accept(
+                                $, a, v
+                            );
+                            a.clean();
+                            v.clean();
                             continue Boot;
                         }
                         case '}': {
-                            accept(p, $);
-                            bundle(p, true);
+                            p.accept(
+                                $, a, v
+                            );
+                            a.clean();
+                            v.clean();
+                            detach(p, true);
                             continue Boot;
                         }
                         case ']': {
-                            accept(p, $);
-                            bundle(p, false);
+                            p.accept(
+                                $, a, v
+                            );
+                            a.clean();
+                            v.clean();
+                            detach(p, false);
                             continue Boot;
                         }
                         default: {
-                            value.chain(c);
+                            v.chain(c);
                         }
                     }
                 }
@@ -275,9 +337,10 @@ public class Mage implements Solver {
      * @param mark is it a map?
      * @throws IOException Unexpected errors by {@link Reader}
      */
-    protected void create(
+    protected void attach(
         Pipe p,
         Reader r,
+        Alias a,
         boolean mark
     ) throws IOException {
         if (mask == Long.MIN_VALUE) {
@@ -287,7 +350,7 @@ public class Mage implements Solver {
         }
 
         if (mark) {
-            if (p.attach($M, alias)) {
+            if (p.attach($M, a)) {
                 mask <<= 1;
                 data |= mask;
                 mutable = true;
@@ -297,7 +360,7 @@ public class Mage implements Solver {
                 );
             }
         } else {
-            if (p.attach($L, alias)) {
+            if (p.attach($L, a)) {
                 mask <<= 1;
                 mutable = false;
             } else {
@@ -306,23 +369,7 @@ public class Mage implements Solver {
                 );
             }
         }
-        alias.clean();
-    }
-
-    /**
-     * Sends data to the current receiver
-     *
-     * @throws IOException Unexpected errors by {@link Reader}
-     */
-    protected void accept(
-        Pipe p,
-        Space s
-    ) throws IOException {
-        p.accept(
-            s, alias, value
-        );
-        alias.clean();
-        value.clean();
+        a.clean();
     }
 
     /**
@@ -330,7 +377,7 @@ public class Mage implements Solver {
      *
      * @throws IOException Unexpected errors by {@link Reader}
      */
-    protected void bundle(
+    protected void detach(
         Pipe p,
         boolean m
     ) throws IOException {
