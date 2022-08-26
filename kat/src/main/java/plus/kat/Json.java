@@ -214,7 +214,20 @@ public class Json extends Chan {
     }
 
     /**
-     * close the internal {@link Paper}
+     * Close this {@link Chan}
+     *
+     * @see Paper#close()
+     * @since 0.0.4
+     */
+    @Override
+    public void close() {
+        flow.close();
+        flow = null;
+        supplier = null;
+    }
+
+    /**
+     * Close the internal {@link Paper}
      *
      * @see Paper#close()
      * @since 0.0.2

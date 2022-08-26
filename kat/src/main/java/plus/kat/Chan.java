@@ -22,6 +22,7 @@ import plus.kat.chain.*;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
 
@@ -32,7 +33,7 @@ import static plus.kat.Supplier.Impl.INS;
  * @author kraity
  * @since 0.0.1
  */
-public class Chan implements Flag {
+public class Chan implements Flag, Closeable {
 
     protected Flow flow;
     protected Supplier supplier;
@@ -404,7 +405,20 @@ public class Chan implements Flag {
     }
 
     /**
-     * close the internal {@link Paper}
+     * Close this {@link Chan}
+     *
+     * @see Paper#close()
+     * @since 0.0.4
+     */
+    @Override
+    public void close() {
+        flow.close();
+        flow = null;
+        supplier = null;
+    }
+
+    /**
+     * Close the internal {@link Paper}
      *
      * @see Paper#close()
      * @since 0.0.2

@@ -23,6 +23,8 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.Config;
 
+import java.io.Closeable;
+
 import static plus.kat.stream.Binary.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -30,7 +32,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author kraity
  * @since 0.0.1
  */
-public abstract class Paper extends Chain implements Flow {
+public abstract class Paper extends Chain implements Flow, Closeable {
 
     protected int depth;
     protected long flags;

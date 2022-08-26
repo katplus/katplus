@@ -25,13 +25,14 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class Parser implements Pipe {
+public class Parser implements Pipe, Closeable {
     /**
      * state etc.
      */
@@ -338,6 +339,7 @@ public class Parser implements Pipe {
     /**
      * close this {@link Parser}
      */
+    @Override
     public void close() {
         this.clear();
         radar.close();

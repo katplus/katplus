@@ -19,13 +19,14 @@ import plus.kat.anno.NotNull;
 
 import plus.kat.stream.*;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public interface Solver {
+public interface Solver extends Closeable {
     /**
      * {@link Reader} as the data source and {@link Pipe} as the data consumer.
      * This {@link Solver} uses reader to read the source, translate it and then stream it to pipe.
@@ -42,12 +43,13 @@ public interface Solver {
     /**
      * Close this {@link Solver}
      */
+    @Override
     void close();
 
     /**
      * Clear this {@link Solver}
      */
     default void clear() {
-        // nothing
+        // Nothing
     }
 }

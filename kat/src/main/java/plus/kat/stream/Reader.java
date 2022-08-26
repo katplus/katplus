@@ -17,13 +17,14 @@ package plus.kat.stream;
 
 import plus.kat.crash.*;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public interface Reader {
+public interface Reader extends Closeable {
     /**
      * Reads a byte in {@link Reader} and index switch to next
      *
@@ -57,7 +58,8 @@ public interface Reader {
     /**
      * Close this {@link Reader}
      */
+    @Override
     default void close() {
-        // nothing
+        // Nothing
     }
 }
