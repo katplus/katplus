@@ -540,6 +540,21 @@ inline fun <reified T : Any>
  *  val supplier = ...
  *  val data = ...
  *  val alias = ...
+ *  val result = supplier.mark(data, alias)
+ * ```
+ *
+ * @return [Doc]
+ * @since 0.0.4
+ */
+@Throws(IOException::class)
+fun Supplier?.mark(value: Any?, alias: CharSequence?) = Doc(Plan.DEF, this).also { it[alias] = value }
+
+/**
+ * E.g.
+ * ```
+ *  val supplier = ...
+ *  val data = ...
+ *  val alias = ...
  *  val result = supplier.write(data, alias)
  * ```
  *

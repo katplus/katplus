@@ -14,14 +14,19 @@ public class SugarTest {
     @Test
     public void test() throws IOException {
         User user = new User();
+        Supplier supplier = Supplier.ins();
+
         user.id = 1;
         user.name = "kraity";
 
-        Supplier supplier = Supplier.ins();
+        Doc doc = Sugar.mark(
+            supplier, user, "Master"
+        );
+        assertEquals("<Master><id>1</id><name>kraity</name></Master>", doc.toString());
+
         Chan chan = Sugar.write(
             supplier, user, "Master"
         );
-
         assertEquals("plus.kat.SugarTest$User:Master{i:id(1)s:name(kraity)}", chan.toString());
     }
 

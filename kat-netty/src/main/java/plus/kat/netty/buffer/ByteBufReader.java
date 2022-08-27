@@ -21,6 +21,8 @@ import plus.kat.stream.*;
 
 import io.netty.buffer.ByteBuf;
 
+import static plus.kat.kernel.Chain.Buffer;
+
 /**
  * @author kraity
  * @since 0.0.2
@@ -28,8 +30,6 @@ import io.netty.buffer.ByteBuf;
 public class ByteBufReader extends AbstractReader {
 
     private ByteBuf value;
-    private int begin;
-    private final int end;
 
     /**
      * @since 0.0.2
@@ -37,14 +37,18 @@ public class ByteBufReader extends AbstractReader {
     public ByteBufReader(
         @NotNull ByteBuf data
     ) {
+        if (data == null) {
+            throw new NullPointerException();
+        }
         value = data;
-        begin = value.readerIndex();
-        end = value.writerIndex();
     }
 
     @Override
     protected int load() {
-        int cap = end - begin;
+        int m = value.readerIndex();
+        int n = value.writerIndex();
+
+        int cap = n - m;
         if (cap <= 0) {
             return -1;
         }
@@ -53,12 +57,20 @@ public class ByteBufReader extends AbstractReader {
         if (tmp == null) {
             int r = range;
             if (r == 0) {
-                r = 128;
+                if (cap > 512) {
+                    tmp = Buffer.INS.alloc();
+                } else {
+                    tmp = new byte[Math.min(cap, 256)];
+                }
+            } else {
+                int s = Buffer.SCALE;
+                if (r > s) {
+                    tmp = new byte[r];
+                } else {
+                    tmp = Buffer.INS.alloc();
+                }
             }
-            if (cap < r) {
-                r = cap;
-            }
-            cache = tmp = new byte[r];
+            cache = tmp;
         }
 
         if (cap > tmp.length) {
@@ -66,14 +78,14 @@ public class ByteBufReader extends AbstractReader {
         }
 
         value.getBytes(
-            begin, tmp, 0, cap
+            m, tmp, 0, cap
         );
-        begin += cap;
         return cap;
     }
 
     @Override
     public void close() {
+        Buffer.INS.push(cache);
         value = null;
         cache = null;
         offset = -1;
