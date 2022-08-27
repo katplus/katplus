@@ -219,8 +219,7 @@ public class JsonTest {
 
     @Test
     public void test_json_channel() throws IOException {
-        Json chan = new Json();
-        chan.set(null, c -> {
+        String text = Sugar.json(c -> {
             c.set("id", 100001);
             c.set("title", "KAT+");
             c.set("meta", $ -> {
@@ -234,7 +233,7 @@ public class JsonTest {
         });
 
         assertEquals(
-            "{\"id\":100001,\"title\":\"KAT+\",\"meta\":{\"tag\":\"kat\",\"view\":9999},\"author\":{\"id\":1,\"name\":\"kraity\"}}", chan.toString()
+            "{\"id\":100001,\"title\":\"KAT+\",\"meta\":{\"tag\":\"kat\",\"view\":9999},\"author\":{\"id\":1,\"name\":\"kraity\"}}", text
         );
     }
 

@@ -55,6 +55,18 @@ public class Json extends Chan {
     }
 
     /**
+     * @param plan the specified {@code plan}
+     */
+    public Json(
+        @NotNull Plan plan
+    ) {
+        this.flow = new Flow(
+            plan.writeFlags
+        );
+        this.supplier = INS;
+    }
+
+    /**
      * @param flags    the specified {@code flags}
      * @param supplier the specified {@code supplier}
      */

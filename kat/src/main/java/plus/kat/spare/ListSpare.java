@@ -261,8 +261,8 @@ public class ListSpare implements Spare<List> {
         @NotNull
         public T onCreate(
             @NotNull Type type
-        ) throws Crash {
-            throw new Crash(
+        ) {
+            throw new RunCrash(
                 "Failed to create"
             );
         }
@@ -270,7 +270,7 @@ public class ListSpare implements Spare<List> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOException {
+        ) {
             Type raw = type;
             if (raw instanceof ParameterizedType) {
                 ParameterizedType p = (ParameterizedType) raw;

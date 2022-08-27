@@ -328,7 +328,7 @@ public class MapSpare implements Spare<Map> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOException {
+        ) {
             Type raw = type;
             if (raw instanceof ParameterizedType) {
                 ParameterizedType p = (ParameterizedType) raw;
@@ -341,7 +341,7 @@ public class MapSpare implements Spare<Map> {
                     tv = ary[1], supplier
                 );
                 if (v != null && k == null) {
-                    throw new UnexpectedCrash(
+                    throw new RunCrash(
                         "Key's spare does not exist"
                     );
                 }

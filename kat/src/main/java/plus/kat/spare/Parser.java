@@ -109,7 +109,9 @@ public class Parser implements Pipe, Closeable {
             event.getReader();
 
         if (reader == null) {
-            return null;
+            throw new SolverCrash(
+                "Reader is null"
+            );
         }
 
         this.event = event;

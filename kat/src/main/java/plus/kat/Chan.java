@@ -57,6 +57,18 @@ public class Chan implements Flag, Closeable {
     }
 
     /**
+     * @param plan the specified {@code plan}
+     */
+    public Chan(
+        @NotNull Plan plan
+    ) {
+        this.flow = new Flow(
+            plan.writeFlags
+        );
+        this.supplier = INS;
+    }
+
+    /**
      * @param flags    the specified {@code flags}
      * @param supplier the specified {@code supplier}
      */
@@ -318,6 +330,12 @@ public class Chan implements Flag, Closeable {
         if (value instanceof Iterable) {
             return coding(
                 alias, ListSpare.INSTANCE, value
+            );
+        }
+
+        if (value instanceof Exception) {
+            return coding(
+                alias, ErrorSpare.INSTANCE, value
             );
         }
 

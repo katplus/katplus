@@ -768,7 +768,7 @@ public interface Supplier {
             INS.put($A, ArraySpare.INSTANCE);
             INS.put($L, ListSpare.INSTANCE);
             INS.put($S, SetSpare.INSTANCE);
-            INS.put($E, CrashSpare.INSTANCE);
+            INS.put($E, ErrorSpare.INSTANCE);
             INS.put($B, ByteArraySpare.INSTANCE);
             INS.put($I, BigIntegerSpare.INSTANCE);
             INS.put($D, BigDecimalSpare.INSTANCE);

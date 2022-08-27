@@ -256,8 +256,7 @@ public class KatTest {
 
     @Test
     public void test_channel() throws IOException {
-        Chan chan = new Chan();
-        chan.set(null, c -> {
+        String text = Sugar.kat("User", c -> {
             c.set("id", 100001);
             c.set("title", "KAT+");
             c.set("meta", $ -> {
@@ -271,7 +270,7 @@ public class KatTest {
         });
 
         assertEquals(
-            "M{i:id(100001)s:title(KAT+)M:meta{s:tag(kat)i:view(9999)}User:author{i:id(1)s:name(kraity)}}", chan.toString()
+            "User{i:id(100001)s:title(KAT+)M:meta{s:tag(kat)i:view(9999)}User:author{i:id(1)s:name(kraity)}}", text
         );
     }
 

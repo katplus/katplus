@@ -123,8 +123,7 @@ public class DocTest {
 
     @Test
     public void test_json_channel() throws IOException {
-        Doc chan = new Doc();
-        chan.set("Story", c -> {
+        String text = Sugar.doc("Story", c -> {
             c.set("id", 100001);
             c.set("title", "KAT+");
             c.set("meta", $ -> {
@@ -138,7 +137,7 @@ public class DocTest {
         });
 
         assertEquals(
-            "<Story><id>100001</id><title>KAT+</title><meta><tag>kat</tag><view>9999</view></meta><author><id>1</id><name>kraity</name></author></Story>", chan.toString()
+            "<Story><id>100001</id><title>KAT+</title><meta><tag>kat</tag><view>9999</view></meta><author><id>1</id><name>kraity</name></author></Story>", text
         );
     }
 

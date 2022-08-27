@@ -23,27 +23,28 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.utils.Casting;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.4
  */
-public class CrashSpare implements Spare<Crash> {
+@SuppressWarnings("unchecked")
+public class ErrorSpare extends Property<Exception> {
 
-    public static final CrashSpare
-        INSTANCE = new CrashSpare();
+    public static final ErrorSpare
+        INSTANCE = new ErrorSpare(Crash.class);
+
+    public ErrorSpare(
+        @NotNull Class<?> klass
+    ) {
+        super((Class<Exception>) klass);
+    }
 
     @Override
     public Space getSpace() {
         return Space.$E;
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> klass
-    ) {
-        return klass.isAssignableFrom(Crash.class);
     }
 
     @Override
@@ -52,17 +53,16 @@ public class CrashSpare implements Spare<Crash> {
     }
 
     @Override
-    public Class<Crash> getType() {
-        return Crash.class;
-    }
-
-    @Override
-    public Crash cast(
+    public Exception cast(
         @NotNull Supplier supplier,
         @Nullable Object data
     ) {
-        if (data instanceof Crash) {
-            return (Crash) data;
+        if (data == null) {
+            return null;
+        }
+
+        if (klass.isInstance(data)) {
+            return (Exception) data;
         }
 
         if (data instanceof CharSequence) {
@@ -72,6 +72,21 @@ public class CrashSpare implements Spare<Crash> {
         }
 
         return null;
+    }
+
+    @Override
+    public void write(
+        @NotNull Chan chan,
+        @NotNull Object value
+    ) throws IOException {
+        if (value instanceof Crash) {
+            Crash e = (Crash) value;
+            chan.set("c", e.getCode());
+            chan.set("m", e.getMessage());
+        } else {
+            Exception e = (Exception) value;
+            chan.set("message", e.getMessage());
+        }
     }
 
     @Override
@@ -133,14 +148,14 @@ public class CrashSpare implements Spare<Crash> {
             if (entity != null) {
                 return entity;
             }
-            return entity = new Crash(message, code);
+            return entity = new Crash(
+                message, code
+            );
         }
 
         @Override
         public void onDestroy() {
             entity = null;
-            code = 0;
-            message = null;
         }
     }
 }

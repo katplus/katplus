@@ -191,7 +191,7 @@ public class ObjectSpare extends Property<Object> {
         @Nullable Type type
     ) {
         return new MapSpare.Builder0(
-            Map.class, type
+            Map.class, type == Object.class ? null : type
         );
     }
 }

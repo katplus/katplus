@@ -75,6 +75,9 @@
                             <jvmTarget>${kotlin.jvm.target}</jvmTarget>
                             <args>
                                 <arg>-Xjvm-default=all</arg>
+                                <arg>-Xno-param-assertions</arg>
+                                <arg>-Xno-call-assertions</arg>
+                                <arg>-Xno-receiver-assertions</arg>
                             </args>
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>

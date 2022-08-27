@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:JvmName("Kt")
+@file:JvmName("Sugar")
 @file:Suppress(
     "FunctionName",
     "HasPlatformType",
@@ -21,6 +21,26 @@
 )
 
 package plus.kat
+
+import java.io.IOException
+import kotlin.jvm.Throws
+
+/**
+ * Serialize block to Kat [String]
+ *
+ * E.g.
+ * ```
+ *  kat {
+ *    it["id"] = 1
+ *    it["name"] = "kraity"
+ *  }
+ * ```
+ *
+ * @return [String]
+ * @since 0.0.4
+ */
+@Throws(IOException::class)
+fun kat(block: Kat) = Kat(null, block).toString()
 
 /**
  * Serialize block to Kat [String]
@@ -36,6 +56,7 @@ package plus.kat
  * @return [String]
  * @since 0.0.4
  */
+@Throws(IOException::class)
 fun kat(space: CharSequence?, block: Kat) = Kat(space, block).toString()
 
 /**
@@ -52,7 +73,8 @@ fun kat(space: CharSequence?, block: Kat) = Kat(space, block).toString()
  * @return [Chan]
  * @since 0.0.4
  */
-fun Kat(space: CharSequence?, block: Kat) = Chan().apply { set(null, space, block) }
+@Throws(IOException::class)
+fun Kat(space: CharSequence?, block: Kat) = Chan(Plan.DEF).also { it[null, space] = block }
 
 /**
  * Serialize [Any]? to Kat [String]
@@ -96,6 +118,7 @@ inline fun Any?.toKat(flags: Long) = Kat.encode(null, this, flags)
  * @return [String]
  * @since 0.0.4
  */
+@Throws(IOException::class)
 fun doc(name: CharSequence?, block: Kat) = Doc(name, block).toString()
 
 /**
@@ -112,7 +135,8 @@ fun doc(name: CharSequence?, block: Kat) = Doc(name, block).toString()
  * @return [Doc]
  * @since 0.0.4
  */
-fun Doc(name: CharSequence?, block: Kat) = Doc().apply { set(name, block) }
+@Throws(IOException::class)
+fun Doc(name: CharSequence?, block: Kat) = Doc(Plan.DEF).also { it[name] = block }
 
 /**
  * Serialize [Any]? to Doc [String]
@@ -156,6 +180,7 @@ inline fun Any?.toDoc(flags: Long): String = Doc.encode(null, this, flags)
  * @return [String]
  * @since 0.0.4
  */
+@Throws(IOException::class)
 fun json(block: Kat) = Json(block).toString()
 
 /**
@@ -172,7 +197,8 @@ fun json(block: Kat) = Json(block).toString()
  * @return [Json]
  * @since 0.0.4
  */
-fun Json(block: Kat) = Json().apply { set(null, block) }
+@Throws(IOException::class)
+fun Json(block: Kat) = Json(Plan.DEF).also { it[null] = block }
 
 /**
  * Serialize [Any]? to Json [String]
@@ -507,3 +533,18 @@ inline fun <reified T : Any>
  */
 inline fun <reified T : Any>
     Supplier.parse(data: Event<out T>) = parse(T::class.java, data)
+
+/**
+ * E.g.
+ * ```
+ *  val supplier = ...
+ *  val data = ...
+ *  val alias = ...
+ *  val result = supplier.write(data, alias)
+ * ```
+ *
+ * @return [Chan]
+ * @since 0.0.4
+ */
+@Throws(IOException::class)
+fun Supplier?.write(value: Any?, alias: CharSequence?) = Chan(Plan.DEF, this).also { it[alias] = value }
