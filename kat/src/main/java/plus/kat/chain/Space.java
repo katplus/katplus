@@ -433,8 +433,9 @@ public final class Space extends Chain implements Type {
             return "$";
         }
 
-        if (cache != null) {
-            return cache;
+        String ca = cache;
+        if (ca != null) {
+            return ca;
         }
 
         return new String(
@@ -442,6 +443,27 @@ public final class Space extends Chain implements Type {
         );
     }
 
+    /**
+     * Returns the {@code byte[]} of this {@link Space} as a {@link String}
+     *
+     * @param b the beginning index, inclusive
+     * @param e the ending index, exclusive
+     * @throws IndexOutOfBoundsException if the beginIndex is negative
+     */
+    @Override
+    @SuppressWarnings("deprecation")
+    public String toString(
+        int b, int e
+    ) {
+        int l = e - b;
+        if (l <= 0 || e > count) {
+            return "$";
+        }
+
+        return new String(
+            value, 0, b, l
+        );
+    }
 
     /**
      * @see Space#Space(Bucket)
