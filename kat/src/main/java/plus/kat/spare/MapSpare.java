@@ -202,13 +202,17 @@ public class MapSpare implements Spare<Map> {
     public static Map apply(
         @Nullable Type type
     ) {
-        if (type == Map.class ||
-            type == LinkedHashMap.class) {
+        if (type == Map.class) {
             return new LinkedHashMap<>();
         }
 
         if (type == HashMap.class) {
             return new HashMap<>();
+        }
+
+        if (type == Object.class ||
+            type == LinkedHashMap.class) {
+            return new LinkedHashMap<>();
         }
 
         if (type == ConcurrentHashMap.class ||
@@ -247,7 +251,7 @@ public class MapSpare implements Spare<Map> {
         }
 
         throw new RunCrash(
-            "Can't create instance of '" + type + "'", false
+            "Unable to create 'Map' instance of '" + type + "'"
         );
     }
 

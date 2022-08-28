@@ -110,19 +110,19 @@ public final class RecordSpare<T> extends Workman<T> {
     }
 
     @Override
-    public Target target(
+    public Target tag(
         Object alias
     ) {
-        return (Target) get(alias);
+        return (Target) getOrDefault(alias, null);
     }
 
     @Override
-    public Target target(
+    public Target tag(
         @NotNull int index,
         @NotNull Alias alias
     ) {
-        return (Target) get(
-            alias.isEmpty() ? index : alias
+        return (Target) getOrDefault(
+            alias.isEmpty() ? index : alias, null
         );
     }
 

@@ -173,7 +173,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     ) throws IOException {
         Node<T> node = head;
         while (node != null) {
-            Object val = node.onApply(value);
+            Object val = node.call(value);
             if (val == null) {
                 if (node.nullable) {
                     chan.set(node.key, null);
@@ -325,7 +325,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @since 0.0.3
      */
     @Override
-    public Getter<T, ?> getter(
+    public Getter<T, ?> get(
         @NotNull Object key
     ) {
         Node<T>[] tab = table;
@@ -352,12 +352,12 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @since 0.0.3
      */
     @Override
-    public Getter<T, ?> getter(
+    public Getter<T, ?> get(
         @NotNull int index,
         @NotNull Alias alias
     ) {
         if (alias.isNotEmpty()) {
-            return getter(alias);
+            return get(alias);
         }
 
         if (index < 0) {
@@ -436,7 +436,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             }
 
             // try lookup
-            Setter<T, ?> setter = setter(key);
+            Setter<T, ?> setter = set(key);
             if (setter == null) {
                 throw new SQLCrash(
                     "Can't find the Setter of " + key
@@ -456,7 +456,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
 
             // update field
             if (klass.isInstance(val)) {
-                setter.onAccept(
+                setter.call(
                     entity, val
                 );
                 continue;
@@ -471,7 +471,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                     supplier, val
                 );
                 if (var != null) {
-                    setter.onAccept(
+                    setter.call(
                         entity, var
                     );
                     continue;
@@ -511,7 +511,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             }
 
             // try lookup
-            Target target = target(key);
+            Target target = tag(key);
             if (target == null) {
                 throw new SQLCrash(
                     "Can't find the Target of " + key
@@ -598,7 +598,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 String key = it.getKey();
 
                 // try lookup
-                Setter<T, ?> setter = setter(key);
+                Setter<T, ?> setter = set(key);
                 if (setter == null) {
                     continue;
                 }
@@ -614,7 +614,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
 
                 // update field
                 if (klass.isInstance(val)) {
-                    setter.onAccept(
+                    setter.call(
                         entity, val
                     );
                     continue;
@@ -625,7 +625,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
 
                 // update field
                 if (spare != null) {
-                    setter.onAccept(
+                    setter.call(
                         entity, spare.cast(
                             supplier, val
                         )
@@ -664,7 +664,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 String key = it.getKey();
 
                 // try lookup
-                Target target = target(key);
+                Target target = tag(key);
                 if (target == null) {
                     continue;
                 }

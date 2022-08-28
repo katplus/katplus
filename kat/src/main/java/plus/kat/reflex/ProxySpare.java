@@ -110,19 +110,19 @@ public final class ProxySpare extends Workman<Object> {
     }
 
     @Override
-    public Setter setter(
+    public Setter set(
         @NotNull Object alias
     ) {
-        return (Setter) get(alias);
+        return (Setter) getOrDefault(alias, null);
     }
 
     @Override
-    public Setter setter(
+    public Setter set(
         @NotNull int index,
         @NotNull Alias alias
     ) {
-        return (Setter) get(
-            alias.isEmpty() ? index : alias
+        return (Setter) getOrDefault(
+            alias.isEmpty() ? index : alias, null
         );
     }
 
@@ -261,16 +261,16 @@ public final class ProxySpare extends Workman<Object> {
 
         @Override
         public Object apply(
-            @NotNull Object it
+            @NotNull Object bean
         ) {
             try {
-                Class<?> cl = it.getClass();
+                Class<?> cl = bean.getClass();
                 if (cl != spare.proxy) {
-                    return method.invoke(it);
+                    return method.invoke(bean);
                 }
 
                 Object val = ((Explorer) Proxy
-                    .getInvocationHandler(it)
+                    .getInvocationHandler(bean)
                 ).get(alias);
                 if (val != null) {
                     return val;
@@ -283,34 +283,35 @@ public final class ProxySpare extends Workman<Object> {
                 }
                 return null;
             } catch (Throwable e) {
-                // Nothing
+                throw new CallCrash(e);
             }
-            return null;
         }
 
         @Override
-        public void accept(
-            @NotNull Object it,
-            @Nullable Object val
+        public boolean accept(
+            @NotNull Object bean,
+            @Nullable Object value
         ) {
-            if (val != null || nullable) {
+            if (value != null || nullable) {
                 try {
-                    Class<?> cl = it.getClass();
+                    Class<?> cl = bean.getClass();
                     if (cl != spare.proxy) {
                         method.invoke(
-                            it, val
+                            bean, value
                         );
                     } else {
                         ((Explorer) Proxy
-                            .getInvocationHandler(it)
+                            .getInvocationHandler(bean)
                         ).put(
-                            alias, val
+                            alias, value
                         );
                     }
+                    return true;
                 } catch (Throwable e) {
-                    // Nothing
+                    throw new CallCrash(e);
                 }
             }
+            return false;
         }
     }
 

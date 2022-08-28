@@ -19,9 +19,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
+import java.util.function.*;
 
 /**
  * @author kraity
@@ -120,16 +118,50 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
      * Associates the specified value with the specified key in this map
      *
      * @param key key with which the specified value is to be associated
-     * @param del if false, don't change existing value
+     * @param val value to be associated with the specified key
+     */
+    @Nullable
+    public V put(
+        @NotNull K key,
+        @Nullable V val
+    ) {
+        return put(
+            key, val, true
+        );
+    }
+
+    /**
+     * If the specified key is not already associated with a value (or is mapped
+     * to {@code null}) associates it with the given value and returns {@code null}, else returns the current value
+     *
+     * @param key key with which the specified value is to be associated
      * @param val value to be associated with the specified key
      * @since 0.0.3
      */
     @Nullable
-    @SuppressWarnings("unchecked")
-    public V set(
+    public V putIfAbsent(
         @NotNull K key,
-        boolean del,
         @Nullable V val
+    ) {
+        return put(
+            key, val, false
+        );
+    }
+
+    /**
+     * Associates the specified value with the specified key in this map
+     *
+     * @param key key with which the specified value is to be associated
+     * @param del if false, don't change existing value
+     * @param val value to be associated with the specified key
+     * @since 0.0.4
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public V put(
+        @NotNull K key,
+        @Nullable V val,
+        @NotNull boolean del
     ) {
         Entry<K, V>[] tab = table;
         if (tab == null) {
@@ -243,40 +275,6 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
             }
             tab = table = bucket;
         }
-    }
-
-    /**
-     * Associates the specified value with the specified key in this map
-     *
-     * @param key key with which the specified value is to be associated
-     * @param val value to be associated with the specified key
-     */
-    @Nullable
-    public V put(
-        @NotNull K key,
-        @Nullable V val
-    ) {
-        return set(
-            key, true, val
-        );
-    }
-
-    /**
-     * If the specified key is not already associated with a value (or is mapped
-     * to {@code null}) associates it with the given value and returns {@code null}, else returns the current value
-     *
-     * @param key key with which the specified value is to be associated
-     * @param val value to be associated with the specified key
-     * @since 0.0.3
-     */
-    @Nullable
-    public V putIfAbsent(
-        @NotNull K key,
-        @Nullable V val
-    ) {
-        return set(
-            key, false, val
-        );
     }
 
     /**

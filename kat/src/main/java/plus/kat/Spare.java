@@ -20,6 +20,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.crash.*;
+import plus.kat.entity.*;
 import plus.kat.spare.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.*;
@@ -162,6 +163,50 @@ public interface Spare<K> extends Coder<K> {
         throw new SQLCrash(
             "Unexpectedly, '" + getType() + "' not a Bean"
         );
+    }
+
+    /**
+     * Returns the {@link Setter}
+     * of the specified property name
+     *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  User user = ...
+     *  spare.set("name").call(user, "kraity");
+     * }</pre>
+     *
+     * @param key the property name of the bean
+     * @return {@link Setter} or {@code null}
+     * @throws NullPointerException If the key is null
+     * @since 0.0.4
+     */
+    @Nullable
+    default Setter<K, ?> set(
+        @NotNull Object key
+    ) {
+        return null;
+    }
+
+    /**
+     * Returns the {@link Getter}
+     * of the specified property name
+     *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  User user = ...
+     *  Object name = spare.get("name").call(user);
+     * }</pre>
+     *
+     * @param key the property name of the bean
+     * @return {@link Getter} or {@code null}
+     * @throws NullPointerException If the key is null
+     * @since 0.0.4
+     */
+    @Nullable
+    default Getter<K, ?> get(
+        @NotNull Object key
+    ) {
+        return null;
     }
 
     /**

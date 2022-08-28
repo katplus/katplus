@@ -183,6 +183,7 @@ public class SetSpare implements Spare<Set> {
         @Nullable Type type
     ) {
         if (type == Set.class ||
+            type == Object.class ||
             type == HashSet.class) {
             return new HashSet<>();
         }
@@ -206,7 +207,7 @@ public class SetSpare implements Spare<Set> {
         }
 
         throw new RunCrash(
-            "Can't create instance of '" + type + "'", false
+            "Unable to create 'Set' instance of '" + type + "'"
         );
     }
 

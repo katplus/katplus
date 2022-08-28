@@ -184,6 +184,7 @@ public class ListSpare implements Spare<List> {
         @Nullable Type type
     ) {
         if (type == List.class ||
+            type == Object.class ||
             type == ArrayList.class) {
             return new ArrayList<>();
         }
@@ -210,7 +211,7 @@ public class ListSpare implements Spare<List> {
         }
 
         throw new RunCrash(
-            "Can't create instance of '" + type + "'", false
+            "Unable to create 'List' instance of '" + type + "'"
         );
     }
 

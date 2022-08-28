@@ -18,35 +18,44 @@ package plus.kat.entity;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.crash.*;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
 public interface Setter<K, V> extends Target {
     /**
-     * @param it  the entity
-     * @param val the value of entity
+     * @param bean  the specified entity
+     * @param value the specified value of property
+     * @return {@code true} if successful otherwise {@code false}
+     * @throws CallCrash If the underlying method throws an exception
      */
-    void accept(
-        @NotNull K it,
-        @Nullable V val
+    boolean accept(
+        @NotNull K bean,
+        @Nullable V value
     );
 
     /**
-     * @param it  the entity
-     * @param val the value of entity
+     * @param bean  the specified entity
+     * @param value the specified value of property
+     * @return {@code true} if successful otherwise {@code false}
+     * @throws CallCrash If the underlying method throws an exception
+     * @since 0.0.4
      */
     @SuppressWarnings("unchecked")
-    default void onAccept(
-        @NotNull K it,
-        @Nullable Object val
+    default boolean call(
+        @NotNull Object bean,
+        @Nullable Object value
     ) {
         try {
-            accept(
-                it, (V) val
+            return accept(
+                (K) bean, (V) value
             );
-        } catch (Exception e) {
-            // Nothing
+        } catch (ClassCastException e) {
+            throw new CallCrash(
+                "Failed to cast", e
+            );
         }
     }
 }

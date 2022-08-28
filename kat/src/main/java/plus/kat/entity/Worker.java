@@ -79,10 +79,10 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     /**
      * @param alias the alias of target
      * @see Workman
-     * @since 0.0.3
+     * @since 0.0.4
      */
     @Nullable
-    default Target target(
+    default Target tag(
         @NotNull Object alias
     ) {
         return null;
@@ -91,34 +91,10 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     /**
      * @param alias the alias of target
      * @see Workman
+     * @since 0.0.4
      */
     @Nullable
-    default Target target(
-        @NotNull int index,
-        @NotNull Alias alias
-    ) {
-        return null;
-    }
-
-    /**
-     * @param alias the alias of getter
-     * @see Workman
-     * @since 0.0.3
-     */
-    @Nullable
-    default Getter<K, ?> getter(
-        @NotNull Object alias
-    ) {
-        return null;
-    }
-
-    /**
-     * @param alias the alias of getter
-     * @see Workman
-     * @since 0.0.3
-     */
-    @Nullable
-    default Getter<K, ?> getter(
+    default Target tag(
         @NotNull int index,
         @NotNull Alias alias
     ) {
@@ -128,21 +104,23 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     /**
      * @param alias the alias of setter
      * @see Workman
-     * @since 0.0.3
+     * @since 0.0.4
      */
     @Nullable
-    default Setter<K, ?> setter(
-        @NotNull Object alias
+    default Setter<K, ?> set(
+        @NotNull int index,
+        @NotNull Alias alias
     ) {
         return null;
     }
 
     /**
-     * @param alias the alias of setter
+     * @param alias the alias of getter
      * @see Workman
+     * @since 0.0.4
      */
     @Nullable
-    default Setter<K, ?> setter(
+    default Getter<K, ?> get(
         @NotNull int index,
         @NotNull Alias alias
     ) {
@@ -214,7 +192,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Target tag,
             @NotNull Object value
         ) throws IOException {
-            setter.onAccept(
+            setter.call(
                 entity, value
             );
         }
@@ -229,7 +207,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
-            setter.onAccept(
+            setter.call(
                 entity, child.getResult()
             );
         }
@@ -245,7 +223,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            setter = worker.setter(
+            setter = worker.set(
                 index++, alias
             );
 
@@ -266,7 +244,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            setter = worker.setter(
+            setter = worker.set(
                 index++, alias
             );
 
@@ -369,7 +347,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            target = worker.target(
+            target = worker.tag(
                 index++, alias
             );
 
@@ -391,7 +369,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            target = worker.target(
+            target = worker.tag(
                 index++, alias
             );
 
@@ -564,7 +542,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Value value
         ) throws IOException {
             int i = index++;
-            target = worker.target(
+            target = worker.tag(
                 i, alias
             );
             if (target != null) {
@@ -572,7 +550,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                     space, value, target
                 );
             } else {
-                setter = worker.setter(
+                setter = worker.set(
                     i, alias
                 );
                 if (setter != null) {
@@ -594,7 +572,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias
         ) throws IOException {
             int i = index++;
-            target = worker.target(
+            target = worker.tag(
                 i, alias
             );
             if (target != null) {
@@ -602,7 +580,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                     space, target
                 );
             } else {
-                setter = worker.setter(
+                setter = worker.set(
                     i, alias
                 );
                 if (setter != null) {
@@ -646,7 +624,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             }
 
             while (cache != null) {
-                cache.setter.onAccept(
+                cache.setter.call(
                     entity, cache.value
                 );
                 cache = cache.next;

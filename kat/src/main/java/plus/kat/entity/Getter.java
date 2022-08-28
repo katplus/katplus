@@ -18,34 +18,42 @@ package plus.kat.entity;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.crash.*;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
 public interface Getter<K, V> extends Target {
     /**
-     * @param it the entity
+     * @param bean the specified bean
+     * @return the specified value of property
+     * @throws CallCrash If the underlying method throws an exception
      */
     @Nullable
     V apply(
-        @NotNull K it
+        @NotNull K bean
     );
 
     /**
-     * @param it the entity
+     * @param bean the specified bean
+     * @return the specified value of property
+     * @throws CallCrash If the underlying method throws an exception
+     * @since 0.0.4
      */
     @Nullable
     @SuppressWarnings("unchecked")
-    default V onApply(
-        @NotNull Object it
+    default V call(
+        @NotNull Object bean
     ) {
         try {
             return apply(
-                (K) it
+                (K) bean
             );
-        } catch (Exception e) {
-            // Nothing
+        } catch (ClassCastException e) {
+            throw new CallCrash(
+                "Failed to cast", e
+            );
         }
-        return null;
     }
 }

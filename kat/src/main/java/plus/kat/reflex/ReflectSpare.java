@@ -227,40 +227,42 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
     }
 
     @Override
-    public Target target(
+    public Target tag(
         Object alias
     ) {
-        KatMap<Object, Target> map = params;
-        return map == null ?
-            null : map.get(alias);
+        if (params == null) {
+            return null;
+        }
+        return params.get(alias);
     }
 
     @Override
-    public Target target(
+    public Target tag(
         @NotNull int index,
         @NotNull Alias alias
     ) {
-        KatMap<Object, Target> map = params;
-        return map == null ?
-            null : map.get(
+        if (params == null) {
+            return null;
+        }
+        return params.get(
             alias.isEmpty() ? index : alias
         );
     }
 
     @Override
-    public Setter setter(
+    public Setter set(
         @NotNull Object alias
     ) {
-        return (Setter) get(alias);
+        return (Setter) getOrDefault(alias, null);
     }
 
     @Override
-    public Setter setter(
+    public Setter set(
         @NotNull int index,
         @NotNull Alias alias
     ) {
-        return (Setter) get(
-            alias.isEmpty() ? index : alias
+        return (Setter) getOrDefault(
+            alias.isEmpty() ? index : alias, null
         );
     }
 
@@ -673,54 +675,31 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
 
         @Override
         public Object apply(
-            @NotNull K it
+            @NotNull K bean
         ) {
             try {
-                return getter.invoke(it);
+                return getter.invoke(bean);
             } catch (Throwable e) {
-                // Nothing
+                throw new CallCrash(e);
             }
-            return null;
         }
 
         @Override
-        public Object onApply(
-            @NotNull Object it
+        public boolean accept(
+            @NotNull K bean,
+            @Nullable Object value
         ) {
-            try {
-                return getter.invoke(it);
-            } catch (Throwable e) {
-                // Nothing
-            }
-            return null;
-        }
-
-        @Override
-        public void accept(
-            @NotNull K it,
-            @Nullable Object val
-        ) {
-            if (val != null || nullable) {
+            if (value != null || nullable) {
                 try {
-                    setter.invoke(it, val);
+                    setter.invoke(
+                        bean, value
+                    );
+                    return true;
                 } catch (Throwable e) {
-                    // Nothing
+                    throw new CallCrash(e);
                 }
             }
-        }
-
-        @Override
-        public void onAccept(
-            @NotNull K it,
-            @Nullable Object val
-        ) {
-            if (val != null || nullable) {
-                try {
-                    setter.invoke(it, val);
-                } catch (Throwable e) {
-                    // Nothing
-                }
-            }
+            return false;
         }
     }
 }
