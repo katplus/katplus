@@ -52,6 +52,18 @@ public class Client extends Caller {
 
     /**
      * @throws IOException If an I/O error occurs
+     * @since 0.0.4
+     */
+    public Client(
+        @NotNull Query query
+    ) throws IOException {
+        this(
+            query.toUrl()
+        );
+    }
+
+    /**
+     * @throws IOException If an I/O error occurs
      */
     public Client(
         @NotNull URL url
