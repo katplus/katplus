@@ -25,7 +25,8 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.InputStream;
-import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author kraity
@@ -140,25 +141,7 @@ public abstract class Caller extends Chain {
     }
 
     /**
-     * Parse this {@link Client} and convert result to {@link T}
-     */
-    @Nullable
-    public <T> T to(
-        @NotNull Job job,
-        @NotNull Type type
-    ) {
-        if (count == 0) {
-            return null;
-        }
-        return supplier.solve(
-            type, job, new Event<T>(
-                reader()
-            ).with(plan)
-        );
-    }
-
-    /**
-     * Parse this {@link Client} and convert result to {@link T}
+     * Parse this {@link Caller} and convert result to {@link T}
      *
      * @throws RunCrash If no specified job
      */
@@ -179,7 +162,7 @@ public abstract class Caller extends Chain {
     }
 
     /**
-     * Parse this {@link Client} and convert result to {@link T}
+     * Parse this {@link Caller} and convert result to {@link T}
      */
     @Nullable
     public <E, T extends E> T to(
@@ -215,6 +198,41 @@ public abstract class Caller extends Chain {
                 reader()
             ).with(plan)
         );
+    }
+
+    /**
+     * Parse this {@link Caller} and convert result to {@code Array}
+     *
+     * @throws RunCrash If no specified job
+     * @since 0.0.4
+     */
+    @Nullable
+    public Object[] toArray() {
+        return to(
+            Object[].class
+        );
+    }
+
+    /**
+     * Parse this {@link Caller} and convert result to {@link List}
+     *
+     * @throws RunCrash If no specified job
+     * @since 0.0.4
+     */
+    @Nullable
+    public List<Object> toList() {
+        return to(List.class);
+    }
+
+    /**
+     * Parse this {@link Caller} and convert result to {@link Map}
+     *
+     * @throws RunCrash If no specified job
+     * @since 0.0.4
+     */
+    @Nullable
+    public Map<String, Object> toMap() {
+        return to(Map.class);
     }
 
     /**

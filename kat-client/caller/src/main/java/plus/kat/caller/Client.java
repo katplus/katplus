@@ -38,6 +38,15 @@ public class Client extends Caller {
     protected HttpURLConnection conn;
 
     /**
+     * Inherit and expand
+     *
+     * @since 0.0.4
+     */
+    protected Client() {
+        super(Buffer.INS);
+    }
+
+    /**
      * @param url the url to parse as a URL
      * @throws IOException           If an I/O error occurs
      * @throws MalformedURLException If no protocol is specified, or an unknown protocol is found, or spec is null
@@ -139,6 +148,35 @@ public class Client extends Caller {
     }
 
     /**
+     * Returns the value of the response header field
+     *
+     * @param key the name of a header field
+     * @return {@link String} or {@code null}
+     * @see Client#head(String)
+     * @since 0.0.4
+     */
+    public String get(
+        @NotNull String key
+    ) {
+        return head(key);
+    }
+
+    /**
+     * Sets the general request property
+     *
+     * @see Client#header(String, Object)
+     * @since 0.0.4
+     */
+    public Client set(
+        @NotNull String key,
+        @Nullable Object value
+    ) {
+        return header(
+            key, value
+        );
+    }
+
+    /**
      * Returns the code of {@code status}
      *
      * @see Client#resolve(URLConnection)
@@ -161,7 +199,7 @@ public class Client extends Caller {
     }
 
     /**
-     * Returns the value of the named header field
+     * Returns the value of the response header field
      *
      * @param key the name of a header field
      * @return {@link String} or {@code null}
@@ -256,25 +294,11 @@ public class Client extends Caller {
      * @return {@link String} or {@code null}
      * @see URLConnection#getRequestProperty(String)
      */
+    @Nullable
     public String header(
         @NotNull String key
     ) {
         return conn.getRequestProperty(key);
-    }
-
-    /**
-     * Sets the general request property
-     *
-     * @see HttpURLConnection#setRequestProperty(String, String)
-     */
-    public Client header(
-        @NotNull String key,
-        @Nullable String value
-    ) {
-        conn.setRequestProperty(
-            key, value
-        );
-        return this;
     }
 
     /**
@@ -516,6 +540,15 @@ public class Client extends Caller {
     }
 
     /**
+     * @throws IOException If an I/O error occurs
+     * @since 0.0.4
+     */
+    public Client post()
+        throws IOException {
+        return send("POST");
+    }
+
+    /**
      * <pre>{@code
      *  new Client("https://kat.plus/test/user").view();
      * }</pre>
@@ -524,18 +557,7 @@ public class Client extends Caller {
      */
     public Client view()
         throws IOException {
-        try {
-            // method
-            conn.setRequestMethod("HEAD");
-            // connect
-            conn.connect();
-            // resolve
-            resolve(conn);
-        } finally {
-            // disconnect
-            conn.disconnect();
-        }
-        return this;
+        return send("HEAD");
     }
 
     /**
@@ -547,18 +569,7 @@ public class Client extends Caller {
      */
     public Client delete()
         throws IOException {
-        try {
-            // method
-            conn.setRequestMethod("DELETE");
-            // connect
-            conn.connect();
-            // resolve
-            resolve(conn);
-        } finally {
-            // disconnect
-            conn.disconnect();
-        }
-        return this;
+        return send("DELETE");
     }
 
     /**
@@ -602,6 +613,19 @@ public class Client extends Caller {
         check(data, i, l);
         return request(
             "PUT", data, i, l
+        );
+    }
+
+    /**
+     * @param chain the specified chain
+     * @throws IOException If an I/O error occurs
+     * @since 0.0.4
+     */
+    public Client put(
+        Chain chain
+    ) throws IOException {
+        return request(
+            "PUT", chain
         );
     }
 
@@ -656,10 +680,29 @@ public class Client extends Caller {
     }
 
     /**
+     * @param chain the specified chain
+     * @throws IOException If an I/O error occurs
+     * @since 0.0.4
+     */
+    public Client post(
+        Chain chain
+    ) throws IOException {
+        return request(
+            "POST", chain
+        );
+    }
+
+    /**
      * <pre>{@code
      *  String url = "https://kat.plus/test/add-user";
      *  Chan chan = ...;
      *  User user = new Client(url).post(chan).to(User.class);
+     *
+     *  User user = new Client(url)
+     *      .post(Sugar.Json(c -> {
+     *           c.set("id", 1);
+     *           c.set("name", "kraity");
+     *       })).to(User.class);
      * }</pre>
      *
      * @param chan the specified chan
@@ -715,6 +758,27 @@ public class Client extends Caller {
         return request(
             "POST", data, i, l
         );
+    }
+
+    /**
+     * @throws IOException If an I/O error occurs
+     * @since 0.0.4
+     */
+    public Client send(
+        @NotNull String method
+    ) throws IOException {
+        try {
+            // method
+            conn.setRequestMethod(method);
+            // connect
+            conn.connect();
+            // resolve
+            resolve(conn);
+        } finally {
+            // disconnect
+            conn.disconnect();
+        }
+        return this;
     }
 
     /**
