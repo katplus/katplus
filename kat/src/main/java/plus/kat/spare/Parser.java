@@ -330,7 +330,7 @@ public class Parser implements Pipe, Closeable {
     }
 
     /**
-     * clear this {@link Parser}
+     * Clear this {@link Parser}
      */
     public void clear() {
         depth = 0;
@@ -339,7 +339,7 @@ public class Parser implements Pipe, Closeable {
     }
 
     /**
-     * close this {@link Parser}
+     * Close this {@link Parser}
      */
     @Override
     public void close() {

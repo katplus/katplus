@@ -5,10 +5,9 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.kernel.*;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
 
-import static plus.kat.stream.Binary.lower;
 import static plus.kat.stream.Binary.upper;
 
 /**
@@ -213,26 +212,7 @@ public class Query extends Chain {
     public Query add(
         int num
     ) {
-        if (num < 0) {
-            grow(count + 1);
-            value[count++] = '-';
-        } else {
-            num = -num;
-        }
-
-        if (num > -10) {
-            grow(count + 1);
-            hash = 0;
-            value[count++] = lower(-num);
-        } else {
-            int mark = count;
-            do {
-                grow(count + 1);
-                value[count++] = lower(-(num % 10));
-                num /= 10;
-            } while (num < 0);
-            swop(mark, count - 1);
-        }
+        chain(num);
         return this;
     }
 
@@ -242,26 +222,7 @@ public class Query extends Chain {
     public Query add(
         long num
     ) {
-        if (num < 0) {
-            grow(count + 1);
-            value[count++] = '-';
-        } else {
-            num = -num;
-        }
-
-        if (num > -10L) {
-            grow(count + 1);
-            hash = 0;
-            value[count++] = lower((int) -num);
-        } else {
-            int mark = count;
-            do {
-                grow(count + 1);
-                value[count++] = lower((int) -(num % 10L));
-                num /= 10L;
-            } while (num < 0L);
-            swop(mark, count - 1);
-        }
+        chain(num);
         return this;
     }
 

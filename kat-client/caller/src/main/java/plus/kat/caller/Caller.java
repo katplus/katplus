@@ -260,6 +260,18 @@ public abstract class Caller extends Chain {
     }
 
     /**
+     * Sets the job of this Caller
+     *
+     * @param job the specified job
+     * @since 0.0.4
+     */
+    public void setJob(
+        @Nullable Job job
+    ) {
+        this.job = job;
+    }
+
+    /**
      * Returns the internal {@link Supplier}
      */
     public Supplier getSupplier() {

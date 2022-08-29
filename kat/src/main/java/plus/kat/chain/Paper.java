@@ -139,7 +139,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     public void addShort(
         short num
     ) {
-        addInt(num);
+        chain(num);
     }
 
     /**
@@ -149,26 +149,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     public void addInt(
         int num
     ) {
-        if (num < 0) {
-            grow(count + 1);
-            value[count++] = '-';
-        } else {
-            num = -num;
-        }
-
-        if (num > -10) {
-            grow(count + 1);
-            hash = 0;
-            value[count++] = lower(-num);
-        } else {
-            int mark = count;
-            do {
-                grow(count + 1);
-                value[count++] = lower(-(num % 10));
-                num /= 10;
-            } while (num < 0);
-            swop(mark, count - 1);
-        }
+        chain(num);
     }
 
     /**
@@ -220,26 +201,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     public void addLong(
         long num
     ) {
-        if (num < 0) {
-            grow(count + 1);
-            value[count++] = '-';
-        } else {
-            num = -num;
-        }
-
-        if (num > -10L) {
-            grow(count + 1);
-            hash = 0;
-            value[count++] = lower((int) -num);
-        } else {
-            int mark = count;
-            do {
-                grow(count + 1);
-                value[count++] = lower((int) -(num % 10L));
-                num /= 10L;
-            } while (num < 0L);
-            swop(mark, count - 1);
-        }
+        chain(num);
     }
 
     /**
@@ -863,7 +825,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     }
 
     /**
-     * clean this {@link Paper}
+     * Clean this {@link Paper}
      *
      * @since 0.0.2
      */
@@ -873,7 +835,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     }
 
     /**
-     * clear this {@link Paper}
+     * Clear this {@link Paper}
      *
      * @since 0.0.2
      */
@@ -888,7 +850,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     }
 
     /**
-     * close this {@link Paper}
+     * Close this {@link Paper}
      *
      * @since 0.0.2
      */

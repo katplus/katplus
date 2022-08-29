@@ -2053,6 +2053,64 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * @param num the specified int value
+     * @since 0.0.4
+     */
+    protected void chain(
+        int num
+    ) {
+        if (num < 0) {
+            grow(count + 1);
+            value[count++] = '-';
+        } else {
+            num = -num;
+        }
+
+        if (num > -10) {
+            grow(count + 1);
+            hash = 0;
+            value[count++] = lower(-num);
+        } else {
+            int mark = count;
+            do {
+                grow(count + 1);
+                value[count++] = lower(-(num % 10));
+                num /= 10;
+            } while (num < 0);
+            swop(mark, count - 1);
+        }
+    }
+
+    /**
+     * @param num the specified long value
+     * @since 0.0.4
+     */
+    protected void chain(
+        long num
+    ) {
+        if (num < 0) {
+            grow(count + 1);
+            value[count++] = '-';
+        } else {
+            num = -num;
+        }
+
+        if (num > -10L) {
+            grow(count + 1);
+            hash = 0;
+            value[count++] = lower((int) -num);
+        } else {
+            int mark = count;
+            do {
+                grow(count + 1);
+                value[count++] = lower((int) -(num % 10L));
+                num /= 10L;
+            } while (num < 0L);
+            swop(mark, count - 1);
+        }
+    }
+
+    /**
      * @param b the specified byte array
      */
     protected void chain(
@@ -2285,7 +2343,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * clean this {@link Chain}
+     * Clean this {@link Chain}
      */
     protected void clean() {
         hash = 0;
@@ -2294,7 +2352,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * clear this {@link Chain}
+     * Clear this {@link Chain}
      */
     protected void clear() {
         this.clean();
@@ -2308,7 +2366,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * close this {@link Chain}
+     * Close this {@link Chain}
      */
     protected void close() {
         this.clean();
@@ -2395,7 +2453,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         }
 
         /**
-         * close this {@link Reader}
+         * Close this {@link Reader}
          */
         @Override
         public void close() {

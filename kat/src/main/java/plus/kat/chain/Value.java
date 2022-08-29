@@ -91,6 +91,29 @@ public class Value extends Chain {
     }
 
     /**
+     * Sets the value of the specified location.
+     * Only if the index is within the internal value range
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.set(0, (byte) 'k');
+     * }</pre>
+     *
+     * @param i the specified index
+     * @param b the specified value
+     * @throws ArrayIndexOutOfBoundsException if the index argument is negative
+     */
+    public void set(
+        int i, byte b
+    ) {
+        byte[] it = value;
+        if (i < it.length) {
+            hash = 0;
+            it[i] = b;
+        }
+    }
+
+    /**
      * Returns {@code true} if, and only if, internal {@code byte[]} can be shared
      *
      * @see Chain#getValue()
@@ -118,24 +141,41 @@ public class Value extends Chain {
     }
 
     /**
-     * @throws ArrayIndexOutOfBoundsException if the index argument is negative
-     */
-    public void set(
-        int i, byte b
-    ) {
-        if (i < value.length) {
-            hash = 0;
-            value[i] = b;
-        }
-    }
-
-    /**
      * @param b the specified byte value
      */
     public void add(
         byte b
     ) {
         chain(b);
+    }
+
+    /**
+     * @param c the specified char value
+     */
+    public void add(
+        char c
+    ) {
+        chain(c);
+    }
+
+    /**
+     * @param num the specified int value
+     * @since 0.0.4
+     */
+    public void add(
+        int num
+    ) {
+        chain(num);
+    }
+
+    /**
+     * @param num the specified long value
+     * @since 0.0.4
+     */
+    public void add(
+        long num
+    ) {
+        chain(num);
     }
 
     /**
@@ -149,15 +189,6 @@ public class Value extends Chain {
                 b, 0, b.length
             );
         }
-    }
-
-    /**
-     * @param c the specified char value
-     */
-    public void add(
-        char c
-    ) {
-        chain(c);
     }
 
     /**
@@ -199,15 +230,77 @@ public class Value extends Chain {
     }
 
     /**
-     * @param i the specified index
+     * Adds this data to uppercase hexadecimal
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.upper(new byte[]{1, 11, 111}); // 1B6F
+     * }</pre>
+     *
+     * @param data specify the {@code byte[]} to be encoded
+     * @see Value#lower(byte[])
+     * @since 0.0.4
+     */
+    public void upper(
+        byte[] data
+    ) {
+        if (data != null) {
+            grow(count * data.length * 2);
+            int i = 0;
+            hash = 0;
+            byte[] it = value;
+            while (i < data.length) {
+                int o = data[i++] & 0xFF;
+                it[count++] = Binary.upper(o >> 4);
+                it[count++] = Binary.upper(o & 0xF);
+            }
+        }
+    }
+
+    /**
+     * Adds this data to lowercase hexadecimal
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.lower(new byte[]{1, 11, 111}); // 1b6f
+     * }</pre>
+     *
+     * @param data specify the {@code byte[]} to be encoded
+     * @see Value#upper(byte[])
+     * @since 0.0.4
+     */
+    public void lower(
+        byte[] data
+    ) {
+        if (data != null) {
+            grow(count * data.length * 2);
+            int i = 0;
+            hash = 0;
+            byte[] it = value;
+            while (i < data.length) {
+                int o = data[i++] & 0xFF;
+                it[count++] = Binary.lower(o >> 4);
+                it[count++] = Binary.lower(o & 0xF);
+            }
+        }
+    }
+
+    /**
+     * @param length the specified length
+     * @throws ArrayIndexOutOfBoundsException if the index argument is negative or out of range
      */
     public void slip(
-        int i
+        int length
     ) {
-        if (i >= 0 &&
-            i <= value.length) {
+        if (length == 0) {
             hash = 0;
-            count = i;
+            count = 0;
+        } else {
+            if (length < 0 || length > value.length) {
+                throw new ArrayIndexOutOfBoundsException();
+            }
+            hash = 0;
+            count = length;
         }
     }
 
