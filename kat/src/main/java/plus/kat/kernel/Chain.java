@@ -526,7 +526,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
      */
     public byte get(int i) {
-        return i < value.length ? value[i] : -1;
+        byte[] it = value;
+        return i < it.length ? it[i] : -1;
     }
 
     /**
@@ -535,7 +536,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
      */
     public byte get(int i, byte def) {
-        return i < value.length ? value[i] : def;
+        byte[] it = value;
+        return i < it.length ? it[i] : def;
     }
 
     /**
@@ -2112,6 +2114,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     /**
      * @param b the specified byte array
+     * @param i the specified index
+     * @param l the specified length
      */
     protected void chain(
         @NotNull byte[] b, int i, int l
@@ -2168,6 +2172,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     /**
      * @param c the specified char array
+     * @param i the specified index
+     * @param l the specified length
      */
     protected void chain(
         @NotNull char[] c, int i, int l
@@ -2234,6 +2240,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     /**
      * @param c the specified char array
+     * @param i the specified index
+     * @param l the specified length
      */
     protected void chain(
         @NotNull CharSequence c, int i, int l

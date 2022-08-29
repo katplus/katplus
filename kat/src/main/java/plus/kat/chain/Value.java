@@ -23,8 +23,7 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.spec.*;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -91,29 +90,6 @@ public class Value extends Chain {
     }
 
     /**
-     * Sets the value of the specified location.
-     * Only if the index is within the internal value range
-     *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.set(0, (byte) 'k');
-     * }</pre>
-     *
-     * @param i the specified index
-     * @param b the specified value
-     * @throws ArrayIndexOutOfBoundsException if the index argument is negative
-     */
-    public void set(
-        int i, byte b
-    ) {
-        byte[] it = value;
-        if (i < it.length) {
-            hash = 0;
-            it[i] = b;
-        }
-    }
-
-    /**
      * Returns {@code true} if, and only if, internal {@code byte[]} can be shared
      *
      * @see Chain#getValue()
@@ -141,6 +117,36 @@ public class Value extends Chain {
     }
 
     /**
+     * Sets the value of the specified location.
+     * Only if the index is within the internal value range
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.set(0, (byte) 'k');
+     * }</pre>
+     *
+     * @param i the specified index
+     * @param b the specified value
+     * @throws ArrayIndexOutOfBoundsException if the index argument is negative
+     */
+    public void set(
+        int i, byte b
+    ) {
+        byte[] it = value;
+        if (i < it.length) {
+            hash = 0;
+            it[i] = b;
+        }
+    }
+
+    /**
+     * Appends the byte value to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.add((byte) 'k');
+     * }</pre>
+     *
      * @param b the specified byte value
      */
     public void add(
@@ -150,6 +156,13 @@ public class Value extends Chain {
     }
 
     /**
+     * Appends the char value to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.add('k');
+     * }</pre>
+     *
      * @param c the specified char value
      */
     public void add(
@@ -159,6 +172,13 @@ public class Value extends Chain {
     }
 
     /**
+     * Appends the number to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.add(1024);
+     * }</pre>
+     *
      * @param num the specified int value
      * @since 0.0.4
      */
@@ -169,6 +189,13 @@ public class Value extends Chain {
     }
 
     /**
+     * Appends the number to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.add(1024L);
+     * }</pre>
+     *
      * @param num the specified long value
      * @since 0.0.4
      */
@@ -179,6 +206,8 @@ public class Value extends Chain {
     }
 
     /**
+     * Appends the byte array to this {@link Value}
+     *
      * @param b the specified byte array
      */
     public void add(
@@ -192,6 +221,33 @@ public class Value extends Chain {
     }
 
     /**
+     * Appends the byte array to this {@link Value}
+     *
+     * @param b the specified byte array
+     * @param i the specified index
+     * @param l the specified length
+     * @throws ArrayIndexOutOfBoundsException If the {@code index} or {@code length} ou of range
+     * @since 0.0.4
+     */
+    public void add(
+        byte[] b, int i, int l
+    ) {
+        if (b != null) {
+            if (i >= 0 && i + l <= b.length) {
+                chain(
+                    b, i, l
+                );
+            } else {
+                throw new ArrayIndexOutOfBoundsException(
+                    "Out of bounds, i:" + i + " l:" + l + " length:" + b.length
+                );
+            }
+        }
+    }
+
+    /**
+     * Appends the char array to this {@link Value}
+     *
      * @param c the specified char array
      */
     public void add(
@@ -205,6 +261,47 @@ public class Value extends Chain {
     }
 
     /**
+     * Appends the char array to this {@link Value}
+     *
+     * @param c the specified byte array
+     * @param i the specified index
+     * @param l the specified length
+     * @throws ArrayIndexOutOfBoundsException If the {@code index} or {@code length} ou of range
+     * @since 0.0.4
+     */
+    public void add(
+        char[] c, int i, int l
+    ) {
+        if (c != null) {
+            if (i >= 0 && i + l <= c.length) {
+                chain(
+                    c, i, l
+                );
+            } else {
+                throw new ArrayIndexOutOfBoundsException(
+                    "Out of bounds, i:" + i + " l:" + l + " length:" + c.length
+                );
+            }
+        }
+    }
+
+    /**
+     * Appends the {@link InputStream} to this {@link Value}
+     *
+     * @param in the specified {@link InputStream}
+     * @since 0.0.3
+     */
+    public void add(
+        InputStream in
+    ) {
+        if (in != null) {
+            chain(in);
+        }
+    }
+
+    /**
+     * Appends the {@link CharSequence} to this {@link Value}
+     *
      * @param c the specified char array
      */
     public void add(
@@ -218,14 +315,27 @@ public class Value extends Chain {
     }
 
     /**
-     * @param in the specified {@link InputStream}
-     * @since 0.0.3
+     * Appends the {@link CharSequence} to this {@link Value}
+     *
+     * @param c the specified byte array
+     * @param i the specified index
+     * @param l the specified length
+     * @throws ArrayIndexOutOfBoundsException If the {@code index} or {@code length} ou of range
+     * @since 0.0.4
      */
     public void add(
-        InputStream in
+        CharSequence c, int i, int l
     ) {
-        if (in != null) {
-            chain(in);
+        if (c != null) {
+            if (i >= 0 && i + l <= c.length()) {
+                chain(
+                    c, i, l
+                );
+            } else {
+                throw new ArrayIndexOutOfBoundsException(
+                    "Out of bounds, i:" + i + " l:" + l + " length:" + c.length()
+                );
+            }
         }
     }
 
