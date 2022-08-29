@@ -41,7 +41,7 @@ public interface Reader extends Closeable {
     boolean also() throws IOException;
 
     /**
-     * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOCrash
+     * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOException
      *
      * @throws IOException If this has been closed or I/O error occurs
      */

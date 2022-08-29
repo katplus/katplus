@@ -21,6 +21,8 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
+import java.io.IOException;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -145,11 +147,11 @@ public final class Binary {
 
     /**
      * @param b specify the {@code b} to be converted
-     * @throws IOCrash If the {@code b} is not a hexadecimal number
+     * @throws IOException If the {@code b} is not a hexadecimal number
      */
     public static int hex(
         byte b
-    ) throws IOCrash {
+    ) throws IOException {
         if (b > 0x2F) {
             if (b < 0x3A) {
                 return b - 0x30;

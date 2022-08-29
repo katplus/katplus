@@ -1065,7 +1065,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns the internal {@code byte[]}
      *
-     * @throws RunCrash If the internal value cannot be shared
+     * @throws CallCrash If the internal value cannot be shared
      * @since 0.0.2
      */
     @NotNull
@@ -1074,7 +1074,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return value;
         }
 
-        throw new RunCrash(
+        throw new CallCrash(
             "Unexpectedly, the internal value cannot be shared"
         );
     }
@@ -1404,26 +1404,20 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns a lowercase {@code MD5} of this {@link Chain}
      *
-     * @throws IllegalStateException If unsupport the MD5
+     * @throws UnsupportedCrash If not supports the MD5
      */
     @NotNull
     public String digest() {
-        try {
-            return digest(
-                "MD5", 0, count
-            );
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(
-                "Unexpectedly, MD5 unsupported", e
-            );
-        }
+        return digest(
+            "MD5", 0, count
+        );
     }
 
     /**
      * Returns a lowercase message digest of this {@link Chain}
      *
      * @param algo the name of the algorithm requested
-     * @throws NoSuchAlgorithmException If no implementation supports the specified algorithm
+     * @throws UnsupportedCrash If not supports the algo
      * @see MessageDigest
      * @see Binary#toLower(byte[])
      * @see Chain#digest(String, int, int)
@@ -1431,7 +1425,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     @NotNull
     public String digest(
         @NotNull String algo
-    ) throws NoSuchAlgorithmException {
+    ) {
         return digest(
             algo, 0, count
         );
@@ -1443,23 +1437,31 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @param algo the name of the algorithm requested
      * @param o    the specified offset
      * @param l    the specified length
+     * @throws UnsupportedCrash         If not supports the algo
      * @throws IllegalArgumentException If the length out of range
-     * @throws NoSuchAlgorithmException If no implementation supports the specified algorithm
      * @see MessageDigest
      * @see Binary#toLower(byte[])
      */
     @NotNull
     public String digest(
         @NotNull String algo, int o, int l
-    ) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest
-            .getInstance(algo);
+    ) {
+        try {
+            MessageDigest md = MessageDigest
+                .getInstance(algo);
 
-        md.update(
-            value, o, l
-        );
+            md.update(
+                value, o, l
+            );
 
-        return toLower(md.digest());
+            return toLower(
+                md.digest()
+            );
+        } catch (NoSuchAlgorithmException e) {
+            throw new UnsupportedCrash(
+                "Unexpectedly, " + algo + " unsupported", e
+            );
+        }
     }
 
     /**
@@ -2431,7 +2433,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         }
 
         /**
-         * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOCrash
+         * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOException
          *
          * @throws IOException If this has been closed
          */

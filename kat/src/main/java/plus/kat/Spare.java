@@ -266,7 +266,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Kat} {@link CharSequence} and convert result to {@link K}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
@@ -282,7 +282,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Kat} {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -328,7 +328,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Doc} {@link CharSequence} and convert result to {@link K}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
@@ -344,7 +344,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Doc} {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -390,7 +390,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Json} {@link CharSequence} and convert result to {@link K}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
@@ -406,7 +406,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Json} {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -488,7 +488,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      * @since 0.0.2
      */
@@ -509,7 +509,7 @@ public interface Spare<K> extends Coder<K> {
                 job, event
             );
         } catch (Exception e) {
-            throw new SolverCrash(
+            throw new CallCrash(
                 "Failed to solve " + job, e
             );
         } finally {
@@ -685,7 +685,7 @@ public interface Spare<K> extends Coder<K> {
                     spare = p.lookup(
                         klass, supplier
                     );
-                } catch (RunCrash e) {
+                } catch (CallCrash e) {
                     return null;
                 } catch (Exception e) {
                     continue;
@@ -704,7 +704,7 @@ public interface Spare<K> extends Coder<K> {
         /**
          * Returns {@link Spare} of the specified {@code klass}
          *
-         * @throws RunCrash             The Provider signals to interrupt subsequent lookup
+         * @throws CallCrash            The Provider signals to interrupt subsequent lookup
          * @throws NullPointerException If the specified {@code klass} is null
          */
         @Nullable

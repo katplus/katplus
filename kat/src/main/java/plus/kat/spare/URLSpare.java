@@ -22,10 +22,8 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.net.MalformedURLException;
+import java.io.*;
+import java.net.*;
 
 /**
  * @author kraity
@@ -93,7 +91,7 @@ public class URLSpare extends Property<URL> {
     public URL read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         if (value.isEmpty()) {
             return null;
         }

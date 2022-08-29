@@ -157,7 +157,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     public T read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
             return Casting.cast(
                 this, value, flag, supplier
@@ -235,7 +235,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @param key  the ket of {@link Node}
      * @param node the specified {@link Node}
      * @return {@code true} if the node is settled otherwise {@code false}
-     * @throws RunCrash             If the {@code node} is already used
+     * @throws CallCrash            If the {@code node} is already used
      * @throws NullPointerException If the {@code key} or {@code node} is null
      * @since 0.0.3
      */
@@ -245,7 +245,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         @NotNull Node<T> node
     ) {
         if (node.key != null) {
-            throw new RunCrash(
+            throw new CallCrash(
                 node + " is already used"
             );
         }
@@ -672,7 +672,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 // check index
                 int k = target.getIndex();
                 if (k < 0 || k >= data.length) {
-                    throw new RunCrash(
+                    throw new CallCrash(
                         "'" + k + "' out of range"
                     );
                 }

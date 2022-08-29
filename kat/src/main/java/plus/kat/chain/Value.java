@@ -599,7 +599,7 @@ public class Value extends Chain {
                 if (i < LIMIT) {
                     data = new byte[(i + 1) * SCALE - 1];
                 } else {
-                    throw new RunCrash(
+                    throw new CallCrash(
                         "Unexpectedly, Exceeding range '" + LIMIT * SCALE + "' in value"
                     );
                 }

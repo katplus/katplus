@@ -210,7 +210,7 @@ public class ListSpare implements Spare<List> {
             return new ArrayList<>();
         }
 
-        throw new RunCrash(
+        throw new CallCrash(
             "Unable to create 'List' instance of '" + type + "'"
         );
     }
@@ -263,7 +263,7 @@ public class ListSpare implements Spare<List> {
         public T onCreate(
             @NotNull Type type
         ) {
-            throw new RunCrash(
+            throw new CallCrash(
                 "Failed to create"
             );
         }

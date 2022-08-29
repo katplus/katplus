@@ -179,7 +179,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
     public Date read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         int len = value.length();
         if (len == 0) {
             return null;

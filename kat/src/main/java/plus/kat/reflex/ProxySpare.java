@@ -374,12 +374,12 @@ public final class ProxySpare extends Workman<Object> {
                     return proxy;
                 }
 
-                throw new RunCrash(
+                throw new CallCrash(
                     c + " not supported"
                 );
             }
 
-            throw new RunCrash(
+            throw new CallCrash(
                 "Unexpectedly, Not currently supported: " + method
             );
         }

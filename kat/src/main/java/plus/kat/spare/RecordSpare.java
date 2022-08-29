@@ -39,7 +39,7 @@ public final class RecordSpare<T> extends Workman<T> {
     private Constructor<T> ctor;
 
     /**
-     * @throws RunCrash If an error occurs in the build
+     * @throws CallCrash If an error occurs in the build
      */
     public RecordSpare(
         @NotNull Class<T> klass,
@@ -49,7 +49,7 @@ public final class RecordSpare<T> extends Workman<T> {
     }
 
     /**
-     * @throws RunCrash If an error occurs in the build
+     * @throws CallCrash If an error occurs in the build
      */
     public RecordSpare(
         @Nullable Embed embed,
@@ -227,7 +227,7 @@ public final class RecordSpare<T> extends Workman<T> {
                     }
                 }
             } catch (Exception e) {
-                throw new RunCrash(e);
+                throw new CallCrash(e);
             }
         }
 
@@ -244,7 +244,7 @@ public final class RecordSpare<T> extends Workman<T> {
         }
 
         if (b == null) {
-            throw new RunCrash(
+            throw new CallCrash(
                 "Unexpectedly, the Constructor of '" + klass + "' is null"
             );
         }
@@ -253,7 +253,7 @@ public final class RecordSpare<T> extends Workman<T> {
             ctor = b;
             b.setAccessible(true);
         } else {
-            throw new RunCrash(
+            throw new CallCrash(
                 "Unexpectedly, the number of actual and formal parameters differ"
             );
         }

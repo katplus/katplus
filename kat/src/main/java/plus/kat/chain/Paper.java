@@ -825,16 +825,6 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     }
 
     /**
-     * Clean this {@link Paper}
-     *
-     * @since 0.0.2
-     */
-    public void clean() {
-        hash = 0;
-        count = 0;
-    }
-
-    /**
      * Clear this {@link Paper}
      *
      * @since 0.0.2

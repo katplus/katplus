@@ -143,7 +143,7 @@ public abstract class Caller extends Chain {
     /**
      * Parse this {@link Caller} and convert result to {@link T}
      *
-     * @throws RunCrash If no specified job
+     * @throws CallCrash If no specified job
      */
     @Nullable
     public <E, T extends E> T to(
@@ -203,7 +203,7 @@ public abstract class Caller extends Chain {
     /**
      * Parse this {@link Caller} and convert result to {@code Array}
      *
-     * @throws RunCrash If no specified job
+     * @throws CallCrash If no specified job
      * @since 0.0.4
      */
     @Nullable
@@ -216,7 +216,7 @@ public abstract class Caller extends Chain {
     /**
      * Parse this {@link Caller} and convert result to {@link List}
      *
-     * @throws RunCrash If no specified job
+     * @throws CallCrash If no specified job
      * @since 0.0.4
      */
     @Nullable
@@ -227,7 +227,7 @@ public abstract class Caller extends Chain {
     /**
      * Parse this {@link Caller} and convert result to {@link Map}
      *
-     * @throws RunCrash If no specified job
+     * @throws CallCrash If no specified job
      * @since 0.0.4
      */
     @Nullable
@@ -238,7 +238,7 @@ public abstract class Caller extends Chain {
     /**
      * Returns the specified {@link Job}
      *
-     * @throws RunCrash If no specified job
+     * @throws CallCrash If no specified job
      */
     @NotNull
     public Job job() {
@@ -247,7 +247,7 @@ public abstract class Caller extends Chain {
             return j;
         }
 
-        throw new RunCrash(
+        throw new CallCrash(
             "Could not find the specified Job"
         );
     }

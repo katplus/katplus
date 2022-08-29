@@ -16,7 +16,7 @@
 package plus.kat.okhttp;
 
 import plus.kat.Job;
-import plus.kat.crash.RunCrash;
+import plus.kat.crash.CallCrash;
 
 import okhttp3.MediaType;
 
@@ -49,7 +49,7 @@ public class MediaTypes {
             }
         }
 
-        throw new RunCrash(
+        throw new CallCrash(
             "Unexpectedly, Converter did not find " + job + "'s MediaType"
         );
     }

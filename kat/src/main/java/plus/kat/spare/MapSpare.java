@@ -250,7 +250,7 @@ public class MapSpare implements Spare<Map> {
             return new ConcurrentSkipListMap<>();
         }
 
-        throw new RunCrash(
+        throw new CallCrash(
             "Unable to create 'Map' instance of '" + type + "'"
         );
     }
@@ -345,7 +345,7 @@ public class MapSpare implements Spare<Map> {
                     tv = ary[1], supplier
                 );
                 if (v != null && k == null) {
-                    throw new RunCrash(
+                    throw new CallCrash(
                         "Key's spare does not exist"
                     );
                 }

@@ -400,7 +400,7 @@ public interface Supplier {
      * Parse {@link Kat} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws ClassCastException   If {@link T} is not an instance of {@code klass}
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(CharSequence, Job, Event)
@@ -419,7 +419,7 @@ public interface Supplier {
      * Parse {@link Kat} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(Class, Job, Event)
      */
@@ -469,7 +469,7 @@ public interface Supplier {
      * Parse {@link Doc} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(CharSequence, Job, Event)
      */
@@ -487,7 +487,7 @@ public interface Supplier {
      * Parse {@link Doc} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(Class, Job, Event)
      */
@@ -537,7 +537,7 @@ public interface Supplier {
      * Parse {@link Json} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
      * @see Supplier#solve(CharSequence, Job, Event)
      */
@@ -555,7 +555,7 @@ public interface Supplier {
      * Parse {@link Json} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
      * @see Supplier#solve(Class, Job, Event)
      */
@@ -605,7 +605,7 @@ public interface Supplier {
      * Parse {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Job, Event)
      * @since 0.0.2
@@ -621,7 +621,7 @@ public interface Supplier {
         );
 
         if (spare == null) {
-            throw new SolverCrash(
+            throw new CallCrash(
                 "No spare of " + klass
             );
         }
@@ -634,7 +634,7 @@ public interface Supplier {
      * Parse {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Job, Event)
      * @since 0.0.2
@@ -650,7 +650,7 @@ public interface Supplier {
             Reflect.lookup(type, this);
 
         if (spare == null) {
-            throw new SolverCrash(
+            throw new CallCrash(
                 "No spare of " + type
             );
         }
@@ -665,7 +665,7 @@ public interface Supplier {
      * Parse {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash          If parsing fails or the result is null
+     * @throws CallCrash            If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Job, Event)
      * @since 0.0.2
@@ -679,7 +679,7 @@ public interface Supplier {
         Spare<E> spare = lookup(klass);
 
         if (spare == null) {
-            throw new SolverCrash(
+            throw new CallCrash(
                 "No spare of " + klass
             );
         }
@@ -849,7 +849,7 @@ public interface Supplier {
                     spare = p.lookup(
                         parent, name, this
                     );
-                } catch (RunCrash e) {
+                } catch (CallCrash e) {
                     return null;
                 } catch (Exception e) {
                     continue;

@@ -2,11 +2,11 @@ package plus.kat;
 
 import org.junit.jupiter.api.Test;
 import plus.kat.anno.Expose;
-import plus.kat.chain.Value;
-import plus.kat.crash.IOCrash;
-import plus.kat.crash.UnexpectedCrash;
-import plus.kat.spare.Property;
+import plus.kat.chain.*;
+import plus.kat.crash.*;
+import plus.kat.spare.*;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
@@ -145,7 +145,7 @@ public class SpareTest {
             public CharSequence read(
                 Flag flag,
                 Value value
-            ) throws IOCrash {
+            ) throws IOException {
                 Type type = value.getType();
 
                 if (type == String.class) {
@@ -162,7 +162,7 @@ public class SpareTest {
                     );
                 }
 
-                throw new UnexpectedCrash();
+                throw new UnexpectedCrash("Error");
             }
         };
 

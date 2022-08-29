@@ -594,14 +594,14 @@ public class Event<T> implements Flag {
     /**
      * Returns the specified {@link Spare} being used
      *
-     * @throws IOCrash If the specified coder was not found
+     * @throws IOException If the specified coder was not found
      * @since 0.0.3
      */
     @NotNull
     public Spare<?> getSpare(
         @NotNull Space space,
         @NotNull Alias alias
-    ) throws IOCrash {
+    ) throws IOException {
         this.alias = alias;
         if (spare != null) {
             return spare;

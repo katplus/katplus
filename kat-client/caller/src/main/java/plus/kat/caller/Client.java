@@ -356,7 +356,7 @@ public class Client extends Caller {
                 );
             }
             default: {
-                throw new RunCrash(
+                throw new CallCrash(
                     "Unexpectedly, Client does not support " + job
                 );
             }
@@ -415,7 +415,7 @@ public class Client extends Caller {
                 );
             }
             default: {
-                throw new RunCrash(
+                throw new CallCrash(
                     "Unexpectedly, Client does not support " + job
                 );
             }
@@ -425,7 +425,7 @@ public class Client extends Caller {
     /**
      * Returns the specified {@link Job}
      *
-     * @throws RunCrash If no specified job
+     * @throws CallCrash If no specified job
      */
     @NotNull
     @Override
@@ -438,7 +438,7 @@ public class Client extends Caller {
         String type = contentType();
         if (type == null ||
             type.length() < 7) {
-            throw new RunCrash(
+            throw new CallCrash(
                 "The content type(" + type + ") is illegal"
             );
         }
@@ -470,7 +470,7 @@ public class Client extends Caller {
             }
         }
 
-        throw new RunCrash(
+        throw new CallCrash(
             "Could not find the specified Job of " + type
         );
     }
@@ -812,7 +812,7 @@ public class Client extends Caller {
             conn.getHeaderField(0);
         if (status == null) {
             if (crash == null) {
-                throw new IOCrash();
+                throw new IOException();
             }
             if (crash instanceof IOException) {
                 throw (IOException) crash;
@@ -822,14 +822,14 @@ public class Client extends Caller {
         }
 
         if (!status.startsWith("HTTP/1.")) {
-            throw new IOCrash(
+            throw new UnexpectedCrash(
                 "Not support status(" + status + ") currently"
             );
         }
 
         int index = status.indexOf(' ');
         if (index < 0) {
-            throw new IOCrash(
+            throw new UnexpectedCrash(
                 "Response status(" + status + ") is incomplete"
             );
         }
@@ -861,13 +861,13 @@ public class Client extends Caller {
             if (dig < 0 ||
                 num < mul ||
                 dig >= 10) {
-                throw new IOCrash(
+                throw new UnexpectedCrash(
                     "Status(" + status + ": '" + (char) dig + "')"
                 );
             }
             num *= 10;
             if (num < lim + dig) {
-                throw new IOCrash(
+                throw new UnexpectedCrash(
                     "Status(" + status + ": " + -num + ")  is out of range"
                 );
             }

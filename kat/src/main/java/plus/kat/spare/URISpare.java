@@ -22,10 +22,8 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.*;
+import java.net.*;
 
 /**
  * @author kraity
@@ -93,7 +91,7 @@ public class URISpare extends Property<URI> {
     public URI read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         if (value.isEmpty()) {
             return null;
         }

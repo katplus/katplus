@@ -133,7 +133,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
     /**
      * Returns the next element
      *
-     * @throws RunCrash if the iteration has no more elements
+     * @throws CallCrash if the iteration has no more elements
      */
     @Override
     public T next() {
@@ -142,7 +142,9 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
         );
 
         if (offset <= index) {
-            throw new RunCrash();
+            throw new CallCrash(
+                offset + " <= " + index
+            );
         }
 
         Class<?> clazz;
@@ -158,13 +160,13 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                 klass, false, classLoader
             );
         } catch (ClassNotFoundException e) {
-            throw new RunCrash(
+            throw new CallCrash(
                 service.getName() + ": Provider '" + klass + "' not found", e
             );
         }
 
         if (!service.isAssignableFrom(clazz)) {
-            throw new RunCrash(
+            throw new CallCrash(
                 service.getName() + ": Provider '" + klass + "' not a subtype"
             );
         }
@@ -174,7 +176,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                 clazz.newInstance()
             );
         } catch (Throwable e) {
-            throw new RunCrash(
+            throw new CallCrash(
                 service.getName() + ": Provider '" + klass + "' could not be instantiated ", e
             );
         }
@@ -228,7 +230,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
     public KatLoader<T> subSequence(
         int start, int end
     ) {
-        throw new RunCrash(
+        throw new CallCrash(
             "Unsupported Operation"
         );
     }

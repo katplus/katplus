@@ -206,7 +206,7 @@ public class SetSpare implements Spare<Set> {
             return new HashSet<>();
         }
 
-        throw new RunCrash(
+        throw new CallCrash(
             "Unable to create 'Set' instance of '" + type + "'"
         );
     }

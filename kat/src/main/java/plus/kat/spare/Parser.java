@@ -109,7 +109,7 @@ public class Parser implements Pipe, Closeable {
             event.getReader();
 
         if (reader == null) {
-            throw new SolverCrash(
+            throw new CallCrash(
                 "Reader is null"
             );
         }
@@ -181,7 +181,7 @@ public class Parser implements Pipe, Closeable {
                 );
             }
             default: {
-                throw new RunCrash(
+                throw new CallCrash(
                     "Unexpectedly, Parser did not find " + job + "'s Solver"
                 );
             }
@@ -197,7 +197,7 @@ public class Parser implements Pipe, Closeable {
         @NotNull Alias alias
     ) throws IOException {
         if (depth >= range) {
-            throw new OutOfRangeCrash(
+            throw new UnexpectedCrash(
                 "Parse depth out of range"
             );
         }
@@ -271,7 +271,7 @@ public class Parser implements Pipe, Closeable {
     public boolean detach()
         throws IOException {
         if (--depth < 0) {
-            throw new OutOfRangeCrash(
+            throw new UnexpectedCrash(
                 "Parse depth out of range"
             );
         }

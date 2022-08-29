@@ -21,7 +21,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.utils.Casting;
+import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -137,7 +137,7 @@ public class BitSetSpare implements Spare<BitSet> {
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
-        ) throws IOCrash {
+        ) {
             // NOOP
         }
 
@@ -145,7 +145,7 @@ public class BitSetSpare implements Spare<BitSet> {
         public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
-        ) throws IOCrash {
+        ) throws IOException {
             throw new UnexpectedCrash(
                 "Unexpectedly, invalid BitSet value type '" + space + "'"
             );

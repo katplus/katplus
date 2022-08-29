@@ -404,13 +404,13 @@ public final class Space extends Chain implements Type {
     }
 
     /**
-     * @throws RunCrash Not support
+     * @throws CallCrash Not support
      */
     @Override
     public void setType(
         @Nullable Type type
     ) {
-        throw new RunCrash(
+        throw new CallCrash(
             "Unexpectedly, not support"
         );
     }
@@ -512,7 +512,7 @@ public final class Space extends Chain implements Type {
                 return result;
             }
 
-            throw new RunCrash(
+            throw new CallCrash(
                 "Unexpectedly, Exceeding range '" + RANGE + "' in space"
             );
         }

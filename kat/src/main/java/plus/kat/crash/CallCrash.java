@@ -19,7 +19,7 @@ package plus.kat.crash;
  * @author kraity
  * @since 0.0.4
  */
-public class CallCrash extends RunCrash {
+public class CallCrash extends RuntimeException {
     /**
      * @param m the detail message
      */
@@ -31,7 +31,15 @@ public class CallCrash extends RunCrash {
      * @param e the cause saved for later retrieval by the {@link #getCause()} method
      */
     public CallCrash(Throwable e) {
-        super(e);
+        super(e.getMessage(), e, false, false);
+    }
+
+    /**
+     * @param m the detail message
+     * @param t enable suppression and writing stack trace
+     */
+    public CallCrash(String m, boolean t) {
+        super(m, null, t, t);
     }
 
     /**
@@ -39,6 +47,16 @@ public class CallCrash extends RunCrash {
      * @param e the cause saved for later retrieval by the {@link #getCause()} method
      */
     public CallCrash(String m, Throwable e) {
-        super(m, e);
+        super(m, e, false, false);
+    }
+
+    /**
+     * @param m the detail message
+     * @param e the cause saved for later retrieval by the {@link #getCause()} method
+     * @param a whether suppression is enabled or disabled
+     * @param b whether the stack trace should be writable
+     */
+    public CallCrash(String m, Throwable e, boolean a, boolean b) {
+        super(m, e, a, b);
     }
 }

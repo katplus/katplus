@@ -19,18 +19,18 @@ package plus.kat.crash;
  * @author kraity
  * @since 0.0.4
  */
-public class SolverCrash extends RunCrash {
+public class UnsupportedCrash extends CallCrash {
     /**
      * @param m the detail message
      */
-    public SolverCrash(String m) {
+    public UnsupportedCrash(String m) {
         super(m);
     }
 
     /**
      * @param e the cause saved for later retrieval by the {@link #getCause()} method
      */
-    public SolverCrash(Throwable e) {
+    public UnsupportedCrash(Throwable e) {
         super(e);
     }
 
@@ -38,7 +38,7 @@ public class SolverCrash extends RunCrash {
      * @param m the detail message
      * @param e the cause saved for later retrieval by the {@link #getCause()} method
      */
-    public SolverCrash(String m, Throwable e) {
+    public UnsupportedCrash(String m, Throwable e) {
         super(m, e);
     }
 }

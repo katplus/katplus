@@ -20,7 +20,6 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
@@ -100,7 +99,7 @@ public class UUIDSpare extends Property<UUID> {
     public UUID read(
         @NotNull Flag flag,
         @NotNull Alias alias
-    ) throws IOCrash {
+    ) throws IOException {
         return parse(alias);
     }
 
@@ -108,7 +107,7 @@ public class UUIDSpare extends Property<UUID> {
     public UUID read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) throws IOCrash {
+    ) throws IOException {
         return parse(value);
     }
 
@@ -153,7 +152,7 @@ public class UUIDSpare extends Property<UUID> {
 
     private static long hex(
         Chain c, int i, int o
-    ) throws IOCrash {
+    ) throws IOException {
         long d = Binary.hex(
             c.at(i++)
         );
@@ -169,7 +168,7 @@ public class UUIDSpare extends Property<UUID> {
     @Nullable
     public static UUID parse(
         @NotNull Chain c
-    ) throws IOCrash {
+    ) throws IOException {
         int len = c.length();
         if (len < 8 ||
             len > 36) {

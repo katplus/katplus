@@ -136,7 +136,7 @@ public interface Kat {
      * Parse {@link Kat} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws SolverCrash If parsing fails
+     * @throws CallCrash If parsing fails
      * @see Spare#solve(Job, Event)
      */
     @Nullable
@@ -155,7 +155,7 @@ public interface Kat {
      * Parse {@link Kat} {@link CharSequence}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash If parsing fails
+     * @throws CallCrash If parsing fails
      * @see Spare#solve(Job, Event)
      */
     @Nullable
@@ -174,7 +174,7 @@ public interface Kat {
      * Parse {@link Kat} byte array
      *
      * @param text specify the {@code text} to be parsed
-     * @throws SolverCrash If parsing fails
+     * @throws CallCrash If parsing fails
      * @see Supplier#read(Class, Event)
      */
     @Nullable
@@ -196,7 +196,7 @@ public interface Kat {
      * Parse {@link Kat} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws SolverCrash If parsing fails
+     * @throws CallCrash If parsing fails
      * @see Supplier#read(Class, Event)
      */
     @Nullable
@@ -218,7 +218,7 @@ public interface Kat {
      * Parse {@link Kat} {@link CharSequence}
      *
      * @param event specify the {@code event} to be handled
-     * @throws SolverCrash If parsing fails
+     * @throws CallCrash If parsing fails
      * @see Supplier#read(Class, Event)
      */
     @Nullable

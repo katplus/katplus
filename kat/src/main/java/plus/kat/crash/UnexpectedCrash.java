@@ -15,18 +15,13 @@
  */
 package plus.kat.crash;
 
+import java.io.IOException;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class UnexpectedCrash extends IOCrash {
-    /**
-     * default
-     */
-    public UnexpectedCrash() {
-        super();
-    }
-
+public class UnexpectedCrash extends IOException {
     /**
      * @param m the detail message
      */
