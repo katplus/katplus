@@ -35,6 +35,14 @@ public interface Target {
     Class<?> getType();
 
     /**
+     * Returns the {@link Type} of {@link Target}
+     */
+    @NotNull
+    default Type getRawType() {
+        return getType();
+    }
+
+    /**
      * Returns the index of {@link Target}
      */
     default int getIndex() {
@@ -47,13 +55,5 @@ public interface Target {
     @Nullable
     default Coder<?> getCoder() {
         return null;
-    }
-
-    /**
-     * Returns the {@link Type} of {@link Target}
-     */
-    @NotNull
-    default Type getActualType() {
-        return getType();
     }
 }

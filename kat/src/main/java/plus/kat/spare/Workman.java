@@ -40,10 +40,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     protected Provider provider;
     protected Supplier supplier;
 
-    protected int flags;
-    protected Node<T>[] table;
-    protected Node<T> head, tail;
+    protected Node<T, ?>[] table;
+    protected Node<T, ?> head, tail;
 
+    protected int flags;
     protected final String space;
     protected final Class<T> klass;
 
@@ -171,7 +171,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        Node<T> node = head;
+        Node<T, ?> node = head;
         while (node != null) {
             Object val = node.call(value);
             if (val == null) {
@@ -218,7 +218,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         @NotNull Visitor visitor
     ) {
         assert bean != null;
-        Node<T> node = head;
+        Node<T, ?> node = head;
         while (node != null) {
             Object val = node.apply(bean);
             if (val != null || node.nullable) {
@@ -242,7 +242,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     @SuppressWarnings("unchecked")
     public boolean setup(
         @NotNull String key,
-        @NotNull Node<T> node
+        @NotNull Node<T, ?> node
     ) {
         if (node.key != null) {
             throw new CallCrash(
@@ -250,13 +250,13 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             );
         }
 
-        Node<T>[] tab = table;
+        Node<T, ?>[] tab = table;
         if (tab == null) {
             tab = table = new Node[6];
         }
 
         int i, hash = key.hashCode() & 0xFFFF;
-        Node<T> e = tab[i = (hash % tab.length)];
+        Node<T, ?> e = tab[i = (hash % tab.length)];
 
         if (e == null) {
             tab[i] = node;
@@ -285,8 +285,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             tail.later = node;
             tail = node;
         } else {
-            Node<T> m = head;
-            Node<T> n = null;
+            Node<T, ?> m = head;
+            Node<T, ?> n = null;
 
             while (true) {
                 if (m.index < 0) {
@@ -328,13 +328,13 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     public Getter<T, ?> get(
         @NotNull Object key
     ) {
-        Node<T>[] tab = table;
+        Node<T, ?>[] tab = table;
         if (tab == null) {
             return null;
         }
 
         int h = key.hashCode() & 0xFFFF;
-        Node<T> e = tab[h % tab.length];
+        Node<T, ?> e = tab[h % tab.length];
 
         while (e != null) {
             if (e.hash == h &&
@@ -364,7 +364,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             return null;
         }
 
-        Node<T> node = head;
+        Node<T, ?> node = head;
         while (node != null) {
             if (index == 0) {
                 return node;
@@ -383,13 +383,13 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     public boolean contains(
         @NotNull Object key
     ) {
-        Node<T>[] tab = table;
+        Node<T, ?>[] tab = table;
         if (tab == null) {
             return false;
         }
 
         int h = key.hashCode() & 0xFFFF;
-        Node<T> e = tab[h % tab.length];
+        Node<T, ?> e = tab[h % tab.length];
 
         while (e != null) {
             if (e.hash == h &&
@@ -718,8 +718,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     public static class Iter<K>
         implements Spoiler {
 
-        protected Node<K> node;
-        protected Node<K> next;
+        protected Node<K, ?> node;
+        protected Node<K, ?> next;
 
         protected K bean;
         protected Workman<K> workman;
@@ -745,7 +745,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
 
         @Override
         public boolean hasNext() {
-            Node<K> n = next;
+            Node<K, ?> n = next;
             if (n != null) {
                 node = n;
                 next = n.later;
@@ -761,8 +761,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @since 0.0.2
      */
     public static class Item
-        extends Entry<Object, Item>
-        implements Target {
+        extends Entry<Object, Item> implements Target {
 
         protected Type actual;
         protected Class<?> klass;
@@ -773,7 +772,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         /**
          * @param index the specified {@code index}
          */
-        protected Item(
+        public Item(
             int index
         ) {
             this.index = index;
@@ -792,32 +791,11 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
 
         /**
-         * @since 0.0.3
-         */
-        public Item(
-            @NotNull int index, @NotNull Class<?> klass,
-            @NotNull Type type, @Nullable Coder<?> coder
-        ) {
-            this.index = index;
-            this.coder = coder;
-            this.klass = klass;
-            this.actual = type;
-        }
-
-        /**
          * Returns the index of {@link Item}
          */
         @Override
         public int getIndex() {
             return index;
-        }
-
-        /**
-         * Returns the {@link Coder} of {@link Item}
-         */
-        @Override
-        public Coder<?> getCoder() {
-            return coder;
         }
 
         /**
@@ -829,11 +807,61 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
 
         /**
+         * Sets the {@code klass} of {@link Item}
+         *
+         * @param type the specified type
+         * @since 0.0.4
+         */
+        public void setType(
+            @NotNull Class<?> type
+        ) {
+            if (type != null) {
+                klass = type;
+            }
+        }
+
+        /**
          * Returns the {@link Type} of {@link Item}
          */
         @Override
-        public Type getActualType() {
+        public Type getRawType() {
             return actual;
+        }
+
+        /**
+         * Sets the {@code actual} of {@link Item}
+         *
+         * @param type the specified type
+         * @since 0.0.4
+         */
+        public void setRawType(
+            @NotNull Type type
+        ) {
+            if (type != null) {
+                actual = type;
+            }
+        }
+
+        /**
+         * Returns the {@link Coder} of {@link Item}
+         */
+        @Override
+        public Coder<?> getCoder() {
+            return coder;
+        }
+
+        /**
+         * Sets the {@code coder} of {@link Item}
+         *
+         * @param target the specified coder
+         * @since 0.0.4
+         */
+        public void setCoder(
+            @NotNull Coder<?> target
+        ) {
+            if (target != null) {
+                coder = target;
+            }
         }
     }
 
@@ -841,14 +869,14 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @author kraity
      * @since 0.0.2
      */
-    public static abstract class Node<E>
-        extends Item implements Getter<E, Object> {
+    public static abstract class Node<K, V>
+        extends Item implements Setter<K, V>, Getter<K, V> {
 
         private int hash;
         private String key;
 
-        private Node<E> next;
-        private Node<E> later;
+        private Node<K, ?> next;
+        private Node<K, ?> later;
 
         protected boolean nullable;
         protected boolean unwrapped;
@@ -866,7 +894,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
          * @param node the specified {@link Node}
          */
         protected Node(
-            Node<?> node
+            Node<?, ?> node
         ) {
             super(node);
             this.nullable = node.nullable;

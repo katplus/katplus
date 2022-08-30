@@ -679,7 +679,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
             if (coder != null) {
                 value.setType(
-                    target.getActualType()
+                    target.getRawType()
                 );
                 onAccept(
                     target, coder.read(
@@ -699,7 +699,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
                 if (spare != null) {
                     value.setType(
-                        target.getActualType()
+                        target.getRawType()
                     );
                     onAccept(
                         target, spare.read(
@@ -714,7 +714,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 // skip if null
                 if (spare != null) {
                     value.setType(
-                        target.getActualType()
+                        target.getRawType()
                     );
                     onAccept(
                         target, spare.read(
@@ -731,7 +731,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 if (spare != null &&
                     spare.accept(klass)) {
                     value.setType(
-                        target.getActualType()
+                        target.getRawType()
                     );
                     onAccept(
                         target, spare.read(
@@ -757,7 +757,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
 
             if (coder != null) {
                 return coder.getBuilder(
-                    target.getActualType()
+                    target.getRawType()
                 );
             }
 
@@ -772,7 +772,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 // skip if null
                 if (spare != null) {
                     return spare.getBuilder(
-                        target.getActualType()
+                        target.getRawType()
                     );
                 }
             } else {
@@ -782,7 +782,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 // skip if null
                 if (spare != null) {
                     return spare.getBuilder(
-                        target.getActualType()
+                        target.getRawType()
                     );
                 }
 
@@ -793,7 +793,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 if (spare != null &&
                     spare.accept(klass)) {
                     return spare.getBuilder(
-                        target.getActualType()
+                        target.getRawType()
                     );
                 }
             }

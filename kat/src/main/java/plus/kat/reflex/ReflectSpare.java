@@ -592,22 +592,29 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     }
                 }
 
-                Coder<?> coder;
+                Item item = new Item(i);
+                item.setRawType(ts[i]);
                 Class<?> type = args[i];
+
                 if (type.isPrimitive()) {
-                    type = Reflect.wrap(type);
-                    coder = Reflect.activate(expose, supplier);
+                    item.setType(
+                        Reflect.wrap(type)
+                    );
+                    item.setCoder(
+                        Reflect.activate(expose, supplier)
+                    );
                 } else {
+                    item.setType(type);
                     if (format != null) {
-                        coder = Reflect.activate(type, format);
+                        item.setCoder(
+                            Reflect.activate(type, format)
+                        );
                     } else {
-                        coder = Reflect.activate(expose, supplier);
+                        item.setCoder(
+                            Reflect.activate(expose, supplier)
+                        );
                     }
                 }
-
-                Item item = new Item(
-                    i, type, ts[i], coder
-                );
 
                 if (expose == null) {
                     if (ps == null) {
@@ -632,8 +639,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
      * @author kraity
      * @since 0.0.3
      */
-    public static class Task<K>
-        extends Node<K> implements Setter<K, Object> {
+    public static class Task<K> extends Node<K, Object> {
 
         final MethodHandle getter;
         final MethodHandle setter;

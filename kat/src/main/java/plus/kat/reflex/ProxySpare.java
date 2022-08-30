@@ -224,9 +224,7 @@ public final class ProxySpare extends Workman<Object> {
      * @author kraity
      * @since 0.0.3
      */
-    public static class Task
-        extends Node<Object>
-        implements Setter<Object, Object> {
+    public static class Task extends Node<Object, Object> {
 
         final String alias;
         final Method method;

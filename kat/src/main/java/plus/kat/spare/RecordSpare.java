@@ -150,28 +150,34 @@ public final class RecordSpare<T> extends Workman<T> {
                         Expose.class
                     );
 
-                Coder<?> coder;
+                Item item = new Item(width++);
                 Class<?> type = field.getType();
+                item.setRawType(field.getGenericType());
+
                 if (type.isPrimitive()) {
-                    type = Reflect.wrap(type);
-                    coder = Reflect.activate(e1, supplier);
+                    item.setType(
+                        Reflect.wrap(type)
+                    );
+                    item.setCoder(
+                        Reflect.activate(e1, supplier)
+                    );
                 } else {
+                    item.setType(type);
                     Format f1 = field
                         .getAnnotation(
                             Format.class
                         );
 
                     if (f1 != null) {
-                        coder = Reflect.activate(type, f1);
+                        item.setCoder(
+                            Reflect.activate(type, f1)
+                        );
                     } else {
-                        coder = Reflect.activate(e1, supplier);
+                        item.setCoder(
+                            Reflect.activate(e1, supplier)
+                        );
                     }
                 }
-
-                Item item = new Item(
-                    width++, type,
-                    field.getGenericType(), coder
-                );
 
                 String name = field.getName();
                 if (e1 == null) {
