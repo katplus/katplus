@@ -505,20 +505,22 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
     public static class Iter<K, V>
         implements Iterator<Entry<K, V>> {
 
-        int index;
-        Entry<K, V> next;
-        final KatMap<K, V> map;
+        private int index;
+        private Entry<K, V> next;
+        private Entry<K, V>[] table;
 
         public Iter(
             KatMap<K, V> map
         ) {
-            this.map = map;
-            Entry<K, V>[] t = map.table;
-            if (t != null && map.size > 0) do {
-                // Nothing
-            } while (
-                index < t.length && (next = t[index++]) == null
-            );
+            if (map != null) {
+                Entry<K, V>[] t = map.table;
+                if (t != null && map.size > 0) {
+                    table = t;
+                    while (index < t.length) {
+                        if ((next = t[index++]) != null) break;
+                    }
+                }
+            }
         }
 
         @Override
@@ -532,12 +534,10 @@ public class KatMap<K, V> implements Iterable<KatMap.Entry<K, V>> {
             next = node.next;
 
             if (next == null) {
-                Entry<K, V>[] t = map.table;
-                if (t != null) do {
-                    // Nothing
-                } while (
-                    index < t.length && (next = t[index++]) == null
-                );
+                Entry<K, V>[] t = table;
+                while (index < t.length) {
+                    if ((next = t[index++]) != null) break;
+                }
             }
 
             return node;
