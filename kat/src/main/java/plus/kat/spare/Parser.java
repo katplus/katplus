@@ -351,14 +351,7 @@ public class Parser implements Pipe, Closeable {
      * @author kraity
      * @since 0.0.1
      */
-    public static class Group {
-
-        private int grow;
-        private final int size;
-        private final boolean block;
-
-        private volatile int count;
-        private final Object[] group;
+    public static class Group extends KatPool<Parser> {
 
         /**
          * default cluster
@@ -367,73 +360,30 @@ public class Parser implements Pipe, Closeable {
             INS = new Group();
 
         public Group() {
-            this(Config.get(
+            super(Config.get(
                 "kat.parser.capacity", 16
             ), Config.get(
                 "kat.parser.block", true
             ));
         }
 
-        public Group(
-            int size, boolean block
-        ) {
-            this.size = size;
-            this.block = block;
-            this.group = new Object[size];
-        }
-
-        @NotNull
-        public Parser borrow() {
-            synchronized (this) {
-                while (true) {
-                    if (count != 0) {
-                        Parser f = (Parser)
-                            group[--count];
-                        group[count] = null;
-
-                        if (f != null) {
-                            if (f.lock()) {
-                                return f;
-                            } else {
-                                continue;
-                            }
-                        }
-                    }
-
-                    if (block) {
-                        if (grow < size) {
-                            grow++;
-                            break;
-                        } else try {
-                            wait(1000);
-                        } catch (Exception e) {
-                            grow++;
-                            break;
-                        }
-                    } else {
-                        grow++;
-                        break;
-                    }
-                }
-            }
-
+        @Override
+        public Parser make() {
             return new Parser();
         }
 
-        public void retreat(
-            @Nullable Parser f
+        @Override
+        public boolean lock(
+            Parser target
         ) {
-            if (f != null &&
-                count < size && f.unlock()) {
-                synchronized (this) {
-                    if (count < size) {
-                        group[count++] = f;
-                        if (block) {
-                            notify();
-                        }
-                    }
-                }
-            }
+            return target.lock();
+        }
+
+        @Override
+        public boolean unlock(
+            Parser target
+        ) {
+            return target.unlock();
         }
     }
 }
