@@ -360,7 +360,7 @@ public class Query extends Chain {
         @NotNull Map<String, String> map
     ) {
         int i = offset();
-        Value val = new Value();
+        Value val = null;
 
         while (true) {
             int k = indexOf(
@@ -368,6 +368,9 @@ public class Query extends Chain {
             );
             if (k == -1) {
                 break;
+            }
+            if (val == null) {
+                val = new Value();
             }
 
             val.slip(0);
@@ -388,6 +391,65 @@ public class Query extends Chain {
             );
 
             i = v + 1;
+            map.put(
+                key, val.toString()
+            );
+        }
+        return map;
+    }
+
+    /**
+     * Returns the {@code url} as a {@link HashMap}
+     */
+    @NotNull
+    public static Map<String, String> toMap(
+        @NotNull String url
+    ) {
+        return toMap(
+            url, new HashMap<>()
+        );
+    }
+
+    /**
+     * Returns the {@code url} as a {@link HashMap}
+     */
+    @NotNull
+    public static Map<String, String> toMap(
+        @NotNull String url,
+        @NotNull Map<String, String> map
+    ) {
+        Value val = null;
+        int i = url.indexOf('?');
+
+        while (true) {
+            int k = url.indexOf(
+                (byte) '=', ++i
+            );
+            if (k == -1) {
+                break;
+            }
+            if (val == null) {
+                val = new Value();
+            }
+
+            val.slip(0);
+            val.uniform(
+                url, i, k
+            );
+            String key = val.toString();
+
+            int v = url.indexOf(
+                (byte) '&', ++k
+            );
+            if (v == -1) {
+                v = url.length();
+            }
+            val.slip(0);
+            val.uniform(
+                url, k, v
+            );
+
+            i = v;
             map.put(
                 key, val.toString()
             );

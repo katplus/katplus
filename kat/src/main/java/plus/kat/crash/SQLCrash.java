@@ -15,13 +15,20 @@
  */
 package plus.kat.crash;
 
+import plus.kat.anno.NotNull;
+import plus.kat.anno.Nullable;
+
+import plus.kat.*;
+import plus.kat.chain.*;
+
+import java.io.IOException;
 import java.sql.SQLException;
 
 /**
  * @author kraity
  * @since 0.0.3
  */
-public class SQLCrash extends SQLException {
+public class SQLCrash extends SQLException implements Kat {
     /**
      * default
      */
@@ -49,5 +56,26 @@ public class SQLCrash extends SQLException {
      */
     public SQLCrash(String m, Throwable e) {
         super(m, e);
+    }
+
+    /**
+     * Returns the space of this
+     */
+    @Nullable
+    @Override
+    public Space space() {
+        return Space.$E;
+    }
+
+    /**
+     * @param chan the specified chan
+     */
+    @Override
+    public void coding(
+        @NotNull Chan chan
+    ) throws IOException {
+        chan.set(
+            "message", getMessage()
+        );
     }
 }

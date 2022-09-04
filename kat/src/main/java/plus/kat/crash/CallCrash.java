@@ -15,11 +15,19 @@
  */
 package plus.kat.crash;
 
+import plus.kat.anno.NotNull;
+import plus.kat.anno.Nullable;
+
+import plus.kat.*;
+import plus.kat.chain.*;
+
+import java.io.IOException;
+
 /**
  * @author kraity
  * @since 0.0.4
  */
-public class CallCrash extends RuntimeException {
+public class CallCrash extends RuntimeException implements Kat {
     /**
      * @param m the detail message
      */
@@ -58,5 +66,26 @@ public class CallCrash extends RuntimeException {
      */
     public CallCrash(String m, Throwable e, boolean a, boolean b) {
         super(m, e, a, b);
+    }
+
+    /**
+     * Returns the space of this
+     */
+    @Nullable
+    @Override
+    public Space space() {
+        return Space.$E;
+    }
+
+    /**
+     * @param chan the specified chan
+     */
+    @Override
+    public void coding(
+        @NotNull Chan chan
+    ) throws IOException {
+        chan.set(
+            "message", getMessage()
+        );
     }
 }
