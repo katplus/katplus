@@ -24,9 +24,12 @@ import plus.kat.stream.*;
 import plus.kat.utils.*;
 
 import javax.crypto.spec.*;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
+import static plus.kat.stream.Binary.hex;
 
 /**
  * @author kraity
@@ -391,6 +394,112 @@ public class Value extends Chain {
                 int o = data[i++] & 0xFF;
                 it[count++] = Binary.lower(o >> 4);
                 it[count++] = Binary.lower(o & 0xF);
+            }
+        }
+    }
+
+    /**
+     * Appends the URL to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.uniform(new byte[]{'k', '=', '%', '7', '6'}, 0, 8); // k=v
+     * }</pre>
+     *
+     * @param data the specified URL
+     * @param i    the specified index
+     * @param o    the specified offset
+     * @throws UnsupportedCrash               If an unsupported encoded character appears
+     * @throws ArrayIndexOutOfBoundsException If the {@code index} or {@code length} ou of range
+     * @since 0.0.4
+     */
+    public void uniform(
+        byte[] data, int i, int o
+    ) {
+        if (data != null) {
+            while (i < o) {
+                byte b = data[i++];
+
+                if (b == '+') {
+                    chain(
+                        (byte) 0x20
+                    );
+                    continue;
+                }
+
+                if (b != '%') {
+                    chain(b);
+                    continue;
+                }
+
+                if (i + 1 < o) {
+                    try {
+                        byte d;
+                        d = (byte) hex(
+                            data[i++]
+                        );
+                        d <<= 4;
+                        d |= (byte) hex(
+                            data[i++]
+                        );
+                        chain(d);
+                    } catch (IOException e) {
+                        throw new UnsupportedCrash(e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Appends the URL to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.uniform("k=%76", 0, 5); // k=v
+     * }</pre>
+     *
+     * @param c the specified URL
+     * @param i the specified index
+     * @param o the specified offset
+     * @throws UnsupportedCrash               If an unsupported encoded character appears
+     * @throws ArrayIndexOutOfBoundsException If the {@code index} or {@code length} ou of range
+     * @since 0.0.4
+     */
+    public void uniform(
+        CharSequence c, int i, int o
+    ) {
+        if (c != null) {
+            while (i < o) {
+                char b = c.charAt(i++);
+
+                if (b == '+') {
+                    chain(
+                        (byte) 0x20
+                    );
+                    continue;
+                }
+
+                if (b != '%') {
+                    chain(b);
+                    continue;
+                }
+
+                if (i + 1 < o) {
+                    try {
+                        byte d;
+                        d = (byte) hex(
+                            (byte) c.charAt(i++)
+                        );
+                        d <<= 4;
+                        d |= (byte) hex(
+                            (byte) c.charAt(i++)
+                        );
+                        chain(d);
+                    } catch (IOException e) {
+                        throw new UnsupportedCrash(e);
+                    }
+                }
             }
         }
     }

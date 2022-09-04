@@ -15,6 +15,7 @@ public class QueryTest {
         query.set("id", 1);
         query.set("name", "陆之岇");
         assertEquals("id=1&name=%E9%99%86%E4%B9%8B%E5%B2%87", query.toString());
+        assertEquals("{name=陆之岇, id=1}", query.toMap().toString());
     }
 
     @Test
@@ -24,6 +25,7 @@ public class QueryTest {
         query.set("tag", "kat");
         query.set("name", "陆之岇");
         assertEquals("id=1&tag=kat&name=%E9%99%86%E4%B9%8B%E5%B2%87", query.toString());
+        assertEquals("{name=陆之岇, id=1, tag=kat}", query.toMap().toString());
     }
 
     @Test
@@ -34,6 +36,7 @@ public class QueryTest {
         query.set("id", 1);
         query.set("tag", "kat");
         assertEquals("https://kat.plus/test/user?id=1&tag=kat", query.toString());
+        assertEquals("{id=1, tag=kat}", query.toMap().toString());
     }
 
     @Test
@@ -44,5 +47,6 @@ public class QueryTest {
         query.set("id", 1);
         query.set("tag", "kat");
         assertEquals("https://kat.plus/test/user?do=get&id=1&tag=kat", query.toString());
+        assertEquals("{do=get, id=1, tag=kat}", query.toMap().toString());
     }
 }

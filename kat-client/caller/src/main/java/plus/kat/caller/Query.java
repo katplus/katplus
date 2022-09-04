@@ -3,10 +3,12 @@ package plus.kat.caller;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.chain.*;
 import plus.kat.kernel.*;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 import static plus.kat.stream.Binary.upper;
 
@@ -16,6 +18,8 @@ import static plus.kat.stream.Binary.upper;
  */
 @SuppressWarnings("deprecation")
 public class Query extends Chain {
+
+    protected int offset;
 
     public Query() {
         super(16);
@@ -29,9 +33,7 @@ public class Query extends Chain {
     ) {
         super(src);
         count = value.length;
-        if (!contains((byte) '?')) {
-            super.chain((byte) '?');
-        }
+        if (offset() == 0) offset = -1;
     }
 
     /**
@@ -44,9 +46,7 @@ public class Query extends Chain {
         super.chain(
             url, 0, url.length()
         );
-        if (!contains((byte) '?')) {
-            super.chain((byte) '?');
-        }
+        if (offset() == 0) offset = -1;
     }
 
     /**
@@ -62,6 +62,24 @@ public class Query extends Chain {
         return new Query(
             copyBytes(start, end)
         );
+    }
+
+    /**
+     * Returns the starting index of the parameter
+     */
+    public int offset() {
+        int o = offset;
+        if (o > 0) {
+            return o;
+        }
+        int max = count;
+        byte[] it = value;
+        while (o < max) {
+            if (it[o++] == '?') {
+                return offset = o;
+            }
+        }
+        return 0;
     }
 
     /**
@@ -130,12 +148,17 @@ public class Query extends Chain {
     public Query set(
         @NotNull String key
     ) {
-        int i = count - 1;
-        if (i > 0 &&
-            value[i] != '?') {
-            super.chain(
-                (byte) '&'
-            );
+        if (count > 0) {
+            if (offset != -1) {
+                super.chain(
+                    (byte) '&'
+                );
+            } else {
+                super.chain(
+                    (byte) '?'
+                );
+                offset = count;
+            }
         }
 
         this.add(key);
@@ -317,6 +340,59 @@ public class Query extends Chain {
                 toString()
             )
         );
+    }
+
+    /**
+     * Returns this {@link Query} as a {@link HashMap}
+     */
+    @NotNull
+    public Map<String, String> toMap() {
+        return toMap(
+            new HashMap<>()
+        );
+    }
+
+    /**
+     * Returns this {@link Query} as a {@link HashMap}
+     */
+    @NotNull
+    public Map<String, String> toMap(
+        @NotNull Map<String, String> map
+    ) {
+        int i = offset();
+        Value val = new Value();
+
+        while (true) {
+            int k = indexOf(
+                (byte) '=', i
+            );
+            if (k == -1) {
+                break;
+            }
+
+            val.slip(0);
+            val.uniform(
+                value, i, k
+            );
+            String key = val.toString();
+
+            int v = indexOf(
+                (byte) '&', ++k
+            );
+            if (v == -1) {
+                v = count;
+            }
+            val.slip(0);
+            val.uniform(
+                value, k, v
+            );
+
+            i = v + 1;
+            map.put(
+                key, val.toString()
+            );
+        }
+        return map;
     }
 
     /**

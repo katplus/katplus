@@ -177,6 +177,22 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns a {@link CharSequence} of this {@link Chain}
+     *
+     * @param start the start index, inclusive
+     * @param end   the end index, exclusive
+     */
+    @NotNull
+    @Override
+    public CharSequence subSequence(
+        int start, int end
+    ) {
+        return new String(
+            copyBytes(start, end)
+        );
+    }
+
+    /**
      * Only supports ASCII code comparison
      *
      * @param o the {@link CharSequence} to be compared
