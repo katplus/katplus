@@ -91,22 +91,68 @@ public final class RecordSpare<T> extends Workman<T> {
 
     @Override
     public T apply(
-        @NotNull Supplier supplier,
-        @NotNull ResultSet resultSet
-    ) throws SQLException {
-        return super.apply(
-            supplier, new Object[width], resultSet
-        );
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) throws CallCrash {
+        try {
+            Object[] group = new Object[width];
+            update(
+                group, spoiler, supplier
+            );
+            return apply(
+                Alias.EMPTY, group
+            );
+        } catch (CallCrash e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new CallCrash(
+                "Error creating " + getType(), e
+            );
+        }
     }
 
     @Override
     public T apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        try {
+            Object[] group = new Object[width];
+            update(
+                group, supplier, resultSet
+            );
+            return apply(
+                Alias.EMPTY, group
+            );
+        } catch (SQLException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new SQLCrash(
+                "Error creating " + getType(), e
+            );
+        }
+    }
+
+    @Override
+    public T convert(
         @NotNull Object result,
         @NotNull Supplier supplier
     ) {
-        return super.apply(
-            result, width, supplier
-        );
+        Spoiler spoiler =
+            supplier.flat(result);
+        if (spoiler != null) try {
+            Object[] group = new Object[width];
+            update(
+                group, spoiler, supplier
+            );
+            return apply(
+                Alias.EMPTY, group
+            );
+        } catch (Exception e) {
+            // Nothing
+        }
+
+        return null;
     }
 
     @Override

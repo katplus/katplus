@@ -164,44 +164,106 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
 
     @Override
     public T apply(
-        @NotNull Supplier supplier,
-        @NotNull ResultSet resultSet
-    ) throws SQLException {
-        if (params == null) {
-            return super.apply(
-                supplier, resultSet
-            );
-        } else {
-            if (size() != 0 || master != null) {
-                throw new SQLCrash(
-                    "Not currently supported"
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) throws CallCrash {
+        try {
+            if (params == null) {
+                T bean = apply(Alias.EMPTY);
+                update(
+                    bean, spoiler, supplier
+                );
+                return bean;
+            }
+
+            if (size() == 0 && master == null) {
+                Object[] group = new Object[args.length];
+                update(
+                    group, spoiler, supplier
+                );
+                return apply(
+                    Alias.EMPTY, group
                 );
             }
-            return super.apply(
-                supplier, new Object[args.length], resultSet
+        } catch (CallCrash e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new CallCrash(
+                "Error creating " + getType(), e
             );
         }
+
+        throw new CallCrash(
+            "Not currently supported"
+        );
     }
 
     @Override
     public T apply(
-        @NotNull Object result,
-        @NotNull Supplier supplier
-    ) {
-        if (params == null) {
-            return super.apply(
-                result, supplier
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        try {
+            if (params == null) {
+                T bean = apply(Alias.EMPTY);
+                update(
+                    bean, supplier, resultSet
+                );
+                return bean;
+            }
+
+            if (size() == 0 && master == null) {
+                Object[] group = new Object[args.length];
+                update(
+                    group, supplier, resultSet
+                );
+                return apply(
+                    Alias.EMPTY, group
+                );
+            }
+        } catch (SQLException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new SQLCrash(
+                "Error creating " + getType(), e
             );
         }
 
-        if (size() != 0 ||
-            master != null) {
-            return null;
+        throw new SQLCrash(
+            "Not currently supported"
+        );
+    }
+
+    @Nullable
+    public T convert(
+        @NotNull Object result,
+        @NotNull Supplier supplier
+    ) {
+        Spoiler spoiler =
+            supplier.flat(result);
+        if (spoiler != null) try {
+            if (params == null) {
+                T bean = apply(Alias.EMPTY);
+                update(
+                    bean, spoiler, supplier
+                );
+                return bean;
+            }
+
+            if (size() == 0 && master == null) {
+                Object[] group = new Object[args.length];
+                update(
+                    group, spoiler, supplier
+                );
+                return apply(
+                    Alias.EMPTY, group
+                );
+            }
+        } catch (Exception e) {
+            // Nothing
         }
 
-        return super.apply(
-            result, args.length, supplier
-        );
+        return null;
     }
 
     @Override

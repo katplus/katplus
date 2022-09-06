@@ -83,18 +83,6 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
      */
     @Nullable
     default Target tag(
-        @NotNull Object alias
-    ) {
-        return null;
-    }
-
-    /**
-     * @param alias the alias of target
-     * @see Workman
-     * @since 0.0.4
-     */
-    @Nullable
-    default Target tag(
         @NotNull int index,
         @NotNull Alias alias
     ) {

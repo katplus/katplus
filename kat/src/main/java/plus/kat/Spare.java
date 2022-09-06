@@ -33,10 +33,10 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.*;
 import java.util.*;
+import java.util.Date;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
@@ -109,7 +109,58 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * If {@link K} is a Bean or resultSet only has one element,
+     * If {@link K} is a Bean or spoiler has elements,
+     * then perform a given {@link Spoiler} to create a {@link K}
+     *
+     * @param spoiler the specified {@code spoiler} to be used
+     * @throws CallCrash            If it fails to create
+     * @throws NullPointerException If the {@code result} is null
+     * @see Spare#apply(Spoiler, Supplier)
+     * @see Workman#apply(Spoiler, Supplier)
+     * @see Property#apply(Spoiler, Supplier)
+     * @since 0.0.4
+     */
+    @NotNull
+    default K apply(
+        @NotNull Spoiler spoiler
+    ) throws CallCrash {
+        return apply(
+            spoiler, Impl.INS
+        );
+    }
+
+    /**
+     * If {@link K} is a Bean or spoiler has elements,
+     * then perform a given {@link Spoiler} to create a {@link K}
+     *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  Supplier supplier = ...;
+     *
+     *  User spare = spare.apply(
+     *     supplier.flat(user)
+     *  );
+     * }</pre>
+     *
+     * @param spoiler  the specified {@code spoiler}
+     * @param supplier the specified {@code supplier}
+     * @throws CallCrash            If it fails to create
+     * @throws NullPointerException If the {@code supplier} or {@code resultSet} is null
+     * @see Workman#apply(Spoiler, Supplier)
+     * @since 0.0.4
+     */
+    @NotNull
+    default K apply(
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) throws CallCrash {
+        throw new CallCrash(
+            "Unexpectedly, '" + getType() + "' not a Bean"
+        );
+    }
+
+    /**
+     * If {@link K} is a Bean or resultSet has elements,
      * then perform a given {@link ResultSet} to create a {@link K}
      *
      * @param result the specified {@code resultSet} to be used
@@ -131,7 +182,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * If {@link K} is a Bean or resultSet only has one element,
+     * If {@link K} is a Bean or resultSet has elements,
      * then perform a given {@link ResultSet} to create a {@link K}
      *
      * <pre>{@code
@@ -163,6 +214,28 @@ public interface Spare<K> extends Coder<K> {
         throw new SQLCrash(
             "Unexpectedly, '" + getType() + "' not a Bean"
         );
+    }
+
+    /**
+     * Returns the {@link Setter}
+     * of the specified param name
+     *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  User user = ...
+     *  Target tag = spare.tag("name");
+     * }</pre>
+     *
+     * @param key the param name of the bean
+     * @return {@link Target} or {@code null}
+     * @throws NullPointerException If the key is null
+     * @since 0.0.4
+     */
+    @Nullable
+    default Target tag(
+        @NotNull Object key
+    ) {
+        return null;
     }
 
     /**
@@ -482,6 +555,333 @@ public interface Spare<K> extends Coder<K> {
             );
         }
         return null;
+    }
+
+    /**
+     * Copy the property values of the specified spoiler into the given specified bean
+     *
+     * @return the number of rows affected
+     * @throws NullPointerException If the parameters contains null
+     * @see Spare#update(Object, Spoiler, Supplier)
+     * @since 0.0.4
+     */
+    default int update(
+        @NotNull K entity,
+        @NotNull Spoiler spoiler
+    ) {
+        return update(
+            entity, spoiler, Impl.INS
+        );
+    }
+
+    /**
+     * Copy the property values of the specified spoiler into the given specified bean
+     *
+     * <pre>{@code
+     *  Object source = ...
+     *  Supplier supplier = ...
+     *
+     *  Spare<User> spare = ...
+     *  Spoiler spoiler = supplier.flat(source);
+     *
+     *  User user = new User();
+     *  spare.update(user, spoiler);
+     * }</pre>
+     *
+     * @return the number of rows affected
+     * @throws NullPointerException If the parameters contains null
+     * @since 0.0.4
+     */
+    default int update(
+        @NotNull K entity,
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) {
+        int rows = 0;
+        while (spoiler.hasNext()) {
+            String key = spoiler.getKey();
+            Setter<K, ?> setter = set(key);
+            if (setter == null) {
+                continue;
+            }
+
+            Object val = spoiler.getValue();
+            if (val == null) {
+                continue;
+            }
+
+            Class<?> klass = setter.getType();
+            if (klass.isInstance(val)) {
+                rows++;
+                setter.call(
+                    entity, val
+                );
+                continue;
+            }
+
+            Spare<?> spare = supplier.lookup(klass);
+            if (spare != null) {
+                rows++;
+                setter.call(
+                    entity, spare.cast(
+                        supplier, val
+                    )
+                );
+            }
+        }
+
+        return rows;
+    }
+
+    /**
+     * Copy the property values of the specified spoiler into the given specified group
+     *
+     * <pre>{@code
+     *  Object source = ...
+     *  Supplier supplier = ...
+     *
+     *  Spare<User> spare = ...
+     *  Spoiler spoiler = supplier.flat(source);
+     *
+     *  Object[] group = new Object[2];
+     *  spare.update(group, spoiler, supplier);
+     *
+     *  User user = new User(
+     *    (int) group[0], (String) group[1]
+     *  );
+     * }</pre>
+     *
+     * @return the number of rows affected
+     * @throws NullPointerException If the parameters contains null
+     * @see Spare#update(Object, Spoiler, Supplier)
+     * @since 0.0.4
+     */
+    default int update(
+        @NotNull Object[] group,
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) {
+        int rows = 0;
+        while (spoiler.hasNext()) {
+            String key = spoiler.getKey();
+            Target target = tag(key);
+            if (target == null) {
+                continue;
+            }
+
+            int k = target.getIndex();
+            if (k < 0 || k >= group.length) {
+                throw new CallCrash(
+                    "'" + k + "' out of range"
+                );
+            }
+
+            Object val = spoiler.getValue();
+            if (val == null) {
+                continue;
+            }
+
+            Class<?> klass = target.getType();
+            if (klass.isInstance(val)) {
+                rows++;
+                group[k] = val;
+                continue;
+            }
+
+            Spare<?> spare = supplier.lookup(klass);
+            if (spare != null) {
+                rows++;
+                group[k] = spare.cast(
+                    supplier, val
+                );
+            }
+        }
+
+        return rows;
+    }
+
+    /**
+     * Copy the property values of the specified resultSet into the given specified bean
+     *
+     * @return the number of rows affected
+     * @throws NullPointerException If the parameters contains null
+     * @see Spare#update(Object, Supplier, ResultSet)
+     * @since 0.0.4
+     */
+    default int update(
+        @NotNull K entity,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        return update(
+            entity, Impl.INS, resultSet
+        );
+    }
+
+    /**
+     * Copy the property values of the specified resultSet into the given specified bean
+     *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *
+     *  ResultSet rs = stmt.executeQuery(sql);
+     *  List<User> users = new ArrayList<>();
+     *
+     *  while (rs.next()) {
+     *    User user = new User();
+     *    users.add(user);
+     *    spare.update(user, rs);
+     *  }
+     * }</pre>
+     *
+     * @return the number of rows affected
+     * @throws SQLException         If a database access error occurs
+     * @throws NullPointerException If the parameters contains null
+     * @since 0.0.4
+     */
+    default int update(
+        @NotNull K entity,
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        ResultSetMetaData meta =
+            resultSet.getMetaData();
+        int rows = 0;
+        int count = meta.getColumnCount();
+
+        for (int i = 1; i <= count; i++) {
+            String key = meta.getColumnLabel(i);
+            if (key == null) {
+                key = meta.getColumnName(i);
+            }
+
+            Setter<K, ?> setter = set(key);
+            if (setter == null) {
+                throw new SQLCrash(
+                    "Can't find the Setter of " + key
+                );
+            }
+
+            Object val = resultSet.getObject(i);
+            if (val == null) {
+                continue;
+            }
+
+            Class<?> klass = setter.getType();
+            if (klass.isInstance(val)) {
+                rows++;
+                setter.call(entity, val);
+                continue;
+            }
+
+            Spare<?> spare = supplier.lookup(klass);
+            if (spare != null) {
+                Object var = spare.cast(
+                    supplier, val
+                );
+                if (var != null) {
+                    rows++;
+                    setter.call(entity, var);
+                    continue;
+                }
+            }
+
+            throw new SQLCrash(
+                "Cannot convert the type of " + key
+                    + " from " + val.getClass() + " to " + klass
+            );
+        }
+
+        return rows;
+    }
+
+    /**
+     * Copy the property values of the specified spoiler into the given specified group
+     *
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  Supplier supplier = ...
+     *
+     *  ResultSet rs = stmt.executeQuery(sql);
+     *  List<User> users = new ArrayList<>();
+     *
+     *  while (rs.next()) {
+     *    Object[] group = new Object[2];
+     *    spare.update(group, supplier, rs);
+     *    users.add(
+     *      new User(
+     *        (int) group[0], (String) group[1]
+     *      )
+     *    );
+     *  }
+     * }</pre>
+     *
+     * @return the number of rows affected
+     * @throws SQLException         If a database access error occurs
+     * @throws NullPointerException If the parameters contains null
+     * @see Spare#update(Object, Supplier, ResultSet)
+     * @since 0.0.4
+     */
+    default int update(
+        @NotNull Object[] group,
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        ResultSetMetaData meta =
+            resultSet.getMetaData();
+        int rows = 0;
+        int count = meta.getColumnCount();
+
+        for (int i = 1; i <= count; i++) {
+            String key = meta.getColumnLabel(i);
+            if (key == null) {
+                key = meta.getColumnName(i);
+            }
+
+            Target target = tag(key);
+            if (target == null) {
+                throw new SQLCrash(
+                    "Can't find the Target of " + key
+                );
+            }
+
+            int k = target.getIndex();
+            if (k < 0 || k >= group.length) {
+                throw new SQLCrash(
+                    "'" + k + "' out of range"
+                );
+            }
+
+            Object val = resultSet.getObject(i);
+            if (val == null) {
+                continue;
+            }
+
+            Class<?> klass = target.getType();
+            if (klass.isInstance(val)) {
+                rows++;
+                group[k] = val;
+                continue;
+            }
+
+            Spare<?> spare = supplier.lookup(klass);
+            if (spare != null) {
+                Object var = spare.cast(
+                    supplier, val
+                );
+                if (var != null) {
+                    rows++;
+                    group[k] = var;
+                    continue;
+                }
+            }
+
+            throw new SQLCrash(
+                "Cannot convert the type of " + key
+                    + " from " + val.getClass() + " to " + klass
+            );
+        }
+
+        return rows;
     }
 
     /**

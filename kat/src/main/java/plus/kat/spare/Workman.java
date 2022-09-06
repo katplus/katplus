@@ -28,7 +28,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 /**
@@ -109,48 +108,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     @Override
     public Provider getProvider() {
         return provider;
-    }
-
-    @Override
-    public T cast(
-        @Nullable Object data
-    ) {
-        return cast(
-            supplier, data
-        );
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public T cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (klass.isInstance(data)) {
-            return (T) data;
-        }
-
-        if (data instanceof ResultSet) try {
-            return apply(
-                supplier, (ResultSet) data
-            );
-        } catch (Exception e) {
-            return null;
-        }
-
-        if (data instanceof CharSequence) {
-            return Casting.cast(
-                this, (CharSequence) data, null, supplier
-            );
-        }
-
-        return apply(
-            data, supplier
-        );
     }
 
     @Override
@@ -402,170 +359,75 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         return false;
     }
 
-    /**
-     * @param supplier  the specified supplier
-     * @param resultSet the specified resultSet
-     * @since 0.0.3
-     */
+    @Override
+    public T cast(
+        @Nullable Object data
+    ) {
+        return cast(
+            supplier, data
+        );
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public T cast(
+        @NotNull Supplier supplier,
+        @Nullable Object data
+    ) {
+        if (data == null) {
+            return null;
+        }
+
+        if (klass.isInstance(data)) {
+            return (T) data;
+        }
+
+        if (data instanceof CharSequence) {
+            return Casting.cast(
+                this, (CharSequence) data, null, supplier
+            );
+        }
+
+        return convert(
+            data, supplier
+        );
+    }
+
+    @NotNull
+    @Override
+    public T apply(
+        Spoiler spoiler,
+        Supplier supplier
+    ) throws CallCrash {
+        try {
+            T bean = apply(Alias.EMPTY);
+            update(
+                bean, spoiler, supplier
+            );
+            return bean;
+        } catch (CallCrash e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new CallCrash(
+                "Error creating " + getType(), e
+            );
+        }
+    }
+
+    @NotNull
     @Override
     public T apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
-        T entity;
         try {
-            entity = apply(
-                Alias.EMPTY
+            T bean = apply(Alias.EMPTY);
+            update(
+                bean, supplier, resultSet
             );
-        } catch (Throwable e) {
-            throw new SQLCrash(
-                "Error creating " + getType(), e
-            );
-        }
-
-        ResultSetMetaData meta =
-            resultSet.getMetaData();
-        int count = meta.getColumnCount();
-
-        // update fields
-        for (int i = 1; i <= count; i++) {
-            // get its key
-            String key = meta.getColumnLabel(i);
-            if (key == null) {
-                key = meta.getColumnName(i);
-            }
-
-            // try lookup
-            Setter<T, ?> setter = set(key);
-            if (setter == null) {
-                throw new SQLCrash(
-                    "Can't find the Setter of " + key
-                );
-            }
-
-            // get the value
-            Object val = resultSet.getObject(i);
-
-            // skip if null
-            if (val == null) {
-                continue;
-            }
-
-            // get class specified
-            Class<?> klass = setter.getType();
-
-            // update field
-            if (klass.isInstance(val)) {
-                setter.call(
-                    entity, val
-                );
-                continue;
-            }
-
-            // get spare specified
-            Spare<?> spare = supplier.lookup(klass);
-
-            // update field
-            if (spare != null) {
-                Object var = spare.cast(
-                    supplier, val
-                );
-                if (var != null) {
-                    setter.call(
-                        entity, var
-                    );
-                    continue;
-                }
-            }
-
-            throw new SQLCrash(
-                "Cannot convert the type of " + key + " from " + val.getClass() + " to " + klass
-            );
-        }
-
-        return entity;
-    }
-
-    /**
-     * @param supplier  the specified supplier
-     * @param data      the specified params
-     * @param resultSet the specified resultSet
-     * @since 0.0.3
-     */
-    @NotNull
-    public T apply(
-        @NotNull Supplier supplier,
-        @NotNull Object[] data,
-        @NotNull ResultSet resultSet
-    ) throws SQLException {
-        ResultSetMetaData meta =
-            resultSet.getMetaData();
-        int count = meta.getColumnCount();
-
-        // update params
-        for (int i = 1; i <= count; i++) {
-            // get its key
-            String key = meta.getColumnLabel(i);
-            if (key == null) {
-                key = meta.getColumnName(i);
-            }
-
-            // try lookup
-            Target target = tag(key);
-            if (target == null) {
-                throw new SQLCrash(
-                    "Can't find the Target of " + key
-                );
-            }
-
-            // check index
-            int k = target.getIndex();
-            if (k < 0 || k >= data.length) {
-                throw new SQLCrash(
-                    "'" + k + "' out of range"
-                );
-            }
-
-            // get the value
-            Object val = resultSet.getObject(i);
-
-            // skip if null
-            if (val == null) {
-                continue;
-            }
-
-            // get class specified
-            Class<?> klass = target.getType();
-
-            // update field
-            if (klass.isInstance(val)) {
-                data[k] = val;
-                continue;
-            }
-
-            // get spare specified
-            Spare<?> spare = supplier.lookup(klass);
-
-            // update field
-            if (spare != null) {
-                Object var = spare.cast(
-                    supplier, val
-                );
-                if (var != null) {
-                    data[k] = var;
-                    continue;
-                }
-            }
-
-            throw new SQLCrash(
-                "Cannot convert the type of " + key + " from " + val.getClass() + " to " + klass
-            );
-        }
-
-        try {
-            return apply(
-                Alias.EMPTY, data
-            );
+            return bean;
+        } catch (SQLException e) {
+            throw e;
         } catch (Throwable e) {
             throw new SQLCrash(
                 "Error creating " + getType(), e
@@ -573,142 +435,25 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
     }
 
-    /**
-     * @param result   the specified result
-     * @param supplier the specified supplier
-     * @since 0.0.3
-     */
     @Nullable
-    public T apply(
+    public T convert(
         @NotNull Object result,
         @NotNull Supplier supplier
     ) {
-        Spoiler it = supplier.flat(result);
-        if (it == null) {
-            return null;
-        }
-
-        try {
-            T entity = apply(
-                Alias.EMPTY
-            );
-
-            while (it.hasNext()) {
-                // check the key
-                String key = it.getKey();
-
-                // try lookup
-                Setter<T, ?> setter = set(key);
-                if (setter == null) {
-                    continue;
-                }
-
-                // check the value
-                Object val = it.getValue();
-                if (val == null) {
-                    continue;
-                }
-
-                // get class specified
-                Class<?> klass = setter.getType();
-
-                // update field
-                if (klass.isInstance(val)) {
-                    setter.call(
-                        entity, val
-                    );
-                    continue;
-                }
-
-                // get spare specified
-                Spare<?> spare = supplier.lookup(klass);
-
-                // update field
-                if (spare != null) {
-                    setter.call(
-                        entity, spare.cast(
-                            supplier, val
-                        )
-                    );
-                }
+        Spoiler spoiler =
+            supplier.flat(result);
+        if (spoiler != null) {
+            try {
+                T bean = apply(Alias.EMPTY);
+                update(
+                    bean, spoiler, supplier
+                );
+                return bean;
+            } catch (Exception e) {
+                // Nothing
             }
-
-            return entity;
-        } catch (Exception e) {
-            return null;
         }
-    }
-
-    /**
-     * @param result   the specified result
-     * @param range    the specified range
-     * @param supplier the specified supplier
-     * @since 0.0.3
-     */
-    @Nullable
-    public T apply(
-        @NotNull Object result,
-        @NotNull int range,
-        @NotNull Supplier supplier
-    ) {
-        Spoiler it = supplier.flat(result);
-        if (it == null) {
-            return null;
-        }
-
-        try {
-            Object[] data =
-                new Object[range];
-            while (it.hasNext()) {
-                // check the key
-                String key = it.getKey();
-
-                // try lookup
-                Target target = tag(key);
-                if (target == null) {
-                    continue;
-                }
-
-                // check index
-                int k = target.getIndex();
-                if (k < 0 || k >= data.length) {
-                    throw new CallCrash(
-                        "'" + k + "' out of range"
-                    );
-                }
-
-                // check the value
-                Object val = it.getValue();
-                if (val == null) {
-                    continue;
-                }
-
-                // get class specified
-                Class<?> klass = target.getType();
-
-                // update field
-                if (klass.isInstance(val)) {
-                    data[k] = val;
-                    continue;
-                }
-
-                // get spare specified
-                Spare<?> spare = supplier.lookup(klass);
-
-                // update field
-                if (spare != null) {
-                    data[k] = spare.cast(
-                        supplier, val
-                    );
-                }
-            }
-
-            return apply(
-                Alias.EMPTY, data
-            );
-        } catch (Exception e) {
-            return null;
-        }
+        return null;
     }
 
     /**

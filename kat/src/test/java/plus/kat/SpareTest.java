@@ -11,7 +11,6 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 
-import static plus.kat.Spare.lookup;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -22,7 +21,7 @@ public class SpareTest {
     @Test
     public void test_embed() {
         assertNotNull(
-            lookup(User.class)
+            Spare.lookup(User.class)
         );
 
         Object[] list = new Object[]{
@@ -33,7 +32,7 @@ public class SpareTest {
 
         for (Object o : list) {
             assertNull(
-                lookup(o.getClass())
+                Spare.lookup(o.getClass())
             );
         }
     }
@@ -41,7 +40,7 @@ public class SpareTest {
     @Test
     public void test_flat() {
         Spare<User> spare =
-            lookup(User.class);
+            Spare.lookup(User.class);
 
         User user = new User();
         user.id = 1;
@@ -59,9 +58,27 @@ public class SpareTest {
     }
 
     @Test
+    public void test_apply() {
+        User user = new User();
+        user.id = 1;
+        user.name = "kraity";
+
+        Supplier supplier = Supplier.ins();
+        Spare<Entity> spare = supplier.lookup(Entity.class);
+
+        Entity entity = spare.apply(
+            supplier.flat(user)
+        );
+        assertNotNull(entity);
+
+        assertEquals(user.id, entity.id);
+        assertEquals(user.name, entity.name);
+    }
+
+    @Test
     public void test_cast0() {
         Spare<User> spare =
-            lookup(User.class);
+            Spare.lookup(User.class);
 
         User user = spare.cast(
             "   ${$:id(1)$:name(kraity)}   "
@@ -75,7 +92,7 @@ public class SpareTest {
     @Test
     public void test_cast1() {
         Spare<User> spare =
-            lookup(User.class);
+            Spare.lookup(User.class);
 
         HashMap<String, Object>
             data = new HashMap<>();
@@ -98,7 +115,7 @@ public class SpareTest {
     @Test
     public void test_cast2() {
         Spare<Entity> spare =
-            lookup(Entity.class);
+            Spare.lookup(Entity.class);
 
         User user = new User();
         user.id = 1;
@@ -112,9 +129,25 @@ public class SpareTest {
     }
 
     @Test
+    public void test_update() {
+        User user = new User();
+        user.id = 1;
+        user.name = "kraity";
+
+        Supplier supplier = Supplier.ins();
+        Spare<Entity> spare = supplier.lookup(Entity.class);
+
+        Entity entity = new Entity();
+        assertEquals(2, spare.update(entity, supplier.flat(user)));
+
+        assertEquals(user.id, entity.id);
+        assertEquals(user.name, entity.name);
+    }
+
+    @Test
     public void test_provider() {
         Spare<User> spare =
-            lookup(User.class);
+            Spare.lookup(User.class);
 
         assertNotNull(spare);
 

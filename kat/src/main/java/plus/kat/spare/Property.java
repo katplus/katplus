@@ -23,7 +23,6 @@ import plus.kat.crash.*;
 
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 /**
@@ -74,36 +73,54 @@ public abstract class Property<T> implements Spare<T> {
     @Override
     @SuppressWarnings("unchecked")
     public T apply(
-        @NotNull Supplier supplier,
-        @NotNull ResultSet resultSet
-    ) throws SQLException {
-        ResultSetMetaData meta =
-            resultSet.getMetaData();
-        int count = meta.getColumnCount();
-        if (count != 1) {
-            throw new SQLCrash(
-                "Expected 1, actual " + count
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) throws CallCrash {
+        if (!spoiler.hasNext()) {
+            throw new CallCrash(
+                "No data source"
             );
         }
 
-        Object val = resultSet.getObject(1);
-        if (val == null) {
-            return null;
-        }
-
+        Object val = spoiler.getValue();
         if (klass.isInstance(val)) {
             return (T) val;
         }
 
-        T var = cast(
+        T target = cast(
             supplier, val
         );
-        if (var != null) {
-            return var;
+        if (target != null) {
+            return target;
+        }
+
+        throw new CallCrash(
+            "Cannot convert the type from "
+                + val.getClass() + " to " + klass
+        );
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public T apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        Object val = resultSet.getObject(1);
+        if (klass.isInstance(val)) {
+            return (T) val;
+        }
+
+        T target = cast(
+            supplier, val
+        );
+        if (target != null) {
+            return target;
         }
 
         throw new SQLCrash(
-            "Cannot convert the type from " + val.getClass() + " to " + klass
+            "Cannot convert the type from "
+                + val.getClass() + " to " + klass
         );
     }
 
