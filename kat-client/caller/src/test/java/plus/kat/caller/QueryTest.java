@@ -2,6 +2,8 @@ package plus.kat.caller;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -52,5 +54,18 @@ public class QueryTest {
         assertEquals("https://kat.plus/test/user?do=get&id=1&tag=kat", query.toString());
         assertEquals("{do=get, id=1, tag=kat}", query.toMap().toString());
         assertEquals("{do=get, id=1, tag=kat}", Query.toMap(query.toString()).toString());
+    }
+
+    @Test
+    public void test5() {
+        HashMap<String, Object>
+            map = new HashMap<>();
+        map.put("id", 1);
+        map.put("tag", "kat");
+
+        assertEquals("id=1&tag=kat", new Query(map).toString());
+
+        map.put("id", null);
+        assertEquals("id=&tag=kat", new Query(map).toString());
     }
 }

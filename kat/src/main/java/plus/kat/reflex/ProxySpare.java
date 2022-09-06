@@ -199,7 +199,7 @@ public final class ProxySpare extends Workman<Object> {
                         continue;
                     }
 
-                    if (expose.export()) {
+                    if ((expose.mode() & Expose.HIDDEN) == 0) {
                         String[] keys = expose.value();
                         if (keys.length == 0) {
                             setup(
@@ -290,7 +290,7 @@ public final class ProxySpare extends Workman<Object> {
             @NotNull Object bean,
             @Nullable Object value
         ) {
-            if (value != null || nullable) {
+            if (value != null || (flags & Expose.NOTNULL) == 0) {
                 try {
                     Class<?> cl = bean.getClass();
                     if (cl != spare.proxy) {

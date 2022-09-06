@@ -32,24 +32,26 @@ public @interface Embed {
      */
     int SEALED = 0x1;
     int DIRECT = 0x2;
+    int HIDDEN = 0x4;
 
     /**
      * Returns the space of this
+     *
+     * @since 0.0.1
      */
     String[] value() default {};
 
     /**
      * Returns the flags of this
+     *
+     * @since 0.0.4
      */
-    int claim() default 0;
-
-    /**
-     * Whether it can be exposed
-     */
-    boolean expose() default true;
+    int mode() default 0;
 
     /**
      * Returns the specified {@link Spare} or the pointing {@link Class}
+     *
+     * @since 0.0.1
      */
     Class<?> with() default Spare.class;
 }

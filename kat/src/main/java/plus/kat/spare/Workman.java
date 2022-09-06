@@ -68,7 +68,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         this.supplier = supplier;
 
         if (embed != null) {
-            flags = embed.claim();
+            flags = embed.mode();
         }
 
         initialize();
@@ -175,11 +175,15 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         while (node != null) {
             Object val = node.call(value);
             if (val == null) {
-                if (node.nullable) {
+                if ((node.flags & Expose.NOTNULL) == 0) {
                     chan.set(node.key, null);
                 }
             } else {
-                if (node.unwrapped) {
+                if ((node.flags & Expose.UNWRAPPED) == 0) {
+                    chan.set(
+                        node.key, node.coder, val
+                    );
+                } else {
                     Coder<?> coder = node.coder;
                     if (coder != null) {
                         coder.write(chan, val);
@@ -192,10 +196,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                             coder.write(chan, val);
                         }
                     }
-                } else {
-                    chan.set(
-                        node.key, node.coder, val
-                    );
                 }
             }
             node = node.later;
@@ -221,7 +221,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         Node<T, ?> node = head;
         while (node != null) {
             Object val = node.apply(bean);
-            if (val != null || node.nullable) {
+            if (val != null || (node.flags & Expose.NOTNULL) == 0) {
                 visitor.visit(
                     node.key, val
                 );
@@ -767,6 +767,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         protected Class<?> klass;
 
         protected Coder<?> coder;
+        protected int flags;
         protected final int index;
 
         /**
@@ -784,10 +785,25 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         public Item(
             @NotNull Item item
         ) {
+            flags = item.flags;
             index = item.index;
             coder = item.coder;
             klass = item.klass;
             actual = item.actual;
+        }
+
+        /**
+         * @param expose the specified {@link Expose}
+         */
+        public Item(
+            Expose expose
+        ) {
+            if (expose == null) {
+                index = 0;
+            } else {
+                flags = expose.mode();
+                index = expose.index();
+            }
         }
 
         /**
@@ -799,7 +815,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
 
         /**
-         * Returns the {@link Class} of {@link Item}
+         * Returns the {@code klass} of {@link Item}
          */
         @Override
         public Class<?> getType() {
@@ -821,7 +837,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
 
         /**
-         * Returns the {@link Type} of {@link Item}
+         * Returns the {@code actual} of {@link Item}
          */
         @Override
         public Type getRawType() {
@@ -843,7 +859,28 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
 
         /**
-         * Returns the {@link Coder} of {@link Item}
+         * Returns the flags of {@link Item}
+         *
+         * @since 0.0.4
+         */
+        public int getFlags() {
+            return flags;
+        }
+
+        /**
+         * Sets the {@code flags} of {@link Item}
+         *
+         * @param target the specified flags
+         * @since 0.0.4
+         */
+        public void setFlags(
+            int target
+        ) {
+            flags = target;
+        }
+
+        /**
+         * Returns the {@code coder} of {@link Item}
          */
         @Override
         public Coder<?> getCoder() {
@@ -878,9 +915,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         private Node<K, ?> next;
         private Node<K, ?> later;
 
-        protected boolean nullable;
-        protected boolean unwrapped;
-
         /**
          * @param index the specified {@code index}
          */
@@ -891,14 +925,12 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
 
         /**
-         * @param node the specified {@link Node}
+         * @param Item the specified {@link Item}
          */
         protected Node(
-            Node<?, ?> node
+            Item Item
         ) {
-            super(node);
-            this.nullable = node.nullable;
-            this.unwrapped = node.unwrapped;
+            super(Item);
         }
 
         /**
@@ -907,7 +939,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         protected Node(
             Expose expose
         ) {
-            super(expose == null ? -1 : expose.index());
+            super(expose);
         }
 
         /**
@@ -926,14 +958,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 klass = Reflect.wrap(klass);
                 coder = Reflect.activate(expose, supplier);
             } else {
-                Censor censor = field.getAnnotation(Censor.class);
-                if (censor == null) {
-                    nullable = true;
-                } else {
-                    nullable = censor.nullable();
-                }
-                unwrapped = field.getAnnotation(Unwrapped.class) != null;
-
                 Format format = field
                     .getAnnotation(
                         Format.class
@@ -980,14 +1004,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 klass = Reflect.wrap(klass);
                 coder = Reflect.activate(expose, supplier);
             } else {
-                Censor censor = method.getAnnotation(Censor.class);
-                if (censor == null) {
-                    nullable = true;
-                } else {
-                    nullable = censor.nullable();
-                }
-                unwrapped = method.getAnnotation(Unwrapped.class) != null;
-
                 Format format = method
                     .getAnnotation(
                         Format.class

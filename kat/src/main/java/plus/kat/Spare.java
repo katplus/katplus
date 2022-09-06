@@ -508,9 +508,11 @@ public interface Spare<K> extends Coder<K> {
             return parser.read(
                 job, event
             );
-        } catch (Exception e) {
+        } catch (CallCrash crash) {
+            throw crash;
+        } catch (Exception error) {
             throw new CallCrash(
-                "Failed to solve " + job, e
+                "Failed to solve " + job, error
             );
         } finally {
             // returns parser

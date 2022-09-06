@@ -40,7 +40,7 @@ public class WorkerTest {
         private Meta meta;
     }
 
-    @Embed(value = "Meta", claim = DIRECT)
+    @Embed(value = "Meta", mode = DIRECT)
     static class Meta {
         @Expose(index = 0)
         private int sig;

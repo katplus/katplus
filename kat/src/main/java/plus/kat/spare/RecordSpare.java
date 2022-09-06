@@ -198,7 +198,8 @@ public final class RecordSpare<T> extends Workman<T> {
                             );
                         }
                     }
-                    if (!e1.export()) {
+                    if ((e1.mode() &
+                        Expose.HIDDEN) != 0) {
                         continue;
                     }
                 }
@@ -217,7 +218,8 @@ public final class RecordSpare<T> extends Workman<T> {
                         method, e1, supplier
                     );
                     setup(name, node);
-                } else if (e2.export()) {
+                } else if ((e2.mode() &
+                    Expose.HIDDEN) == 0) {
                     node = new Task<>(
                         method, e2, supplier
                     );

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.*
 /**
  * @author kraity
  */
-class CensorKtTest {
+class ExposeKtTest {
 
     @Test
     fun test() {
@@ -25,7 +25,7 @@ class CensorKtTest {
     class Meta {
         var id: Number? = 1
 
-        @set:Censor
+        @set:Expose(mode = 1)
         var tag: Number? = 2
     }
 }

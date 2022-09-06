@@ -730,7 +730,7 @@ public interface Supplier {
             return klass.getName();
         }
 
-        if (embed.expose()) {
+        if ((embed.mode() & Embed.HIDDEN) == 0) {
             for (String space : spaces) {
                 // start from the second char, require contains '.'
                 if (space.indexOf('.', 1) != -1) {

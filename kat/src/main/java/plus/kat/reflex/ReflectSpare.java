@@ -350,7 +350,8 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                 }
 
                 if (keys.length == 0) {
-                    if (expose.export()) {
+                    if ((expose.mode() &
+                        Expose.HIDDEN) == 0) {
                         setup(
                             name, node
                         );
@@ -360,7 +361,8 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     );
                 } else {
                     // register only the first alias
-                    if (expose.export()) {
+                    if ((expose.mode() &
+                        Expose.HIDDEN) == 0) {
                         setup(
                             name, node
                         );
@@ -695,7 +697,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
             @NotNull K bean,
             @Nullable Object value
         ) {
-            if (value != null || nullable) {
+            if (value != null || (flags & Expose.NOTNULL) == 0) {
                 try {
                     setter.invoke(
                         bean, value

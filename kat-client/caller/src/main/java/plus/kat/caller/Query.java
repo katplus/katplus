@@ -50,6 +50,33 @@ public class Query extends Chain {
     }
 
     /**
+     * @param map the specified params
+     */
+    public Query(
+        @NotNull Map<?, ?> map
+    ) {
+        super(32);
+        for (Map.Entry<?, ?> it : map.entrySet()) {
+            Object key = it.getKey();
+            if (key == null) {
+                continue;
+            }
+            Object val = it.getValue();
+            if (val == null) {
+                set(key.toString(), null);
+            } else if (val instanceof String) {
+                set(key.toString(), (String) val);
+            } else if (val instanceof Integer) {
+                set(key.toString(), (int) val);
+            } else if (val instanceof Long) {
+                set(key.toString(), (long) val);
+            } else {
+                set(key.toString(), val.toString());
+            }
+        }
+    }
+
+    /**
      * Returns a {@link Query} of this {@link Query}
      *
      * @param start the start index, inclusive
@@ -206,10 +233,12 @@ public class Query extends Chain {
      * @param data the specified data
      */
     public Query add(
-        @NotNull byte[] data
+        @Nullable byte[] data
     ) {
-        grow(count + data.length);
-        for (byte b : data) add(b);
+        if (data != null) {
+            grow(count + data.length);
+            for (byte b : data) add(b);
+        }
         return this;
     }
 
@@ -253,8 +282,11 @@ public class Query extends Chain {
      * @param c the specified data
      */
     public Query add(
-        @NotNull CharSequence c
+        @Nullable CharSequence c
     ) {
+        if (c == null) {
+            return this;
+        }
         return add(
             c, 0, c.length()
         );

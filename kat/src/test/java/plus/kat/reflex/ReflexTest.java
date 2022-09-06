@@ -46,7 +46,7 @@ public class ReflexTest {
 
         Author author = supplier.read(
             Author.class, Event.ascii(
-                "Author{$:id(1)$:tag(kat)$:name(kraity)$:mark(down)}"
+                "Author{$:id(1)$:tag(kat)$:name(kraity)$:meta(kat.plus)}"
             )
         );
 
@@ -54,8 +54,8 @@ public class ReflexTest {
         assertEquals(1, author.id);
         assertEquals("kat", author.tag);
         assertEquals("kraity", author.name);
-        assertEquals("Author{s:tag(kat)s:mark(down)}", Kat.encode(author));
-        assertNotEquals("Author{s:tag(kat)s:mark(down)s:meta(plus)}", Kat.encode(author));
+        assertEquals("kat.plus", author.meta);
+        assertEquals("Author{s:tag(kat)s:meta(kat.plus)}", Kat.encode(author));
     }
 
     @Test
@@ -188,8 +188,7 @@ public class ReflexTest {
 
     @Embed("Tag")
     static class Tag {
-        @Censor
-        @Expose("id")
+        @Expose(value = "id", mode = 1)
         private String id;
         private String name;
 
@@ -199,7 +198,7 @@ public class ReflexTest {
             this.name = name;
         }
 
-        @Censor
+        @Expose(mode = 1)
         public String getName() {
             return name;
         }
@@ -258,13 +257,11 @@ public class ReflexTest {
         private int id;
         private String name;
 
-        @Expose("tag")
-        private String tag;
+        public String tag;
+        public String meta;
 
-        public String mark;
-
-        @Expose("meta")
-        static String meta = "plus";
+        @Expose("mask")
+        static String mask = "test";
 
         public Author(
             @Expose("id") int id,
@@ -288,7 +285,7 @@ public class ReflexTest {
     static class Master {
         public int id;
 
-        @Unwrapped
+        @Expose(mode = 2)
         public Name name;
     }
 
