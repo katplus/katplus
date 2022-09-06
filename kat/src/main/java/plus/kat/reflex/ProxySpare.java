@@ -64,19 +64,8 @@ public final class ProxySpare extends Workman<Object> {
     }
 
     @Override
-    public Object apply() {
-        try {
-            return apply(
-                Alias.EMPTY
-            );
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @Override
     public Object apply(
-        Alias alias
+        @NotNull Alias alias
     ) throws Crash {
         try {
             Constructor<?> c = cons;

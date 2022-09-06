@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -72,6 +73,10 @@ public class IntegerSpare extends Property<Integer> implements Serializer {
 
         if (data instanceof Boolean) {
             return ((boolean) data) ? 1 : 0;
+        }
+
+        if (data instanceof Chain) {
+            return ((Chain) data).toInt();
         }
 
         if (data instanceof CharSequence) {

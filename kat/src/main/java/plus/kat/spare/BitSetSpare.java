@@ -79,6 +79,12 @@ public class BitSetSpare implements Spare<BitSet> {
             return (BitSet) data;
         }
 
+        if (data instanceof CharSequence) {
+            return Casting.cast(
+                this, (CharSequence) data, null, supplier
+            );
+        }
+
         return null;
     }
 

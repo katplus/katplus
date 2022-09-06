@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -74,21 +75,17 @@ public class ByteSpare extends Property<Byte> implements Serializer {
             return ((boolean) data) ? (byte) 1 : (byte) 0;
         }
 
-        if (data instanceof CharSequence) {
+        int i = 0;
+        if (data instanceof Chain) {
+            i = ((Chain) data).toInt();
+        } else if (data instanceof CharSequence) {
             CharSequence num = (CharSequence) data;
-            int i = Convert.toInt(
+            i = Convert.toInt(
                 num, num.length(), 10, 0
             );
-
-            if (i < Byte.MIN_VALUE ||
-                i > Byte.MAX_VALUE) {
-                return (byte) 0;
-            }
-
-            return (byte) i;
         }
 
-        return (byte) 0;
+        return i < Byte.MIN_VALUE || i > Byte.MAX_VALUE ? (byte) 0 : (byte) i;
     }
 
     @Override

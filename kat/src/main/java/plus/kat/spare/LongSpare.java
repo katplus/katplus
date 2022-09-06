@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -72,6 +73,10 @@ public class LongSpare extends Property<Long> implements Serializer {
 
         if (data instanceof Boolean) {
             return ((boolean) data) ? 1L : 0L;
+        }
+
+        if (data instanceof Chain) {
+            return ((Chain) data).toLong();
         }
 
         if (data instanceof CharSequence) {

@@ -179,10 +179,12 @@ public final class Casting {
             );
         }
 
-        return spare.solve(
-            job, event.with(
-                supplier
-            )
-        );
+        try {
+            return spare.solve(
+                job, event.with(supplier)
+            );
+        } catch (Throwable ex) {
+            return null;
+        }
     }
 }

@@ -27,7 +27,6 @@ import plus.kat.utils.*;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -100,36 +99,53 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
 
     @Override
     public Date apply(
-        @NotNull Supplier supplier,
-        @NotNull ResultSet resultSet
-    ) throws SQLException {
-        ResultSetMetaData meta =
-            resultSet.getMetaData();
-        int count = meta.getColumnCount();
-        if (count != 1) {
-            throw new SQLCrash(
-                "Expected 1, actual " + count
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) throws CallCrash {
+        if (!spoiler.hasNext()) {
+            throw new CallCrash(
+                "No data source"
             );
         }
 
-        Object val = resultSet.getObject(1);
-        if (val == null) {
-            return null;
-        }
-
+        Object val = spoiler.getValue();
         if (val instanceof Date) {
             return (Date) val;
         }
 
-        Date var = cast(
+        Date target = cast(
             supplier, val
         );
-        if (var != null) {
-            return var;
+        if (target != null) {
+            return target;
+        }
+
+        throw new CallCrash(
+            "Cannot convert the type from "
+                + val.getClass() + " to " + Date.class
+        );
+    }
+
+    @Override
+    public Date apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        Object val = resultSet.getObject(1);
+        if (val instanceof Date) {
+            return (Date) val;
+        }
+
+        Date target = cast(
+            supplier, val
+        );
+        if (target != null) {
+            return target;
         }
 
         throw new SQLCrash(
-            "Cannot convert the type from " + val.getClass() + " to " + Date.class
+            "Cannot convert the type from "
+                + val.getClass() + " to " + Date.class
         );
     }
 

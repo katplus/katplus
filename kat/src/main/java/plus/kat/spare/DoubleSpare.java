@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 
 import java.io.IOException;
 
@@ -73,13 +74,17 @@ public class DoubleSpare extends Property<Double> implements Serializer {
             return ((boolean) data) ? 1D : 0D;
         }
 
+        if (data instanceof Chain) {
+            return ((Chain) data).toDouble();
+        }
+
         if (data instanceof CharSequence) {
             try {
                 return Double.parseDouble(
                     data.toString()
                 );
             } catch (Exception e) {
-                // nothing
+                // Nothing
             }
         }
 

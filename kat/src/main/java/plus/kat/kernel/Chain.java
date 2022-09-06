@@ -1746,13 +1746,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Parses this {@code UTF8} {@link Chain} as a {@code char}
      *
-     * @return the specified {@code char}, {@code '?'} on error
+     * @return the specified {@code char}, {@code '\0'} on error
      * @see Convert#toChar(byte[], int, char)
      * @since 0.0.3
      */
     public char toChar() {
         return Convert.toChar(
-            value, count, '?'
+            value, count, '\0'
         );
     }
 

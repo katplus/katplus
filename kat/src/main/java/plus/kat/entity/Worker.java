@@ -46,7 +46,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             return apply(
                 Alias.EMPTY
             );
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return null;
         }
     }

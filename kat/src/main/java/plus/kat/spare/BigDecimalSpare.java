@@ -62,6 +62,10 @@ public class BigDecimalSpare extends Property<BigDecimal> implements Serializer 
         @NotNull Supplier supplier,
         @Nullable Object data
     ) {
+        if (data == null) {
+            return BigDecimal.ZERO;
+        }
+
         if (data instanceof BigDecimal) {
             return (BigDecimal) data;
         }
@@ -89,13 +93,17 @@ public class BigDecimalSpare extends Property<BigDecimal> implements Serializer 
             return ((boolean) data) ? BigDecimal.ONE : BigDecimal.ZERO;
         }
 
-        if (data instanceof String) {
+        if (data instanceof Value) {
+            return ((Value) data).toBigDecimal();
+        }
+
+        if (data instanceof CharSequence) {
             try {
                 return new BigDecimal(
-                    (String) data
+                    data.toString()
                 );
             } catch (Exception e) {
-                // nothing
+                // Nothing
             }
         }
 

@@ -19,23 +19,20 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.*;
 
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.utils.Casting;
-
-import static plus.kat.spare.ListSpare.Builder$;
+import plus.kat.utils.*;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class SetSpare implements Spare<Set> {
 
     public static final SetSpare
@@ -49,7 +46,6 @@ public class SetSpare implements Spare<Set> {
         );
     }
 
-    @SuppressWarnings("unchecked")
     public SetSpare(
         @NotNull Class<?> klass
     ) {
@@ -109,7 +105,6 @@ public class SetSpare implements Spare<Set> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Set cast(
         @NotNull Supplier supplier,
         @Nullable Object data
@@ -226,7 +221,7 @@ public class SetSpare implements Spare<Set> {
     public Builder<Set> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder$<Set>(
+        return new ListSpare.Builder$<Set>(
             klass, type
         ) {
             @Override

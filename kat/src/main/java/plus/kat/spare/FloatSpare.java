@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 
 import java.io.IOException;
 
@@ -105,13 +106,17 @@ public class FloatSpare extends Property<Float> implements Serializer {
             return ((boolean) data) ? 1F : 0F;
         }
 
+        if (data instanceof Chain) {
+            return ((Chain) data).toFloat();
+        }
+
         if (data instanceof CharSequence) {
             try {
                 return Float.parseFloat(
                     data.toString()
                 );
             } catch (Exception e) {
-                // nothing
+                // Nothing
             }
         }
 

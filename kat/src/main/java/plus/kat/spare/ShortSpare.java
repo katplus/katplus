@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -74,21 +75,17 @@ public class ShortSpare extends Property<Short> implements Serializer {
             return ((boolean) data) ? (short) 1 : (short) 0;
         }
 
-        if (data instanceof CharSequence) {
+        int i = 0;
+        if (data instanceof Chain) {
+            i = ((Chain) data).toInt();
+        } else if (data instanceof CharSequence) {
             CharSequence num = (CharSequence) data;
-            int i = Convert.toInt(
+            i = Convert.toInt(
                 num, num.length(), 10, 0
             );
-
-            if (i < Short.MIN_VALUE ||
-                i > Short.MAX_VALUE) {
-                return (short) 0;
-            }
-
-            return (short) i;
         }
 
-        return (short) 0;
+        return i < Short.MIN_VALUE || i > Short.MAX_VALUE ? (short) 0 : (short) i;
     }
 
     @Override

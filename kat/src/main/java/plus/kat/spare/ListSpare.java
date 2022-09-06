@@ -19,23 +19,20 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.*;
 
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.utils.Casting;
-import plus.kat.utils.Reflect;
+import plus.kat.utils.*;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class ListSpare implements Spare<List> {
 
     public static final ListSpare
@@ -49,7 +46,6 @@ public class ListSpare implements Spare<List> {
         );
     }
 
-    @SuppressWarnings("unchecked")
     public ListSpare(
         @NotNull Class<?> klass
     ) {
@@ -110,7 +106,6 @@ public class ListSpare implements Spare<List> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List cast(
         @NotNull Supplier supplier,
         @Nullable Object data
@@ -287,7 +282,6 @@ public class ListSpare implements Spare<List> {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
@@ -316,7 +310,6 @@ public class ListSpare implements Spare<List> {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
@@ -345,7 +338,6 @@ public class ListSpare implements Spare<List> {
             return spare.getBuilder(param);
         }
 
-        @Nullable
         @Override
         public T getResult() {
             return entity;

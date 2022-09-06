@@ -19,11 +19,8 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.lang.reflect.*;
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -36,7 +33,7 @@ import plus.kat.utils.*;
  * @author kraity
  * @since 0.0.1
  */
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class MapSpare implements Spare<Map> {
 
     public static final MapSpare
@@ -50,7 +47,6 @@ public class MapSpare implements Spare<Map> {
         );
     }
 
-    @SuppressWarnings("unchecked")
     public MapSpare(
         @NotNull Class<?> klass
     ) {
@@ -111,7 +107,21 @@ public class MapSpare implements Spare<Map> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    public Map apply(
+        Spoiler spoiler,
+        Supplier supplier
+    ) {
+        Map map = apply();
+        while (spoiler.hasNext()) {
+            map.put(
+                spoiler.getKey(),
+                spoiler.getValue()
+            );
+        }
+        return map;
+    }
+
+    @Override
     public Map apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet data
@@ -135,7 +145,6 @@ public class MapSpare implements Spare<Map> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Map cast(
         @NotNull Supplier supplier,
         @Nullable Object data
@@ -280,7 +289,6 @@ public class MapSpare implements Spare<Map> {
         private Map.Entry entry;
         private final Iterator<Map.Entry> it;
 
-        @SuppressWarnings("unchecked")
         public Spoiler0(
             @NotNull Map map
         ) {
@@ -356,7 +364,6 @@ public class MapSpare implements Spare<Map> {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public void onAccept(
             @NotNull Space space,
             @NotNull Alias alias,
@@ -390,7 +397,6 @@ public class MapSpare implements Spare<Map> {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public void onAccept(
             @NotNull Alias alias,
             @NotNull Builder<?> child
@@ -430,7 +436,6 @@ public class MapSpare implements Spare<Map> {
             return spare.getBuilder(tv);
         }
 
-        @Nullable
         @Override
         public Map getResult() {
             return entity;

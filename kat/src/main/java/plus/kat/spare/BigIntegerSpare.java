@@ -62,6 +62,10 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializer 
         @NotNull Supplier supplier,
         @Nullable Object data
     ) {
+        if (data == null) {
+            return BigInteger.ZERO;
+        }
+
         if (data instanceof BigInteger) {
             return (BigInteger) data;
         }
@@ -80,13 +84,17 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializer 
             return ((boolean) data) ? BigInteger.ONE : BigInteger.ZERO;
         }
 
-        if (data instanceof String) {
+        if (data instanceof Value) {
+            return ((Value) data).toBigInteger();
+        }
+
+        if (data instanceof CharSequence) {
             try {
                 return new BigInteger(
                     data.toString()
                 );
             } catch (Exception e) {
-                // nothing
+                // Nothing
             }
         }
 

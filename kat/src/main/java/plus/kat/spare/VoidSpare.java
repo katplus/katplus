@@ -20,6 +20,10 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * @author kraity
@@ -51,6 +55,22 @@ public class VoidSpare extends Property<Void> {
         return klass == void.class
             || klass == Void.class
             || klass == Object.class;
+    }
+
+    @Override
+    public Void apply(
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) throws CallCrash {
+        return null;
+    }
+
+    @Override
+    public Void apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        return null;
     }
 
     @Override

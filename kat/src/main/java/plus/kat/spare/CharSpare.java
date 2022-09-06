@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 
 import java.io.IOException;
 
@@ -38,7 +39,7 @@ public class CharSpare extends Property<Character> {
 
     @Override
     public Character apply() {
-        return (char) 0;
+        return '\0';
     }
 
     @Override
@@ -72,6 +73,10 @@ public class CharSpare extends Property<Character> {
             return ((boolean) data) ? '1' : '0';
         }
 
+        if (data instanceof Chain) {
+            return ((Chain) data).toChar();
+        }
+
         if (data instanceof CharSequence) {
             CharSequence ch = (CharSequence) data;
             if (ch.length() == 1) {
@@ -79,7 +84,7 @@ public class CharSpare extends Property<Character> {
             }
         }
 
-        return '?';
+        return '\0';
     }
 
     @NotNull

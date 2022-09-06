@@ -146,9 +146,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                         coder.write(chan, val);
                     } else {
                         coder = chan.getSupplier()
-                            .lookup(
-                                val.getClass()
-                            );
+                            .lookup(val.getClass());
                         if (coder != null) {
                             coder.write(chan, val);
                         }
@@ -396,11 +394,13 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     @NotNull
     @Override
     public T apply(
-        Spoiler spoiler,
-        Supplier supplier
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
     ) throws CallCrash {
         try {
-            T bean = apply(Alias.EMPTY);
+            T bean = apply(
+                Alias.EMPTY
+            );
             update(
                 bean, spoiler, supplier
             );
@@ -421,7 +421,9 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         @NotNull ResultSet resultSet
     ) throws SQLException {
         try {
-            T bean = apply(Alias.EMPTY);
+            T bean = apply(
+                Alias.EMPTY
+            );
             update(
                 bean, supplier, resultSet
             );
@@ -444,7 +446,9 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             supplier.flat(result);
         if (spoiler != null) {
             try {
-                T bean = apply(Alias.EMPTY);
+                T bean = apply(
+                    Alias.EMPTY
+                );
                 update(
                     bean, spoiler, supplier
                 );

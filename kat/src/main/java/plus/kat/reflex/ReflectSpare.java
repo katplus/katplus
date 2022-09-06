@@ -169,7 +169,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
     ) throws CallCrash {
         try {
             if (params == null) {
-                T bean = apply(Alias.EMPTY);
+                T bean = apply(
+                    Alias.EMPTY
+                );
                 update(
                     bean, spoiler, supplier
                 );
@@ -205,7 +207,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
     ) throws SQLException {
         try {
             if (params == null) {
-                T bean = apply(Alias.EMPTY);
+                T bean = apply(
+                    Alias.EMPTY
+                );
                 update(
                     bean, supplier, resultSet
                 );
@@ -243,7 +247,9 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
             supplier.flat(result);
         if (spoiler != null) try {
             if (params == null) {
-                T bean = apply(Alias.EMPTY);
+                T bean = apply(
+                    Alias.EMPTY
+                );
                 update(
                     bean, spoiler, supplier
                 );
