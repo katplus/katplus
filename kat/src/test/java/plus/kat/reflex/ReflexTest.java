@@ -257,7 +257,8 @@ public class ReflexTest {
         private int id;
         private String name;
 
-        public String tag;
+        @Expose("tag")
+        private String tag;
         public String meta;
 
         @Expose("mask")

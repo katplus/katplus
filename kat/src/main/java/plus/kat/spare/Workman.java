@@ -799,7 +799,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             Expose expose
         ) {
             if (expose == null) {
-                index = 0;
+                index = -1;
             } else {
                 flags = expose.mode();
                 index = expose.index();
