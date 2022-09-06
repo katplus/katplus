@@ -492,7 +492,7 @@ public interface Supplier {
      *  Object target = ...
      *
      *  Supplier supplier = ...
-     *  supplier.migrate(source, target)
+     *  supplier.migrate(source, target);
      * }</pre>
      *
      * @return {@code true} if successful update
@@ -505,28 +505,23 @@ public interface Supplier {
         @NotNull S source,
         @NotNull T target
     ) {
-        Class<S> sk = (Class<S>)
-            source.getClass();
-        Spare<S> ss = lookup(sk);
-
-        if (ss == null) {
+        Spare<S> spare0 = lookup(
+            (Class<S>) source.getClass()
+        );
+        if (spare0 == null) {
             return false;
         }
 
-        Class<T> tk = (Class<T>)
-            target.getClass();
-        Spare<T> ts = lookup(tk);
-
-        if (ts == null) {
-            return false;
-        }
-
-        Spoiler spoiler = ss.flat(source);
+        Spoiler spoiler = spare0.flat(source);
         if (spoiler == null) {
             return false;
         }
 
-        return ts.update(target, spoiler, this) != 0;
+        Spare<T> spare = lookup(
+            (Class<T>) target.getClass()
+        );
+
+        return spare != null && spare.update(target, spoiler, this) != 0;
     }
 
     /**
