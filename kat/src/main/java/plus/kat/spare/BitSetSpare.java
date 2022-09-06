@@ -68,8 +68,8 @@ public class BitSetSpare implements Spare<BitSet> {
 
     @Override
     public BitSet cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

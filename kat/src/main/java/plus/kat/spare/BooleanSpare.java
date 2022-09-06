@@ -59,8 +59,8 @@ public class BooleanSpare extends Property<Boolean> implements Serializer {
 
     @Override
     public Boolean cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof Boolean) {
             return (Boolean) data;

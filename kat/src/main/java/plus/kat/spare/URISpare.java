@@ -53,8 +53,8 @@ public class URISpare extends Property<URI> {
 
     @Override
     public URI cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

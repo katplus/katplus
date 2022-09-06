@@ -52,8 +52,8 @@ public class ObjectSpare extends Property<Object> {
 
     @Override
     public Object cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         return data;
     }

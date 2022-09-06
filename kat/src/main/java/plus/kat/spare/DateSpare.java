@@ -114,7 +114,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
         }
 
         Date target = cast(
-            supplier, val
+            val, supplier
         );
         if (target != null) {
             return target;
@@ -137,7 +137,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
         }
 
         Date target = cast(
-            supplier, val
+            val, supplier
         );
         if (target != null) {
             return target;
@@ -151,8 +151,8 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
 
     @Override
     public Date cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

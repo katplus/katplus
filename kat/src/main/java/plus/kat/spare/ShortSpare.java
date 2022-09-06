@@ -60,8 +60,8 @@ public class ShortSpare extends Property<Short> implements Serializer {
 
     @Override
     public Short cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof Short) {
             return (Short) data;

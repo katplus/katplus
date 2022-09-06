@@ -254,12 +254,37 @@ public interface Supplier {
     }
 
     /**
-     * If {@link E} is a Bean or resultSet only has one element,
+     * If {@link E} is a Bean or spoiler has elements,
+     * then perform a given {@link Spoiler} to create a {@link E}
+     *
+     * @throws CallCrash            If it fails to create
+     * @throws NullPointerException If the klass or spoiler is null
+     * @see Spare#apply(Spoiler, Supplier)
+     * @since 0.0.4
+     */
+    @NotNull
+    default <E> E apply(
+        @NotNull Class<E> klass,
+        @NotNull Spoiler spoiler
+    ) throws CallCrash {
+        Spare<E> spare = lookup(klass);
+
+        if (spare == null) {
+            throw new CallCrash(
+                "No spare of " + klass
+            );
+        }
+
+        return spare.apply(spoiler, this);
+    }
+
+    /**
+     * If {@link E} is a Bean or resultSet has elements,
      * then perform a given {@link ResultSet} to create a {@link E}
      *
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
-     * @throws NullPointerException If the {@code klass} or {@code resultSet} is null
+     * @throws NullPointerException If the klass or result is null
      * @see Spare#apply(Supplier, ResultSet)
      * @since 0.0.3
      */
@@ -284,7 +309,7 @@ public interface Supplier {
      *
      * @param data specify the {@code data} to convert
      * @return {@link E} or {@code null}
-     * @see Spare#cast(Supplier, Object)
+     * @see Spare#cast(Object, Supplier)
      */
     @Nullable
     default <E> E cast(
@@ -297,7 +322,7 @@ public interface Supplier {
             return null;
         }
 
-        return spare.cast(this, data);
+        return spare.cast(data, this);
     }
 
     /**
@@ -306,7 +331,7 @@ public interface Supplier {
      * @param data specify the {@code data} to convert
      * @return {@link E} or {@code null}
      * @throws ClassCastException If {@link E} is not an instance of {@code klass}
-     * @see Spare#cast(Supplier, Object)
+     * @see Spare#cast(Object, Supplier)
      */
     @Nullable
     default <E> E cast(
@@ -321,7 +346,7 @@ public interface Supplier {
             return null;
         }
 
-        return spare.cast(this, data);
+        return spare.cast(data, this);
     }
 
     /**
@@ -339,7 +364,7 @@ public interface Supplier {
      * }</pre>
      *
      * @return {@link Spoiler} or {@code null}
-     * @throws NullPointerException If the {@code bean} is null
+     * @throws NullPointerException If the parameters contains null
      * @since 0.0.3
      */
     @Nullable
@@ -376,7 +401,7 @@ public interface Supplier {
      * }</pre>
      *
      * @return {@code true} if the bean can be flattened otherwise {@code false}
-     * @throws NullPointerException If the {@code bean} or {@code visitor} is null
+     * @throws NullPointerException If the parameters contains null
      * @see Spare#flat(Object, Visitor)
      * @since 0.0.3
      */
@@ -394,6 +419,114 @@ public interface Supplier {
         }
 
         return spare.flat(bean, visitor);
+    }
+
+    /**
+     * Copy the property values of the specified spoiler into the given specified bean
+     *
+     * <pre>{@code
+     *  Spoiler spoiler = ...
+     *  Supplier supplier = ...
+     *
+     *  User user = new User();
+     *  supplier.update(user, spoiler);
+     * }</pre>
+     *
+     * @return {@code true} if successful update
+     * @throws NullPointerException If the parameters contains null
+     * @since 0.0.4
+     */
+    @SuppressWarnings("unchecked")
+    default <K> boolean update(
+        @NotNull K bean,
+        @NotNull Spoiler spoiler
+    ) {
+        Class<K> klass = (Class<K>)
+            bean.getClass();
+        Spare<K> spare = lookup(klass);
+
+        if (spare == null) {
+            return false;
+        }
+
+        return spare.update(bean, spoiler, this) != 0;
+    }
+
+    /**
+     * Copy the property values of the specified spoiler into the given specified bean
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  ResultSet resultSet = ...
+     *
+     *  User user = new User();
+     *  supplier.update(user, resultSet);
+     * }</pre>
+     *
+     * @return {@code true} if successful update
+     * @throws SQLException         If a database access error occurs
+     * @throws NullPointerException If the parameters contains null
+     * @since 0.0.4
+     */
+    @SuppressWarnings("unchecked")
+    default <K> boolean update(
+        @NotNull K bean,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        Class<K> klass = (Class<K>)
+            bean.getClass();
+        Spare<K> spare = lookup(klass);
+
+        if (spare == null) {
+            return false;
+        }
+
+        return spare.update(bean, this, resultSet) != 0;
+    }
+
+    /**
+     * Copy the property values of the given source bean into the given target bean
+     *
+     * <pre>{@code
+     *  Object source = ...
+     *  Object target = ...
+     *
+     *  Supplier supplier = ...
+     *  supplier.migrate(source, target)
+     * }</pre>
+     *
+     * @return {@code true} if successful update
+     * @throws NullPointerException If the parameters contains null
+     * @see Spare#update(Object, Spoiler, Supplier)
+     * @since 0.0.4
+     */
+    @SuppressWarnings("unchecked")
+    default <S, T> boolean migrate(
+        @NotNull S source,
+        @NotNull T target
+    ) {
+        Class<S> sk = (Class<S>)
+            source.getClass();
+        Spare<S> ss = lookup(sk);
+
+        if (ss == null) {
+            return false;
+        }
+
+        Class<T> tk = (Class<T>)
+            target.getClass();
+        Spare<T> ts = lookup(tk);
+
+        if (ts == null) {
+            return false;
+        }
+
+        Spoiler spoiler = ss.flat(source);
+        if (spoiler == null) {
+            return false;
+        }
+
+        return ts.update(target, spoiler, this) != 0;
     }
 
     /**

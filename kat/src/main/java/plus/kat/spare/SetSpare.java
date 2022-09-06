@@ -106,8 +106,8 @@ public class SetSpare implements Spare<Set> {
 
     @Override
     public Set cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

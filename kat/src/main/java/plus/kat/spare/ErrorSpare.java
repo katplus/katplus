@@ -54,8 +54,8 @@ public class ErrorSpare extends Property<Exception> {
 
     @Override
     public Exception cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

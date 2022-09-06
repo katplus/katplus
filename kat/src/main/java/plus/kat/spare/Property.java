@@ -88,7 +88,7 @@ public abstract class Property<T> implements Spare<T> {
         }
 
         T target = cast(
-            supplier, val
+            val, supplier
         );
         if (target != null) {
             return target;
@@ -112,7 +112,7 @@ public abstract class Property<T> implements Spare<T> {
         }
 
         T target = cast(
-            supplier, val
+            val, supplier
         );
         if (target != null) {
             return target;

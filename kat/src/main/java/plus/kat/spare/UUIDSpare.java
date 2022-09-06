@@ -54,8 +54,8 @@ public class UUIDSpare extends Property<UUID> {
 
     @Override
     public UUID cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

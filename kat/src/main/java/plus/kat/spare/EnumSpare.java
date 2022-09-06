@@ -96,8 +96,8 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
 
     @Override
     public K cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

@@ -60,8 +60,8 @@ public class IntegerSpare extends Property<Integer> implements Serializer {
 
     @Override
     public Integer cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof Integer) {
             return (Integer) data;

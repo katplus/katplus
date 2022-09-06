@@ -48,8 +48,8 @@ public class StringBufferSpare extends Property<StringBuffer> {
 
     @Override
     public StringBuffer cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return new StringBuffer();

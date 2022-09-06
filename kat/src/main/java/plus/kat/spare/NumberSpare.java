@@ -51,8 +51,8 @@ public class NumberSpare extends Property<Number> implements Serializer {
 
     @Override
     public Number cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof Number) {
             return (Number) data;

@@ -60,8 +60,8 @@ public class LongSpare extends Property<Long> implements Serializer {
 
     @Override
     public Long cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof Long) {
             return (Long) data;

@@ -54,8 +54,8 @@ public class FileSpare extends Property<File> {
 
     @Override
     public File cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

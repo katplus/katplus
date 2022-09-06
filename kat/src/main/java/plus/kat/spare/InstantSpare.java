@@ -56,8 +56,8 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializer {
 
     @Override
     public Instant cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

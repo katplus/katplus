@@ -48,8 +48,8 @@ public class StringBuilderSpare extends Property<StringBuilder> {
 
     @Override
     public StringBuilder cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return new StringBuilder();

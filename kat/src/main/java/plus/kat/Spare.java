@@ -112,9 +112,9 @@ public interface Spare<K> extends Coder<K> {
      * If {@link K} is a Bean or spoiler has elements,
      * then perform a given {@link Spoiler} to create a {@link K}
      *
-     * @param spoiler the specified {@code spoiler} to be used
+     * @param spoiler the specified spoiler to be used
      * @throws CallCrash            If it fails to create
-     * @throws NullPointerException If the {@code result} is null
+     * @throws NullPointerException If the spoiler is null
      * @see Spare#apply(Spoiler, Supplier)
      * @see Workman#apply(Spoiler, Supplier)
      * @see Property#apply(Spoiler, Supplier)
@@ -142,10 +142,10 @@ public interface Spare<K> extends Coder<K> {
      *  );
      * }</pre>
      *
-     * @param spoiler  the specified {@code spoiler}
-     * @param supplier the specified {@code supplier}
+     * @param spoiler  the specified spoiler
+     * @param supplier the specified supplier
      * @throws CallCrash            If it fails to create
-     * @throws NullPointerException If the {@code supplier} or {@code resultSet} is null
+     * @throws NullPointerException If the supplier or spoiler is null
      * @see Workman#apply(Spoiler, Supplier)
      * @since 0.0.4
      */
@@ -163,10 +163,10 @@ public interface Spare<K> extends Coder<K> {
      * If {@link K} is a Bean or resultSet has elements,
      * then perform a given {@link ResultSet} to create a {@link K}
      *
-     * @param result the specified {@code resultSet} to be used
+     * @param result the specified result to be used
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
-     * @throws NullPointerException If the {@code result} is null
+     * @throws NullPointerException If the result is null
      * @see Spare#apply(Supplier, ResultSet)
      * @see Workman#apply(Supplier, ResultSet)
      * @see Property#apply(Supplier, ResultSet)
@@ -198,11 +198,11 @@ public interface Spare<K> extends Coder<K> {
      *  }
      * }</pre>
      *
-     * @param supplier  the specified {@code supplier}
-     * @param resultSet the specified {@code resultSet} to be used
+     * @param supplier  the specified supplier
+     * @param resultSet the specified resultSet to be used
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
-     * @throws NullPointerException If the {@code supplier} or {@code resultSet} is null
+     * @throws NullPointerException If the supplier or resultSet is null
      * @see Workman#apply(Supplier, ResultSet)
      * @since 0.0.3
      */
@@ -526,14 +526,14 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param data specify the {@code data} to convert
      * @return {@link K} or {@code null}
-     * @see Spare#cast(Supplier, Object)
+     * @see Spare#cast(Object, Supplier)
      */
     @Nullable
     default K cast(
         @Nullable Object data
     ) {
         return cast(
-            Impl.INS, data
+            data, Impl.INS
         );
     }
 
@@ -546,8 +546,8 @@ public interface Spare<K> extends Coder<K> {
      */
     @Nullable
     default K cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof CharSequence) {
             return Casting.cast(
@@ -624,7 +624,7 @@ public interface Spare<K> extends Coder<K> {
                 rows++;
                 setter.call(
                     entity, spare.cast(
-                        supplier, val
+                        val, supplier
                     )
                 );
             }
@@ -692,7 +692,7 @@ public interface Spare<K> extends Coder<K> {
             if (spare != null) {
                 rows++;
                 group[k] = spare.cast(
-                    supplier, val
+                    val, supplier
                 );
             }
         }
@@ -776,7 +776,7 @@ public interface Spare<K> extends Coder<K> {
             Spare<?> spare = supplier.lookup(klass);
             if (spare != null) {
                 Object var = spare.cast(
-                    supplier, val
+                    val, supplier
                 );
                 if (var != null) {
                     rows++;
@@ -866,7 +866,7 @@ public interface Spare<K> extends Coder<K> {
             Spare<?> spare = supplier.lookup(klass);
             if (spare != null) {
                 Object var = spare.cast(
-                    supplier, val
+                    val, supplier
                 );
                 if (var != null) {
                     rows++;

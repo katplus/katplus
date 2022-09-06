@@ -53,8 +53,8 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
 
     @Override
     public AtomicInteger cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;
@@ -66,7 +66,7 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
 
         return new AtomicInteger(
             IntegerSpare.INSTANCE.cast(
-                supplier, data
+                data, supplier
             )
         );
     }

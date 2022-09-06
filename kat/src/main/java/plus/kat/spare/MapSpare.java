@@ -146,8 +146,8 @@ public class MapSpare implements Spare<Map> {
 
     @Override
     public Map cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

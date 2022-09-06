@@ -362,15 +362,15 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         @Nullable Object data
     ) {
         return cast(
-            supplier, data
+            data, supplier
         );
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public T cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

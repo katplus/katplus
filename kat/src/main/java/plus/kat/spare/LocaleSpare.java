@@ -55,8 +55,8 @@ public class LocaleSpare extends Property<Locale> {
 
     @Override
     public Locale cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

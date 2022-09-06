@@ -58,7 +58,7 @@ public class SpareTest {
     }
 
     @Test
-    public void test_apply() {
+    public void test_apply0() {
         User user = new User();
         user.id = 1;
         user.name = "kraity";
@@ -73,6 +73,24 @@ public class SpareTest {
 
         assertEquals(user.id, entity.id);
         assertEquals(user.name, entity.name);
+    }
+
+    @Test
+    public void test_apply1() {
+        HashMap<String, Object>
+            data = new HashMap<>();
+
+        data.put("id", 1);
+        data.put("name", "kraity");
+
+        Supplier supplier = Supplier.ins();
+        User user = supplier.apply(
+            User.class, Spoiler.of(data)
+        );
+
+        assertNotNull(user);
+        assertEquals(1, user.id);
+        assertEquals("kraity", user.name);
     }
 
     @Test
@@ -129,7 +147,7 @@ public class SpareTest {
     }
 
     @Test
-    public void test_update() {
+    public void test_update0() {
         User user = new User();
         user.id = 1;
         user.name = "kraity";
@@ -139,6 +157,38 @@ public class SpareTest {
 
         Entity entity = new Entity();
         assertEquals(2, spare.update(entity, supplier.flat(user)));
+
+        assertEquals(user.id, entity.id);
+        assertEquals(user.name, entity.name);
+    }
+
+    @Test
+    public void test_update1() {
+        HashMap<String, Object>
+            data = new HashMap<>();
+
+        data.put("id", 1);
+        data.put("name", "kraity");
+
+        Spoiler spoiler = Spoiler.of(data);
+        Supplier supplier = Supplier.ins();
+
+        User user = new User();
+        assertTrue(supplier.update(user, spoiler));
+
+        assertEquals(1, user.id);
+        assertEquals("kraity", user.name);
+    }
+
+    @Test
+    public void test_migrate() {
+        User user = new User();
+        user.id = 1;
+        user.name = "kraity";
+        Entity entity = new Entity();
+
+        Supplier supplier = Supplier.ins();
+        assertTrue(supplier.migrate(user, entity));
 
         assertEquals(user.id, entity.id);
         assertEquals(user.name, entity.name);

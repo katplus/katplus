@@ -59,8 +59,8 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializer 
 
     @Override
     public BigInteger cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return BigInteger.ZERO;

@@ -59,8 +59,8 @@ public class DoubleSpare extends Property<Double> implements Serializer {
 
     @Override
     public Double cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof Double) {
             return (Double) data;

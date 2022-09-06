@@ -58,8 +58,8 @@ public class CharSpare extends Property<Character> {
 
     @Override
     public Character cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof Character) {
             return (Character) data;

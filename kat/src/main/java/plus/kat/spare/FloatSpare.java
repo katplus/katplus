@@ -91,8 +91,8 @@ public class FloatSpare extends Property<Float> implements Serializer {
 
     @Override
     public Float cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof Float) {
             return (Float) data;

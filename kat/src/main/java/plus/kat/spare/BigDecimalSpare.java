@@ -59,8 +59,8 @@ public class BigDecimalSpare extends Property<BigDecimal> implements Serializer 
 
     @Override
     public BigDecimal cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return BigDecimal.ZERO;

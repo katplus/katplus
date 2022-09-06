@@ -107,8 +107,8 @@ public class ListSpare implements Spare<List> {
 
     @Override
     public List cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

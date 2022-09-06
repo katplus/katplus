@@ -52,8 +52,8 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Seria
 
     @Override
     public AtomicBoolean cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;
@@ -65,7 +65,7 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Seria
 
         return new AtomicBoolean(
             BooleanSpare.INSTANCE.cast(
-                supplier, data
+                data, supplier
             )
         );
     }

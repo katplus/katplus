@@ -53,8 +53,8 @@ public class URLSpare extends Property<URL> {
 
     @Override
     public URL cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

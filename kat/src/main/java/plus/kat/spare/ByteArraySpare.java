@@ -58,8 +58,8 @@ public class ByteArraySpare extends Property<byte[]> {
 
     @Override
     public byte[] cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof byte[]) {
             return (byte[]) data;

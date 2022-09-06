@@ -128,8 +128,8 @@ public abstract class TemporalSpare<K extends TemporalAccessor> extends Property
     @Override
     @SuppressWarnings("unchecked")
     public K cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;

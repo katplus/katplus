@@ -62,7 +62,9 @@ public class VoidSpare extends Property<Void> {
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
     ) throws CallCrash {
-        return null;
+        throw new CallCrash(
+            "Unsupported"
+        );
     }
 
     @Override
@@ -70,13 +72,15 @@ public class VoidSpare extends Property<Void> {
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
-        return null;
+        throw new CallCrash(
+            "Unsupported"
+        );
     }
 
     @Override
     public Void cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         return null;
     }

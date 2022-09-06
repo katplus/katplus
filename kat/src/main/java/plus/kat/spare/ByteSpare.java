@@ -60,8 +60,8 @@ public class ByteSpare extends Property<Byte> implements Serializer {
 
     @Override
     public Byte cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof Byte) {
             return (Byte) data;

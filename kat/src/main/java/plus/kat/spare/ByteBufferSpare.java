@@ -44,8 +44,8 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
 
     @Override
     public ByteBuffer cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data instanceof ByteBuffer) {
             return (ByteBuffer) data;

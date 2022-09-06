@@ -57,8 +57,8 @@ public class StringSpare extends Property<String> {
 
     @Override
     public String cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         return data == null ? "" : data.toString();
     }

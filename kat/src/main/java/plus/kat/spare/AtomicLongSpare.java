@@ -53,8 +53,8 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializer 
 
     @Override
     public AtomicLong cast(
-        @NotNull Supplier supplier,
-        @Nullable Object data
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         if (data == null) {
             return null;
@@ -66,7 +66,7 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializer 
 
         return new AtomicLong(
             LongSpare.INSTANCE.cast(
-                supplier, data
+                data, supplier
             )
         );
     }
