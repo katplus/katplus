@@ -113,6 +113,7 @@ public interface Spare<K> extends Coder<K> {
      * then perform a given {@link Spoiler} to create a {@link K}
      *
      * @param spoiler the specified spoiler to be used
+     * @return {@link K}, it is not null
      * @throws CallCrash            If it fails to create
      * @throws NullPointerException If the spoiler is null
      * @see Spare#apply(Spoiler, Supplier)
@@ -144,6 +145,7 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param spoiler  the specified spoiler
      * @param supplier the specified supplier
+     * @return {@link K}, it is not null
      * @throws CallCrash            If it fails to create
      * @throws NullPointerException If the supplier or spoiler is null
      * @see Workman#apply(Spoiler, Supplier)
@@ -164,6 +166,7 @@ public interface Spare<K> extends Coder<K> {
      * then perform a given {@link ResultSet} to create a {@link K}
      *
      * @param result the specified result to be used
+     * @return {@link K}, it is not null
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the result is null
@@ -200,6 +203,7 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param supplier  the specified supplier
      * @param resultSet the specified resultSet to be used
+     * @return {@link K}, it is not null
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the supplier or resultSet is null
@@ -217,7 +221,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Returns the {@link Setter}
+     * Returns the {@link Target}
      * of the specified param name
      *
      * <pre>{@code

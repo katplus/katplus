@@ -1,4 +1,4 @@
-package plus.kat.entity;
+package plus.kat.spare;
 
 import org.junit.jupiter.api.Test;
 

@@ -257,6 +257,7 @@ public interface Supplier {
      * If {@link E} is a Bean or spoiler has elements,
      * then perform a given {@link Spoiler} to create a {@link E}
      *
+     * @return {@link E}, it is not null
      * @throws CallCrash            If it fails to create
      * @throws NullPointerException If the klass or spoiler is null
      * @see Spare#apply(Spoiler, Supplier)
@@ -282,6 +283,7 @@ public interface Supplier {
      * If {@link E} is a Bean or resultSet has elements,
      * then perform a given {@link ResultSet} to create a {@link E}
      *
+     * @return {@link E}, it is not null
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the klass or result is null

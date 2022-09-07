@@ -52,7 +52,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     }
 
     /**
+     * If this {@link Worker} can create an instance,
+     * it returns it, otherwise it will throw {@link Crash}
+     *
      * @param alias the alias of entity
+     * @return {@link K}, it is not null
      * @throws Crash If a failure occurs
      */
     @NotNull
@@ -61,7 +65,11 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     ) throws Crash;
 
     /**
+     * If this {@link Worker} can create an instance,
+     * it returns it, otherwise it will throw {@link Crash}
+     *
      * @param alias the alias of entity
+     * @return {@link K}, it is not null
      * @throws Crash If a failure occurs
      * @since 0.0.2
      */
@@ -77,7 +85,12 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     }
 
     /**
-     * @param alias the alias of target
+     * Returns the {@link Target}
+     * of the specified param name
+     *
+     * @param alias the param name of the bean
+     * @return {@link Target} or {@code null}
+     * @throws NullPointerException If the alias is null
      * @see Workman
      * @since 0.0.4
      */
@@ -90,7 +103,12 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     }
 
     /**
-     * @param alias the alias of setter
+     * Returns the {@link Setter}
+     * of the specified property name
+     *
+     * @param alias the property name of the bean
+     * @return {@link Setter} or {@code null}
+     * @throws NullPointerException If the alias is null
      * @see Workman
      * @since 0.0.4
      */
@@ -103,7 +121,12 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
     }
 
     /**
-     * @param alias the alias of getter
+     * Returns the {@link Getter}
+     * of the specified property name
+     *
+     * @param alias the property name of the bean
+     * @return {@link Getter} or {@code null}
+     * @throws NullPointerException If the alias is null
      * @see Workman
      * @since 0.0.4
      */

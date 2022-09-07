@@ -16,7 +16,6 @@
 package plus.kat.entity;
 
 import plus.kat.anno.NotNull;
-import plus.kat.anno.Nullable;
 
 import plus.kat.chain.*;
 import plus.kat.crash.*;
@@ -28,10 +27,14 @@ import plus.kat.crash.*;
 @FunctionalInterface
 public interface Maker<K> {
     /**
+     * If this {@link Maker} can create an instance,
+     * it returns it, otherwise it will throw {@link Crash}
+     *
      * @param alias the alias of entity
+     * @return {@link K}, it is not null
      * @throws Crash If a failure occurs
      */
-    @Nullable
+    @NotNull
     K apply(
         @NotNull Alias alias,
         @NotNull Object... params
