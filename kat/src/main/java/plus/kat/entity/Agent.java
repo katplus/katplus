@@ -20,9 +20,8 @@ import plus.kat.anno.NotNull;
 import plus.kat.*;
 import plus.kat.spare.*;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 /**
  * @author kraity
@@ -35,7 +34,7 @@ public interface Agent {
      * <pre>{@code
      *  Object source = ...
      *  Agent target = ...
-     *  target.absorb(source);
+     *  target.combine(source);
      * }</pre>
      *
      * @param source the specified source bean
@@ -43,7 +42,7 @@ public interface Agent {
      * @throws NullPointerException If the parameters contains null
      * @see Supplier#migrate(Object, Object)
      */
-    default boolean absorb(
+    default boolean combine(
         @NotNull Object source
     ) {
         Supplier supplier = Supplier.ins();

@@ -12,13 +12,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AgentTest {
 
     @Test
-    public void test_absorb() {
+    public void test_combine() {
         User user = new User(
             1, "kraity"
         );
 
         UserDTO userDTO = new UserDTO();
-        assertTrue(userDTO.absorb(user));
+        assertTrue(userDTO.combine(user));
 
         assertEquals(user.id, userDTO.id);
         assertEquals(user.name, userDTO.name);
