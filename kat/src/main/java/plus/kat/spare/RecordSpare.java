@@ -38,9 +38,6 @@ public final class RecordSpare<T> extends Workman<T> {
     private int width;
     private Constructor<T> ctor;
 
-    /**
-     * @throws CallCrash If an error occurs in the build
-     */
     public RecordSpare(
         @NotNull Class<T> klass,
         @NotNull Supplier supplier
@@ -48,9 +45,6 @@ public final class RecordSpare<T> extends Workman<T> {
         super(klass, supplier);
     }
 
-    /**
-     * @throws CallCrash If an error occurs in the build
-     */
     public RecordSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
@@ -93,7 +87,7 @@ public final class RecordSpare<T> extends Workman<T> {
     public T apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
-    ) throws CallCrash {
+    ) throws Collapse {
         try {
             Object[] group = new Object[width];
             update(
@@ -102,10 +96,10 @@ public final class RecordSpare<T> extends Workman<T> {
             return apply(
                 Alias.EMPTY, group
             );
-        } catch (CallCrash e) {
+        } catch (Collapse e) {
             throw e;
         } catch (Throwable e) {
-            throw new CallCrash(
+            throw new Collapse(
                 "Error creating " + getType(), e
             );
         }
@@ -281,7 +275,7 @@ public final class RecordSpare<T> extends Workman<T> {
                     }
                 }
             } catch (Exception e) {
-                throw new CallCrash(e);
+                throw new Collapse(e);
             }
         }
 
@@ -298,7 +292,7 @@ public final class RecordSpare<T> extends Workman<T> {
         }
 
         if (b == null) {
-            throw new CallCrash(
+            throw new Collapse(
                 "Unexpectedly, the Constructor of '" + klass + "' is null"
             );
         }
@@ -307,7 +301,7 @@ public final class RecordSpare<T> extends Workman<T> {
             ctor = b;
             b.setAccessible(true);
         } else {
-            throw new CallCrash(
+            throw new Collapse(
                 "Unexpectedly, the number of actual and formal parameters differ"
             );
         }

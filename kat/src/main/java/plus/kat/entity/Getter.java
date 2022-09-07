@@ -28,7 +28,7 @@ public interface Getter<K, V> extends Target {
     /**
      * @param bean the specified bean
      * @return the specified value of property
-     * @throws CallCrash If the underlying method throws an exception
+     * @throws Collapse If the underlying method throws an exception
      */
     @Nullable
     V apply(
@@ -38,7 +38,7 @@ public interface Getter<K, V> extends Target {
     /**
      * @param bean the specified bean
      * @return the specified value of property
-     * @throws CallCrash If the underlying method throws an exception
+     * @throws Collapse If the underlying method throws an exception
      * @since 0.0.4
      */
     @Nullable
@@ -51,7 +51,7 @@ public interface Getter<K, V> extends Target {
                 (K) bean
             );
         } catch (ClassCastException e) {
-            throw new CallCrash(
+            throw new Collapse(
                 "Failed to cast", e
             );
         }

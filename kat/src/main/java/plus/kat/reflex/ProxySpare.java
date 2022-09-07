@@ -270,7 +270,7 @@ public final class ProxySpare extends Workman<Object> {
                 }
                 return null;
             } catch (Throwable e) {
-                throw new CallCrash(e);
+                throw new Collapse(e);
             }
         }
 
@@ -295,7 +295,7 @@ public final class ProxySpare extends Workman<Object> {
                     }
                     return true;
                 } catch (Throwable e) {
-                    throw new CallCrash(e);
+                    throw new Collapse(e);
                 }
             }
             return false;
@@ -361,12 +361,12 @@ public final class ProxySpare extends Workman<Object> {
                     return proxy;
                 }
 
-                throw new CallCrash(
+                throw new Collapse(
                     c + " not supported"
                 );
             }
 
-            throw new CallCrash(
+            throw new Collapse(
                 "Unexpectedly, Not currently supported: " + method
             );
         }

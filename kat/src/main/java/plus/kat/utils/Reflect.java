@@ -178,7 +178,7 @@ public final class Reflect {
             return (char) 0;
         }
 
-        throw new CallCrash(
+        throw new Collapse(
             "Not support type:" + type
         );
     }

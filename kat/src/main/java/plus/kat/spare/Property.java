@@ -75,9 +75,9 @@ public abstract class Property<T> implements Spare<T> {
     public T apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
-    ) throws CallCrash {
+    ) throws Collapse {
         if (!spoiler.hasNext()) {
-            throw new CallCrash(
+            throw new Collapse(
                 "No data source"
             );
         }
@@ -94,7 +94,7 @@ public abstract class Property<T> implements Spare<T> {
             return target;
         }
 
-        throw new CallCrash(
+        throw new Collapse(
             "Cannot convert the type from "
                 + val.getClass() + " to " + klass
         );

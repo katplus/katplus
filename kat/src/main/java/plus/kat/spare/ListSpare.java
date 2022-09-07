@@ -205,7 +205,7 @@ public class ListSpare implements Spare<List> {
             return new ArrayList<>();
         }
 
-        throw new CallCrash(
+        throw new Collapse(
             "Unable to create 'List' instance of '" + type + "'"
         );
     }
@@ -258,7 +258,7 @@ public class ListSpare implements Spare<List> {
         public T onCreate(
             @NotNull Type type
         ) {
-            throw new CallCrash(
+            throw new Collapse(
                 "Failed to create"
             );
         }

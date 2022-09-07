@@ -19,7 +19,7 @@ package plus.kat.crash;
  * @author kraity
  * @since 0.0.4
  */
-public class UnsupportedCrash extends CallCrash {
+public class UnsupportedCrash extends Collapse {
     /**
      * @param m the detail message
      */

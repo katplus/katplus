@@ -258,7 +258,7 @@ public interface Supplier {
      * then perform a given {@link Spoiler} to create a {@link E}
      *
      * @return {@link E}, it is not null
-     * @throws CallCrash            If it fails to create
+     * @throws Collapse             If it fails to create
      * @throws NullPointerException If the klass or spoiler is null
      * @see Spare#apply(Spoiler, Supplier)
      * @since 0.0.4
@@ -267,11 +267,11 @@ public interface Supplier {
     default <E> E apply(
         @NotNull Class<E> klass,
         @NotNull Spoiler spoiler
-    ) throws CallCrash {
+    ) throws Collapse {
         Spare<E> spare = lookup(klass);
 
         if (spare == null) {
-            throw new CallCrash(
+            throw new Collapse(
                 "No spare of " + klass
             );
         }
@@ -530,7 +530,7 @@ public interface Supplier {
      * Parse {@link Kat} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws ClassCastException   If {@link T} is not an instance of {@code klass}
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(CharSequence, Job, Event)
@@ -549,7 +549,7 @@ public interface Supplier {
      * Parse {@link Kat} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(Class, Job, Event)
      */
@@ -599,7 +599,7 @@ public interface Supplier {
      * Parse {@link Doc} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(CharSequence, Job, Event)
      */
@@ -617,7 +617,7 @@ public interface Supplier {
      * Parse {@link Doc} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(Class, Job, Event)
      */
@@ -667,7 +667,7 @@ public interface Supplier {
      * Parse {@link Json} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
      * @see Supplier#solve(CharSequence, Job, Event)
      */
@@ -685,7 +685,7 @@ public interface Supplier {
      * Parse {@link Json} {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
      * @see Supplier#solve(Class, Job, Event)
      */
@@ -735,7 +735,7 @@ public interface Supplier {
      * Parse {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Job, Event)
      * @since 0.0.2
@@ -751,7 +751,7 @@ public interface Supplier {
         );
 
         if (spare == null) {
-            throw new CallCrash(
+            throw new Collapse(
                 "No spare of " + klass
             );
         }
@@ -764,7 +764,7 @@ public interface Supplier {
      * Parse {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Job, Event)
      * @since 0.0.2
@@ -780,7 +780,7 @@ public interface Supplier {
             Reflect.lookup(type, this);
 
         if (spare == null) {
-            throw new CallCrash(
+            throw new Collapse(
                 "No spare of " + type
             );
         }
@@ -795,7 +795,7 @@ public interface Supplier {
      * Parse {@link Event} and convert result to {@link T}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Job, Event)
      * @since 0.0.2
@@ -809,7 +809,7 @@ public interface Supplier {
         Spare<E> spare = lookup(klass);
 
         if (spare == null) {
-            throw new CallCrash(
+            throw new Collapse(
                 "No spare of " + klass
             );
         }
@@ -979,7 +979,7 @@ public interface Supplier {
                     spare = p.lookup(
                         parent, name, this
                     );
-                } catch (CallCrash e) {
+                } catch (Collapse e) {
                     return null;
                 } catch (Exception e) {
                     continue;

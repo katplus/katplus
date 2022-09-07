@@ -114,7 +114,7 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param spoiler the specified spoiler to be used
      * @return {@link K}, it is not null
-     * @throws CallCrash            If it fails to create
+     * @throws Collapse             If it fails to create
      * @throws NullPointerException If the spoiler is null
      * @see Spare#apply(Spoiler, Supplier)
      * @see Workman#apply(Spoiler, Supplier)
@@ -124,7 +124,7 @@ public interface Spare<K> extends Coder<K> {
     @NotNull
     default K apply(
         @NotNull Spoiler spoiler
-    ) throws CallCrash {
+    ) throws Collapse {
         return apply(
             spoiler, Impl.INS
         );
@@ -146,7 +146,7 @@ public interface Spare<K> extends Coder<K> {
      * @param spoiler  the specified spoiler
      * @param supplier the specified supplier
      * @return {@link K}, it is not null
-     * @throws CallCrash            If it fails to create
+     * @throws Collapse             If it fails to create
      * @throws NullPointerException If the supplier or spoiler is null
      * @see Workman#apply(Spoiler, Supplier)
      * @since 0.0.4
@@ -155,8 +155,8 @@ public interface Spare<K> extends Coder<K> {
     default K apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
-    ) throws CallCrash {
-        throw new CallCrash(
+    ) throws Collapse {
+        throw new Collapse(
             "Unexpectedly, '" + getType() + "' not a Bean"
         );
     }
@@ -343,7 +343,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Kat} {@link CharSequence} and convert result to {@link K}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
@@ -359,7 +359,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Kat} {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -405,7 +405,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Doc} {@link CharSequence} and convert result to {@link K}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
@@ -421,7 +421,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Doc} {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -467,7 +467,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Json} {@link CharSequence} and convert result to {@link K}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
@@ -483,7 +483,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Json} {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -675,7 +675,7 @@ public interface Spare<K> extends Coder<K> {
 
             int k = target.getIndex();
             if (k < 0 || k >= group.length) {
-                throw new CallCrash(
+                throw new Collapse(
                     "'" + k + "' out of range"
                 );
             }
@@ -892,7 +892,7 @@ public interface Spare<K> extends Coder<K> {
      * Parse {@link Event} and convert result to {@link K}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash            If parsing fails or the result is null
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      * @since 0.0.2
      */
@@ -912,10 +912,10 @@ public interface Spare<K> extends Coder<K> {
             return parser.read(
                 job, event
             );
-        } catch (CallCrash crash) {
-            throw crash;
+        } catch (Collapse error) {
+            throw error;
         } catch (Exception error) {
-            throw new CallCrash(
+            throw new Collapse(
                 "Failed to solve " + job, error
             );
         } finally {
@@ -1091,7 +1091,7 @@ public interface Spare<K> extends Coder<K> {
                     spare = p.lookup(
                         klass, supplier
                     );
-                } catch (CallCrash e) {
+                } catch (Collapse e) {
                     return null;
                 } catch (Exception e) {
                     continue;
@@ -1110,7 +1110,7 @@ public interface Spare<K> extends Coder<K> {
         /**
          * Returns {@link Spare} of the specified {@code klass}
          *
-         * @throws CallCrash            The Provider signals to interrupt subsequent lookup
+         * @throws Collapse             The Provider signals to interrupt subsequent lookup
          * @throws NullPointerException If the specified {@code klass} is null
          */
         @Nullable

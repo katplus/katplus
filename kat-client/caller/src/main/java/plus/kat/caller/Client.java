@@ -356,7 +356,7 @@ public class Client extends Caller {
                 );
             }
             default: {
-                throw new CallCrash(
+                throw new Collapse(
                     "Unexpectedly, Client does not support " + job
                 );
             }
@@ -415,7 +415,7 @@ public class Client extends Caller {
                 );
             }
             default: {
-                throw new CallCrash(
+                throw new Collapse(
                     "Unexpectedly, Client does not support " + job
                 );
             }
@@ -425,7 +425,7 @@ public class Client extends Caller {
     /**
      * Returns the specified {@link Job}
      *
-     * @throws CallCrash If no specified job
+     * @throws Collapse If no specified job
      */
     @NotNull
     @Override
@@ -438,7 +438,7 @@ public class Client extends Caller {
         String type = contentType();
         if (type == null ||
             type.length() < 7) {
-            throw new CallCrash(
+            throw new Collapse(
                 "The content type(" + type + ") is illegal"
             );
         }
@@ -470,7 +470,7 @@ public class Client extends Caller {
             }
         }
 
-        throw new CallCrash(
+        throw new Collapse(
             "Could not find the specified Job of " + type
         );
     }

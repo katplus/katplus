@@ -404,13 +404,13 @@ public final class Space extends Chain implements Type {
     }
 
     /**
-     * @throws CallCrash Not support
+     * @throws Collapse Not support
      */
     @Override
     public void setType(
         @Nullable Type type
     ) {
-        throw new CallCrash(
+        throw new Collapse(
             "Unexpectedly, not support"
         );
     }
@@ -512,7 +512,7 @@ public final class Space extends Chain implements Type {
                 return result;
             }
 
-            throw new CallCrash(
+            throw new Collapse(
                 "Unexpectedly, Exceeding range '" + RANGE + "' in space"
             );
         }

@@ -1081,7 +1081,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns the internal {@code byte[]}
      *
-     * @throws CallCrash If the internal value cannot be shared
+     * @throws Collapse If the internal value cannot be shared
      * @since 0.0.2
      */
     @NotNull
@@ -1090,7 +1090,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return value;
         }
 
-        throw new CallCrash(
+        throw new Collapse(
             "Unexpectedly, the internal value cannot be shared"
         );
     }

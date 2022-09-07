@@ -29,7 +29,7 @@ public interface Setter<K, V> extends Target {
      * @param bean  the specified entity
      * @param value the specified value of property
      * @return {@code true} if successful otherwise {@code false}
-     * @throws CallCrash If the underlying method throws an exception
+     * @throws Collapse If the underlying method throws an exception
      */
     boolean accept(
         @NotNull K bean,
@@ -40,7 +40,7 @@ public interface Setter<K, V> extends Target {
      * @param bean  the specified entity
      * @param value the specified value of property
      * @return {@code true} if successful otherwise {@code false}
-     * @throws CallCrash If the underlying method throws an exception
+     * @throws Collapse If the underlying method throws an exception
      * @since 0.0.4
      */
     @SuppressWarnings("unchecked")
@@ -53,7 +53,7 @@ public interface Setter<K, V> extends Target {
                 (K) bean, (V) value
             );
         } catch (ClassCastException e) {
-            throw new CallCrash(
+            throw new Collapse(
                 "Failed to cast", e
             );
         }

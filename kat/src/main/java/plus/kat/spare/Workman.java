@@ -190,7 +190,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @param key  the ket of {@link Node}
      * @param node the specified {@link Node}
      * @return {@code true} if the node is settled otherwise {@code false}
-     * @throws CallCrash            If the {@code node} is already used
+     * @throws Collapse             If the {@code node} is already used
      * @throws NullPointerException If the {@code key} or {@code node} is null
      * @since 0.0.3
      */
@@ -200,7 +200,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         @NotNull Node<T, ?> node
     ) {
         if (node.key != null) {
-            throw new CallCrash(
+            throw new Collapse(
                 node + " is already used"
             );
         }
@@ -396,7 +396,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     public T apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
-    ) throws CallCrash {
+    ) throws Collapse {
         try {
             T bean = apply(
                 Alias.EMPTY
@@ -405,10 +405,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 bean, spoiler, supplier
             );
             return bean;
-        } catch (CallCrash e) {
+        } catch (Collapse e) {
             throw e;
         } catch (Throwable e) {
-            throw new CallCrash(
+            throw new Collapse(
                 "Error creating " + getType(), e
             );
         }

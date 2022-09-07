@@ -29,7 +29,7 @@ public interface Provider {
     /**
      * Returns {@link Spare} of the specified {@code klass}
      *
-     * @throws CallCrash            The Provider signals to interrupt subsequent lookup
+     * @throws Collapse             The Provider signals to interrupt subsequent lookup
      * @throws NullPointerException If the specified {@code klass} is null
      */
     @Nullable
@@ -41,7 +41,7 @@ public interface Provider {
     /**
      * Returns {@link Spare} of the specified {@code klass}
      *
-     * @throws CallCrash            The Provider signals to interrupt subsequent lookup
+     * @throws Collapse             The Provider signals to interrupt subsequent lookup
      * @throws NullPointerException If the specified {@code klass} is null
      * @since 0.0.3
      */

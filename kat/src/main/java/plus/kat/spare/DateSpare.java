@@ -101,9 +101,9 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
     public Date apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
-    ) throws CallCrash {
+    ) throws Collapse {
         if (!spoiler.hasNext()) {
-            throw new CallCrash(
+            throw new Collapse(
                 "No data source"
             );
         }
@@ -120,7 +120,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
             return target;
         }
 
-        throw new CallCrash(
+        throw new Collapse(
             "Cannot convert the type from "
                 + val.getClass() + " to " + Date.class
         );

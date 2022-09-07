@@ -166,7 +166,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
     public T apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
-    ) throws CallCrash {
+    ) throws Collapse {
         try {
             if (params == null) {
                 T bean = apply(
@@ -187,15 +187,15 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     Alias.EMPTY, group
                 );
             }
-        } catch (CallCrash e) {
+        } catch (Collapse e) {
             throw e;
         } catch (Throwable e) {
-            throw new CallCrash(
+            throw new Collapse(
                 "Error creating " + getType(), e
             );
         }
 
-        throw new CallCrash(
+        throw new Collapse(
             "Not currently supported"
         );
     }
@@ -756,7 +756,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
             try {
                 return getter.invoke(bean);
             } catch (Throwable e) {
-                throw new CallCrash(e);
+                throw new Collapse(e);
             }
         }
 
@@ -772,7 +772,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     );
                     return true;
                 } catch (Throwable e) {
-                    throw new CallCrash(e);
+                    throw new Collapse(e);
                 }
             }
             return false;

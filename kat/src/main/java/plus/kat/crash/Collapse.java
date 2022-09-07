@@ -27,18 +27,18 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.4
  */
-public class CallCrash extends RuntimeException implements Kat {
+public class Collapse extends RuntimeException implements Kat {
     /**
      * @param m the detail message
      */
-    public CallCrash(String m) {
+    public Collapse(String m) {
         super(m);
     }
 
     /**
      * @param e the cause saved for later retrieval by the {@link #getCause()} method
      */
-    public CallCrash(Throwable e) {
+    public Collapse(Throwable e) {
         super(e.getMessage(), e, false, false);
     }
 
@@ -46,7 +46,7 @@ public class CallCrash extends RuntimeException implements Kat {
      * @param m the detail message
      * @param t enable suppression and writing stack trace
      */
-    public CallCrash(String m, boolean t) {
+    public Collapse(String m, boolean t) {
         super(m, null, t, t);
     }
 
@@ -54,7 +54,7 @@ public class CallCrash extends RuntimeException implements Kat {
      * @param m the detail message
      * @param e the cause saved for later retrieval by the {@link #getCause()} method
      */
-    public CallCrash(String m, Throwable e) {
+    public Collapse(String m, Throwable e) {
         super(m, e, false, false);
     }
 
@@ -64,7 +64,7 @@ public class CallCrash extends RuntimeException implements Kat {
      * @param a whether suppression is enabled or disabled
      * @param b whether the stack trace should be writable
      */
-    public CallCrash(String m, Throwable e, boolean a, boolean b) {
+    public Collapse(String m, Throwable e, boolean a, boolean b) {
         super(m, e, a, b);
     }
 

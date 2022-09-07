@@ -61,8 +61,8 @@ public class VoidSpare extends Property<Void> {
     public Void apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
-    ) throws CallCrash {
-        throw new CallCrash(
+    ) throws Collapse {
+        throw new Collapse(
             "Unsupported"
         );
     }
@@ -72,7 +72,7 @@ public class VoidSpare extends Property<Void> {
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
-        throw new CallCrash(
+        throw new Collapse(
             "Unsupported"
         );
     }

@@ -109,7 +109,7 @@ public class Parser implements Pipe, Closeable {
             event.getReader();
 
         if (reader == null) {
-            throw new CallCrash(
+            throw new Collapse(
                 "Reader is null"
             );
         }
@@ -181,7 +181,7 @@ public class Parser implements Pipe, Closeable {
                 );
             }
             default: {
-                throw new CallCrash(
+                throw new Collapse(
                     "Unexpectedly, Parser did not find " + job + "'s Solver"
                 );
             }

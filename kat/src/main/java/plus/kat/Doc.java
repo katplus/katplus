@@ -374,7 +374,7 @@ public class Doc extends Chan {
      * Parse {@link Doc} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws CallCrash If parsing fails
+     * @throws Collapse If parsing fails
      * @see Spare#solve(Job, Event)
      */
     @Nullable
@@ -393,7 +393,7 @@ public class Doc extends Chan {
      * Parse {@link Doc} {@link CharSequence}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash If parsing fails
+     * @throws Collapse If parsing fails
      * @see Spare#solve(Job, Event)
      */
     @Nullable
@@ -412,7 +412,7 @@ public class Doc extends Chan {
      * Parse {@link Doc} byte array
      *
      * @param text specify the {@code text} to be parsed
-     * @throws CallCrash If parsing fails
+     * @throws Collapse If parsing fails
      * @see Supplier#down(Class, Event)
      */
     @Nullable
@@ -434,7 +434,7 @@ public class Doc extends Chan {
      * Parse {@link Doc} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws CallCrash If parsing fails
+     * @throws Collapse If parsing fails
      * @see Supplier#down(Class, Event)
      */
     @Nullable
@@ -456,7 +456,7 @@ public class Doc extends Chan {
      * Parse {@link Doc} {@link CharSequence}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash If parsing fails
+     * @throws Collapse If parsing fails
      * @see Supplier#down(Class, Event)
      */
     @Nullable

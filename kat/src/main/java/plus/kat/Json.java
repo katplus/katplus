@@ -333,7 +333,7 @@ public class Json extends Chan {
      * Parse {@link Json} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws CallCrash If parsing fails
+     * @throws Collapse If parsing fails
      * @see Spare#solve(Job, Event)
      */
     @Nullable
@@ -352,7 +352,7 @@ public class Json extends Chan {
      * Parse {@link Json} {@link CharSequence}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash If parsing fails
+     * @throws Collapse If parsing fails
      * @see Spare#solve(Job, Event)
      */
     @Nullable
@@ -371,7 +371,7 @@ public class Json extends Chan {
      * Parse {@link Json} byte array
      *
      * @param text specify the {@code text} to be parsed
-     * @throws CallCrash If parsing fails
+     * @throws Collapse If parsing fails
      * @see Supplier#parse(Class, Event)
      */
     @Nullable
@@ -393,7 +393,7 @@ public class Json extends Chan {
      * Parse {@link Json} {@link CharSequence}
      *
      * @param text specify the {@code text} to be parsed
-     * @throws CallCrash If parsing fails
+     * @throws Collapse If parsing fails
      * @see Supplier#parse(Class, Event)
      */
     @Nullable
@@ -415,7 +415,7 @@ public class Json extends Chan {
      * Parse {@link Json} {@link CharSequence}
      *
      * @param event specify the {@code event} to be handled
-     * @throws CallCrash If parsing fails
+     * @throws Collapse If parsing fails
      * @see Supplier#parse(Class, Event)
      */
     @Nullable

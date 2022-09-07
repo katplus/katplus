@@ -221,7 +221,7 @@ public final class Alias extends Chain {
                 return result;
             }
 
-            throw new CallCrash(
+            throw new Collapse(
                 "Unexpectedly, Exceeding range '" + RANGE + "' in alias"
             );
         }
