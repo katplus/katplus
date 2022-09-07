@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * @author kraity
@@ -386,9 +387,13 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             );
         }
 
-        return convert(
-            data, supplier
-        );
+        try {
+            return convert(
+                data, supplier
+            );
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @NotNull
@@ -439,25 +444,36 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
 
     @Nullable
     public T convert(
-        @NotNull Object result,
+        @NotNull Object data,
         @NotNull Supplier supplier
-    ) {
-        Spoiler spoiler =
-            supplier.flat(result);
-        if (spoiler != null) {
-            try {
-                T bean = apply(
-                    Alias.EMPTY
-                );
-                update(
-                    bean, spoiler, supplier
-                );
-                return bean;
-            } catch (Exception e) {
-                // Nothing
-            }
+    ) throws Exception {
+        if (data instanceof Map) {
+            return apply(
+                Spoiler.of(
+                    (Map<?, ?>) data
+                ), supplier
+            );
         }
-        return null;
+
+        if (data instanceof Spoiler) {
+            return apply(
+                (Spoiler) data, supplier
+            );
+        }
+
+        if (data instanceof ResultSet) {
+            return apply(
+                supplier, (ResultSet) data
+            );
+        }
+
+        Spoiler spoiler =
+            supplier.flat(data);
+        if (spoiler == null) {
+            return null;
+        }
+
+        return apply(spoiler, supplier);
     }
 
     /**

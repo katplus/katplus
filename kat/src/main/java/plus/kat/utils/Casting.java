@@ -183,7 +183,7 @@ public final class Casting {
             return spare.solve(
                 job, event.with(supplier)
             );
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             return null;
         }
     }

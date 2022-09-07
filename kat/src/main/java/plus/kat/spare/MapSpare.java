@@ -108,8 +108,8 @@ public class MapSpare implements Spare<Map> {
 
     @Override
     public Map apply(
-        Spoiler spoiler,
-        Supplier supplier
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
     ) {
         Map map = apply();
         while (spoiler.hasNext()) {
@@ -124,11 +124,11 @@ public class MapSpare implements Spare<Map> {
     @Override
     public Map apply(
         @NotNull Supplier supplier,
-        @NotNull ResultSet data
+        @NotNull ResultSet resultSet
     ) throws SQLException {
         Map map = apply();
         ResultSetMetaData meta =
-            data.getMetaData();
+            resultSet.getMetaData();
 
         int count = meta.getColumnCount();
         for (int i = 1; i <= count; i++) {
@@ -137,7 +137,7 @@ public class MapSpare implements Spare<Map> {
                 key = meta.getColumnName(i);
             }
             map.put(
-                key, data.getObject(i)
+                key, resultSet.getObject(i)
             );
         }
 
@@ -171,19 +171,29 @@ public class MapSpare implements Spare<Map> {
             );
         }
 
-        Spoiler spoiler = supplier.flat(data);
-        if (spoiler != null) {
-            Map map = apply();
-            while (spoiler.hasNext()) {
-                map.put(
-                    spoiler.getKey(),
-                    spoiler.getValue()
-                );
-            }
-            return map;
+        if (data instanceof Spoiler) {
+            return apply(
+                (Spoiler) supplier, supplier
+            );
         }
 
-        return null;
+        if (data instanceof ResultSet) {
+            try {
+                return apply(
+                    supplier, (ResultSet) data
+                );
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        Spoiler spoiler =
+            supplier.flat(data);
+        if (spoiler == null) {
+            return null;
+        }
+
+        return apply(spoiler, supplier);
     }
 
     @Override

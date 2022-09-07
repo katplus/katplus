@@ -238,40 +238,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
         );
     }
 
-    @Nullable
-    public T convert(
-        @NotNull Object result,
-        @NotNull Supplier supplier
-    ) {
-        Spoiler spoiler =
-            supplier.flat(result);
-        if (spoiler != null) try {
-            if (params == null) {
-                T bean = apply(
-                    Alias.EMPTY
-                );
-                update(
-                    bean, spoiler, supplier
-                );
-                return bean;
-            }
-
-            if (size() == 0 && master == null) {
-                Object[] group = new Object[args.length];
-                update(
-                    group, spoiler, supplier
-                );
-                return apply(
-                    Alias.EMPTY, group
-                );
-            }
-        } catch (Exception e) {
-            // Nothing
-        }
-
-        return null;
-    }
-
     @Override
     public Builder<T> getBuilder(
         @Nullable Type type

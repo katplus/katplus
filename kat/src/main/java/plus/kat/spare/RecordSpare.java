@@ -128,28 +128,6 @@ public final class RecordSpare<T> extends Workman<T> {
     }
 
     @Override
-    public T convert(
-        @NotNull Object result,
-        @NotNull Supplier supplier
-    ) {
-        Spoiler spoiler =
-            supplier.flat(result);
-        if (spoiler != null) try {
-            Object[] group = new Object[width];
-            update(
-                group, spoiler, supplier
-            );
-            return apply(
-                Alias.EMPTY, group
-            );
-        } catch (Exception e) {
-            // Nothing
-        }
-
-        return null;
-    }
-
-    @Override
     public Target tag(
         Object alias
     ) {

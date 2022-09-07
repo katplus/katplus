@@ -20,6 +20,9 @@ import plus.kat.anno.Nullable;
 
 import java.io.IOException;
 import java.lang.reflect.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -106,6 +109,39 @@ public class ListSpare implements Spare<List> {
     }
 
     @Override
+    public List apply(
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) {
+        List list = apply();
+        while (spoiler.hasNext()) {
+            list.add(
+                spoiler.getValue()
+            );
+        }
+        return list;
+    }
+
+    @Override
+    public List apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        List list = apply();
+        ResultSetMetaData meta =
+            resultSet.getMetaData();
+
+        int count = meta.getColumnCount();
+        for (int i = 1; i <= count; i++) {
+            list.add(
+                resultSet.getObject(i)
+            );
+        }
+
+        return list;
+    }
+
+    @Override
     public List cast(
         @Nullable Object data,
         @NotNull Supplier supplier
@@ -160,18 +196,29 @@ public class ListSpare implements Spare<List> {
             return list;
         }
 
-        Spoiler spoiler = supplier.flat(data);
-        if (spoiler != null) {
-            List list = apply();
-            while (spoiler.hasNext()) {
-                list.add(
-                    spoiler.getValue()
-                );
-            }
-            return list;
+        if (data instanceof Spoiler) {
+            return apply(
+                (Spoiler) supplier, supplier
+            );
         }
 
-        return null;
+        if (data instanceof ResultSet) {
+            try {
+                return apply(
+                    supplier, (ResultSet) data
+                );
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        Spoiler spoiler =
+            supplier.flat(data);
+        if (spoiler == null) {
+            return null;
+        }
+
+        return apply(spoiler, supplier);
     }
 
     @NotNull
