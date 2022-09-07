@@ -3,6 +3,7 @@ package plus.kat.caller;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.spare.*;
 import plus.kat.chain.*;
 import plus.kat.kernel.*;
 
@@ -375,6 +376,24 @@ public class Query extends Chain {
     }
 
     /**
+     * Returns a {@link Spoiler} of {@link Query}
+     */
+    @NotNull
+    public Spoiler spoiler() {
+        return new Parser(this);
+    }
+
+    /**
+     * Returns a {@link Spoiler} of {@link String}
+     */
+    @NotNull
+    public static Spoiler spoiler(
+        @NotNull String spec
+    ) {
+        return new Parser(spec);
+    }
+
+    /**
      * Returns this {@link Query} as a {@link HashMap}
      */
     @NotNull
@@ -391,40 +410,11 @@ public class Query extends Chain {
     public Map<String, String> toMap(
         @NotNull Map<String, String> map
     ) {
-        int i = offset();
-        Value val = null;
-
-        while (true) {
-            int k = indexOf(
-                (byte) '=', i
-            );
-            if (k == -1) {
-                break;
-            }
-            if (val == null) {
-                val = new Value();
-            }
-
-            val.slip(0);
-            val.uniform(
-                value, i, k
-            );
-            String key = val.toString();
-
-            int v = indexOf(
-                (byte) '&', ++k
-            );
-            if (v == -1) {
-                v = count;
-            }
-            val.slip(0);
-            val.uniform(
-                value, k, v
-            );
-
-            i = v + 1;
+        Spoiler spoiler = spoiler();
+        while (spoiler.hasNext()) {
             map.put(
-                key, val.toString()
+                spoiler.getKey(),
+                spoiler.getValue().toString()
             );
         }
         return map;
@@ -447,43 +437,14 @@ public class Query extends Chain {
      */
     @NotNull
     public static Map<String, String> toMap(
-        @NotNull String url,
+        @NotNull String spec,
         @NotNull Map<String, String> map
     ) {
-        Value val = null;
-        int i = url.indexOf('?');
-
-        while (true) {
-            int k = url.indexOf(
-                (byte) '=', ++i
-            );
-            if (k == -1) {
-                break;
-            }
-            if (val == null) {
-                val = new Value();
-            }
-
-            val.slip(0);
-            val.uniform(
-                url, i, k
-            );
-            String key = val.toString();
-
-            int v = url.indexOf(
-                (byte) '&', ++k
-            );
-            if (v == -1) {
-                v = url.length();
-            }
-            val.slip(0);
-            val.uniform(
-                url, k, v
-            );
-
-            i = v;
+        Spoiler spoiler = spoiler(spec);
+        while (spoiler.hasNext()) {
             map.put(
-                key, val.toString()
+                spoiler.getKey(),
+                spoiler.getValue().toString()
             );
         }
         return map;
@@ -537,5 +498,113 @@ public class Query extends Chain {
         return new String(
             value, 0, b, l
         );
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.4
+     */
+    public static class Parser
+        extends Value implements Spoiler {
+
+        private Query query;
+        private String string;
+
+        private int i, k;
+        private final boolean b;
+
+        public Parser(
+            @NotNull Query it
+        ) {
+            query = it;
+            b = false;
+            i = it.offset();
+        }
+
+        public Parser(
+            @NotNull String it
+        ) {
+            string = it;
+            b = true;
+            i = it.indexOf('?') + 1;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (b) {
+                String s = string;
+                if (i < k) {
+                    int v = s.indexOf(
+                        '&', ++k
+                    );
+                    if (v != -1) {
+                        i = v + 1;
+                    } else {
+                        return false;
+                    }
+                }
+                k = s.indexOf('=', i);
+            } else {
+                Query q = query;
+                if (i < k) {
+                    int v = q.indexOf(
+                        (byte) '&', ++k
+                    );
+                    if (v != -1) {
+                        i = v + 1;
+                    } else {
+                        return false;
+                    }
+                }
+                k = q.indexOf(
+                    (byte) '=', i
+                );
+            }
+            return k > 0;
+        }
+
+        @Override
+        public String getKey() {
+            count = 0;
+            if (b) {
+                uniform(
+                    string, i, k
+                );
+            } else {
+                uniform(
+                    query.value, i, k
+                );
+            }
+            return toString();
+        }
+
+        @Override
+        public Object getValue() {
+            count = 0;
+            if (b) {
+                String s = string;
+                int v = s.indexOf(
+                    '&', ++k
+                );
+                if (v == -1) {
+                    v = s.length();
+                }
+                i = v + 1;
+                uniform(s, k, v);
+            } else {
+                Query q = query;
+                int v = q.indexOf(
+                    (byte) '&', ++k
+                );
+                if (v == -1) {
+                    v = q.count;
+                }
+                i = v + 1;
+                uniform(
+                    q.value, k, v
+                );
+            }
+            return this;
+        }
     }
 }

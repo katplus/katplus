@@ -1,6 +1,8 @@
 package plus.kat.caller;
 
 import org.junit.jupiter.api.Test;
+import plus.kat.Supplier;
+import plus.kat.spare.Spoiler;
 
 import java.util.HashMap;
 
@@ -67,5 +69,66 @@ public class QueryTest {
 
         map.put("id", null);
         assertEquals("id=&tag=kat", new Query(map).toString());
+    }
+
+    @Test
+    public void test7() {
+        Query query = new Query();
+        query.set("id", 1);
+        query.set("name", "陆之岇");
+
+        Spoiler spoiler = query.spoiler();
+        assertTrue(spoiler.hasNext());
+        assertEquals("id", spoiler.getKey());
+
+        assertTrue(spoiler.hasNext());
+        assertEquals("陆之岇", spoiler.getValue().toString());
+    }
+
+    @Test
+    public void test8() {
+        Query query = new Query();
+        query.set("id", 1);
+        query.set("tag", "kat");
+        query.set("name", "陆之岇");
+
+        Spoiler spoiler = query.spoiler();
+        assertTrue(spoiler.hasNext());
+        assertTrue(spoiler.hasNext());
+        assertTrue(spoiler.hasNext());
+        assertEquals("name", spoiler.getKey());
+        assertEquals("陆之岇", spoiler.getValue().toString());
+
+        Spoiler spoiler0 = query.spoiler();
+        assertTrue(spoiler0.hasNext());
+        assertEquals("id", spoiler0.getKey());
+
+        assertTrue(spoiler0.hasNext());
+        assertEquals("kat", spoiler0.getValue().toString());
+
+        assertTrue(spoiler0.hasNext());
+        assertEquals("陆之岇", spoiler0.getValue().toString());
+        assertFalse(spoiler0.hasNext());
+    }
+
+    static class User {
+        public int id;
+        public String name;
+    }
+
+    @Test
+    public void test9() {
+        Query query = new Query();
+        query.set("id", 1);
+        query.set("name", "陆之岇");
+
+        Supplier supplier = Supplier.ins();
+        User user = supplier.apply(
+            User.class, query.spoiler()
+        );
+
+        assertNotNull(user);
+        assertEquals(1, user.id);
+        assertEquals("陆之岇", user.name);
     }
 }
