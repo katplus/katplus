@@ -79,7 +79,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     /**
      * Returns {@code true} if, and only if, internal {@code byte[]} can be shared
      *
-     * @see Chain#getValue()
+     * @see Chain#getSource()
      * @since 0.0.2
      */
     @Override

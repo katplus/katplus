@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import plus.kat.chain.Value;
 
 import java.io.ByteArrayInputStream;
-import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -180,7 +179,7 @@ public class ChainTest {
         Value v2 = new Value();
         v2.add(
             new ByteArrayInputStream(
-                v1.getValue(), 0, v1.length()
+                v1.getSource(), 0, v1.length()
             )
         );
 

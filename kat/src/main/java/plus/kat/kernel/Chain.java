@@ -20,8 +20,8 @@ import plus.kat.anno.Nullable;
 
 import javax.crypto.*;
 import java.io.*;
-import java.lang.reflect.Type;
 import java.security.*;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
 import plus.kat.crash.*;
@@ -64,6 +64,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Initialize a {@code byte[]} of the specified size internally
+     *
      * @param size the initial capacity
      */
     public Chain(
@@ -73,6 +75,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Initialize the specified byte[] internally
+     *
      * @param data the initial byte array
      */
     public Chain(
@@ -82,20 +86,24 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param data specify the {@link Chain} to be mirrored
+     * Initialize the internal specified byte[] to copy from {@link Chain}
+     *
+     * @param chain specify the {@link Chain} to be mirrored
      */
     public Chain(
-        @Nullable Chain data
+        @Nullable Chain chain
     ) {
-        if (data == null) {
+        if (chain == null) {
             value = EMPTY_BYTES;
         } else {
-            value = data.copyBytes();
+            value = chain.copyBytes();
             count = value.length;
         }
     }
 
     /**
+     * Initialize the internal specified {@code bucket}
+     *
      * @param bucket the specified {@link Bucket} to be used
      */
     public Chain(
@@ -127,9 +135,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Only supports ASCII code comparison
-     * <p>
-     * Compares a {@link Chain} or {@link CharSequence} to this {@link Chain} to determine if their contents are equal
+     * Compares a {@link Chain} or {@link CharSequence} to this chain
+     * to determine if their contents are equal, only supports ASCII code comparison
      *
      * @param o the {@link Object} to compare this {@link Chain} against
      */
@@ -193,9 +200,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Only supports ASCII code comparison
+     * Compares this {@link Chain} with the specified
+     * {@link CharSequence} for order, only supports ASCII code comparison
      *
      * @param o the {@link CharSequence} to be compared
+     * @throws NullPointerException If the specified {@code chars} is null
      * @see String#compareTo(String)
      */
     @Override
@@ -226,7 +235,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares the internal {@code byte[]} and specified {@code byte}
+     * Compares this chain and specified {@code byte} value
+     *
+     * <pre>{@code
+     *   byte b = 'k';
+     *   new Value("k").is(b); // true
+     *   new Value("kat").is(b); // false
+     * }</pre>
      *
      * @param b the byte value to be compared
      */
@@ -237,10 +252,15 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares the internal UTF-8 {@code byte[]} and specified {@code char}
+     * Compares this UTF-8 chain and specified {@code char} value
+     *
+     * <pre>{@code
+     *   char c = 'k';
+     *   new Value("k").is(c); // true
+     *   new Value("kat").is(c); // false
+     * }</pre>
      *
      * @param c the char value to be compared
-     * @since 0.0.2 supports UTF-8
      */
     public boolean is(
         char c
@@ -286,7 +306,23 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares specified index of internal {@code byte[]} and specified {@code byte}
+     * Compares the specified index value of chain and specified {@code byte} value
+     *
+     * <pre>{@code
+     *   byte b = 'k';
+     *   Chain c0 = new Value("k");
+     *
+     *   c0.is(0, b); // true
+     *   c0.is(1, b); // false
+     *
+     *   Chain c1 = new Value("kat");
+     *   c1.is(0, b); // true
+     *   c1.is(1, b); // false
+     *
+     *   byte c = 't';
+     *   c1.is(2, c); // true
+     *   c1.is(1, c); // false
+     * }</pre>
      *
      * @param i the specified index
      * @param b the byte value to be compared
@@ -299,7 +335,23 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares specified index of internal UTF-8 {@code byte[]} and specified {@code char}
+     * Compares the specified index value of UTF8 chain and specified {@code char} value
+     *
+     * <pre>{@code
+     *   char b = 'k';
+     *   Chain c0 = new Value("k");
+     *
+     *   c0.is(0, b); // true
+     *   c0.is(1, b); // false
+     *
+     *   Chain c1 = new Value("kat");
+     *   c1.is(0, b); // true
+     *   c1.is(1, b); // false
+     *
+     *   char c = 't';
+     *   c1.is(2, c); // true
+     *   c1.is(1, c); // false
+     * }</pre>
      *
      * @param i the specified index
      * @param c the byte value to be compared
@@ -417,9 +469,20 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares the internal {@code byte[]} and specified {@code byte[]}
+     * Compares this chain and specified {@code byte[]}
+     *
+     * <pre>{@code
+     *   byte[] b = new byte[]{'k'};
+     *   new Value("k").is(b); // true
+     *   new Value("kat").is(b); // false
+     *
+     *   byte[] c = new byte[]{'k', 'a', 't'};
+     *   new Value("k").is(c); // false
+     *   new Value("kat").is(c); // true
+     * }</pre>
      *
      * @param b the {@code byte[]} to compare this {@link Chain} against
+     * @throws NullPointerException If the specified {@code bytes} is null
      * @since 0.0.2
      */
     public boolean is(
@@ -444,9 +507,18 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares the internal UTF-8 {@code byte[]} and specified {@link CharSequence}
+     * Compares this UTF8 chain and specified {@link CharSequence}
+     *
+     * <pre>{@code
+     *   new Value("k").is("k"); // true
+     *   new Value("kat").is("k"); // false
+     *
+     *   new Value("k").is("kat"); // false
+     *   new Value("kat").is("kat"); // true
+     * }</pre>
      *
      * @param ch the {@link CharSequence} to compare this {@link Chain} against
+     * @throws NullPointerException If the specified {@code chars} is null
      * @since 0.0.2 supports UTF-8
      */
     public boolean is(
@@ -528,7 +600,15 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Unsafe method
+     * Returns the byte value at the specified index
+     *
+     * <pre>{@code
+     *   Chain c = new Value("kat");
+     *   byte b0 = c.at(0); // 'k'
+     *   byte b1 = c.at(1); // 'a'
+     *   byte b2 = c.at(2); // 't'
+     *   byte b3 = c.at(3); // may be '\0' or NPE
+     * }</pre>
      *
      * @param i the index of the byte value
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative or not less than the length of this
@@ -538,6 +618,16 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns the byte value at the specified index
+     *
+     * <pre>{@code
+     *   Chain c = new Value("kat");
+     *   byte b0 = c.get(0); // 'k'
+     *   byte b1 = c.get(1); // 'a'
+     *   byte b2 = c.get(2); // 't'
+     *   byte b3 = c.get(3); // -1
+     * }</pre>
+     *
      * @param i the index of the byte value
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
      */
@@ -547,6 +637,17 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns the byte value at the specified index
+     *
+     * <pre>{@code
+     *   Chain c = new Value("kat");
+     *   byte def = 'K'
+     *   byte b0 = c.get(0, def); // 'k'
+     *   byte b1 = c.get(1, def); // 'a'
+     *   byte b2 = c.get(2, def); // 't'
+     *   byte b3 = c.get(3, def); // 'K'
+     * }</pre>
+     *
      * @param i   index
      * @param def default
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
@@ -557,6 +658,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns the byte value at the specified index
+     *
      * @param i the index of the byte value
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative or out of range {@code count}
      */
@@ -571,6 +674,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns the char value at the specified index
+     *
      * @param i the index of the char value
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative or out of range {@code count}
      */
@@ -603,14 +708,16 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns {@code true} if, and only if, {@link #length()} is {@code 0}
+     * Returns true if, and only if,
+     * the length of chain is {@code 0}
      */
     public boolean isEmpty() {
         return count == 0;
     }
 
     /**
-     * Returns {@code false} if and only if {@code value[]} has an element {@code byte > 32 or byte< 0}
+     * Returns false if and only if this chain
+     * has an element {@code byte > 32 or byte< 0}
      */
     public boolean isBlank() {
         int i = 0, l = count;
@@ -626,14 +733,16 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns {@code true} if, and only if, {@link #length()} is {@code 0}
+     * Returns true if, and only if,
+     * the length of chain is not {@code 0}
      */
     public boolean isNotEmpty() {
         return count != 0;
     }
 
     /**
-     * Returns {@code true} if and only if {@code value[]} has an element {@code byte > 32 or byte< 0}
+     * Returns true if and only if this chain
+     * has an element {@code byte > 32 or byte< 0}
      */
     public boolean isNotBlank() {
         int i = 0, l = count;
@@ -649,17 +758,17 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns {@code true} if, and only if, {@link #length()} is {@code 1}
+     * Returns true if, and only if,
+     * the length of chain is {@code 1}
      */
     public boolean isSole() {
         return count == 1;
     }
 
     /**
-     * Returns {@code true} if, and only if, internal {@code byte[]} can be shared
+     * Returns true if, and only if, this chain can be shared
      *
-     * @see Chain#getValue()
-     * @see Chain#copyBytes()
+     * @see Chain#getSource()
      * @since 0.0.2
      */
     public boolean isShared() {
@@ -667,9 +776,36 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Only supports ASCII code comparison
+     * Returns the internal value of this {@link Chain}
+     * and only if, {@link #isShared()} is true, otherwise throw collapse
+     *
+     * @throws Collapse If the internal value cannot be shared
+     * @see Chain#isShared()
+     * @since 0.0.4
+     */
+    @NotNull
+    public byte[] getSource() {
+        if (isShared()) {
+            return value;
+        }
+
+        throw new Collapse(
+            "Unexpectedly, the internal value cannot be shared"
+        );
+    }
+
+    /**
+     * Tests if this {@link Chain} starts with the
+     * specified prefix, only supports ASCII code comparison.
+     *
+     * <pre>{@code
+     *   Chain c = new Value("kat");
+     *   boolean b = c.startWith("ka"); // true
+     *   boolean b = c.startWith("kat.plus"); // false
+     * }</pre>
      *
      * @param c the prefix
+     * @throws NullPointerException If the specified {@code prefix} is null
      * @see String#startsWith(String)
      */
     public boolean startWith(
@@ -696,9 +832,17 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Only supports ASCII code comparison
+     * Tests if this {@link Chain} ends with the
+     * specified suffix, only supports ASCII code comparison
+     *
+     * <pre>{@code
+     *   Chain c = new Value("kat");
+     *   boolean b = c.endsWith("at"); // true
+     *   boolean b = c.endsWith("plus.kat"); // false
+     * }</pre>
      *
      * @param c the suffix
+     * @throws NullPointerException If the specified {@code suffix} is null
      * @see String#endsWith(String)
      */
     public boolean endsWith(
@@ -726,7 +870,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the first element only if {@link #length()} is not {@code 0}, otherwise returns {@code -1}
+     * Returns the first element only if the length of
+     * chain is not {@code 0}, otherwise returns {@code -1}
      */
     public byte head() {
         if (count == 0) {
@@ -736,7 +881,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Check the specified {@code data} comparison with the first element
+     * Check the specified value comparison with the first element
      *
      * @param b data
      */
@@ -750,7 +895,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the last element only if {@link #length()} is not {@code 0}, otherwise returns {@code -1}
+     * Returns the last element only if the length of
+     * chain is not {@code 0}, otherwise returns {@code -1}
      */
     public byte tail() {
         int i = count - 1;
@@ -761,7 +907,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Check the specified {@code data} comparison with the last element
+     * Check the specified value comparison with the last element
      *
      * @param b data
      */
@@ -776,7 +922,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the last element only if {@link #length()} is {@code 1}, otherwise returns {@code 0}
+     * Returns the last element only if the length of
+     * chain is {@code 1}, otherwise returns {@code -1}
      */
     public byte sole() {
         if (count != 1) {
@@ -786,7 +933,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param b the specified byte value
+     * Returns the index within this chain of
+     * the first occurrence of the specified byte value
+     *
+     * @param b the byte value to search for
      * @see String#indexOf(int)
      */
     public int indexOf(byte b) {
@@ -801,7 +951,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param b the specified int value
+     * Returns the index within this chain of
+     * the first occurrence of the specified character
+     *
+     * @param b the character to search for
      * @see Chain#indexOf(byte)
      */
     public int indexOf(int b) {
@@ -809,7 +962,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param b the specified byte value
+     * Returns the index within this chain of the first occurrence of
+     * the specified byte value, starting the search at the specified index
+     *
+     * @param b the character to search for
      * @param o the index to start the search from
      * @see String#indexOf(int, int)
      */
@@ -833,7 +989,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param b the specified int value
+     * Returns the index within this chain of the first occurrence of
+     * the specified character, starting the search at the specified index
+     *
+     * @param b the character to search for
      * @param o the index to start the search from
      * @see Chain#indexOf(byte, int)
      */
@@ -844,9 +1003,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Only supports ASCII code comparison
+     * Returns the index within this chain of the first
+     * occurrence of the specified chars, only supports ASCII code comparison
      *
-     * @param c the specified {@link CharSequence}
+     * @param c the specified chars to search for
+     * @throws NullPointerException If the specified {@code chars} is null
      * @see String#indexOf(String)
      */
     public int indexOf(
@@ -856,10 +1017,12 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Only supports ASCII code comparison
+     * Returns the index within this chain of the first occurrence of
+     * the specified chars, starting at the specified index, only supports ASCII code comparison
      *
-     * @param c the specified {@link CharSequence}
+     * @param c the specified chars to search for
      * @param o the index from which to start the search
+     * @throws NullPointerException           If the specified {@code chars} is null
      * @throws ArrayIndexOutOfBoundsException if the offset argument is negative
      * @see String#indexOf(String, int)
      */
@@ -908,7 +1071,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param b the specified byte value
+     * Returns the index within this chain of
+     * the last occurrence of the specified byte value
+     *
+     * @param b the byte value to search for
      * @see String#lastIndexOf(int)
      */
     public int lastIndexOf(byte b) {
@@ -923,7 +1089,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param b the specified int value
+     * Returns the index within this chain of
+     * the last occurrence of the specified character
+     *
+     * @param b the character to search for
      * @see Chain#lastIndexOf(byte)
      */
     public int lastIndexOf(int b) {
@@ -931,7 +1100,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param b the specified byte value
+     * Returns the index within this chain of the last occurrence of
+     * the specified byte value, searching backward starting at the specified index
+     *
+     * @param b the byte value to search for
      * @param o the index from which to start the search
      * @see String#lastIndexOf(int, int)
      */
@@ -951,7 +1123,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param b the specified int value
+     * Returns the index within this chain of the last occurrence of
+     * the specified character, searching backward starting at the specified index
+     *
+     * @param b the character to search for
      * @param o the index from which to start the search
      * @see Chain#lastIndexOf(byte, int)
      */
@@ -962,9 +1137,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Only supports ASCII code comparison
+     * Returns the index within this chain of the last
+     * occurrence of the specified chars, only supports ASCII code comparison
      *
-     * @param c the specified {@link CharSequence}
+     * @param c the specified chars to search for
+     * @throws NullPointerException If the specified {@code chars} is null
      * @see String#lastIndexOf(String)
      */
     public int lastIndexOf(
@@ -974,10 +1151,12 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Only supports ASCII code comparison
+     * Returns the index within this chain of the last occurrence of the specified chars,
+     * searching backward starting at the specified index, only supports ASCII code comparison
      *
-     * @param c the specified {@link CharSequence}
+     * @param c the specified chars to search for
      * @param f the index from which to start the search
+     * @throws NullPointerException If the specified {@code chars} is null
      * @see String#lastIndexOf(String, int)
      */
     public int lastIndexOf(
@@ -1026,6 +1205,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns true if and only if this
+     * chain contains the specified byte value
+     *
      * @param b the byte value to search for
      * @see Chain#indexOf(byte)
      */
@@ -1034,6 +1216,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns true if and only if this
+     * chain contains the specified character
+     *
      * @param b the int value to search for
      * @see Chain#indexOf(byte)
      */
@@ -1042,9 +1227,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Only supports ASCII code comparison
+     * Returns true if and only if this chain contains
+     * the specified chars. only supports ASCII code comparison
      *
      * @param c the {@link CharSequence} to search for
+     * @throws NullPointerException If the specified {@code chars} is null
      * @see Chain#indexOf(CharSequence)
      * @see String#contains(CharSequence)
      */
@@ -1079,25 +1266,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the internal {@code byte[]}
+     * Copy bytes from this {@link Chain} into the destination byte array
      *
-     * @throws Collapse If the internal value cannot be shared
-     * @since 0.0.2
-     */
-    @NotNull
-    public byte[] getValue() {
-        if (isShared()) {
-            return value;
-        }
-
-        throw new Collapse(
-            "Unexpectedly, the internal value cannot be shared"
-        );
-    }
-
-    /**
      * @param index the start index
      * @param dst   the specified {@code dst}
+     * @throws NullPointerException If the specified {@code dst} is null
      * @since 0.0.3
      */
     public int getBytes(
@@ -1119,8 +1292,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Copy bytes from this {@link Chain} into the destination byte array
+     *
      * @param index the start index
      * @param dst   the specified {@code dst}
+     * @throws NullPointerException If the specified {@code dst} is null
      * @since 0.0.3
      */
     public int getBytes(
@@ -1151,9 +1327,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * copy the internal UTF-8 {@code byte[]} to {@code char[]}
-     *
-     * @since 0.0.2 supports UTF-8
+     * Copy this UTF8 chain into a new char array
      */
     @NotNull
     public char[] copyChars() {
@@ -1166,7 +1340,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * copy the internal UTF-8 {@code byte[]} to {@code char[]}
+     * Copy this UTF8 chain into a new char array
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
@@ -1194,7 +1368,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * copy the internal UTF-8 {@code byte[]}
+     * Copy this UTF8 chain into a new byte array
      */
     @NotNull
     public byte[] copyBytes() {
@@ -1238,8 +1412,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Writes to the {@link OutputStream} using the internal {@code byte[]} of this {@link Chain}
+     * Writes to the {@link OutputStream} using the internal value of this {@link Chain}
      *
+     * @throws NullPointerException If the specified {@code stream} is null
      * @see OutputStream#write(byte[], int, int)
      * @since 0.0.2
      */
@@ -1252,10 +1427,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Writes to the {@link OutputStream} using the internal {@code byte[]} of this {@link Chain}
+     * Writes to the {@link OutputStream} using the internal value of this {@link Chain}
      *
      * @param o the specified offset
      * @param l the specified length
+     * @throws NullPointerException      If the specified {@code stream} is null
      * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
      * @see OutputStream#write(byte[], int, int)
      * @since 0.0.2
@@ -1269,8 +1445,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Updates the {@link Mac} using the internal {@code byte[]} of this {@link Chain}
+     * Updates the {@link Mac} using the internal value of this {@link Chain}
      *
+     * @throws NullPointerException If the specified {@code mac} is null
      * @see Mac#update(byte[], int, int)
      */
     public void update(
@@ -1282,10 +1459,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Updates the {@link Mac} using the internal {@code byte[]} of this {@link Chain}
+     * Updates the {@link Mac} using the internal value of this {@link Chain}
      *
      * @param o the specified offset
      * @param l the specified length
+     * @throws NullPointerException     If the specified {@code mac} is null
      * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see Mac#update(byte[], int, int)
      */
@@ -1298,8 +1476,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Updates the {@link Signature} using the internal {@code byte[]} of this {@link Chain}
+     * Updates the {@link Signature} using the internal value of this {@link Chain}
      *
+     * @throws NullPointerException If the specified {@code signature} is null
      * @see Signature#update(byte[], int, int)
      */
     public void update(
@@ -1311,10 +1490,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Updates the {@link Signature} using the internal {@code byte[]} of this {@link Chain}
+     * Updates the {@link Signature} using the internal value of this {@link Chain}
      *
      * @param o the specified offset
      * @param l the specified length
+     * @throws NullPointerException     If the specified {@code signature} is null
      * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see Signature#update(byte[], int, int)
      */
@@ -1327,8 +1507,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Updates the {@link MessageDigest} using the internal {@code byte[]} of this {@link Chain}
+     * Updates the {@link MessageDigest} using the internal value of this {@link Chain}
      *
+     * @throws NullPointerException If the specified {@code digest} is null
      * @see MessageDigest#update(byte[], int, int)
      */
     public void update(
@@ -1340,10 +1521,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Updates the {@link MessageDigest} using the internal {@code byte[]} of this {@link Chain}
+     * Updates the {@link MessageDigest} using the internal value of this {@link Chain}
      *
      * @param o the specified offset
      * @param l the specified length
+     * @throws NullPointerException     If the specified {@code digest} is null
      * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see MessageDigest#update(byte[], int, int)
      */
@@ -1356,8 +1538,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Updates the {@link Cipher} using the internal {@code byte[]} of this {@link Chain}
+     * Updates the {@link Cipher} using the internal value of this {@link Chain}
      *
+     * @throws NullPointerException If the specified {@code cipher} is null
      * @see Cipher#update(byte[], int, int)
      */
     @Nullable
@@ -1370,10 +1553,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Updates the {@link Cipher} using the internal {@code byte[]} of this {@link Chain}
+     * Updates the {@link Cipher} using the internal value of this {@link Chain}
      *
      * @param o the specified offset
      * @param l the specified length
+     * @throws NullPointerException     If the specified {@code cipher} is null
      * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see Cipher#update(byte[], int, int)
      */
@@ -1387,8 +1571,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Completes the {@link Cipher} using the internal {@code byte[]} of this {@link Chain}
+     * Completes the {@link Cipher} using the internal value of this {@link Chain}
      *
+     * @throws NullPointerException If the specified {@code cipher} is null
      * @see Cipher#doFinal(byte[], int, int)
      */
     @Nullable
@@ -1401,10 +1586,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Completes the {@link Cipher} using the internal {@code byte[]} of this {@link Chain}
+     * Completes the {@link Cipher} using the internal value of this {@link Chain}
      *
      * @param o the specified offset
      * @param l the specified length
+     * @throws NullPointerException     If the specified {@code cipher} is null
      * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see Cipher#doFinal(byte[], int, int)
      */
@@ -1668,7 +1854,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the {@code byte[]} of this {@link Chain} as a {@link String}
+     * Returns the value of this {@link Chain} as a {@link String}
      */
     @NotNull
     @Override
@@ -1683,7 +1869,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the {@code byte[]} of this {@link Chain} as a {@link String}
+     * Returns the value of this {@link Chain} as a {@link String}
      *
      * @param b the beginning index, inclusive
      * @param e the ending index, exclusive
@@ -1704,7 +1890,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the {@code byte[]} of this {@link Chain} as a {@link String}
+     * Returns the value of this {@link Chain} as a {@link String}
      *
      * @param c charset
      */
@@ -1722,7 +1908,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the {@code byte[]} of this {@link Chain} as a {@link String}
+     * Returns the value of this {@link Chain} as a {@link String}
      *
      * @param c charset
      * @param b the beginning index, inclusive

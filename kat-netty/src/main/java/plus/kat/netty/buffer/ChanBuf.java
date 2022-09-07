@@ -60,11 +60,11 @@ public class ChanBuf {
             );
         }
 
-        byte[] src = chain.getValue();
-        if (length == src.length) {
-            return Unpooled.wrappedBuffer(src);
+        byte[] value = chain.getSource();
+        if (length == value.length) {
+            return Unpooled.wrappedBuffer(value);
         }
 
-        return Unpooled.wrappedBuffer(src).slice(0, length);
+        return Unpooled.wrappedBuffer(value).slice(0, length);
     }
 }
