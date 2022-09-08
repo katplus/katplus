@@ -26,28 +26,75 @@ import java.util.Map;
  */
 public interface Spoiler {
     /**
-     * Returns {@code true} if the {@link Spoiler} has more elements
+     * Returns {@code true} if the spoiler has more elements.
+     * In other words, returns {@code true} if {@link #getValue} would
+     * return the value of current element rather than throwing an exception
+     *
+     * <pre>{@code
+     *   Spoiler s0 = ...
+     *   while (s0.hasNext()) {
+     *       String k = s0.getKey();
+     *       Object v = s0.getValue();
+     *       // then next step
+     *   }
+     *
+     *   Spoiler s1 = ...
+     *   while (s1.hasNext()) {
+     *       String k = s1.getKey();
+     *       if (check k) {
+     *           Object v = s1.getValue();
+     *           // then next step
+     *       }
+     *   }
+     * }</pre>
+     *
+     * @return {@code true} if the spoiler has more elements
      */
     boolean hasNext();
 
     /**
-     * Returns the current key corresponding to this {@link Spoiler}
+     * Returns the key of current element.
+     * Can only be called at most once each iteration
+     *
+     * <pre>{@code
+     *   Spoiler spoiler = ...
+     *   while (spoiler.hasNext()) {
+     *       String k1 = spoiler.getKey();
+     *       String k2 = spoiler.getKey();
+     *       // k2 is equal to k1, may repeatedly calculate the key
+     *   }
+     * }</pre>
+     *
+     * @see Spoiler#hasNext()
      */
     @NotNull
     String getKey();
 
     /**
-     * Returns the current value corresponding to this {@link Spoiler}
+     * Returns the value of current element.
+     * Can only be called at most once each iteration
+     *
+     * <pre>{@code
+     *   Spoiler spoiler = ...
+     *   while (spoiler.hasNext()) {
+     *       Object v1 = spoiler.getValue();
+     *       Object v2 = spoiler.getValue();
+     *       // v2 may not be equal to v1, so either does not call or calls once as a local variable
+     *   }
+     * }</pre>
+     *
+     * @see Spoiler#hasNext()
      */
     @Nullable
     Object getValue();
 
     /**
-     * Returns a visitor of the {@code map}
+     * Returns a spoiler of the {@code map}
      *
      * @param map the  specified map
      * @throws NullPointerException If the {@code map} is null
      */
+    @NotNull
     static Spoiler of(
         @NotNull Map<?, ?> map
     ) {
