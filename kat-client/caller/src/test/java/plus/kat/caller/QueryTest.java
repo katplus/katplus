@@ -102,11 +102,14 @@ public class QueryTest {
         Spoiler spoiler0 = query.spoiler();
         assertTrue(spoiler0.hasNext());
         assertEquals("id", spoiler0.getKey());
+        assertEquals("id", spoiler0.getKey());
 
         assertTrue(spoiler0.hasNext());
         assertEquals("kat", spoiler0.getValue().toString());
+        assertEquals("kat", spoiler0.getValue().toString());
 
         assertTrue(spoiler0.hasNext());
+        assertEquals("陆之岇", spoiler0.getValue().toString());
         assertEquals("陆之岇", spoiler0.getValue().toString());
         assertFalse(spoiler0.hasNext());
     }

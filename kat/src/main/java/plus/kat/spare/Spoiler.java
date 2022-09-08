@@ -61,7 +61,7 @@ public interface Spoiler {
      *   while (spoiler.hasNext()) {
      *       String k1 = spoiler.getKey();
      *       String k2 = spoiler.getKey();
-     *       // k2 is equal to k1, may repeatedly calculate the key
+     *       // k2 equals k1, the k2 may be the result of repeated calculations
      *   }
      * }</pre>
      *
@@ -79,7 +79,7 @@ public interface Spoiler {
      *   while (spoiler.hasNext()) {
      *       Object v1 = spoiler.getValue();
      *       Object v2 = spoiler.getValue();
-     *       // v2 may not be equal to v1, so either does not call or calls once as a local variable
+     *       // v2 equals v1, the v2 may be the result of repeated calculations
      *   }
      * }</pre>
      *

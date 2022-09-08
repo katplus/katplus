@@ -3,14 +3,15 @@ package plus.kat.caller;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.crash.*;
 import plus.kat.spare.*;
-import plus.kat.chain.*;
 import plus.kat.kernel.*;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import static plus.kat.stream.Binary.hex;
 import static plus.kat.stream.Binary.upper;
 
 /**
@@ -505,7 +506,7 @@ public class Query extends Chain {
      * @since 0.0.4
      */
     public static class Parser
-        extends Value implements Spoiler {
+        extends Chain implements Spoiler {
 
         private Query query;
         private String string;
@@ -565,46 +566,122 @@ public class Query extends Chain {
 
         @Override
         public String getKey() {
-            count = 0;
-            if (b) {
-                uniform(
-                    string, i, k
-                );
-            } else {
-                uniform(
-                    query.value, i, k
-                );
+            if (i < k) {
+                count = 0;
+                if (b) {
+                    decode(
+                        string, i, k
+                    );
+                } else {
+                    decode(
+                        query.value, i, k
+                    );
+                }
             }
             return toString();
         }
 
         @Override
         public Object getValue() {
-            count = 0;
-            if (b) {
-                String s = string;
-                int v = s.indexOf(
-                    '&', ++k
-                );
-                if (v == -1) {
-                    v = s.length();
+            if (i < k) {
+                count = 0;
+                if (b) {
+                    String s = string;
+                    int v = s.indexOf(
+                        '&', ++k
+                    );
+                    if (v == -1) {
+                        v = s.length();
+                    }
+                    i = v + 1;
+                    decode(s, k, v);
+                } else {
+                    Query q = query;
+                    int v = q.indexOf(
+                        (byte) '&', ++k
+                    );
+                    if (v == -1) {
+                        v = q.count;
+                    }
+                    i = v + 1;
+                    decode(
+                        q.value, k, v
+                    );
                 }
-                i = v + 1;
-                uniform(s, k, v);
-            } else {
-                Query q = query;
-                int v = q.indexOf(
-                    (byte) '&', ++k
-                );
-                if (v == -1) {
-                    v = q.count;
-                }
-                i = v + 1;
-                uniform(
-                    q.value, k, v
-                );
             }
             return this;
+        }
+
+        public void decode(
+            byte[] data, int i, int o
+        ) {
+            while (i < o) {
+                byte b = data[i++];
+
+                if (b == '+') {
+                    chain(
+                        (byte) 0x20
+                    );
+                    continue;
+                }
+
+                if (b != '%') {
+                    chain(b);
+                    continue;
+                }
+
+                if (i + 1 < o) {
+                    try {
+                        byte d;
+                        d = (byte) hex(
+                            data[i++]
+                        );
+                        d <<= 4;
+                        d |= (byte) hex(
+                            data[i++]
+                        );
+                        chain(d);
+                    } catch (IOException e) {
+                        throw new UnsupportedCrash(e);
+                    }
+                }
+            }
+        }
+
+        public void decode(
+            CharSequence c, int i, int o
+        ) {
+            while (i < o) {
+                char b = c.charAt(i++);
+
+                if (b == '+') {
+                    chain(
+                        (byte) 0x20
+                    );
+                    continue;
+                }
+
+                if (b != '%') {
+                    chain(b);
+                    continue;
+                }
+
+                if (i + 1 < o) {
+                    try {
+                        byte d;
+                        d = (byte) hex(
+                            (byte) c.charAt(i++)
+                        );
+                        d <<= 4;
+                        d |= (byte) hex(
+                            (byte) c.charAt(i++)
+                        );
+                        chain(d);
+                    } catch (IOException e) {
+                        throw new UnsupportedCrash(e);
+                    }
+                }
+            }
         }
     }
 }
