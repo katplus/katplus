@@ -484,7 +484,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         } else {
             if (u < 0) {
                 int x;
-                if (u < -1) {
+                if (u != -1) {
                     m = tail;
                     if (m == null) m = head;
                 }
@@ -502,6 +502,9 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 } while (
                     (m = (n = m).near) != null
                 );
+                if (u == -1) {
+                    tail = node;
+                }
             } else {
                 do {
                     int x = m.index;

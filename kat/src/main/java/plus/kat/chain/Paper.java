@@ -73,7 +73,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     public boolean isFlag(
         long flag
     ) {
-        return (flags & flag) != 0;
+        return (flags & flag) == flag;
     }
 
     /**

@@ -327,7 +327,7 @@ public class Event<T> implements Flag {
     public boolean isFlag(
         long flag
     ) {
-        if ((flags & flag) != 0) {
+        if ((flags & flag) == flag) {
             return true;
         }
 
