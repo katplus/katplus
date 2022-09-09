@@ -24,12 +24,15 @@ import plus.kat.entity.*;
 import plus.kat.utils.*;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+
+import static plus.kat.utils.Reflect.lookup;
 
 /**
  * @author kraity
@@ -154,7 +157,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                     }
                 }
             }
-            node = node.later;
+            node = node.near;
         }
     }
 
@@ -162,7 +165,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     public Spoiler flat(
         @NotNull T bean
     ) {
-        assert bean != null;
         return new Iter<>(
             bean, this
         );
@@ -173,7 +175,6 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         @NotNull T bean,
         @NotNull Visitor visitor
     ) {
-        assert bean != null;
         Node<T, ?> node = head;
         while (node != null) {
             Object val = node.apply(bean);
@@ -182,97 +183,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                     node.key, val
                 );
             }
-            node = node.later;
+            node = node.near;
         }
-        return true;
-    }
-
-    /**
-     * @param key  the ket of {@link Node}
-     * @param node the specified {@link Node}
-     * @return {@code true} if the node is settled otherwise {@code false}
-     * @throws Collapse             If the {@code node} is already used
-     * @throws NullPointerException If the {@code key} or {@code node} is null
-     * @since 0.0.3
-     */
-    @SuppressWarnings("unchecked")
-    public boolean setup(
-        @NotNull String key,
-        @NotNull Node<T, ?> node
-    ) {
-        if (node.key != null) {
-            throw new Collapse(
-                node + " is already used"
-            );
-        }
-
-        Node<T, ?>[] tab = table;
-        if (tab == null) {
-            tab = table = new Node[6];
-        }
-
-        int i, hash = key.hashCode() & 0xFFFF;
-        Node<T, ?> e = tab[i = (hash % tab.length)];
-
-        if (e == null) {
-            tab[i] = node;
-        } else {
-            while (true) {
-                if (e.hash == hash &&
-                    key.equals(e.key)) {
-                    return false;
-                }
-                if (e.next != null) {
-                    e = e.next;
-                } else {
-                    e.next = node;
-                    break;
-                }
-            }
-        }
-
-        node.key = key;
-        node.hash = hash;
-
-        if (tail == null) {
-            head = node;
-            tail = node;
-        } else if (node.index < 0) {
-            tail.later = node;
-            tail = node;
-        } else {
-            Node<T, ?> m = head;
-            Node<T, ?> n = null;
-
-            while (true) {
-                if (m.index < 0) {
-                    node.later = m;
-                    if (m == head) {
-                        head = node;
-                    }
-                    break;
-                }
-
-                if (m.index > node.index) {
-                    if (n == null) {
-                        head = node;
-                    } else {
-                        n.later = node;
-                    }
-                    node.later = m;
-                    break;
-                } else {
-                    n = m;
-                    m = m.later;
-                    if (m == null) {
-                        tail = node;
-                        n.later = node;
-                        break;
-                    }
-                }
-            }
-        }
-
         return true;
     }
 
@@ -326,7 +238,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 return node;
             }
             index--;
-            node = node.later;
+            node = node.near;
         }
 
         return null;
@@ -477,6 +389,143 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     }
 
     /**
+     * Returns true if the node is settled otherwise false
+     *
+     * @since 0.0.4
+     */
+    protected boolean display(
+        @NotNull String key,
+        @NotNull Node<T, ?> node
+    ) {
+        return display(
+            0, key, node
+        );
+    }
+
+    /**
+     * Returns true if the node is settled otherwise false
+     *
+     * @since 0.0.4
+     */
+    @SuppressWarnings("unchecked")
+    protected boolean display(
+        @NotNull int grade,
+        @NotNull String key,
+        @NotNull Node<T, ?> node
+    ) {
+        if (node.key != null) {
+            throw new Collapse(
+                node + " is already used"
+            );
+        }
+
+        Node<T, ?>[] tab = table;
+        if (tab == null) {
+            tab = table = new Node[6];
+        }
+
+        int i, hash = key.hashCode() & 0xFFFF;
+        Node<T, ?> e = tab[i = (hash % tab.length)];
+
+        if (e == null) {
+            tab[i] = node;
+        } else {
+            while (true) {
+                if (e.hash == hash &&
+                    key.equals(e.key)) {
+                    return false;
+                }
+                if (e.next != null) {
+                    e = e.next;
+                } else {
+                    e.next = node;
+                    break;
+                }
+            }
+        }
+
+        int u = node.index;
+        node.grade = grade;
+
+        node.key = key;
+        node.hash = hash;
+
+        Node<T, ?> m = head;
+        Node<T, ?> n = null;
+
+        if (m == null) {
+            head = node;
+            if (u == -1) {
+                tail = node;
+            }
+            return true;
+        }
+
+        if (u == -1 && grade == 0) {
+            if (m.index < -1) {
+                head = node;
+                tail = node;
+                node.near = m;
+            } else {
+                n = tail;
+                tail = node;
+                if (n == null) {
+                    do {
+                        n = m;
+                        m = m.near;
+                    } while (
+                        m != null
+                    );
+                } else {
+                    node.near = n.near;
+                }
+                n.near = node;
+            }
+        } else {
+            if (u < 0) {
+                int x;
+                if (u < -1) {
+                    m = tail;
+                    if (m == null) m = head;
+                }
+                do {
+                    if ((x = m.index) < u ||
+                        (x == u && grade > m.grade)) {
+                        if (n == null) {
+                            head = node;
+                        } else {
+                            n.near = node;
+                        }
+                        node.near = m;
+                        return true;
+                    }
+                } while (
+                    (m = (n = m).near) != null
+                );
+            } else {
+                do {
+                    int x = m.index;
+                    if ((x < 0 || u < x) ||
+                        (x == u && grade > m.grade)) {
+                        if (n == null) {
+                            head = node;
+                        } else {
+                            n.near = node;
+                        }
+                        node.near = m;
+                        return true;
+                    }
+                } while (
+                    (m = (n = m).near) != null
+                );
+            }
+            n.near = node;
+        }
+
+        return true;
+    }
+
+    /**
      * @author kraity
      * @since 0.0.3
      */
@@ -513,7 +562,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             Node<K, ?> n = next;
             if (n != null) {
                 node = n;
-                next = n.later;
+                next = n.near;
                 return true;
             } else {
                 return false;
@@ -535,18 +584,12 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         protected int flags;
         protected final int index;
 
-        /**
-         * @param index the specified {@code index}
-         */
         public Item(
             int index
         ) {
             this.index = index;
         }
 
-        /**
-         * @param item the specified {@link Item}
-         */
         public Item(
             @NotNull Item item
         ) {
@@ -557,11 +600,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             actual = item.actual;
         }
 
-        /**
-         * @param expose the specified {@link Expose}
-         */
         public Item(
-            Expose expose
+            @Nullable Expose expose
         ) {
             if (expose == null) {
                 index = -1;
@@ -674,54 +714,45 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     public static abstract class Node<K, V>
         extends Item implements Setter<K, V>, Getter<K, V> {
 
-        private int hash;
-        private String key;
-
+        private Node<K, ?> near;
         private Node<K, ?> next;
-        private Node<K, ?> later;
 
-        /**
-         * @param index the specified {@code index}
-         */
+        private String key;
+        private int hash, grade;
+
         protected Node(
             int index
         ) {
             super(index);
         }
 
-        /**
-         * @param Item the specified {@link Item}
-         */
         protected Node(
-            Item Item
+            @NotNull Item Item
         ) {
             super(Item);
         }
 
-        /**
-         * @param expose the specified {@link Expose}
-         */
         protected Node(
-            Expose expose
+            @Nullable Expose expose
         ) {
             super(expose);
         }
 
-        /**
-         * @param expose the specified {@link Expose}
-         */
         protected Node(
-            Expose expose,
-            Field field,
-            Supplier supplier
+            @Nullable Expose expose,
+            @NotNull Field field,
+            @NotNull Supplier supplier
         ) {
             this(expose);
             klass = field.getType();
             actual = field.getGenericType();
 
             if (klass.isPrimitive()) {
+                flags |= Expose.NOTNULL;
                 klass = Reflect.wrap(klass);
-                coder = Reflect.activate(expose, supplier);
+                coder = Reflect.activate(
+                    expose, supplier
+                );
             } else {
                 Format format = field
                     .getAnnotation(
@@ -739,13 +770,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             }
         }
 
-        /**
-         * @param expose the specified {@link Expose}
-         */
         protected Node(
-            Expose expose,
-            Method method,
-            Supplier supplier
+            @Nullable Expose expose,
+            @NotNull Method method,
+            @NotNull Supplier supplier
         ) {
             this(expose);
             switch (method.getParameterCount()) {
@@ -766,8 +794,11 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             }
 
             if (klass.isPrimitive()) {
+                flags |= Expose.NOTNULL;
                 klass = Reflect.wrap(klass);
-                coder = Reflect.activate(expose, supplier);
+                coder = Reflect.activate(
+                    expose, supplier
+                );
             } else {
                 Format format = method
                     .getAnnotation(
@@ -783,6 +814,97 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                     );
                 }
             }
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.4
+     */
+    public static class Edge<K> extends Node<K, Object> {
+
+        protected final MethodHandle getter;
+        protected final MethodHandle setter;
+
+        public Edge(
+            @NotNull Edge<K> edge
+        ) {
+            super(edge);
+            getter = edge.getter;
+            setter = edge.setter;
+        }
+
+        public Edge(
+            @Nullable Expose expose,
+            @NotNull Field field,
+            @NotNull Supplier supplier
+        ) throws IllegalAccessException {
+            super(expose, field, supplier);
+            field.setAccessible(true);
+            getter = lookup.unreflectGetter(field);
+            setter = lookup.unreflectSetter(field);
+        }
+
+        public Edge(
+            @Nullable Expose expose,
+            @NotNull Method method,
+            @NotNull Supplier supplier
+        ) throws IllegalAccessException {
+            super(expose, method, supplier);
+            method.setAccessible(true);
+            if (method.getParameterCount() == 0) {
+                setter = null;
+                getter = lookup.unreflect(method);
+            } else {
+                getter = null;
+                setter = lookup.unreflect(method);
+            }
+        }
+
+        @Override
+        public Object apply(
+            @NotNull K bean
+        ) {
+            MethodHandle method = getter;
+            if (method == null) {
+                throw new Collapse(
+                    "Getter is not supported"
+                );
+            } else {
+                try {
+                    return method.invoke(bean);
+                } catch (Throwable e) {
+                    throw new Collapse(
+                        "Edge call 'invoke' failed", e
+                    );
+                }
+            }
+        }
+
+        @Override
+        public boolean accept(
+            @NotNull K bean,
+            @Nullable Object value
+        ) {
+            MethodHandle method = setter;
+            if (method == null) {
+                throw new Collapse(
+                    "Setter is not supported"
+                );
+            }
+            if (value != null || (flags & Expose.NOTNULL) == 0) {
+                try {
+                    method.invoke(
+                        bean, value
+                    );
+                    return true;
+                } catch (Throwable e) {
+                    throw new Collapse(
+                        "Edge call 'invoke' failed", e
+                    );
+                }
+            }
+            return false;
         }
     }
 }

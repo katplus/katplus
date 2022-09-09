@@ -358,7 +358,7 @@ public class ReflexTest {
         assertEquals(1, bean.one);
         assertEquals(1, bean.id);
         assertEquals("kraity", bean.name);
-        assertEquals("{\"name\":\"kraity\",\"id\":1,\"one\":1}", Json.encode(bean));
+        assertEquals("{\"one\":1,\"id\":1,\"name\":\"kraity\"}", Json.encode(bean));
     }
 
     static class User1 {

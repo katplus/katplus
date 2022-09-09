@@ -35,7 +35,7 @@ import java.lang.reflect.*;
  * @since 0.0.3
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
-public final class ProxySpare extends Workman<Object> {
+public class ProxySpare extends Workman<Object> {
 
     private Class<?> proxy;
     private Constructor<?> cons;
@@ -115,10 +115,7 @@ public final class ProxySpare extends Workman<Object> {
         );
     }
 
-    /**
-     * @param methods the specified {@link Method} collection
-     */
-    private void onMethods(
+    protected void onMethods(
         @NotNull Method[] methods
     ) {
         for (Method method : methods)
@@ -182,7 +179,7 @@ public final class ProxySpare extends Workman<Object> {
                         id, node
                     );
                     if (expose == null) {
-                        setup(
+                        display(
                             id, node
                         );
                         continue;
@@ -191,13 +188,13 @@ public final class ProxySpare extends Workman<Object> {
                     if ((expose.mode() & Expose.HIDDEN) == 0) {
                         String[] keys = expose.value();
                         if (keys.length == 0) {
-                            setup(
+                            display(
                                 id, node
                             );
                         } else {
                             // register all aliases
                             for (int i = 0; i < keys.length; i++) {
-                                setup(
+                                display(
                                     keys[i], i == 0 ? node : new Task(node)
                                 );
                             }

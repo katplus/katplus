@@ -21,19 +21,17 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
-import plus.kat.utils.Reflect;
+import plus.kat.utils.*;
 
 import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static plus.kat.reflex.ReflectSpare.Task;
-
 /**
  * @author kraity
  * @since 0.0.2
  */
-public final class RecordSpare<T> extends Workman<T> {
+public class RecordSpare<T> extends Workman<T> {
 
     private int width;
     private Constructor<T> ctor;
@@ -52,6 +50,16 @@ public final class RecordSpare<T> extends Workman<T> {
         @Nullable Provider provider
     ) {
         super(embed, klass, supplier, provider);
+    }
+
+    @Override
+    protected void initialize() {
+        onFields(
+            klass.getDeclaredFields()
+        );
+        onConstructors(
+            klass.getDeclaredConstructors()
+        );
     }
 
     @Override
@@ -153,10 +161,10 @@ public final class RecordSpare<T> extends Workman<T> {
         );
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    protected void initialize() {
-        for (Field field : klass.getDeclaredFields()) {
+    protected void onFields(
+        @NotNull Field[] fields
+    ) {
+        for (Field field : fields) {
             try {
                 int mod = field.getModifiers();
                 if ((mod & Modifier.STATIC) != 0) {
@@ -222,7 +230,7 @@ public final class RecordSpare<T> extends Workman<T> {
                     }
                 }
 
-                Task<T> node;
+                Edge<T> node;
                 Method method = klass.getMethod(
                     field.getName()
                 );
@@ -232,22 +240,26 @@ public final class RecordSpare<T> extends Workman<T> {
                         Expose.class
                     );
                 if (e2 == null) {
-                    node = new Task<>(
-                        method, e1, supplier
+                    node = new Edge<>(
+                        e1, method, supplier
                     );
-                    setup(name, node);
+                    display(
+                        name, node
+                    );
                 } else if ((e2.mode() &
                     Expose.HIDDEN) == 0) {
-                    node = new Task<>(
-                        method, e2, supplier
+                    node = new Edge<>(
+                        e2, method, supplier
                     );
                     String[] keys = e2.value();
                     if (keys.length == 0) {
-                        setup(name, node);
+                        display(
+                            name, node
+                        );
                     } else {
                         for (int i = 0; i < keys.length; i++) {
-                            setup(
-                                keys[i], i == 0 ? node : new Task<>(node)
+                            display(
+                                keys[i], i == 0 ? node : new Edge<>(node)
                             );
                         }
                     }
@@ -256,9 +268,14 @@ public final class RecordSpare<T> extends Workman<T> {
                 throw new Collapse(e);
             }
         }
+    }
 
+    @SuppressWarnings("unchecked")
+    protected void onConstructors(
+        @NotNull Constructor<?>[] constructors
+    ) {
         Constructor<T> b = null;
-        for (Constructor<?> c : klass.getDeclaredConstructors()) {
+        for (Constructor<?> c : constructors) {
             if (b == null) {
                 b = (Constructor<T>) c;
             } else {

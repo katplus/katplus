@@ -31,8 +31,7 @@ import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
-import plus.kat.utils.KatMap;
-import plus.kat.utils.Reflect;
+import plus.kat.utils.*;
 
 import static plus.kat.utils.Reflect.lookup;
 
@@ -41,7 +40,7 @@ import static plus.kat.utils.Reflect.lookup;
  * @since 0.0.2
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
-public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
+public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
 
     private MethodHandle handle;
     private Constructor<T> builder;
@@ -52,9 +51,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
     private Class<?>[] args;
     private KatMap<Object, Target> params;
 
-    /**
-     * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
-     */
     public ReflectSpare(
         @NotNull Class<T> klass,
         @NotNull Supplier supplier
@@ -62,9 +58,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
         super(klass, supplier);
     }
 
-    /**
-     * @throws SecurityException If the {@link Constructor#setAccessible(boolean)} is denied
-     */
     public ReflectSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
@@ -80,12 +73,13 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
         onConstructors(
             clazz.getDeclaredConstructors()
         );
+        int grade = 0;
         do {
             onFields(
-                clazz.getDeclaredFields()
+                grade, clazz.getDeclaredFields()
             );
             onMethods(
-                clazz.getDeclaredMethods()
+                grade++, clazz.getDeclaredMethods()
             );
         } while (
             (clazz = clazz.getSuperclass()) != Object.class
@@ -300,10 +294,8 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
         );
     }
 
-    /**
-     * @param fields the specified {@link Field} collection
-     */
-    private void onFields(
+    protected void onFields(
+        @NotNull int grade,
         @NotNull Field[] fields
     ) {
         boolean sealed = (flags & Embed.SEALED) != 0;
@@ -319,7 +311,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     continue;
                 }
 
-                Task<T> node;
+                Edge<T> node;
                 Expose expose = field
                     .getAnnotation(
                         Expose.class
@@ -347,15 +339,14 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                         continue;
                     }
 
-                    node = new Task<>(
-                        field, null, supplier
-                    );
-
-                    setup(
-                        name, node
+                    node = new Edge<>(
+                        null, field, supplier
                     );
                     super.put(
                         name, node
+                    );
+                    display(
+                        grade, name, node
                     );
                     continue;
                 } else {
@@ -370,35 +361,34 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                         continue;
                     }
 
-                    node = new Task<>(
-                        field, expose, supplier
+                    node = new Edge<>(
+                        expose, field, supplier
                     );
                 }
 
-                // check whether to use direct index
                 if (direct) {
                     int i = node.getIndex();
                     if (i >= 0) {
-                        super.put(i, node);
+                        super.putIfAbsent(i, node);
                     }
                 }
 
                 if (keys.length == 0) {
-                    if ((expose.mode() &
-                        Expose.HIDDEN) == 0) {
-                        setup(
-                            name, node
-                        );
-                    }
                     super.put(
                         name, node
                     );
+                    if ((expose.mode() &
+                        Expose.HIDDEN) == 0) {
+                        display(
+                            grade, name, node
+                        );
+                    }
                 } else {
                     // register only the first alias
                     if ((expose.mode() &
                         Expose.HIDDEN) == 0) {
-                        setup(
-                            name, node
+                        display(
+                            grade, name, node
                         );
                     }
 
@@ -416,10 +406,8 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
             }
     }
 
-    /**
-     * @param methods the specified {@link Method} collection
-     */
-    private void onMethods(
+    protected void onMethods(
+        @NotNull int grade,
         @NotNull Method[] methods
     ) {
         boolean sealed = (flags & Embed.SEALED) != 0;
@@ -442,7 +430,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     continue;
                 }
 
-                Task<T> node;
+                Edge<T> node;
                 Expose expose = method
                     .getAnnotation(
                         Expose.class
@@ -466,14 +454,15 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                                 continue;
                             }
 
-                            node = new Task<>(
-                                method, expose, supplier
+                            node = new Edge<>(
+                                expose, method, supplier
                             );
 
                             // register all aliases
                             for (int i = 0; i < keys.length; i++) {
-                                setup(
-                                    keys[i], i == 0 ? node : new Task<>(node)
+                                display(
+                                    grade, keys[i],
+                                    i == 0 ? node : new Edge<>(node)
                                 );
                             }
                         } else {
@@ -481,15 +470,14 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                                 continue;
                             }
 
-                            node = new Task<>(
-                                method, expose, supplier
+                            node = new Edge<>(
+                                expose, method, supplier
                             );
 
-                            // check whether to use direct index
                             if (direct) {
                                 int i = node.getIndex();
                                 if (i >= 0) {
-                                    super.put(i, node);
+                                    super.putIfAbsent(i, node);
                                 }
                             }
 
@@ -513,37 +501,34 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                 }
 
                 if (count == 0) {
-                    String id = Binary
+                    String key = Binary
                         .ascii(name);
-                    if (contains(id)) {
+                    if (contains(key)) {
                         continue;
                     }
 
-                    setup(
-                        id, new Task<>(
-                            method, expose, supplier
+                    display(
+                        grade, key, new Edge<>(
+                            expose, method, supplier
                         )
                     );
                 } else {
-                    Alias id = Binary
+                    Alias key = Binary
                         .alias(name);
-                    if (containsKey(id)) {
+                    if (containsKey(key)) {
                         continue;
                     }
 
-                    node = new Task<>(
-                        method, expose, supplier
-                    );
-
                     super.put(
-                        id, node
+                        key, node = new Edge<>(
+                            expose, method, supplier
+                        )
                     );
 
-                    // check whether to use direct index
                     if (direct) {
                         int i = node.getIndex();
                         if (i >= 0) {
-                            super.put(i, node);
+                            super.putIfAbsent(i, node);
                         }
                     }
                 }
@@ -552,10 +537,7 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
             }
     }
 
-    /**
-     * @param constructors the specified {@link Constructor} collection
-     */
-    private void onConstructors(
+    protected void onConstructors(
         @NotNull Constructor<?>[] constructors
     ) {
         Constructor<?> $ = null,
@@ -668,80 +650,6 @@ public final class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.3
-     */
-    public static class Task<K> extends Node<K, Object> {
-
-        final MethodHandle getter;
-        final MethodHandle setter;
-
-        public Task(
-            Task<K> node
-        ) {
-            super(node);
-            getter = node.getter;
-            setter = node.setter;
-        }
-
-        public Task(
-            Field field,
-            Expose expose,
-            Supplier supplier
-        ) throws IllegalAccessException {
-            super(expose, field, supplier);
-            field.setAccessible(true);
-            getter = lookup.unreflectGetter(field);
-            setter = lookup.unreflectSetter(field);
-        }
-
-        public Task(
-            Method method,
-            Expose expose,
-            Supplier supplier
-        ) throws IllegalAccessException {
-            super(expose, method, supplier);
-            method.setAccessible(true);
-            if (method.getParameterCount() == 0) {
-                setter = null;
-                getter = lookup.unreflect(method);
-            } else {
-                getter = null;
-                setter = lookup.unreflect(method);
-            }
-        }
-
-        @Override
-        public Object apply(
-            @NotNull K bean
-        ) {
-            try {
-                return getter.invoke(bean);
-            } catch (Throwable e) {
-                throw new Collapse(e);
-            }
-        }
-
-        @Override
-        public boolean accept(
-            @NotNull K bean,
-            @Nullable Object value
-        ) {
-            if (value != null || (flags & Expose.NOTNULL) == 0) {
-                try {
-                    setter.invoke(
-                        bean, value
-                    );
-                    return true;
-                } catch (Throwable e) {
-                    throw new Collapse(e);
-                }
-            }
-            return false;
         }
     }
 }
