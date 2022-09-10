@@ -27,8 +27,11 @@ import java.io.IOException;
  */
 public interface Pipe {
     /**
-     * Notify to create a receiver
+     * {@link Solver} commands this {@code pipe} creates
+     * the next receiver according to the {@code space} and
+     * {@code alias}, activate use it and push on receiver stack
      *
+     * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
      */
     boolean attach(
@@ -37,7 +40,10 @@ public interface Pipe {
     ) throws IOException;
 
     /**
-     * Sends data to the current receiver
+     * {@link Solver} requests the receiver
+     * at the top of the receiver stack of this
+     * {@code pipe} to update its attributes according
+     * to the {@code space}, {@code alias} and {@code value}
      *
      * @throws IOException If an I/O error occurs
      */
@@ -48,8 +54,11 @@ public interface Pipe {
     ) throws IOException;
 
     /**
-     * Notify the current receiver to end the transmission
+     * {@link Solver} commands this {@code pipe}
+     * to finish updating attributes on the receiver at the
+     * top of the receiver stack and remove it from the receiver stack
      *
+     * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
      */
     boolean detach() throws IOException;
