@@ -89,6 +89,26 @@ public interface Spoiler {
     Object getValue();
 
     /**
+     * Returns the modifier type of current element.
+     * To get the actual type, call {@code getValue().getClass()}
+     *
+     * <pre>{@code
+     *   Spoiler spoiler = ...
+     *   while (spoiler.hasNext()) {
+     *       Class cls = spoiler.getType();
+     *   }
+     * }</pre>
+     *
+     * @return {@link Class} or {@code null}
+     * @see Spoiler#hasNext()
+     * @since 0.0.4
+     */
+    @Nullable
+    default Class<?> getType() {
+        return null;
+    }
+
+    /**
      * Returns a spoiler of the {@code map}
      *
      * @param map the  specified map

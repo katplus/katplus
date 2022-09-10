@@ -564,6 +564,11 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
 
         @Override
+        public Class<?> getType() {
+            return node.klass;
+        }
+
+        @Override
         public boolean hasNext() {
             Node<K, ?> n = next;
             if (n != null) {

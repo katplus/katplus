@@ -23,6 +23,8 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
+import java.lang.reflect.Type;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -89,6 +91,28 @@ public final class Alias extends Chain {
         if (data != null) chain(
             data, 0, data.length()
         );
+    }
+
+    /**
+     * Returns the modifier type
+     *
+     * @since 0.0.4
+     */
+    @Nullable
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * Sets the modifier type of {@link Alias}
+     *
+     * @param type the specified type
+     * @since 0.0.4
+     */
+    public void setType(
+        @Nullable Type type
+    ) {
+        this.type = type;
     }
 
     /**

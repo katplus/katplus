@@ -25,6 +25,7 @@ import plus.kat.utils.*;
 
 import javax.crypto.spec.*;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -87,6 +88,28 @@ public class Value extends Chain {
         if (data != null) chain(
             data, 0, data.length()
         );
+    }
+
+    /**
+     * Returns the modifier type
+     *
+     * @since 0.0.4
+     */
+    @Nullable
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * Sets the modifier type of {@link Value}
+     *
+     * @param type the specified type
+     * @since 0.0.4
+     */
+    public void setType(
+        @Nullable Type type
+    ) {
+        this.type = type;
     }
 
     /**

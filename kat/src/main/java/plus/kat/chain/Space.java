@@ -395,24 +395,11 @@ public final class Space extends Chain implements Type {
     }
 
     /**
-     * Returns a {@code Type} representing the specified actual type
+     * Returns the modifier type of {@link Space}
      */
     @Nullable
-    @Override
     public Type getType() {
         return actual;
-    }
-
-    /**
-     * @throws Collapse Not support
-     */
-    @Override
-    public void setType(
-        @Nullable Type type
-    ) {
-        throw new Collapse(
-            "Unexpectedly, not support"
-        );
     }
 
     /**
