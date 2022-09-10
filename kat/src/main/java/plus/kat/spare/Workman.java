@@ -391,6 +391,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     /**
      * Returns true if the node is settled otherwise false
      *
+     * @see #display(int, String, Node)
      * @since 0.0.4
      */
     protected boolean display(
@@ -405,17 +406,20 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     /**
      * Returns true if the node is settled otherwise false
      *
+     * @param g the specified grade of node
+     * @param k the specified key of node
+     * @param n the specified node to be settled
      * @since 0.0.4
      */
     @SuppressWarnings("unchecked")
     protected boolean display(
-        @NotNull int grade,
-        @NotNull String key,
-        @NotNull Node<T, ?> node
+        @NotNull int g,
+        @NotNull String k,
+        @NotNull Node<T, ?> n
     ) {
-        if (node.key != null) {
+        if (n.key != null) {
             throw new Collapse(
-                node + " is already used"
+                n.key + " is already used"
             );
         }
 
@@ -424,105 +428,104 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             tab = table = new Node[6];
         }
 
-        int i, hash = key.hashCode() & 0xFFFF;
-        Node<T, ?> e = tab[i = (hash % tab.length)];
+        int i, h = k.hashCode() & 0xFFFF;
+        Node<T, ?> e = tab[i = (h % tab.length)];
 
         if (e == null) {
-            tab[i] = node;
+            tab[i] = n;
         } else {
             while (true) {
-                if (e.hash == hash &&
-                    key.equals(e.key)) {
+                if (e.hash == h &&
+                    k.equals(e.key)) {
                     return false;
                 }
                 if (e.next != null) {
                     e = e.next;
                 } else {
-                    e.next = node;
+                    e.next = n;
                     break;
                 }
             }
         }
 
-        int u = node.index;
-        node.grade = grade;
-
-        node.key = key;
-        node.hash = hash;
-
         Node<T, ?> m = head;
-        Node<T, ?> n = null;
+        Node<T, ?> w = null;
 
-        if (m == null) {
-            head = node;
-            if (u == -1) {
-                tail = node;
+        n.hash = h;
+        n.key = k;
+        n.grade = g;
+
+        int d = n.index;
+        if (d == -1 && g == 0) {
+            if (m == null) {
+                head = n;
+                tail = n;
+                return true;
             }
-            return true;
-        }
 
-        if (u == -1 && grade == 0) {
             if (m.index < -1) {
-                head = node;
-                tail = node;
-                node.near = m;
+                head = n;
+                tail = n;
+                n.near = m;
             } else {
-                n = tail;
-                tail = node;
-                if (n == null) {
+                w = tail;
+                tail = n;
+                if (w == null) {
                     do {
-                        n = m;
+                        w = m;
                         m = m.near;
                     } while (
                         m != null
                     );
                 } else {
-                    node.near = n.near;
+                    n.near = w.near;
                 }
-                n.near = node;
+                w.near = n;
             }
         } else {
-            if (u < 0) {
-                int x;
-                if (u != -1) {
+            if (m == null) {
+                head = n;
+                return true;
+            }
+
+            if (d < 0) {
+                int c;
+                if (d != -1) {
                     m = tail;
                     if (m == null) m = head;
                 }
                 do {
-                    if ((x = m.index) < u ||
-                        (x == u && grade > m.grade)) {
-                        if (n == null) {
-                            head = node;
+                    if ((c = m.index) < d ||
+                        (c == d && g > m.grade)) {
+                        if (w == null) {
+                            head = n;
                         } else {
-                            n.near = node;
+                            w.near = n;
                         }
-                        node.near = m;
+                        n.near = m;
                         return true;
                     }
                 } while (
-                    (m = (n = m).near) != null
+                    (m = (w = m).near) != null
                 );
-                if (u == -1) {
-                    tail = node;
-                }
             } else {
                 do {
-                    int x = m.index;
-                    if ((x < 0 || u < x) ||
-                        (x == u && grade > m.grade)) {
-                        if (n == null) {
-                            head = node;
+                    int c = m.index;
+                    if ((c < 0 || d < c) ||
+                        (c == d && g > m.grade)) {
+                        if (w == null) {
+                            head = n;
                         } else {
-                            n.near = node;
+                            w.near = n;
                         }
-                        node.near = m;
+                        n.near = m;
                         return true;
                     }
                 } while (
-                    (m = (n = m).near) != null
+                    (m = (w = m).near) != null
                 );
             }
-            n.near = node;
+            w.near = n;
         }
 
         return true;
