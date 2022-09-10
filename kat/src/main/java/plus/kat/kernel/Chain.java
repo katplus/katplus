@@ -2173,21 +2173,39 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     protected void chain(
         @NotNull Chain c
     ) {
-        if (c.count == 1) {
-            grow(count + 1);
+        int d = count;
+        int l = c.count;
+        if (l == 1) {
+            grow(d + 1);
             hash = 0;
             value[count++] = c.value[0];
-        }
-
-        // multiple
-        else if (c.count != 0) {
-            grow(count + c.count);
-            System.arraycopy(
-                c.value, 0,
-                value, count, c.count
-            );
+        } else if (l != 0) {
+            grow(d + l);
             hash = 0;
-            count += c.count;
+            count += l;
+            System.arraycopy(
+                c.value, 0, value, d, l
+            );
+        }
+    }
+
+    /**
+     * @param c the specified chain
+     * @param i the specified index
+     * @param l the specified length
+     * @since 0.0.4
+     */
+    protected void chain(
+        @NotNull Chain c, int i, int l
+    ) {
+        if (l != 0) {
+            int d = count;
+            grow(d + l);
+            hash = 0;
+            count += l;
+            System.arraycopy(
+                c.value, i, value, d, l
+            );
         }
     }
 
@@ -2325,12 +2343,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         @NotNull byte[] b, int i, int l
     ) {
         if (l != 0) {
-            grow(count + l);
-            System.arraycopy(
-                b, i, value, count, l
-            );
+            int d = count;
+            grow(d + l);
             hash = 0;
             count += l;
+            System.arraycopy(
+                b, i, value, d, l
+            );
         }
     }
 
