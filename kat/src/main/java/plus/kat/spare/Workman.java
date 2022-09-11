@@ -58,8 +58,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         @NotNull Supplier supplier
     ) {
         this(
-            klass.getAnnotation(Embed.class),
-            klass, supplier, null
+            klass.getAnnotation(Embed.class), klass, supplier, null
         );
     }
 
@@ -78,9 +77,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
 
         initialize();
-        space = supplier.declare(
-            embed, this, klass
-        );
+        space = supplier.declare(embed, this);
     }
 
     /**
@@ -866,7 +863,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             this(expose);
             setField(field);
             coder = supplier.declare(
-                expose, this, klass
+                expose, this
             );
         }
 
@@ -900,7 +897,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
 
             element = method;
             coder = supplier.declare(
-                expose, this, klass
+                expose, this
             );
         }
     }

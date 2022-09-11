@@ -609,7 +609,7 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                         .getAnnotation(Expose.class);
                     item.setCoder(
                         supplier.declare(
-                            expose, item, type
+                            expose, item
                         )
                     );
 

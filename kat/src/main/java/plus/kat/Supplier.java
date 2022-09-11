@@ -786,23 +786,20 @@ public interface Supplier {
      * <pre>{@code
      *   Supplier supplier = ...
      *   Expose expose = ...
-     *   Coder coder = supplier.declare(
-     *       embed, this, this.getType()
-     *   );
+     *   Target target = ...
+     *   Coder<User> coder = supplier.declare(expose, target);
      * }</pre>
      *
      * @param expose specify the {@link Expose}
-     * @param klass  specify the type of embedding
      * @param target specify the {@code target} of {@link Class}
      * @return the coder of {@code klass} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} or {@code target} is null
+     * @throws NullPointerException If the specified {@code target} is null
      * @since 0.0.4
      */
     @Nullable <T>
     Coder<T> declare(
         @Nullable Expose expose,
-        @NotNull Target target,
-        @NotNull Class<T> klass
+        @NotNull Target target
     );
 
     /**
@@ -812,25 +809,27 @@ public interface Supplier {
      * <pre>{@code
      *   Supplier supplier = ...
      *   Embed embed = ...
-     *   String space = supplier.declare(
-     *       embed, this, this.getType()
-     *   );
+     *   Spare spare = ...
+     *   String space = supplier.declare(embed, spare);
      * }</pre>
      *
      * @param embed specify the {@link Embed}
-     * @param klass specify the type of embedding
      * @param spare specify the {@code spare} of {@link Class}
      * @return the primary spare of {@code klass}
-     * @throws NullPointerException If the specified {@code klass} or {@code spare} is null
+     * @throws NullPointerException If the specified {@code spare} is null
+     * @see Supplier#embed(Class, Spare)
+     * @see Supplier#embed(CharSequence, Spare)
      * @since 0.0.4
      */
     @NotNull
     default <T> String declare(
         @Nullable Embed embed,
-        @NotNull Spare<T> spare,
-        @NotNull Class<T> klass
+        @NotNull Spare<T> spare
     ) {
+        Class<?> klass =
+            spare.getType();
         embed(klass, spare);
+
         if (embed == null) {
             return klass.getName();
         }
@@ -1009,8 +1008,7 @@ public interface Supplier {
         @Override
         public <T> Coder<T> declare(
             @Nullable Expose expose,
-            @NotNull Target target,
-            @NotNull Class<T> klass
+            @NotNull Target target
         ) {
             Class<?> clazz;
             if (expose == null ||
@@ -1022,6 +1020,8 @@ public interface Supplier {
                 }
 
                 Spare<?> spare = null;
+                Class<?> klass = target.getType();
+
                 if (klass == Date.class) {
                     spare = new DateSpare(format);
                 } else if (klass == Instant.class) {
@@ -1063,15 +1063,19 @@ public interface Supplier {
                         d.getParameterCount()) c = d;
                 }
 
+                Object[] args;
                 int size = c.getParameterCount();
-                Object[] args = new Object[size];
-                if (size != 0) {
+
+                if (size == 0) {
+                    args = Reflect.EMPTY;
+                } else {
+                    args = new Object[size];
                     Class<?>[] cls =
                         c.getParameterTypes();
                     for (int i = 0; i < size; i++) {
                         Class<?> m = cls[i];
                         if (m == Class.class) {
-                            args[i] = klass;
+                            args[i] = target.getType();
                         } else if (m == Expose.class) {
                             args[i] = expose;
                         } else if (m == Supplier.class) {

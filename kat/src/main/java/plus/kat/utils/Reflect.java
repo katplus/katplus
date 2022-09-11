@@ -32,6 +32,9 @@ import java.lang.reflect.*;
  */
 public final class Reflect {
 
+    public static final Object[]
+        EMPTY = new Object[0];
+
     public static final MethodHandles.Lookup
         lookup = MethodHandles.lookup();
 
@@ -47,7 +50,7 @@ public final class Reflect {
             Constructor<?> c = klass
                 .getDeclaredConstructor();
             c.setAccessible(true);
-            return (T) c.newInstance();
+            return (T) c.newInstance(EMPTY);
         } catch (Exception e) {
             return null;
         }

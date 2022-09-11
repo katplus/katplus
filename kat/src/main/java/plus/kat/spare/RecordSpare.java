@@ -177,7 +177,7 @@ public class RecordSpare<T> extends Workman<T> {
                 item.setField(field);
                 item.setCoder(
                     supplier.declare(
-                        e1, item, item.getType()
+                        e1, item
                     )
                 );
 
