@@ -127,7 +127,8 @@ public class SpareTest {
         assertEquals(1641871353999L, spare.cast(1641871353999L).getTime());
     }
 
-    public static class Art {
+    @Embed(with = RecordSpare.class)
+    static class Art {
 
         private final int id;
 
@@ -158,9 +159,8 @@ public class SpareTest {
 
     @Test
     public void test_record() throws IOException {
-        Spare<Art> spare = new RecordSpare<>(
-            Art.class, Supplier.ins()
-        );
+        Spare<Art> spare =
+            Spare.lookup(Art.class);
 
         Art a1 = spare.read(
             "{:id(1):name(kraity):meta(katplus)}"

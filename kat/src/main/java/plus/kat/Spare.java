@@ -27,6 +27,8 @@ import plus.kat.utils.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -1168,37 +1170,74 @@ public interface Spare<K> extends Coder<K> {
 
             if (embed == null) {
                 if (klass.isInterface() ||
-                    Kat.class.isAssignableFrom(klass)) {
+                    Kat.class.isAssignableFrom(klass) ||
+                    Coder.class.isAssignableFrom(klass)) {
                     return null;
                 }
             } else {
-                Class<?> target = embed.with();
-                if (target != Spare.class) {
-                    // static inject
-                    // and double-checking
-                    Spare<?> spare =
-                        get(klass);
-
-                    if (spare != null) {
-                        return spare;
-                    }
+                Class<?> clazz = embed.with();
+                if (clazz != Spare.class) {
+                    // spare of klass
+                    Spare<?> spare = null;
 
                     if (!Spare.class.
-                        isAssignableFrom(target)) {
-                        return load(
-                            target, supplier
+                        isAssignableFrom(clazz)) {
+                        spare = load(
+                            clazz, supplier
                         );
-                    }
+                        if (spare != null) {
+                            putIfAbsent(
+                                klass, spare
+                            );
+                        }
+                    } else try {
+                        // double-checking
+                        spare = get(klass);
 
-                    if (target.isInterface()) {
-                        return null;
-                    }
+                        // check for cache
+                        if (spare != null ||
+                            clazz.isInterface()) {
+                            return spare;
+                        }
 
-                    spare = Reflect.apply(target);
-                    if (spare != null) {
-                        putIfAbsent(
-                            klass, spare
+                        Constructor<?>[] cs = clazz
+                            .getDeclaredConstructors();
+                        Constructor<?> d, c = cs[0];
+                        for (int i = 1; i < cs.length; i++) {
+                            d = cs[i];
+                            if (c.getParameterCount() <=
+                                d.getParameterCount()) c = d;
+                        }
+
+                        int size = c.getParameterCount();
+                        Object[] args = new Object[size];
+                        if (size != 0) {
+                            Class<?>[] cls =
+                                c.getParameterTypes();
+                            for (int i = 0; i < size; i++) {
+                                Class<?> m = cls[i];
+                                if (m == Class.class) {
+                                    args[i] = klass;
+                                } else if (m == Embed.class) {
+                                    args[i] = embed;
+                                } else if (m == Provider.class) {
+                                    args[i] = this;
+                                } else if (m == Supplier.class) {
+                                    args[i] = supplier;
+                                } else if (m.isAnnotation()) {
+                                    args[i] = klass.getAnnotation(
+                                        (Class<? extends Annotation>) m
+                                    );
+                                }
+                            }
+                        }
+
+                        c.setAccessible(true);
+                        putIfAbsent(klass, spare =
+                            (Spare<?>) c.newInstance(args)
                         );
+                    } catch (Exception e) {
+                        // Nothing
                     }
                     return spare;
                 }

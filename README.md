@@ -932,21 +932,6 @@ Java:
 ```java
 class UserSpare implements Spare<User> {
 
-    // Register Spare of User by ClassLoader
-    // If this static block is removed, UserSpare will be created by reflection
-    static {
-        // Register in the global Spare Cluster
-        Spare.embed(
-            User.class, new UserSpare()
-        );
-
-        // or register in your Supplier
-        // Supplier supplier = getSupplier();
-        // supplier.embed(
-        //     User.class, new UserSpare()
-        // );
-    }
-
     @Override
     public CharSequence getSpace() {
         return "plus.kat.entity.User";
