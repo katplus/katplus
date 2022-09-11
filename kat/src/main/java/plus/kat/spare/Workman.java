@@ -24,7 +24,10 @@ import plus.kat.entity.*;
 import plus.kat.utils.*;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -75,8 +78,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
 
         initialize();
-        space = supplier.register(
-            embed, klass, this
+        space = supplier.declare(
+            embed, this, klass
         );
     }
 
@@ -586,7 +589,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
      * @since 0.0.2
      */
     public static class Item
-        extends Entry<Object, Item> implements Target {
+        extends Entry<Object, Item>
+        implements Target, Serializable {
 
         protected Type actual;
         protected Class<?> klass;
@@ -595,12 +599,26 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         protected int flags;
         protected final int index;
 
+        protected Annotation[] annotations;
+        protected AnnotatedElement element;
+
+        /**
+         * <pre>{@code
+         *  Item item = new Item(0);
+         * }</pre>
+         */
         public Item(
             int index
         ) {
             this.index = index;
         }
 
+        /**
+         * <pre>{@code
+         *  Item item = ...
+         *  Item item0 = new Item(item);
+         * }</pre>
+         */
         public Item(
             @NotNull Item item
         ) {
@@ -609,8 +627,16 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             coder = item.coder;
             klass = item.klass;
             actual = item.actual;
+            element = item.element;
+            annotations = item.annotations;
         }
 
+        /**
+         * <pre>{@code
+         *  Expose expose = ...
+         *  Item item = new Item(expose);
+         * }</pre>
+         */
         public Item(
             @Nullable Expose expose
         ) {
@@ -628,6 +654,24 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         @Override
         public int getIndex() {
             return index;
+        }
+
+        /**
+         * Sets the {@code field} of {@link Item}
+         *
+         * @param field the specified field
+         * @since 0.0.4
+         */
+        public void setField(
+            @NotNull Field field
+        ) {
+            element = field;
+            actual = field.getGenericType();
+            klass = field.getType();
+            if (klass.isPrimitive()) {
+                flags |= Expose.NOTNULL;
+                klass = Reflect.wrap(klass);
+            }
         }
 
         /**
@@ -716,6 +760,54 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                 coder = target;
             }
         }
+
+        /**
+         * Returns the {@code annotations} of {@link Item}
+         *
+         * @since 0.0.4
+         */
+        @Nullable
+        public Annotation[] getAnnotations() {
+            return annotations;
+        }
+
+        /**
+         * Sets the {@code annotations} of {@link Item}
+         *
+         * @param target the specified annotations
+         * @since 0.0.4
+         */
+        public void setAnnotations(
+            @Nullable Annotation[] target
+        ) {
+            annotations = target;
+        }
+
+        /**
+         * Returns an annotation of the specified type for this {@code target}
+         *
+         * @since 0.0.4
+         */
+        @Override
+        @SuppressWarnings("unchecked")
+        public <A extends Annotation> A getAnnotation(
+            @NotNull Class<A> annotationClass
+        ) {
+            Annotation[] array = annotations;
+            if (array != null) {
+                for (Annotation a : array) {
+                    if (a.annotationType() == annotationClass) {
+                        return (A) a;
+                    }
+                }
+            } else {
+                AnnotatedElement elem = element;
+                if (elem != null) {
+                    return elem.getAnnotation(annotationClass);
+                }
+            }
+            return null;
+        }
     }
 
     /**
@@ -731,18 +823,35 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         private String key;
         private int hash, grade;
 
+        /**
+         * <pre>{@code
+         *  Node node = new NodeImpl(0);
+         * }</pre>
+         */
         protected Node(
             int index
         ) {
             super(index);
         }
 
+        /**
+         * <pre>{@code
+         *  Item item = ...
+         *  Node node = new NodeImpl(item);
+         * }</pre>
+         */
         protected Node(
             @NotNull Item Item
         ) {
             super(Item);
         }
 
+        /**
+         * <pre>{@code
+         *  Expose expose = ...
+         *  Node node = new NodeImpl(expose);
+         * }</pre>
+         */
         protected Node(
             @Nullable Expose expose
         ) {
@@ -755,30 +864,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             @NotNull Supplier supplier
         ) {
             this(expose);
-            klass = field.getType();
-            actual = field.getGenericType();
-
-            if (klass.isPrimitive()) {
-                flags |= Expose.NOTNULL;
-                klass = Reflect.wrap(klass);
-                coder = Reflect.activate(
-                    expose, supplier
-                );
-            } else {
-                Format format = field
-                    .getAnnotation(
-                        Format.class
-                    );
-                if (format != null) {
-                    coder = Reflect.activate(
-                        klass, format
-                    );
-                } else {
-                    coder = Reflect.activate(
-                        expose, supplier
-                    );
-                }
-            }
+            setField(field);
+            coder = supplier.declare(
+                expose, this, klass
+            );
         }
 
         protected Node(
@@ -807,24 +896,12 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             if (klass.isPrimitive()) {
                 flags |= Expose.NOTNULL;
                 klass = Reflect.wrap(klass);
-                coder = Reflect.activate(
-                    expose, supplier
-                );
-            } else {
-                Format format = method
-                    .getAnnotation(
-                        Format.class
-                    );
-                if (format != null) {
-                    coder = Reflect.activate(
-                        klass, format
-                    );
-                } else {
-                    coder = Reflect.activate(
-                        expose, supplier
-                    );
-                }
             }
+
+            element = method;
+            coder = supplier.declare(
+                expose, this, klass
+            );
         }
     }
 
@@ -837,6 +914,12 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         protected final MethodHandle getter;
         protected final MethodHandle setter;
 
+        /**
+         * <pre>{@code
+         *  Edge edge = ...
+         *  Edge edge0 = new Edge(edge);
+         * }</pre>
+         */
         public Edge(
             @NotNull Edge<K> edge
         ) {

@@ -994,6 +994,7 @@ public interface Spare<K> extends Coder<K> {
      * @author kraity
      * @since 0.0.1
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     class Cluster extends ConcurrentHashMap<Type, Spare<?>> implements Provider {
         /**
          * default cluster
@@ -1077,7 +1078,6 @@ public interface Spare<K> extends Coder<K> {
          * @throws NullPointerException If the specified {@code klass} is null
          */
         @Nullable
-        @SuppressWarnings("unchecked")
         public <T> Spare<T> load(
             @NotNull Class<T> klass,
             @NotNull Supplier supplier
@@ -1116,7 +1116,6 @@ public interface Spare<K> extends Coder<K> {
          * @throws NullPointerException If the specified {@code klass} is null
          */
         @Nullable
-        @SuppressWarnings({"unchecked", "rawtypes"})
         public Spare<?> lookup(
             @NotNull Class<?> klass,
             @NotNull Supplier supplier
@@ -1164,9 +1163,7 @@ public interface Spare<K> extends Coder<K> {
             }
 
             Embed embed = klass
-                .getAnnotation(
-                    Embed.class
-                );
+                .getAnnotation(Embed.class);
 
             if (embed == null) {
                 if (klass.isInterface() ||
@@ -1180,6 +1177,7 @@ public interface Spare<K> extends Coder<K> {
                     // spare of klass
                     Spare<?> spare = null;
 
+                    // pointing to clazz?
                     if (!Spare.class.
                         isAssignableFrom(clazz)) {
                         spare = load(
@@ -1277,6 +1275,7 @@ public interface Spare<K> extends Coder<K> {
          *
          * @throws NullPointerException If the specified {@code klass} is null
          */
+        @Nullable
         public Spare<?> onJava(
             @NotNull String name,
             @NotNull Class<?> klass

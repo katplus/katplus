@@ -450,34 +450,6 @@ inline fun <reified T : Any>
  * E.g.
  * ```
  *  val supplier = ...
- *  val coder = supplier.activate<UserCoder>()
- * ```
- *
- * @return Coder?
- * @since 0.0.4
- * @see Supplier.activate
- */
-inline fun <reified T : Any>
-    Supplier.activate() = activate<T>(T::class.java)
-
-/**
- * E.g.
- * ```
- *  val supplier = ...
- *  val previous = supplier.deactivate<UserCoder>()
- * ```
- *
- * @return Coder?
- * @since 0.0.4
- * @see Supplier.deactivate
- */
-inline fun <reified T : Any>
-    Supplier.deactivate() = deactivate(T::class.java)
-
-/**
- * E.g.
- * ```
- *  val supplier = ...
  *  val data = ...
  *  val result = supplier.cast<User>(data)
  * ```

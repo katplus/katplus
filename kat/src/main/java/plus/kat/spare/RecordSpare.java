@@ -21,7 +21,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
-import plus.kat.utils.*;
 
 import java.lang.reflect.*;
 import java.sql.ResultSet;
@@ -172,38 +171,15 @@ public class RecordSpare<T> extends Workman<T> {
                 }
 
                 Expose e1 = field
-                    .getAnnotation(
-                        Expose.class
-                    );
+                    .getAnnotation(Expose.class);
 
                 Item item = new Item(width++);
-                Class<?> type = field.getType();
-                item.setRawType(field.getGenericType());
-
-                if (type.isPrimitive()) {
-                    item.setType(
-                        Reflect.wrap(type)
-                    );
-                    item.setCoder(
-                        Reflect.activate(e1, supplier)
-                    );
-                } else {
-                    item.setType(type);
-                    Format f1 = field
-                        .getAnnotation(
-                            Format.class
-                        );
-
-                    if (f1 != null) {
-                        item.setCoder(
-                            Reflect.activate(type, f1)
-                        );
-                    } else {
-                        item.setCoder(
-                            Reflect.activate(e1, supplier)
-                        );
-                    }
-                }
+                item.setField(field);
+                item.setCoder(
+                    supplier.declare(
+                        e1, item, item.getType()
+                    )
+                );
 
                 String name = field.getName();
                 if (e1 == null) {
@@ -236,9 +212,8 @@ public class RecordSpare<T> extends Workman<T> {
                 );
 
                 Expose e2 = method
-                    .getAnnotation(
-                        Expose.class
-                    );
+                    .getAnnotation(Expose.class);
+
                 if (e2 == null) {
                     node = new Edge<>(
                         e1, method, supplier

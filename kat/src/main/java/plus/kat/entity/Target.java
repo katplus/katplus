@@ -21,6 +21,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.spare.*;
 
 import java.lang.reflect.Type;
+import java.lang.annotation.Annotation;
 
 /**
  * @author kraity
@@ -54,6 +55,20 @@ public interface Target {
      */
     @Nullable
     default Coder<?> getCoder() {
+        return null;
+    }
+
+    /**
+     * Returns this element's annotation for the specified type
+     * if such an annotation is {@code present}, else {@code null}
+     *
+     * @param annotationClass the specified annotation type
+     * @since 0.0.4
+     */
+    @Nullable
+    default <A extends Annotation> A getAnnotation(
+        @NotNull Class<A> annotationClass
+    ) {
         return null;
     }
 }

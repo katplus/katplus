@@ -558,98 +558,77 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
             }
         }
 
-        b.setAccessible(true);
-        int count = b.getParameterCount();
+        try {
+            b.setAccessible(true);
+            int count = b.getParameterCount();
+            if (count == 0) {
+                handle = lookup.unreflectConstructor(b);
+            } else {
+                params = new KatMap<>();
+                builder = (Constructor<T>) b;
 
-        if (count == 0) {
-            try {
-                handle = lookup.
-                    unreflectConstructor(b);
-            } catch (Throwable e) {
-                // Nothing
-            }
-        } else {
-            Parameter[] ps = null;
-            params = new KatMap<>();
-            builder = (Constructor<T>) b;
-
-            args = b.getParameterTypes();
-            if ($ != null) {
-                int i = $.getParameterCount();
-                if (i + 2 == count && args[i] == int.class &&
-                    "kotlin.jvm.internal.DefaultConstructorMarker".equals(args[i + 1].getName())) {
-                    b = $;
-                    edge = 2;
-                    args = $.getParameterTypes();
-                }
-            }
-
-            Type[] ts = b.getGenericParameterTypes();
-            Annotation[][] as = b.getParameterAnnotations();
-
-            int i = 0, j = as.length - args.length;
-            Class<?> declaringClass = klass.getDeclaringClass();
-
-            if (declaringClass != null &&
-                (klass.getModifiers() & Modifier.STATIC) == 0) {
-                if (declaringClass == args[0]) {
-                    i++;
-                    master = declaringClass;
-                }
-            }
-
-            for (; i < args.length; i++) {
-                Format format = null;
-                Expose expose = null;
-                for (Annotation a : as[i + j]) {
-                    Class<?> at = a.annotationType();
-                    if (at == Expose.class) {
-                        expose = (Expose) a;
-                    } else if (at == Format.class) {
-                        format = (Format) a;
+                args = b.getParameterTypes();
+                if ($ != null) {
+                    int i = $.getParameterCount();
+                    if (i + 2 == count && args[i] == int.class &&
+                        "kotlin.jvm.internal.DefaultConstructorMarker".equals(args[i + 1].getName())) {
+                        b = $;
+                        edge = 2;
+                        args = $.getParameterTypes();
                     }
                 }
 
-                Item item = new Item(i);
-                item.setRawType(ts[i]);
-                Class<?> type = args[i];
+                Type[] ts = b.getGenericParameterTypes();
+                Annotation[][] as = b.getParameterAnnotations();
 
-                if (type.isPrimitive()) {
-                    item.setType(
-                        Reflect.wrap(type)
-                    );
-                    item.setCoder(
-                        Reflect.activate(expose, supplier)
-                    );
-                } else {
+                int i = 0, j = as.length - args.length;
+                Class<?> declaringClass = klass.getDeclaringClass();
+
+                if (declaringClass != null &&
+                    (klass.getModifiers() & Modifier.STATIC) == 0) {
+                    if (declaringClass == args[0]) {
+                        i++;
+                        master = declaringClass;
+                    }
+                }
+
+                for (; i < args.length; i++) {
+                    Item item = new Item(i);
+                    item.setRawType(ts[i]);
+
+                    Class<?> type = args[i];
+                    if (type.isPrimitive()) {
+                        type = Reflect.wrap(type);
+                    }
+
                     item.setType(type);
-                    if (format != null) {
-                        item.setCoder(
-                            Reflect.activate(type, format)
+                    int k = i + j;
+                    item.setAnnotations(as[k]);
+
+                    Expose expose = item
+                        .getAnnotation(Expose.class);
+                    item.setCoder(
+                        supplier.declare(
+                            expose, item, type
+                        )
+                    );
+
+                    if (expose == null) {
+                        params.put(
+                            "arg" + k, item
                         );
                     } else {
-                        item.setCoder(
-                            Reflect.activate(expose, supplier)
-                        );
-                    }
-                }
-
-                if (expose == null) {
-                    if (ps == null) {
-                        ps = b.getParameters();
-                    }
-                    params.put(
-                        ps[i].getName(), item
-                    );
-                } else {
-                    String[] keys = expose.value();
-                    for (String key : keys) {
-                        params.put(
-                            key, item
-                        );
+                        String[] v = expose.value();
+                        for (String alias : v) {
+                            params.put(
+                                alias, item
+                            );
+                        }
                     }
                 }
             }
+        } catch (Exception e) {
+            // Nothing
         }
     }
 }

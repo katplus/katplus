@@ -62,8 +62,8 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
             // NOOP
         }
 
-        space = supplier.register(
-            embed, klass, this
+        space = supplier.declare(
+            embed, this, klass
         );
     }
 
@@ -75,8 +75,8 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
     ) {
         super(klass);
         this.enums = enums;
-        this.space = supplier.register(
-            embed, klass, this
+        this.space = supplier.declare(
+            embed, this, klass
         );
     }
 

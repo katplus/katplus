@@ -15,19 +15,20 @@
  */
 package plus.kat;
 
-import plus.kat.anno.Embed;
-import plus.kat.anno.NotNull;
-import plus.kat.anno.Nullable;
-
-import plus.kat.crash.*;
+import plus.kat.anno.*;
 import plus.kat.spare.*;
+import plus.kat.crash.*;
+import plus.kat.entity.*;
 import plus.kat.utils.*;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static plus.kat.Plan.DEF;
@@ -202,47 +203,6 @@ public interface Supplier {
     Spare<T> lookup(
         @NotNull CharSequence klass,
         @Nullable Class<K> parent
-    );
-
-    /**
-     * Returns the {@link Coder} of {@code klass}.
-     * if there is no cache, then judge whether {@code klass} is a subclass of {@link Coder},
-     * if so, instantiate and return it, otherwise point to find the {@link Spare} of {@code klass}
-     *
-     * <pre>{@code
-     *  Supplier supplier = ...
-     *  Coder<User> coder0 = supplier.activate(User.class);
-     *  Coder<User> coder1 = supplier.activate(UserCoder.class);
-     * }</pre>
-     *
-     * @param klass specify the type of apply
-     * @return {@link Coder} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
-     * @see Impl#activate(Class)
-     */
-    @Nullable <T>
-    Coder<T> activate(
-        @NotNull Class<?> klass
-    );
-
-    /**
-     * Deactivates the {@link Coder} cache for {@code klass}
-     * and returns the previous value associated with {@code klass}
-     *
-     * <pre>{@code
-     *  Supplier supplier = ...
-     *  supplier.deactivate(User.class);
-     *  supplier.deactivate(UserCoder.class);
-     * }</pre>
-     *
-     * @param klass specify the type of revoking
-     * @return {@link Coder} or {@code null}
-     * @throws NullPointerException If the specified {@code type} is null
-     * @see Impl#deactivate(Class)
-     */
-    @Nullable
-    Coder<?> deactivate(
-        @NotNull Class<?> klass
     );
 
     /**
@@ -821,34 +781,54 @@ public interface Supplier {
     }
 
     /**
-     * Register an instance of {@link Coder}
+     * Returns the coder of {@code klass}
      *
-     * @param klass specify the type of embedding
-     * @param coder specify the {@code spare} of {@link Class}
-     * @return {@link Coder} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
-     * @see Impl#register(Class, Coder)
-     * @since 0.0.3
+     * <pre>{@code
+     *   Supplier supplier = ...
+     *   Expose expose = ...
+     *   Coder coder = supplier.declare(
+     *       embed, this, this.getType()
+     *   );
+     * }</pre>
+     *
+     * @param expose specify the {@link Expose}
+     * @param klass  specify the type of embedding
+     * @param target specify the {@code target} of {@link Class}
+     * @return the coder of {@code klass} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} or {@code target} is null
+     * @since 0.0.4
      */
-    @Nullable
-    Coder<?> register(
-        @NotNull Class<?> klass,
-        @NotNull Coder<?> coder
+    @Nullable <T>
+    Coder<T> declare(
+        @Nullable Expose expose,
+        @NotNull Target target,
+        @NotNull Class<T> klass
     );
 
     /**
-     * Register the {@link Spare} of {@link Class} with {@link Embed}
+     * Returns the primary space of
+     * {@code klass} and declares the {@code spare}
+     *
+     * <pre>{@code
+     *   Supplier supplier = ...
+     *   Embed embed = ...
+     *   String space = supplier.declare(
+     *       embed, this, this.getType()
+     *   );
+     * }</pre>
      *
      * @param embed specify the {@link Embed}
      * @param klass specify the type of embedding
      * @param spare specify the {@code spare} of {@link Class}
-     * @throws NullPointerException If the specified {@code klass} is null
+     * @return the primary spare of {@code klass}
+     * @throws NullPointerException If the specified {@code klass} or {@code spare} is null
+     * @since 0.0.4
      */
     @NotNull
-    default <T> String register(
+    default <T> String declare(
         @Nullable Embed embed,
-        @NotNull Class<T> klass,
-        @NotNull Spare<? super T> spare
+        @NotNull Spare<T> spare,
+        @NotNull Class<T> klass
     ) {
         embed(klass, spare);
         if (embed == null) {
@@ -877,6 +857,7 @@ public interface Supplier {
      * @author kraity
      * @since 0.0.1
      */
+    @SuppressWarnings("unchecked")
     class Impl extends ConcurrentHashMap<CharSequence, Spare<?>> implements Supplier {
         /**
          * default supplier
@@ -945,22 +926,22 @@ public interface Supplier {
 
         @Override
         public <T> Spare<T> lookup(
-            Class<T> klass
+            @NotNull Class<T> klass
         ) {
             return Cluster.INS.load(klass, this);
         }
 
         @Override
         public <T> Spare<T> lookup(
-            CharSequence klass
+            @NotNull CharSequence klass
         ) {
             return lookup(klass, null);
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public <K, T extends K> Spare<T> lookup(
-            CharSequence klass, Class<K> parent
+            @NotNull CharSequence klass,
+            @NotNull Class<K> parent
         ) {
             Spare<?> spare = get(klass);
 
@@ -1025,59 +1006,93 @@ public interface Supplier {
             return null;
         }
 
-        /**
-         * default cluster
-         */
-        static final Map<Class<?>, Coder<?>> PLUG;
-
-        static {
-            PLUG = new ConcurrentHashMap<>(
-                Config.get(
-                    "kat.coder.capacity", 16
-                )
-            );
-            PLUG.put(ByteArrayCoder.class, ByteArrayCoder.INSTANCE);
-        }
-
         @Override
-        public Coder<?> register(
-            Class<?> klass,
-            Coder<?> coder
+        public <T> Coder<T> declare(
+            @Nullable Expose expose,
+            @NotNull Target target,
+            @NotNull Class<T> klass
         ) {
-            return PLUG.put(klass, coder);
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public <T> Coder<T> activate(
-            Class<?> klass
-        ) {
-            if (klass == Coder.class) {
-                return null;
-            }
-
-            Coder<?> coder = PLUG.get(klass);
-
-            if (coder != null) {
-                return (Coder<T>) coder;
-            }
-
-            if (Coder.class.isAssignableFrom(klass)) {
-                if (klass.isInterface()) {
+            Class<?> clazz;
+            if (expose == null ||
+                (clazz = expose.with()) == Coder.class) {
+                Format format = target
+                    .getAnnotation(Format.class);
+                if (format == null) {
                     return null;
-                } else {
-                    return Reflect.apply(klass);
                 }
+
+                Spare<?> spare = null;
+                if (klass == Date.class) {
+                    spare = new DateSpare(format);
+                } else if (klass == Instant.class) {
+                    spare = new InstantSpare(format);
+                } else if (klass == LocalDate.class) {
+                    spare = new LocalDateSpare(format);
+                } else if (klass == LocalTime.class) {
+                    spare = new LocalTimeSpare(format);
+                } else if (klass == LocalDateTime.class) {
+                    spare = new LocalDateTimeSpare(format);
+                } else if (klass == ZonedDateTime.class) {
+                    spare = new ZonedDateTimeSpare(format);
+                }
+                return (Coder<T>) spare;
             }
 
-            return (Coder<T>) Cluster.INS.load(klass, this);
-        }
+            // coder of klass
+            Object coder = null;
+            Cluster cluster = Cluster.INS;
 
-        @Override
-        public Coder<?> deactivate(
-            Class<?> klass
-        ) {
-            return PLUG.remove(klass);
+            // pointing to clazz?
+            if (!Coder.class.
+                isAssignableFrom(clazz)) {
+                coder = cluster.load(
+                    clazz, this
+                );
+            }
+
+            // Raw byte[]
+            else if (clazz == ByteArrayCoder.class) {
+                coder = ByteArrayCoder.INSTANCE;
+            } else try {
+                Constructor<?>[] cs = clazz
+                    .getDeclaredConstructors();
+                Constructor<?> d, c = cs[0];
+                for (int i = 1; i < cs.length; i++) {
+                    d = cs[i];
+                    if (c.getParameterCount() <=
+                        d.getParameterCount()) c = d;
+                }
+
+                int size = c.getParameterCount();
+                Object[] args = new Object[size];
+                if (size != 0) {
+                    Class<?>[] cls =
+                        c.getParameterTypes();
+                    for (int i = 0; i < size; i++) {
+                        Class<?> m = cls[i];
+                        if (m == Class.class) {
+                            args[i] = klass;
+                        } else if (m == Expose.class) {
+                            args[i] = expose;
+                        } else if (m == Supplier.class) {
+                            args[i] = this;
+                        } else if (m == Provider.class) {
+                            args[i] = cluster;
+                        } else if (m.isAnnotation()) {
+                            args[i] = target.getAnnotation(
+                                (Class<? extends Annotation>) m
+                            );
+                        }
+                    }
+                }
+
+                c.setAccessible(true);
+                coder = c.newInstance(args);
+            } catch (Exception e) {
+                // Nothing
+            }
+
+            return (Coder<T>) coder;
         }
     }
 }

@@ -15,21 +15,16 @@
  */
 package plus.kat.utils;
 
-import plus.kat.anno.Expose;
-import plus.kat.anno.Format;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.spare.*;
 import plus.kat.reflex.*;
 
 import java.lang.invoke.*;
 import java.lang.reflect.*;
-import java.time.*;
-import java.util.Date;
 
 /**
  * @author kraity
@@ -297,51 +292,5 @@ public final class Reflect {
             name.getBytes(i, l, alias, 1);
         }
         return alias;
-    }
-
-    /**
-     * @since 0.0.3
-     */
-    @Nullable
-    public static Coder<?> activate(
-        @Nullable Expose expose,
-        @NotNull Supplier supplier
-    ) {
-        if (expose != null) {
-            Class<?> with = expose.with();
-            if (with != Coder.class) {
-                return supplier.activate(with);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @since 0.0.3
-     */
-    @Nullable
-    public static Coder<?> activate(
-        @NotNull Class<?> type,
-        @NotNull Format format
-    ) {
-        if (type == Date.class) {
-            return new DateSpare(format);
-        }
-        if (type == Instant.class) {
-            return new InstantSpare(format);
-        }
-        if (type == LocalDate.class) {
-            return new LocalDateSpare(format);
-        }
-        if (type == LocalTime.class) {
-            return new LocalTimeSpare(format);
-        }
-        if (type == LocalDateTime.class) {
-            return new LocalDateTimeSpare(format);
-        }
-        if (type == ZonedDateTime.class) {
-            return new ZonedDateTimeSpare(format);
-        }
-        return null;
     }
 }
