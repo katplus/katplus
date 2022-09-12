@@ -67,7 +67,7 @@ public interface Spare<K> extends Coder<K> {
      * Check if {@code klass} is a parent Class of {@link K}
      * or this {@link Spare} can create an instance of {@code klass}
      *
-     * @param klass specify the {@link Class} to compare
+     * @param klass the specified klass to be compared
      * @throws NullPointerException If the specified {@code klass} is null
      */
     boolean accept(
@@ -140,8 +140,8 @@ public interface Spare<K> extends Coder<K> {
      *  Spare<User> spare = ...
      *  Supplier supplier = ...;
      *
-     *  User spare = spare.apply(
-     *     supplier.flat(user)
+     *  User user = spare.apply(
+     *     supplier.flat(bean)
      *  );
      * }</pre>
      *
@@ -191,11 +191,10 @@ public interface Spare<K> extends Coder<K> {
      * then perform a given {@link ResultSet} to create a {@link K}
      *
      * <pre>{@code
-     *  Spare<User> spare = ...
-     *
      *  ResultSet rs = stmt.executeQuery(sql);
      *  List<User> users = new ArrayList<>();
      *
+     *  Spare<User> spare = ...
      *  while (rs.next()) {
      *    users.add(
      *      spare.apply(rs)
@@ -344,7 +343,7 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Parse {@link Kat} {@link CharSequence} and convert result to {@link K}
      *
-     * @param text specify the {@code text} to be parsed
+     * @param text the specified text to be parsed
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
@@ -360,7 +359,7 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Parse {@link Kat} {@link Event} and convert result to {@link K}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
@@ -406,7 +405,7 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Parse {@link Doc} {@link CharSequence} and convert result to {@link K}
      *
-     * @param text specify the {@code text} to be parsed
+     * @param text the specified text to be parsed
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
@@ -422,7 +421,7 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Parse {@link Doc} {@link Event} and convert result to {@link K}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
@@ -468,7 +467,7 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Parse {@link Json} {@link CharSequence} and convert result to {@link K}
      *
-     * @param text specify the {@code text} to be parsed
+     * @param text the specified text to be parsed
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code text} is null
      */
@@ -484,7 +483,7 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Parse {@link Json} {@link Event} and convert result to {@link K}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      */
@@ -530,7 +529,17 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Convert the {@link Object} to {@code K}
      *
-     * @param data specify the {@code data} to convert
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  User user = spare.cast(
+     *      "{:id(1):name(kraity)}"
+     *  );
+     *  User user = spare.cast(
+     *      Map.of("id", 1, "name", "kraity")
+     *  );
+     * }</pre>
+     *
+     * @param data the specified data to be to converted
      * @return {@link K} or {@code null}
      * @see Spare#cast(Object, Supplier)
      */
@@ -546,8 +555,20 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Convert the {@link Object} to {@code K}
      *
-     * @param supplier the specified {@code supplier}
-     * @param data     specify the {@code data} to convert
+     * <pre>{@code
+     *  Spare<User> spare = ...
+     *  Supplier supplier = ...
+     *
+     *  User user = spare.cast(
+     *      "{:id(1):name(kraity)}", supplier
+     *  );
+     *  User user = spare.cast(
+     *      Map.of("id", 1, "name", "kraity"), supplier
+     *  );
+     * }</pre>
+     *
+     * @param supplier the specified supplier
+     * @param data     the specified data to be to converted
      * @return {@link K} or {@code null}
      */
     @Nullable
@@ -893,7 +914,7 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Parse {@link Event} and convert result to {@link K}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
      * @since 0.0.2
@@ -935,8 +956,8 @@ public interface Spare<K> extends Coder<K> {
      *  Spare.embed(User.class, spare);
      * }</pre>
      *
-     * @param klass specify the type of embedding
-     * @param spare specify the {@code spare} of {@link Class}
+     * @param klass the specified klass
+     * @param spare the specified spare to be embedded
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      */
@@ -958,7 +979,7 @@ public interface Spare<K> extends Coder<K> {
      *  Spare.revoke(User.class);
      * }</pre>
      *
-     * @param klass specify the type of revoking
+     * @param klass the specified klass
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code type} is null
      */
@@ -977,7 +998,7 @@ public interface Spare<K> extends Coder<K> {
      *  Spare<User> spare = Spare.lookup(User.class);
      * }</pre>
      *
-     * @param klass specify the type of lookup
+     * @param klass the specified klass
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      */

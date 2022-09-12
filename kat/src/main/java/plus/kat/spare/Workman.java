@@ -35,7 +35,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import static plus.kat.utils.Reflect.lookup;
+import static plus.kat.utils.Reflect.LOOKUP;
 
 /**
  * @author kraity
@@ -77,11 +77,31 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         }
 
         initialize();
-        space = supplier.declare(embed, this);
+        if (embed == null) {
+            space = klass.getName();
+            supplier.embed(klass, this);
+        } else {
+            String[] spaces = embed.value();
+            if (spaces.length == 0) {
+                space = klass.getName();
+                supplier.embed(klass, this);
+            } else {
+                space = spaces[0];
+                supplier.embed(klass, this);
+                if ((embed.mode() & Embed.HIDDEN) == 0) {
+                    for (String space : spaces) {
+                        // start from the second char, require contains '.'
+                        if (space.indexOf('.', 1) != -1) {
+                            supplier.embed(space, this);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
-     * Initialize the build job
+     * Initialize the build workflow
      */
     protected void initialize() {
         // Nothing
@@ -149,8 +169,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
                     if (coder != null) {
                         coder.write(chan, val);
                     } else {
-                        coder = chan.getSupplier()
-                            .lookup(val.getClass());
+                        coder = chan.getSupplier().lookup(val.getClass());
                         if (coder != null) {
                             coder.write(chan, val);
                         }
@@ -862,7 +881,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         ) {
             this(expose);
             setField(field);
-            coder = supplier.declare(
+            coder = supplier.plugin(
                 expose, this
             );
         }
@@ -896,7 +915,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             }
 
             element = method;
-            coder = supplier.declare(
+            coder = supplier.plugin(
                 expose, this
             );
         }
@@ -932,8 +951,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         ) throws IllegalAccessException {
             super(expose, field, supplier);
             field.setAccessible(true);
-            getter = lookup.unreflectGetter(field);
-            setter = lookup.unreflectSetter(field);
+            getter = LOOKUP.unreflectGetter(field);
+            setter = LOOKUP.unreflectSetter(field);
         }
 
         public Edge(
@@ -945,10 +964,10 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             method.setAccessible(true);
             if (method.getParameterCount() == 0) {
                 setter = null;
-                getter = lookup.unreflect(method);
+                getter = LOOKUP.unreflect(method);
             } else {
                 getter = null;
-                setter = lookup.unreflect(method);
+                setter = LOOKUP.unreflect(method);
             }
         }
 

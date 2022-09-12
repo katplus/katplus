@@ -40,8 +40,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         @NotNull Supplier supplier
     ) {
         this(
-            klass.getAnnotation(Embed.class),
-            klass, supplier, null
+            klass.getAnnotation(Embed.class), klass, supplier, null
         );
     }
 
@@ -51,29 +50,49 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         @NotNull Supplier supplier,
         @Nullable Provider provider
     ) {
-        super(klass, provider);
-        try {
-            Method values = klass
-                .getMethod("values");
-            values.setAccessible(true);
-
-            enums = (K[]) values.invoke(null);
-        } catch (Exception e) {
-            // NOOP
-        }
-
-        space = supplier.declare(embed, this);
+        this(embed, null, klass, supplier, provider);
     }
 
     public EnumSpare(
-        @NotNull Class<K> klass,
-        @Nullable K[] enums,
         @Nullable Embed embed,
-        @NotNull Supplier supplier
+        @Nullable K[] enums,
+        @NotNull Class<K> klass,
+        @NotNull Supplier supplier,
+        @Nullable Provider provider
     ) {
-        super(klass);
-        this.enums = enums;
-        this.space = supplier.declare(embed, this);
+        super(klass, provider);
+        if (enums != null) {
+            this.enums = enums;
+        } else try {
+            Method values = klass
+                .getMethod("values");
+            values.setAccessible(true);
+            this.enums = (K[]) values.invoke(null);
+        } catch (Exception e) {
+            // Nothing
+        }
+
+        if (embed == null) {
+            space = klass.getName();
+            supplier.embed(klass, this);
+        } else {
+            String[] spaces = embed.value();
+            if (spaces.length == 0) {
+                space = klass.getName();
+                supplier.embed(klass, this);
+            } else {
+                space = spaces[0];
+                supplier.embed(klass, this);
+                if ((embed.mode() & Embed.HIDDEN) == 0) {
+                    for (String space : spaces) {
+                        // requires length greater than '1'
+                        if (space.length() > 1) {
+                            supplier.embed(space, this);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override

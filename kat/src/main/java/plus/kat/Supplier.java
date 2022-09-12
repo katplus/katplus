@@ -50,9 +50,9 @@ public interface Supplier {
      *  supplier.embed(User.class, spare);
      * }</pre>
      *
-     * @param klass specify the type of embedding
-     * @param spare specify the {@code spare} of {@code klass}
-     * @return {@link Spare} or {@code null}
+     * @param klass the specified klass
+     * @param spare the specified spare to be embedded
+     * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#embed(Class, Spare)
      * @see Spare#embed(Class, Spare)
@@ -73,9 +73,9 @@ public interface Supplier {
      *  supplier.revoke(User.class);
      * }</pre>
      *
-     * @param klass specify the klass of revoking
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code type} is null
+     * @param klass the specified klass
+     * @return the previous {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#revoke(Class)
      * @see Spare#revoke(Class)
      */
@@ -96,10 +96,10 @@ public interface Supplier {
      *  );
      * }</pre>
      *
-     * @param klass specify the type of embedding
-     * @param spare specify the {@code spare} of {@code klass}
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
+     * @param klass the specified klass
+     * @param spare the specified spare to be embedded
+     * @return the previous {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} or {@code spare} is null
      * @see Impl#embed(CharSequence, Spare)
      */
     @Nullable
@@ -119,14 +119,39 @@ public interface Supplier {
      *  );
      * }</pre>
      *
-     * @param klass specify the klass of revoking
-     * @return {@link Spare} or {@code null}
+     * @param klass the specified klass
+     * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#revoke(CharSequence)
      */
     @Nullable
     Spare<?> revoke(
         @NotNull CharSequence klass
+    );
+
+    /**
+     * Returns the coder of {@code element}, and applies
+     * for a coder if the {@code element} needs it, otherwise returns null
+     *
+     * <pre>{@code
+     *   Expose expose = ...
+     *   Target target = ...
+     *
+     *   Supplier supplier = ...
+     *   Coder<User> coder = supplier.plugin(expose, target);
+     * }</pre>
+     *
+     * @param expose  the specified expose
+     * @param element the specified target
+     * @return the coder of {@code klass} or {@code null}
+     * @throws NullPointerException If the specified {@code element} is null
+     * @see Impl#plugin(Expose, Target)
+     * @since 0.0.4
+     */
+    @Nullable <T>
+    Coder<T> plugin(
+        @Nullable Expose expose,
+        @NotNull Target element
     );
 
     /**
@@ -138,7 +163,7 @@ public interface Supplier {
      *  Spare<User> spare = supplier.lookup(User.class);
      * }</pre>
      *
-     * @param klass specify the type of lookup
+     * @param klass the specified klass
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#lookup(Class)
@@ -164,7 +189,7 @@ public interface Supplier {
      *  boolean status = spare.accept(User.class); // status may be false
      * }</pre>
      *
-     * @param klass specify the type of lookup
+     * @param klass the specified klass
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#lookup(CharSequence)
@@ -192,7 +217,7 @@ public interface Supplier {
      *  boolean status = spare.accept(User.class); // status may be false
      * }</pre>
      *
-     * @param klass specify the type of lookup
+     * @param klass the specified klass
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#accept(Class)
@@ -216,6 +241,14 @@ public interface Supplier {
     /**
      * If {@link E} is a Bean or spoiler has elements,
      * then perform a given {@link Spoiler} to create a {@link E}
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Class<User> clazz = ...
+     *  User user = supplier.apply(
+     *     clazz, supplier.flat(bean)
+     *  );
+     * }</pre>
      *
      * @return {@link E}, it is not null
      * @throws Collapse             If it fails to create
@@ -243,6 +276,22 @@ public interface Supplier {
      * If {@link E} is a Bean or resultSet has elements,
      * then perform a given {@link ResultSet} to create a {@link E}
      *
+     * <pre>{@code
+     *  ResultSet rs = stmt.executeQuery(sql);
+     *  List<User> users = new ArrayList<>();
+     *  User user = supplier.apply(
+     *     clazz, supplier.flat(bean)
+     *  );
+     *
+     *  Class<User> clazz = ...
+     *  Supplier supplier = ...
+     *  while (rs.next()) {
+     *    users.add(
+     *      supplier.apply(clazz, rs)
+     *    );
+     *  }
+     * }</pre>
+     *
      * @return {@link E}, it is not null
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
@@ -269,7 +318,19 @@ public interface Supplier {
     /**
      * Convert the {@link Object} to {@code K}
      *
-     * @param data specify the {@code data} to convert
+     * <pre>{@code
+     *  Class<User> clazz = ...
+     *  Supplier supplier = ...
+     *
+     *  User user = spare.supplier(
+     *      clazz, "{:id(1):name(kraity)}"
+     *  );
+     *  User user = spare.cast(
+     *      clazz, Map.of("id", 1, "name", "kraity")
+     *  );
+     * }</pre>
+     *
+     * @param data the specified data to be converted
      * @return {@link E} or {@code null}
      * @see Spare#cast(Object, Supplier)
      */
@@ -290,7 +351,19 @@ public interface Supplier {
     /**
      * Convert the {@link Object} to {@code K}
      *
-     * @param data specify the {@code data} to convert
+     * <pre>{@code
+     *  String clazz = "plus.kat.entity.User"
+     *  Supplier supplier = ...
+     *
+     *  User user = spare.supplier(
+     *      clazz, "{:id(1):name(kraity)}"
+     *  );
+     *  User user = spare.cast(
+     *      clazz, Map.of("id", 1, "name", "kraity")
+     *  );
+     * }</pre>
+     *
+     * @param data the specified data to be converted
      * @return {@link E} or {@code null}
      * @throws ClassCastException If {@link E} is not an instance of {@code klass}
      * @see Spare#cast(Object, Supplier)
@@ -489,7 +562,7 @@ public interface Supplier {
     /**
      * Parse {@link Kat} {@link Event} and convert result to {@link T}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws ClassCastException   If {@link T} is not an instance of {@code klass}
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
@@ -508,7 +581,7 @@ public interface Supplier {
     /**
      * Parse {@link Kat} {@link Event} and convert result to {@link T}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(Class, Job, Event)
@@ -558,7 +631,7 @@ public interface Supplier {
     /**
      * Parse {@link Doc} {@link Event} and convert result to {@link T}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(CharSequence, Job, Event)
@@ -576,7 +649,7 @@ public interface Supplier {
     /**
      * Parse {@link Doc} {@link Event} and convert result to {@link T}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(Class, Job, Event)
@@ -626,7 +699,7 @@ public interface Supplier {
     /**
      * Parse {@link Json} {@link Event} and convert result to {@link T}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
      * @see Supplier#solve(CharSequence, Job, Event)
@@ -644,7 +717,7 @@ public interface Supplier {
     /**
      * Parse {@link Json} {@link Event} and convert result to {@link T}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
      * @see Supplier#solve(Class, Job, Event)
@@ -694,7 +767,7 @@ public interface Supplier {
     /**
      * Parse {@link Event} and convert result to {@link T}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Job, Event)
@@ -723,7 +796,7 @@ public interface Supplier {
     /**
      * Parse {@link Event} and convert result to {@link T}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Job, Event)
@@ -754,7 +827,7 @@ public interface Supplier {
     /**
      * Parse {@link Event} and convert result to {@link T}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Job, Event)
@@ -778,78 +851,6 @@ public interface Supplier {
         event.prepare(klass);
 
         return spare.solve(job, event);
-    }
-
-    /**
-     * Returns the coder of {@code klass}
-     *
-     * <pre>{@code
-     *   Supplier supplier = ...
-     *   Expose expose = ...
-     *   Target target = ...
-     *   Coder<User> coder = supplier.declare(expose, target);
-     * }</pre>
-     *
-     * @param expose specify the {@link Expose}
-     * @param target specify the {@code target} of {@link Class}
-     * @return the coder of {@code klass} or {@code null}
-     * @throws NullPointerException If the specified {@code target} is null
-     * @since 0.0.4
-     */
-    @Nullable <T>
-    Coder<T> declare(
-        @Nullable Expose expose,
-        @NotNull Target target
-    );
-
-    /**
-     * Returns the primary space of
-     * {@code klass} and declares the {@code spare}
-     *
-     * <pre>{@code
-     *   Supplier supplier = ...
-     *   Embed embed = ...
-     *   Spare spare = ...
-     *   String space = supplier.declare(embed, spare);
-     * }</pre>
-     *
-     * @param embed specify the {@link Embed}
-     * @param spare specify the {@code spare} of {@link Class}
-     * @return the primary spare of {@code klass}
-     * @throws NullPointerException If the specified {@code spare} is null
-     * @see Supplier#embed(Class, Spare)
-     * @see Supplier#embed(CharSequence, Spare)
-     * @since 0.0.4
-     */
-    @NotNull
-    default <T> String declare(
-        @Nullable Embed embed,
-        @NotNull Spare<T> spare
-    ) {
-        Class<?> klass =
-            spare.getType();
-        embed(klass, spare);
-
-        if (embed == null) {
-            return klass.getName();
-        }
-
-        String[] spaces = embed.value();
-        if (spaces.length == 0) {
-            return klass.getName();
-        }
-
-        if ((embed.mode() & Embed.HIDDEN) == 0) {
-            for (String space : spaces) {
-                // start from the second char, require contains '.'
-                if (space.indexOf('.', 1) != -1) {
-                    embed(space, spare);
-                }
-            }
-        }
-
-        String space = spaces[0];
-        return space.isEmpty() ? klass.getName() : space;
     }
 
     /**
@@ -1006,21 +1007,21 @@ public interface Supplier {
         }
 
         @Override
-        public <T> Coder<T> declare(
+        public <T> Coder<T> plugin(
             @Nullable Expose expose,
-            @NotNull Target target
+            @NotNull Target element
         ) {
             Class<?> clazz;
             if (expose == null ||
                 (clazz = expose.with()) == Coder.class) {
-                Format format = target
+                Format format = element
                     .getAnnotation(Format.class);
                 if (format == null) {
                     return null;
                 }
 
                 Spare<?> spare = null;
-                Class<?> klass = target.getType();
+                Class<?> klass = element.getType();
 
                 if (klass == Date.class) {
                     spare = new DateSpare(format);
@@ -1075,7 +1076,9 @@ public interface Supplier {
                     for (int i = 0; i < size; i++) {
                         Class<?> m = cls[i];
                         if (m == Class.class) {
-                            args[i] = target.getType();
+                            args[i] = element.getType();
+                        } else if (m == Type.class) {
+                            args[i] = element.getRawType();
                         } else if (m == Expose.class) {
                             args[i] = expose;
                         } else if (m == Supplier.class) {
@@ -1083,7 +1086,7 @@ public interface Supplier {
                         } else if (m == Provider.class) {
                             args[i] = cluster;
                         } else if (m.isAnnotation()) {
-                            args[i] = target.getAnnotation(
+                            args[i] = element.getAnnotation(
                                 (Class<? extends Annotation>) m
                             );
                         }

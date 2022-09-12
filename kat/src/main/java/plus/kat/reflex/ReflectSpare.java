@@ -33,7 +33,7 @@ import plus.kat.spare.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
-import static plus.kat.utils.Reflect.lookup;
+import static plus.kat.utils.Reflect.LOOKUP;
 
 /**
  * @author kraity
@@ -562,7 +562,7 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
             b.setAccessible(true);
             int count = b.getParameterCount();
             if (count == 0) {
-                handle = lookup.unreflectConstructor(b);
+                handle = LOOKUP.unreflectConstructor(b);
             } else {
                 params = new KatMap<>();
                 builder = (Constructor<T>) b;
@@ -608,7 +608,7 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     Expose expose = item
                         .getAnnotation(Expose.class);
                     item.setCoder(
-                        supplier.declare(
+                        supplier.plugin(
                             expose, item
                         )
                     );

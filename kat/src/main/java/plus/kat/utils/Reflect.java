@@ -36,7 +36,7 @@ public final class Reflect {
         EMPTY = new Object[0];
 
     public static final MethodHandles.Lookup
-        lookup = MethodHandles.lookup();
+        LOOKUP = MethodHandles.lookup();
 
     /**
      * @since 0.0.2
