@@ -374,7 +374,6 @@ public class KatTest {
         );
     }
 
-    @Embed("State")
     enum State {
         OPEN, SELF
     }

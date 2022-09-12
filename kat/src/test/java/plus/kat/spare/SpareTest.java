@@ -281,6 +281,9 @@ public class SpareTest {
         assertEquals(Meta.KAT, spare.cast(0));
         assertEquals(Meta.KAT, spare.cast("KAT"));
         assertEquals(Meta.KAT, spare.cast(Meta.KAT));
+        assertEquals(Meta.DOC, spare.cast(1));
+        assertEquals(Meta.DOC, spare.cast("DOC"));
+        assertEquals(Meta.DOC, spare.cast(Meta.DOC));
         assertEquals(Meta.JSON, spare.cast(2));
         assertEquals(Meta.JSON, spare.cast("JSON"));
         assertEquals(Meta.JSON, spare.cast(Meta.JSON));

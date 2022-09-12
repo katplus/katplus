@@ -21,6 +21,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -73,20 +74,20 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         }
 
         if (embed == null) {
-            space = klass.getName();
+            space = klass.getSimpleName();
             supplier.embed(klass, this);
         } else {
             String[] spaces = embed.value();
             if (spaces.length == 0) {
-                space = klass.getName();
+                space = klass.getSimpleName();
                 supplier.embed(klass, this);
             } else {
                 space = spaces[0];
                 supplier.embed(klass, this);
                 if ((embed.mode() & Embed.HIDDEN) == 0) {
                     for (String space : spaces) {
-                        // requires length greater than '1'
-                        if (space.length() > 1) {
+                        // start from the second char, require contains '.'
+                        if (space.indexOf('.', 1) != -1) {
                             supplier.embed(space, this);
                         }
                     }
@@ -118,7 +119,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
             return null;
         }
 
-        if (data.getClass() == klass) {
+        if (klass.isInstance(data)) {
             return (K) data;
         }
 
@@ -126,9 +127,26 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
             K[] e = enums;
             if (e != null) {
                 String key = (String) data;
-                for (K em : e) {
-                    if (key.equals(em.name())) {
-                        return em;
+                if (!key.isEmpty()) {
+                    for (K em : e) {
+                        if (key.equals(em.name())) {
+                            return em;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        if (data instanceof Chain) {
+            K[] e = enums;
+            if (e != null) {
+                Chain c = (Chain) data;
+                if (c.isNotBlank()) {
+                    for (K em : e) {
+                        if (c.same(em.name())) {
+                            return em;
+                        }
                     }
                 }
             }
@@ -165,9 +183,11 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
                 }
             }
 
-            for (K em : e) {
-                if (alias.is(em.name())) {
-                    return em;
+            if (alias.isNotBlank()) {
+                for (K em : e) {
+                    if (alias.same(em.name())) {
+                        return em;
+                    }
                 }
             }
         }
@@ -188,9 +208,11 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
                 }
             }
 
-            for (K em : e) {
-                if (value.is(em.name())) {
-                    return em;
+            if (value.isNotBlank()) {
+                for (K em : e) {
+                    if (value.same(em.name())) {
+                        return em;
+                    }
                 }
             }
         }

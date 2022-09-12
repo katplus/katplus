@@ -168,11 +168,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             CharSequence c = (CharSequence) o;
             int range = c.length();
             if (count == range) {
-                char ch;
                 byte[] it = value;
                 for (int i = 0; i < range; i++) {
-                    ch = (char) (it[i] & 0xFF);
-                    if (ch != c.charAt(i)) {
+                    if (c.charAt(i) !=
+                        (char) (it[i] & 0xFF)) {
                         return false;
                     }
                 }
@@ -356,7 +355,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @param i the specified index
      * @param c the byte value to be compared
      * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
-     * @since 0.0.2 supports UTF-8
      */
     public boolean is(
         int i, char c
@@ -469,44 +467,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares this chain and specified {@code byte[]}
-     *
-     * <pre>{@code
-     *   byte[] b = new byte[]{'k'};
-     *   new Value("k").is(b); // true
-     *   new Value("kat").is(b); // false
-     *
-     *   byte[] c = new byte[]{'k', 'a', 't'};
-     *   new Value("k").is(c); // false
-     *   new Value("kat").is(c); // true
-     * }</pre>
-     *
-     * @param b the {@code byte[]} to compare this {@link Chain} against
-     * @throws NullPointerException If the specified {@code bytes} is null
-     * @since 0.0.2
-     */
-    public boolean is(
-        @Nullable byte[] b
-    ) {
-        if (b == null) {
-            return false;
-        }
-
-        int range = b.length;
-        if (count == range) {
-            byte[] it = value;
-            for (int i = 0; i < range; i++) {
-                if (it[i] != b[i]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Compares this UTF8 chain and specified {@link CharSequence}
      *
      * <pre>{@code
@@ -519,7 +479,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *
      * @param ch the {@link CharSequence} to compare this {@link Chain} against
      * @throws NullPointerException If the specified {@code chars} is null
-     * @since 0.0.2 supports UTF-8
      */
     public boolean is(
         @Nullable CharSequence ch
@@ -597,6 +556,116 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         }
 
         return i == l && j == r;
+    }
+
+    /**
+     * Compares this chain and specified {@code byte[]}
+     *
+     * <pre>{@code
+     *   byte[] b = new byte[]{'k'};
+     *   new Value("k").same(b); // true
+     *   new Value("kat").same(b); // false
+     *
+     *   byte[] c = new byte[]{'k', 'a', 't'};
+     *   new Value("k").same(c); // false
+     *   new Value("kat").same(c); // true
+     * }</pre>
+     *
+     * @param b the {@code byte[]} to compare this {@link Chain} against
+     * @throws NullPointerException If the specified {@code bytes} is null
+     * @since 0.0.4
+     */
+    public boolean same(
+        @Nullable byte[] b
+    ) {
+        if (b == null) {
+            return false;
+        }
+
+        int range = b.length;
+        if (count == range) {
+            byte[] it = value;
+            for (int i = 0; i < range; i++) {
+                if (it[i] != b[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Compares this chain and specified {@code byte[]}
+     *
+     * <pre>{@code
+     *   char[] c = new char[]{'k'};
+     *   new Value("k").same(c); // true
+     *   new Value("kat").same(c); // false
+     *
+     *   char[] d = new char[]{'k', 'a', 't'};
+     *   new Value("k").same(d); // false
+     *   new Value("kat").same(d); // true
+     * }</pre>
+     *
+     * @param c the {@code byte[]} to compare this {@link Chain} against
+     * @throws NullPointerException If the specified {@code bytes} is null
+     * @since 0.0.4
+     */
+    public boolean same(
+        @Nullable char[] c
+    ) {
+        if (c == null) {
+            return false;
+        }
+
+        int range = c.length;
+        if (count == range) {
+            byte[] it = value;
+            for (int i = 0; i < range; i++) {
+                if (c[i] != (char) (it[i] & 0xFF)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Compares this chain and specified {@link CharSequence}
+     *
+     * <pre>{@code
+     *   new Value("k").same("k"); // true
+     *   new Value("kat").same("k"); // false
+     *
+     *   new Value("k").same("kat"); // false
+     *   new Value("kat").same("kat"); // true
+     * }</pre>
+     *
+     * @param c the {@link CharSequence} to compare this {@link Chain} against
+     * @throws NullPointerException If the specified {@code chars} is null
+     * @since 0.0.4
+     */
+    public boolean same(
+        @Nullable CharSequence c
+    ) {
+        if (c != null) {
+            int range = c.length();
+            if (count == range) {
+                byte[] it = value;
+                for (int i = 0; i < range; i++) {
+                    if (c.charAt(i) !=
+                        (char) (it[i] & 0xFF)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
