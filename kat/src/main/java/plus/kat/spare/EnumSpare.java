@@ -65,10 +65,12 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         if (enums != null) {
             this.enums = enums;
         } else try {
-            Method values = klass
+            Method method = klass
                 .getMethod("values");
-            values.setAccessible(true);
-            this.enums = (K[]) values.invoke(null);
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
+            }
+            this.enums = (K[]) method.invoke(null);
         } catch (Exception e) {
             // Nothing
         }

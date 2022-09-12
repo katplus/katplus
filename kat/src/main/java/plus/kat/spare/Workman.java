@@ -950,7 +950,9 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             @NotNull Supplier supplier
         ) throws IllegalAccessException {
             super(expose, field, supplier);
-            field.setAccessible(true);
+            if (!field.isAccessible()) {
+                field.setAccessible(true);
+            }
             getter = LOOKUP.unreflectGetter(field);
             setter = LOOKUP.unreflectSetter(field);
         }
@@ -961,7 +963,9 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             @NotNull Supplier supplier
         ) throws IllegalAccessException {
             super(expose, method, supplier);
-            method.setAccessible(true);
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
+            }
             if (method.getParameterCount() == 0) {
                 setter = null;
                 getter = LOOKUP.unreflect(method);

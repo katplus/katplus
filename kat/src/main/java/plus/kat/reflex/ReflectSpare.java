@@ -559,7 +559,9 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
         }
 
         try {
-            b.setAccessible(true);
+            if (!b.isAccessible()) {
+                b.setAccessible(true);
+            }
             int count = b.getParameterCount();
             if (count == 0) {
                 handle = LOOKUP.unreflectConstructor(b);

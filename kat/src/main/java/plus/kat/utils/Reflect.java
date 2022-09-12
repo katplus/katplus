@@ -49,7 +49,9 @@ public final class Reflect {
         try {
             Constructor<?> c = klass
                 .getDeclaredConstructor();
-            c.setAccessible(true);
+            if (!c.isAccessible()) {
+                c.setAccessible(true);
+            }
             return (T) c.newInstance(EMPTY);
         } catch (Exception e) {
             return null;

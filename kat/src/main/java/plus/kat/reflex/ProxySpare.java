@@ -84,7 +84,9 @@ public class ProxySpare extends Workman<Object> {
                     InvocationHandler.class
                 );
 
-                c.setAccessible(true);
+                if (!c.isAccessible()) {
+                    c.setAccessible(true);
+                }
                 supplier.embed(proxy, this);
             }
 
@@ -234,7 +236,9 @@ public class ProxySpare extends Workman<Object> {
             this.spare = spare;
             this.method = method;
 
-            method.setAccessible(true);
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
+            }
             String name = method.getName();
             if (!name.startsWith("set")) {
                 alias = name;

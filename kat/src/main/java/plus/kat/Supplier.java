@@ -1093,7 +1093,9 @@ public interface Supplier {
                     }
                 }
 
-                c.setAccessible(true);
+                if (!c.isAccessible()) {
+                    c.setAccessible(true);
+                }
                 coder = c.newInstance(args);
             } catch (Exception e) {
                 // Nothing

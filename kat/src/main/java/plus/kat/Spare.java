@@ -1255,7 +1255,9 @@ public interface Spare<K> extends Coder<K> {
                             }
                         }
 
-                        c.setAccessible(true);
+                        if (!c.isAccessible()) {
+                            c.setAccessible(true);
+                        }
                         putIfAbsent(klass, spare =
                             (Spare<?>) c.newInstance(args)
                         );

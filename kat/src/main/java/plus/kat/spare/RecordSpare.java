@@ -267,7 +267,9 @@ public class RecordSpare<T> extends Workman<T> {
 
         if (width == b.getParameterCount()) {
             ctor = b;
-            b.setAccessible(true);
+            if (!b.isAccessible()) {
+                b.setAccessible(true);
+            }
         } else {
             throw new Collapse(
                 "Unexpectedly, the number of actual and formal parameters differ"
