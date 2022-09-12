@@ -102,11 +102,10 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
             }
         }
 
-        try {
-            if (chan.set(null, data)) {
-                return chan.toBytes();
+        try (Chan ch = chan) {
+            if (ch.set(null, data)) {
+                return ch.toBytes();
             } else {
-                chan.closeFlow();
                 throw new SerializationException(
                     "Unexpectedly, Cannot serialize " + data + " to " + job
                 );

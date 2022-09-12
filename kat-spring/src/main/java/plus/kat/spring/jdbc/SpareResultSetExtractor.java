@@ -76,9 +76,9 @@ public class SpareResultSetExtractor<T> implements ResultSetExtractor<List<T>> {
     public List<T> extractData(
         ResultSet rs
     ) throws SQLException {
-        Supplier $supplier = supplier;
+        Supplier supplied = supplier;
         List<T> results = new ArrayList<>();
-        if ($supplier == null) {
+        if (supplied == null) {
             while (rs.next()) {
                 results.add(
                     spare.apply(rs)
@@ -88,7 +88,7 @@ public class SpareResultSetExtractor<T> implements ResultSetExtractor<List<T>> {
             while (rs.next()) {
                 results.add(
                     spare.apply(
-                        $supplier, rs
+                        supplied, rs
                     )
                 );
             }

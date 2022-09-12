@@ -830,12 +830,15 @@ public abstract class Paper extends Chain implements Flow, Closeable {
      * @since 0.0.2
      */
     public void clear() {
-        this.clean();
-        Bucket bt = bucket;
-        if (bt == null) {
-            value = EMPTY_BYTES;
-        } else {
-            value = bt.revert(value);
+        byte[] it = value;
+        if (it.length != 0) {
+            this.clean();
+            Bucket bt = bucket;
+            if (bt == null) {
+                value = EMPTY_BYTES;
+            } else {
+                value = bt.revert(it);
+            }
         }
     }
 
@@ -846,15 +849,13 @@ public abstract class Paper extends Chain implements Flow, Closeable {
      */
     @Override
     public void close() {
-        this.clean();
-        Bucket bt = bucket;
-        if (bt != null) {
-            byte[] it = value;
-            if (it.length != 0) {
-                bt.push(it);
-            }
+        byte[] it = value;
+        if (it.length != 0) {
+            this.clean();
+            value = EMPTY_BYTES;
+            Bucket bt = bucket;
+            if (bt != null) bt.push(it);
         }
-        value = EMPTY_BYTES;
     }
 
     /**

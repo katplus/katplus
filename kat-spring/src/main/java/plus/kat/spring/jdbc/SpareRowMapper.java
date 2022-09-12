@@ -74,10 +74,10 @@ public class SpareRowMapper<T> implements RowMapper<T> {
     public T mapRow(
         ResultSet rs, int rowNum
     ) throws SQLException {
-        Supplier $supplier = supplier;
-        if ($supplier == null) {
+        Supplier supplied = supplier;
+        if (supplied == null) {
             return spare.apply(rs);
         }
-        return spare.apply($supplier, rs);
+        return spare.apply(supplied, rs);
     }
 }

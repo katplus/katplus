@@ -404,7 +404,7 @@ public class Chan implements Flag, Closeable {
      *   flow.update(out);
      *
      *   // finally close the flow
-     *   chan.closeFlow() // flow.close();
+     *   chan.close() // flow.close();
      * }</pre>
      */
     @NotNull
@@ -425,23 +425,18 @@ public class Chan implements Flag, Closeable {
     /**
      * Close this {@link Chan}
      *
+     * <pre>{@code
+     *   try (Chan chan = new Chan()) {
+     *       chan.set("id", 1);
+     *       chan.set("name", "kraity");
+     *   }
+     * }</pre>
+     *
      * @see Paper#close()
      * @since 0.0.4
      */
     @Override
     public void close() {
-        flow.close();
-        flow = null;
-        supplier = null;
-    }
-
-    /**
-     * Close the internal {@link Paper}
-     *
-     * @see Paper#close()
-     * @since 0.0.2
-     */
-    public void closeFlow() {
         flow.close();
     }
 
@@ -454,9 +449,11 @@ public class Chan implements Flag, Closeable {
      *   byte[] data = chan.toBytes();
      * }</pre>
      *
+     * @see Paper#close()
      * @see Paper#closeFlow()
      * @since 0.0.3
      */
+    @NotNull
     public byte[] toBytes() {
         return flow.closeFlow();
     }
@@ -470,6 +467,7 @@ public class Chan implements Flag, Closeable {
      *   String text = chan.toString();
      * }</pre>
      *
+     * @see Paper#close()
      * @see Paper#closePaper()
      */
     @Override

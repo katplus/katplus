@@ -130,9 +130,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             );
 
         return supplier.solve(
-            clazz, job, new Event<>(
-                in.getBody()
-            ).with(plan)
+            clazz, job, new Event<>(in.getBody()).with(plan)
         );
     }
 
@@ -142,9 +140,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         HttpInputMessage in
     ) throws IOException, HttpMessageNotReadableException {
         return supplier.solve(
-            clazz, job, new Event<>(
-                in.getBody()
-            ).with(plan)
+            clazz, job, new Event<>(in.getBody()).with(plan)
         );
     }
 
@@ -198,17 +194,16 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             }
         }
 
-        if (chan.set(null, data)) {
-            Paper flow = chan.getFlow();
-            flow.update(
-                output.getBody()
-            );
-            chan.closeFlow();
-        } else {
-            chan.closeFlow();
-            throw new HttpMessageNotWritableException(
-                "Unexpectedly, Cannot serialize " + data + " to " + job
-            );
+        try (Chan ch = chan) {
+            if (ch.set(null, data)) {
+                ch.getFlow().update(
+                    output.getBody()
+                );
+            } else {
+                throw new HttpMessageNotWritableException(
+                    "Unexpectedly, Cannot serialize " + data + " to " + job
+                );
+            }
         }
     }
 

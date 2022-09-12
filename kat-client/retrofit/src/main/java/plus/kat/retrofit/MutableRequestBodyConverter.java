@@ -15,7 +15,6 @@
  */
 package plus.kat.retrofit;
 
-
 import plus.kat.*;
 import plus.kat.okhttp.*;
 
@@ -85,15 +84,16 @@ public class MutableRequestBodyConverter<T> implements Converter<T, RequestBody>
             }
         }
 
-        if (chan.set(null, value)) {
-            return new RequestPaper(
-                chan.getFlow(), media
-            );
-        } else {
-            chan.closeFlow();
-            throw new IOException(
-                "Unexpectedly, Cannot serialize " + value + " to " + job
-            );
+        try (Chan ch = chan) {
+            if (ch.set(null, value)) {
+                return new RequestPaper(
+                    ch.getFlow(), media
+                );
+            } else {
+                throw new IOException(
+                    "Unexpectedly, Cannot serialize " + value + " to " + job
+                );
+            }
         }
     }
 }

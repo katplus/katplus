@@ -228,23 +228,18 @@ public class Json extends Chan {
     /**
      * Close this {@link Chan}
      *
+     * <pre>{@code
+     *   try (Chan chan = new Json()) {
+     *       chan.set("id", 1);
+     *       chan.set("name", "kraity");
+     *   }
+     * }</pre>
+     *
      * @see Paper#close()
      * @since 0.0.4
      */
     @Override
     public void close() {
-        flow.close();
-        flow = null;
-        supplier = null;
-    }
-
-    /**
-     * Close the internal {@link Paper}
-     *
-     * @see Paper#close()
-     * @since 0.0.2
-     */
-    public void closeFlow() {
         flow.close();
     }
 
@@ -257,9 +252,11 @@ public class Json extends Chan {
      *   byte[] data = json.toBytes();
      * }</pre>
      *
+     * @see Paper#close()
      * @see Paper#closeFlow()
      * @since 0.0.3
      */
+    @NotNull
     public byte[] toBytes() {
         return flow.closeFlow();
     }
@@ -273,6 +270,7 @@ public class Json extends Chan {
      *   String text = json.toString();
      * }</pre>
      *
+     * @see Paper#close()
      * @see Paper#closePaper()
      */
     @Override
