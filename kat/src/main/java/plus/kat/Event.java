@@ -607,15 +607,14 @@ public class Event<T> implements Flag {
             return spare;
         }
 
-        Spare<?> spare;
+        Type clazz = type;
         Supplier supplier = getSupplier();
 
-        if (type == null) {
+        Spare<?> spare;
+        if (clazz == null) {
             spare = supplier.lookup(space);
         } else {
-            return Reflect.lookup(
-                type, supplier
-            );
+            spare = supplier.search(clazz);
         }
 
         if (spare != null) {

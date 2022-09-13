@@ -415,9 +415,7 @@ public class ArraySpare implements Spare<Object> {
                     );
                 }
             } else {
-                return Reflect.lookup(
-                    type, supplier
-                );
+                return supplier.search(type);
             }
         }
 

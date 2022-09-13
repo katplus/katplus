@@ -289,9 +289,8 @@ public class ListSpare implements Spare<List> {
         protected Type tag;
         protected Type type;
 
-        protected Type param;
         protected T entity;
-        protected Spare<?> spare;
+        protected Type param;
 
         public Builder$(
             @NotNull Type tag,
@@ -319,9 +318,6 @@ public class ListSpare implements Spare<List> {
                 ParameterizedType p = (ParameterizedType) raw;
                 raw = p.getRawType();
                 param = p.getActualTypeArguments()[0];
-                spare = Reflect.lookup(
-                    param, supplier
-                );
             }
             entity = onCreate(
                 raw == null ? tag : raw
@@ -334,25 +330,17 @@ public class ListSpare implements Spare<List> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
+            Type type = param;
+            Spare<?> spare =
+                supplier.search(type, space);
+
             if (spare != null) {
-                value.setType(param);
+                value.setType(type);
                 entity.add(
                     spare.read(
                         event, value
                     )
                 );
-            } else {
-                Spare<?> spare =
-                    supplier.lookup(space);
-
-                if (spare != null) {
-                    value.setType(param);
-                    entity.add(
-                        spare.read(
-                            event, value
-                        )
-                    );
-                }
             }
         }
 
@@ -371,18 +359,15 @@ public class ListSpare implements Spare<List> {
             @NotNull Space space,
             @NotNull Alias alias
         ) {
-            if (spare != null) {
-                return spare.getBuilder(param);
-            }
-
+            Type type = param;
             Spare<?> spare =
-                supplier.lookup(space);
+                supplier.search(type, space);
 
             if (spare == null) {
                 return null;
             }
 
-            return spare.getBuilder(param);
+            return spare.getBuilder(type);
         }
 
         @Override

@@ -736,7 +736,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 }
 
                 // specified spare
-                spare = supplier.lookup(space, klass);
+                spare = supplier.lookup(klass, space);
 
                 // skip if null
                 if (spare != null &&
@@ -798,7 +798,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 }
 
                 // specified spare
-                spare = supplier.lookup(space, klass);
+                spare = supplier.lookup(klass, space);
 
                 // skip if null
                 if (spare != null &&

@@ -1,6 +1,7 @@
 package plus.kat;
 
 import org.junit.jupiter.api.Test;
+import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 
 import java.lang.reflect.Array;
@@ -29,7 +30,7 @@ public class SupplierTest {
         Supplier supplier = Supplier.ins();
         for (String o : list) {
             assertNotNull(
-                supplier.lookup(o, Object.class)
+                supplier.lookup(Object.class, o)
             );
         }
     }
@@ -418,5 +419,30 @@ public class SupplierTest {
         assertNull(s1.version);
         assertEquals(1, s1.model.getId());
         assertEquals("kraity", s1.model.getName());
+    }
+
+    @Embed("plus.kat.entity.UserVO")
+    static class UserVO extends User {
+        public boolean blocked;
+    }
+
+    @Test
+    public void test_search_spare() {
+        Supplier supplier = Supplier.ins();
+
+        Spare<?> spare1 = supplier.lookup(UserVO.class);
+        assertSame(spare1, supplier.search(User.class, "plus.kat.entity.UserVO"));
+
+        Spare<?> spare2 = supplier.lookup(User.class);
+        assertSame(spare2, supplier.search(User.class, ""));
+        assertSame(spare2, supplier.search(User.class, "A"));
+        assertSame(spare2, supplier.search(User.class, "M"));
+        assertNull(supplier.search(User.class, "SuperUser"));
+
+        Spare<?> spare3 = supplier.lookup(Object.class);
+        assertSame(spare3, supplier.search(Object.class, ""));
+        assertSame(spare3, supplier.search(Object.class, "A"));
+        assertSame(spare3, supplier.search(Object.class, "SuperUser"));
+        assertSame(spare3, supplier.search(Object.class, "plus.kat.entity.UserVO"));
     }
 }

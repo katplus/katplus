@@ -610,7 +610,7 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     Expose expose = item
                         .getAnnotation(Expose.class);
                     item.setCoder(
-                        supplier.plugin(
+                        supplier.assign(
                             expose, item
                         )
                     );

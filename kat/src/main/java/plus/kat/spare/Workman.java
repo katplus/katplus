@@ -881,7 +881,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         ) {
             this(expose);
             setField(field);
-            coder = supplier.plugin(
+            coder = supplier.assign(
                 expose, this
             );
         }
@@ -915,7 +915,7 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
             }
 
             element = method;
-            coder = supplier.plugin(
+            coder = supplier.assign(
                 expose, this
             );
         }

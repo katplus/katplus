@@ -18,10 +18,7 @@ package plus.kat.utils;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.*;
-import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.reflex.*;
 
 import java.lang.invoke.*;
 import java.lang.reflect.*;
@@ -56,91 +53,6 @@ public final class Reflect {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    /**
-     * @since 0.0.1
-     */
-    @Nullable
-    public static Spare<?> lookup(
-        @Nullable Type type,
-        @NotNull Supplier supplier
-    ) {
-        if (type instanceof Class) {
-            if (type == Object.class) {
-                return null;
-            }
-
-            return supplier.lookup(
-                (Class<?>) type
-            );
-        }
-
-        if (type instanceof Space) {
-            Space s = (Space) type;
-            type = s.getType();
-            if (type != null) {
-                return lookup(
-                    type, supplier
-                );
-            }
-            return supplier.lookup(s);
-        }
-
-        if (type instanceof ParameterizedType) {
-            ParameterizedType p = (ParameterizedType) type;
-            return supplier.lookup(
-                (Class<?>) p.getRawType()
-            );
-        }
-
-        if (type instanceof WildcardType) {
-            WildcardType w = (WildcardType) type;
-            type = w.getUpperBounds()[0];
-            if (type != Object.class) {
-                return supplier.lookup(
-                    (Class<?>) type
-                );
-            }
-            Type[] bounds = w.getLowerBounds();
-            if (bounds.length != 0) {
-                type = bounds[0];
-                if (type != Object.class) {
-                    return supplier.lookup(
-                        (Class<?>) type
-                    );
-                }
-            }
-            return null;
-        }
-
-        if (type instanceof TypeVariable) {
-            TypeVariable<?> v = (TypeVariable<?>) type;
-            Type[] bounds = v.getBounds();
-            if (bounds.length != 0) {
-                type = bounds[0];
-                if (type != Object.class) {
-                    return supplier.lookup(
-                        (Class<?>) type
-                    );
-                }
-            }
-            return null;
-        }
-
-        if (type instanceof ArrayType) {
-            return supplier.lookup(
-                Object[].class
-            );
-        }
-
-        if (type instanceof GenericArrayType) {
-            return supplier.lookup(
-                Object[].class
-            );
-        }
-
-        return null;
     }
 
     /**

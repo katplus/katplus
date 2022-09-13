@@ -17,14 +17,15 @@ package plus.kat;
 
 import plus.kat.anno.*;
 import plus.kat.spare.*;
+import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
+import plus.kat.reflex.*;
 import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.*;
@@ -135,23 +136,67 @@ public interface Supplier {
      *
      * <pre>{@code
      *   Expose expose = ...
-     *   Target target = ...
+     *   Target element = ...
      *
      *   Supplier supplier = ...
-     *   Coder<User> coder = supplier.plugin(expose, target);
+     *   Coder<User> coder = supplier.assign(expose, element);
      * }</pre>
      *
      * @param expose  the specified expose
      * @param element the specified target
      * @return the coder of {@code klass} or {@code null}
-     * @throws NullPointerException If the specified {@code element} is null
-     * @see Impl#plugin(Expose, Target)
+     * @see Impl#assign(Expose, Target)
      * @since 0.0.4
      */
     @Nullable <T>
-    Coder<T> plugin(
+    Coder<T> assign(
         @Nullable Expose expose,
-        @NotNull Target element
+        @Nullable Target element
+    );
+
+    /**
+     * Returns the {@link Spare} of {@code type}.
+     * Find the class of the type, then look for an alternate of that class
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = supplier.search(User.class);
+     * }</pre>
+     *
+     * @param type the specified type
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code type} is null
+     * @see Impl#search(Type)
+     * @see Supplier#lookup(Class)
+     * @since 0.0.4
+     */
+    @Nullable <T>
+    Spare<T> search(
+        @Nullable Type type
+    );
+
+    /**
+     * Returns the {@link Spare} of {@code type}.
+     * Find the class of this type as the parent of
+     * klass, and then look for an alternative to klass
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = supplier.search(User.class, "plus.kat.entity.SuperUser");
+     * }</pre>
+     *
+     * @param type the specified type
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @see Spare#accept(Class)
+     * @see Supplier#lookup(Class)
+     * @see Impl#search(Type, CharSequence)
+     * @since 0.0.4
+     */
+    @Nullable <T>
+    Spare<T> search(
+        @Nullable Type type,
+        @NotNull CharSequence klass
     );
 
     /**
@@ -221,13 +266,13 @@ public interface Supplier {
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#accept(Class)
-     * @see Impl#lookup(CharSequence, Class)
+     * @see Impl#lookup(Class, CharSequence)
      * @since 0.0.3
      */
     @Nullable <K, T extends K>
     Spare<T> lookup(
-        @NotNull CharSequence klass,
-        @Nullable Class<K> parent
+        @Nullable Class<K> parent,
+        @NotNull CharSequence klass
     );
 
     /**
@@ -374,7 +419,7 @@ public interface Supplier {
         @NotNull Object data
     ) {
         Spare<E> spare = lookup(
-            klass, Object.class
+            Object.class, klass
         );
 
         if (spare == null) {
@@ -780,7 +825,7 @@ public interface Supplier {
         @NotNull Event<T> event
     ) {
         Spare<T> spare = lookup(
-            klass, Object.class
+            Object.class, klass
         );
 
         if (spare == null) {
@@ -803,14 +848,12 @@ public interface Supplier {
      * @since 0.0.2
      */
     @NotNull
-    @SuppressWarnings("unchecked")
     default <T> T solve(
         @NotNull Type type,
         @NotNull Job job,
         @NotNull Event<T> event
     ) {
-        Spare<T> spare = (Spare<T>)
-            Reflect.lookup(type, this);
+        Spare<T> spare = search(type);
 
         if (spare == null) {
             throw new Collapse(
@@ -925,6 +968,87 @@ public interface Supplier {
         }
 
         @Override
+        public <T> Spare<T> search(
+            @Nullable Type type
+        ) {
+            return search(type, EMPTY);
+        }
+
+        @Override
+        public <T> Spare<T> search(
+            @Nullable Type type,
+            @NotNull CharSequence klass
+        ) {
+            if (type == null) {
+                return lookup(
+                    null, klass
+                );
+            }
+
+            if (type instanceof Class) {
+                if (klass.length() < 2 ||
+                    type == Object.class) {
+                    return lookup(
+                        (Class<T>) type
+                    );
+                } else {
+                    return lookup(
+                        (Class<T>) type, klass
+                    );
+                }
+            }
+
+            if (type instanceof Space) {
+                Space s = (Space) type;
+                type = s.getType();
+                if (type == null) {
+                    return lookup(s);
+                }
+                return search(type, klass);
+            }
+
+            if (type instanceof ParameterizedType) {
+                ParameterizedType p = (ParameterizedType) type;
+                return search(
+                    p.getRawType(), klass
+                );
+            }
+
+            if (type instanceof TypeVariable) {
+                TypeVariable<?> v = (TypeVariable<?>) type;
+                return search(
+                    v.getBounds()[0], klass
+                );
+            }
+
+            if (type instanceof WildcardType) {
+                WildcardType w = (WildcardType) type;
+                type = w.getUpperBounds()[0];
+                if (type == Object.class) {
+                    Type[] bounds = w.getLowerBounds();
+                    if (bounds.length != 0) {
+                        type = bounds[0];
+                    }
+                }
+                return search(type, klass);
+            }
+
+            if (type instanceof ArrayType) {
+                return (Spare<T>) lookup(
+                    Object[].class
+                );
+            }
+
+            if (type instanceof GenericArrayType) {
+                return (Spare<T>) lookup(
+                    Object[].class
+                );
+            }
+
+            return null;
+        }
+
+        @Override
         public <T> Spare<T> lookup(
             @NotNull Class<T> klass
         ) {
@@ -935,18 +1059,22 @@ public interface Supplier {
         public <T> Spare<T> lookup(
             @NotNull CharSequence klass
         ) {
-            return lookup(klass, null);
+            return lookup(null, klass);
         }
 
         @Override
         public <K, T extends K> Spare<T> lookup(
-            @NotNull CharSequence klass,
-            @NotNull Class<K> parent
+            @Nullable Class<K> parent,
+            @NotNull CharSequence klass
         ) {
             Spare<?> spare = get(klass);
 
             if (spare != null) {
-                return (Spare<T>) spare;
+                if (parent == null ||
+                    spare.accept(parent)) {
+                    return (Spare<T>) spare;
+                }
+                return null;
             }
 
             int i = klass.length();
@@ -1007,21 +1135,25 @@ public interface Supplier {
         }
 
         @Override
-        public <T> Coder<T> plugin(
+        public <T> Coder<T> assign(
             @Nullable Expose expose,
-            @NotNull Target element
+            @Nullable Target target
         ) {
             Class<?> clazz;
-            if (expose == null ||
-                (clazz = expose.with()) == Coder.class) {
-                Format format = element
+            if (target == null) {
+                return null;
+            }
+
+            if (expose == null || (clazz =
+                expose.with()) == Coder.class) {
+                Format format = target
                     .getAnnotation(Format.class);
                 if (format == null) {
                     return null;
                 }
 
                 Spare<?> spare = null;
-                Class<?> klass = element.getType();
+                Class<?> klass = target.getType();
 
                 if (klass == Date.class) {
                     spare = new DateSpare(format);
@@ -1076,9 +1208,9 @@ public interface Supplier {
                     for (int i = 0; i < size; i++) {
                         Class<?> m = cls[i];
                         if (m == Class.class) {
-                            args[i] = element.getType();
+                            args[i] = target.getType();
                         } else if (m == Type.class) {
-                            args[i] = element.getRawType();
+                            args[i] = target.getRawType();
                         } else if (m == Expose.class) {
                             args[i] = expose;
                         } else if (m == Supplier.class) {
@@ -1086,7 +1218,7 @@ public interface Supplier {
                         } else if (m == Provider.class) {
                             args[i] = cluster;
                         } else if (m.isAnnotation()) {
-                            args[i] = element.getAnnotation(
+                            args[i] = target.getAnnotation(
                                 (Class<? extends Annotation>) m
                             );
                         }

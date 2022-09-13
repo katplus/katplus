@@ -334,10 +334,10 @@ public class MapSpare implements Spare<Map> {
 
         protected Type tag;
         protected Type type;
+        protected Type key, val;
 
-        protected Type tk, tv;
         protected Map entity;
-        protected Spare<?> k, v;
+        protected Spare spare0;
 
         public Builder0(
             @NotNull Type tag,
@@ -355,19 +355,20 @@ public class MapSpare implements Spare<Map> {
             if (raw instanceof ParameterizedType) {
                 ParameterizedType p = (ParameterizedType) raw;
                 raw = p.getRawType();
-                Type[] ary = p.getActualTypeArguments();
-                k = Reflect.lookup(
-                    tk = ary[0], supplier
-                );
-                v = Reflect.lookup(
-                    tv = ary[1], supplier
-                );
-                if (v != null && k == null) {
-                    throw new Collapse(
-                        "Key's spare does not exist"
+                Type[] actual = p.getActualTypeArguments();
+                val = actual[1];
+                if (actual[0] != String.class) {
+                    spare0 = supplier.search(
+                        key = actual[0]
                     );
+                    if (spare0 == null) {
+                        throw new Collapse(
+                            "Key's spare does not exist"
+                        );
+                    }
                 }
             }
+
             entity = apply(
                 raw == null ? tag : raw
             );
@@ -379,26 +380,27 @@ public class MapSpare implements Spare<Map> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            if (v != null) {
-                alias.setType(tk);
-                value.setType(tv);
-                entity.put(
-                    k.read(
-                        event, alias
-                    ),
-                    v.read(
-                        event, value
-                    )
-                );
-            } else {
-                Spare<?> spare =
-                    supplier.lookup(space);
+            Type type1 = val;
+            Spare<?> spare1 =
+                supplier.search(type1, space);
 
-                if (spare != null) {
-                    value.setType(tv);
+            if (spare1 != null) {
+                Type type0 = key;
+                value.setType(type1);
+                if (type0 == null) {
                     entity.put(
                         alias.toString(),
-                        spare.read(
+                        spare1.read(
+                            event, value
+                        )
+                    );
+                } else {
+                    alias.setType(type0);
+                    entity.put(
+                        spare0.read(
+                            event, alias
+                        ),
+                        spare1.read(
                             event, value
                         )
                     );
@@ -411,15 +413,16 @@ public class MapSpare implements Spare<Map> {
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
-            if (k == null) {
+            Type type = key;
+            if (type == null) {
                 entity.put(
                     alias.toString(),
                     child.getResult()
                 );
             } else {
-                alias.setType(tk);
+                alias.setType(type);
                 entity.put(
-                    k.read(
+                    spare0.read(
                         event, alias
                     ),
                     child.getResult()
@@ -432,18 +435,15 @@ public class MapSpare implements Spare<Map> {
             @NotNull Space space,
             @NotNull Alias alias
         ) {
-            if (v != null) {
-                return v.getBuilder(tv);
-            }
-
+            Type type = val;
             Spare<?> spare =
-                supplier.lookup(space);
+                supplier.search(type, space);
 
             if (spare == null) {
                 return null;
             }
 
-            return spare.getBuilder(tv);
+            return spare.getBuilder(type);
         }
 
         @Override
