@@ -279,12 +279,12 @@ public interface Supplier {
      *  Spare<UserVO> spare = supplier.search(parent, "plus.kat.entity.UserVO");
      * }</pre>
      *
-     * @param parent the specified type
+     * @param parent the specified parent class
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#accept(Class)
      * @see Impl#search(Class, CharSequence)
-     * @since 0.0.3
+     * @since 0.0.4
      */
     @Nullable <K, T extends K>
     Spare<T> search(
@@ -1212,16 +1212,22 @@ public interface Supplier {
             Cluster cluster = Cluster.INS;
 
             // pointing to clazz?
-            if (!Coder.class.
-                isAssignableFrom(clazz)) {
+            if (!Coder.class.isAssignableFrom(clazz)) {
                 coder = cluster.load(
                     clazz, this
                 );
             }
 
-            // Raw byte[]
+            // byte[]
             else if (clazz == ByteArrayCoder.class) {
                 coder = ByteArrayCoder.INSTANCE;
+            }
+
+            // Array
+            else if (clazz == ArraySpare.class) {
+                coder = new ArraySpare(
+                    target.getType()
+                );
             } else try {
                 Constructor<?>[] cs = clazz
                     .getDeclaredConstructors();

@@ -341,8 +341,8 @@ public class Json extends Chan {
         if (text == null) {
             return null;
         }
-        return ObjectSpare.INSTANCE.solve(
-            Job.JSON, new Event<>(text)
+        return INS.parse(
+            "$", new Event<>(text)
         );
     }
 
@@ -360,9 +360,7 @@ public class Json extends Chan {
         if (event == null) {
             return null;
         }
-        return ObjectSpare.INSTANCE.solve(
-            Job.JSON, event
-        );
+        return INS.parse("$", event);
     }
 
     /**

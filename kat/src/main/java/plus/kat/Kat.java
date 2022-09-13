@@ -20,7 +20,6 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.spare.*;
 
 import java.io.IOException;
 
@@ -146,8 +145,8 @@ public interface Kat {
         if (text == null) {
             return null;
         }
-        return ObjectSpare.INSTANCE.solve(
-            Job.KAT, new Event<>(text)
+        return INS.read(
+            "$", new Event<>(text)
         );
     }
 
@@ -165,9 +164,7 @@ public interface Kat {
         if (event == null) {
             return null;
         }
-        return ObjectSpare.INSTANCE.solve(
-            Job.KAT, event
-        );
+        return INS.read("$", event);
     }
 
     /**

@@ -1141,10 +1141,6 @@ public interface Spare<K> extends Coder<K> {
             @NotNull Class<?> klass,
             @NotNull Supplier supplier
         ) {
-            if (klass.isArray()) {
-                return ArraySpare.INSTANCE;
-            }
-
             // filter platform type
             String name = klass.getName();
             switch (name.charAt(0)) {
@@ -1180,6 +1176,15 @@ public interface Spare<K> extends Coder<K> {
                         return null;
                     }
                     break;
+                }
+                case '[': {
+                    if (klass.isArray()) {
+                        Spare<?> spare;
+                        putIfAbsent(klass, spare =
+                            new ArraySpare(klass)
+                        );
+                        return spare;
+                    }
                 }
             }
 

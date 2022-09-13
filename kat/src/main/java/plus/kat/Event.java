@@ -29,7 +29,6 @@ import plus.kat.crash.*;
 import plus.kat.stream.*;
 import plus.kat.stream.Reader;
 import plus.kat.stream.InputStreamReader;
-import plus.kat.utils.Reflect;
 
 import static plus.kat.Supplier.Impl.INS;
 

@@ -37,15 +37,9 @@ import plus.kat.utils.*;
 public class MapSpare implements Spare<Map> {
 
     public static final MapSpare
-        INSTANCE = new MapSpare();
+        INSTANCE = new MapSpare(LinkedHashMap.class);
 
     protected final Class<Map> klass;
-
-    public MapSpare() {
-        this(
-            LinkedHashMap.class
-        );
-    }
 
     public MapSpare(
         @NotNull Class<?> klass
@@ -67,7 +61,8 @@ public class MapSpare implements Spare<Map> {
     public boolean accept(
         @NotNull Class<?> clazz
     ) {
-        return clazz.isAssignableFrom(klass);
+        return clazz.isAssignableFrom(klass)
+            || klass.isAssignableFrom(clazz);
     }
 
     @Override

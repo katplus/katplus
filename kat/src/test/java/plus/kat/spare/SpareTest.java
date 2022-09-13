@@ -24,6 +24,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SpareTest {
 
+    static class User {
+        public int id;
+        public String name;
+    }
+
     @Test
     public void test_provider() {
         Supplier supplier = Supplier.ins();
@@ -247,6 +252,72 @@ public class SpareTest {
         Set ls = spare.cast(l);
         assertTrue(ls.contains(123L));
         assertTrue(ls.contains(456L));
+    }
+
+    @Test
+    public void test_array_cast() {
+        Supplier supplier = Supplier.ins();
+        Spare<User[]> spare = supplier.lookup(User[].class);
+
+        Map<String, Object> u0 = new HashMap<>();
+        u0.put("id", "0");
+        u0.put("name", "kat");
+
+        Map<String, Object> u1 = new HashMap<>();
+        u1.put("id", "1");
+        u1.put("name", "kraity");
+
+        List<Object> list = new ArrayList<>();
+        list.add(u0);
+        list.add(u1);
+
+        User[] users = spare.cast(list);
+        assertNotNull(users);
+        assertEquals(2, users.length);
+
+        User user0 = users[0];
+        assertNotNull(user0);
+        assertEquals(0, user0.id);
+        assertEquals("kat", user0.name);
+
+        User user1 = users[1];
+        assertNotNull(user1);
+        assertEquals(1, user1.id);
+        assertEquals("kraity", user1.name);
+    }
+
+    @Test
+    public void test_array_apply() {
+        Supplier supplier = Supplier.ins();
+        Spare<User[]> spare = supplier.lookup(User[].class);
+
+        Map<String, Map<String, Object>> map = new HashMap<>();
+        Map<String, Object> u0 = new HashMap<>();
+        map.put("u0", u0);
+        u0.put("id", "0");
+        u0.put("name", "kat");
+
+        Map<String, Object> u1 = new HashMap<>();
+        map.put("u1", u1);
+        u1.put("id", "1");
+        u1.put("name", "kraity");
+
+        User[] users = spare.apply(
+            Spoiler.of(map)
+        );
+
+        assertNotNull(users);
+        assertEquals(2, users.length);
+
+        User user0 = users[0];
+        assertNotNull(user0);
+        assertEquals(0, user0.id);
+        assertEquals("kat", user0.name);
+
+        User user1 = users[1];
+        assertNotNull(user1);
+        assertEquals(1, user1.id);
+        assertEquals("kraity", user1.name);
     }
 
     @Test

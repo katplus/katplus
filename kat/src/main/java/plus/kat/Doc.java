@@ -382,8 +382,8 @@ public class Doc extends Chan {
         if (text == null) {
             return null;
         }
-        return ObjectSpare.INSTANCE.solve(
-            Job.DOC, new Event<>(text)
+        return INS.down(
+            "$", new Event<>(text)
         );
     }
 
@@ -401,9 +401,7 @@ public class Doc extends Chan {
         if (event == null) {
             return null;
         }
-        return ObjectSpare.INSTANCE.solve(
-            Job.DOC, event
-        );
+        return INS.down("$", event);
     }
 
     /**

@@ -39,15 +39,9 @@ import plus.kat.utils.*;
 public class SetSpare implements Spare<Set> {
 
     public static final SetSpare
-        INSTANCE = new SetSpare();
+        INSTANCE = new SetSpare(HashSet.class);
 
     protected final Class<Set> klass;
-
-    public SetSpare() {
-        this(
-            HashSet.class
-        );
-    }
 
     public SetSpare(
         @NotNull Class<?> klass
@@ -69,7 +63,8 @@ public class SetSpare implements Spare<Set> {
     public boolean accept(
         @NotNull Class<?> clazz
     ) {
-        return clazz.isAssignableFrom(klass);
+        return clazz.isAssignableFrom(klass)
+            || klass.isAssignableFrom(clazz);
     }
 
     @Override

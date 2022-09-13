@@ -39,15 +39,9 @@ import plus.kat.utils.*;
 public class ListSpare implements Spare<List> {
 
     public static final ListSpare
-        INSTANCE = new ListSpare();
+        INSTANCE = new ListSpare(ArrayList.class);
 
     protected final Class<List> klass;
-
-    public ListSpare() {
-        this(
-            ArrayList.class
-        );
-    }
 
     public ListSpare(
         @NotNull Class<?> klass
@@ -69,7 +63,8 @@ public class ListSpare implements Spare<List> {
     public boolean accept(
         @NotNull Class<?> clazz
     ) {
-        return clazz.isAssignableFrom(klass);
+        return clazz.isAssignableFrom(klass)
+            || klass.isAssignableFrom(clazz);
     }
 
     @Override

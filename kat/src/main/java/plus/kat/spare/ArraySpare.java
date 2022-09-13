@@ -26,15 +26,33 @@ import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.lang.reflect.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Map;
+
+import static plus.kat.utils.Reflect.EMPTY;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
+@SuppressWarnings("rawtypes")
 public class ArraySpare implements Spare<Object> {
 
     public static final ArraySpare
-        INSTANCE = new ArraySpare();
+        INSTANCE = new ArraySpare(Object[].class);
+
+    protected final Class<?> klass;
+    protected final Class<?> element;
+
+    public ArraySpare(
+        @NotNull Class<?> clazz
+    ) {
+        klass = clazz;
+        element = clazz.getComponentType();
+    }
 
     @Override
     public Space getSpace() {
@@ -43,9 +61,9 @@ public class ArraySpare implements Spare<Object> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass.isArray();
+        return clazz.isAssignableFrom(klass);
     }
 
     @Override
@@ -54,8 +72,8 @@ public class ArraySpare implements Spare<Object> {
     }
 
     @Override
-    public Class<Object> getType() {
-        return Object.class;
+    public Class<?> getType() {
+        return klass;
     }
 
     @Override
@@ -63,28 +81,266 @@ public class ArraySpare implements Spare<Object> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        int l = Array.getLength(value);
-        for (int i = 0; i < l; i++) {
-            chan.set(
-                null, Array.get(value, i)
+        if (element == Object.class) {
+            for (Object val : (Object[]) value) {
+                chan.set(null, val);
+            }
+        } else {
+            int l = Array.getLength(value);
+            for (int i = 0; i < l; i++) {
+                chan.set(
+                    null, Array.get(value, i)
+                );
+            }
+        }
+    }
+
+    @Override
+    public Object apply(
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) {
+        Class<?> elem = element;
+        if (elem == Object.class) {
+            if (!spoiler.hasNext()) {
+                return EMPTY;
+            }
+            Object[] data = new Object[]{
+                spoiler.getValue()
+            };
+            while (spoiler.hasNext()) {
+                Object[] copy = new Object[data.length + 1];
+                System.arraycopy(
+                    data, 0, copy, 0, data.length
+                );
+                copy[data.length] = spoiler.getValue();
+                data = copy;
+            }
+            return data;
+        } else {
+            if (!spoiler.hasNext()) {
+                return Array.newInstance(elem, 0);
+            }
+
+            Object data = null;
+            Spare<?> spare = null;
+
+            int size = 0;
+            do {
+                Object copy;
+                if (size == 0) {
+                    copy = Array.newInstance(elem, 1);
+                } else {
+                    copy = Array.newInstance(elem, size + 1);
+                    //noinspection SuspiciousSystemArraycopy
+                    System.arraycopy(
+                        data, 0, copy, 0, size
+                    );
+                }
+
+                Object val = spoiler.getValue();
+                if (!elem.isInstance(val)) {
+                    if (spare == null) {
+                        spare = supplier.lookup(elem);
+                    }
+                    val = spare.cast(val, supplier);
+                }
+                Array.set(copy, size++, val);
+                data = copy;
+            } while (
+                spoiler.hasNext()
+            );
+            return data;
+        }
+    }
+
+    @Override
+    public Object apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        Class<?> elem = element;
+        ResultSetMetaData meta =
+            resultSet.getMetaData();
+
+        int count = meta.getColumnCount();
+        if (elem == Object.class) {
+            Object[] data = new Object[count];
+            for (int i = 0; i < count; ) {
+                data[i++] = resultSet.getObject(i);
+            }
+            return data;
+        } else {
+            Spare<?> spare = null;
+            Object data = Array.newInstance(elem, count);
+            for (int i = 0; i < count; ) {
+                int k = i++;
+                Object val = resultSet.getObject(i);
+                if (!elem.isInstance(val)) {
+                    if (spare == null) {
+                        spare = supplier.lookup(elem);
+                    }
+                    val = spare.cast(val, supplier);
+                }
+                Array.set(data, k, val);
+            }
+            return data;
+        }
+    }
+
+    @Override
+    public Object cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data == null) {
+            return null;
+        }
+
+        if (klass.isInstance(data)) {
+            return data;
+        }
+
+        if (data instanceof Collection) {
+            Class<?> elem = element;
+            Collection col = (Collection) data;
+
+            int size = col.size();
+            if (elem == Object.class) {
+                if (size == 0) {
+                    return EMPTY;
+                } else {
+                    return col.toArray();
+                }
+            }
+
+            Spare<?> spare = null;
+            Object array = Array.newInstance(elem, size);
+            int i = 0;
+            for (Object val : col) {
+                if (!elem.isInstance(val)) {
+                    if (spare == null) {
+                        spare = supplier.lookup(elem);
+                    }
+                    val = spare.cast(val, supplier);
+                }
+                Array.set(array, i++, val);
+            }
+            return array;
+        }
+
+        if (data instanceof Map) {
+            Map map = (Map) data;
+            Class<?> elem = element;
+
+            int size = map.size();
+            if (elem == Object.class) {
+                if (size == 0) {
+                    return EMPTY;
+                }
+                return map.values().toArray();
+            }
+
+            Spare<?> spare = null;
+            Object array = Array.newInstance(elem, size);
+            int i = 0;
+            for (Object val : map.values()) {
+                if (!elem.isInstance(val)) {
+                    if (spare == null) {
+                        spare = supplier.lookup(elem);
+                    }
+                    val = spare.cast(val, supplier);
+                }
+                Array.set(array, i++, val);
+            }
+            return array;
+        }
+
+        if (data instanceof CharSequence) {
+            return Casting.cast(
+                this, (CharSequence) data, null, supplier
             );
         }
+
+        if (data.getClass().isArray()) {
+            Class<?> elem = element;
+            int size = Array.getLength(data);
+
+            if (elem == Object.class) {
+                if (size == 0) {
+                    return EMPTY;
+                }
+                Object[] array = new Object[size];
+                for (int i = 0; i < size; i++) {
+                    array[i] = Array.get(data, i);
+                }
+                return array;
+            }
+
+            Spare<?> spare = null;
+            Object array = Array.newInstance(elem, size);
+            for (int i = 0; i < size; i++) {
+                Object val = Array.get(data, i);
+                if (!elem.isInstance(val)) {
+                    if (spare == null) {
+                        spare = supplier.lookup(elem);
+                    }
+                    val = spare.cast(val, supplier);
+                }
+                Array.set(array, i, val);
+            }
+            return array;
+        }
+
+        if (data instanceof Spoiler) {
+            return apply(
+                (Spoiler) supplier, supplier
+            );
+        }
+
+        if (data instanceof ResultSet) {
+            try {
+                return apply(
+                    supplier, (ResultSet) data
+                );
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        Spoiler spoiler =
+            supplier.flat(data);
+        if (spoiler == null) {
+            return null;
+        }
+
+        return apply(spoiler, supplier);
     }
 
     @Override
     public Builder<Object> getBuilder(
         @Nullable Type type
     ) {
+        if (type == null) {
+            Class<?> e = element;
+            if (e.isPrimitive()) {
+                return new Builder0(e);
+            } else {
+                return new Builder1(e);
+            }
+        }
+
         if (type instanceof Class) {
             Class<?> k = (Class<?>) type;
             k = k.getComponentType();
             if (k == null) {
-                return null;
+                k = element;
             }
             if (k.isPrimitive()) {
                 return new Builder0(k);
+            } else {
+                return new Builder1(k);
             }
-            return new Builder1(k);
         }
 
         if (type instanceof ArrayType) {
@@ -100,7 +356,7 @@ public class ArraySpare implements Spare<Object> {
             );
         }
 
-        return new Builder1(Object.class);
+        return null;
     }
 
     public static class Builder0 extends Builder<Object> {
@@ -111,30 +367,30 @@ public class ArraySpare implements Spare<Object> {
         protected int length;
         protected Object entity;
 
-        protected Class<?> klass;
+        protected Class<?> elem;
         protected Spare<?> spare;
 
         public Builder0(
             @NotNull Class<?> tag
         ) {
-            klass = tag;
+            elem = tag;
         }
 
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOException {
-            spare = supplier.lookup(klass);
+        ) throws Crash {
+            spare = supplier.lookup(elem);
             if (spare == null) {
                 throw new Crash(
-                    "Can't lookup the Spare of '" + klass + "'", false
+                    "Can't lookup the Spare of '" + elem + "'", false
                 );
             }
 
             size = 0;
             mark = 1;
             entity = Array.newInstance(
-                klass, length = 1
+                elem, length = 1
             );
         }
 
@@ -147,7 +403,7 @@ public class ArraySpare implements Spare<Object> {
             if (length == size) {
                 enlarge();
             }
-            value.setType(klass);
+            value.setType(elem);
             Array.set(
                 entity, size++, spare.read(
                     event, value
@@ -192,7 +448,7 @@ public class ArraySpare implements Spare<Object> {
 
             mark = size;
             Object make = Array.newInstance(
-                klass, length = capacity
+                elem, length = capacity
             );
 
             //noinspection SuspiciousSystemArraycopy
@@ -209,7 +465,7 @@ public class ArraySpare implements Spare<Object> {
                 return entity;
             }
 
-            Object ary = Array.newInstance(klass, size);
+            Object ary = Array.newInstance(elem, size);
             //noinspection SuspiciousSystemArraycopy
             System.arraycopy(
                 entity, 0, ary, 0, size
@@ -225,40 +481,41 @@ public class ArraySpare implements Spare<Object> {
 
     public static class Builder1 extends Builder0 {
 
-        protected Type type;
+        protected Type actual;
 
         public Builder1(
-            @NotNull Type type
+            @NotNull Type component
         ) {
-            super(null);
-            this.type = type;
+            super(Object.class);
+            actual = component;
         }
 
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOException {
-            if (type instanceof Class) {
-                klass = (Class<?>) type;
-                if (type == Object.class) {
-                    type = null;
+        ) throws Crash {
+            Type raw = actual;
+            if (raw instanceof Class) {
+                if (raw == Object.class) {
+                    actual = null;
                 } else {
-                    spare = supplier.lookup(klass);
+                    elem = (Class<?>) raw;
+                    spare = supplier.lookup(elem);
                 }
-            } else if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
-                klass = (Class<?>) p.getRawType();
-                spare = supplier.lookup(klass);
+            } else if (raw instanceof ParameterizedType) {
+                ParameterizedType p = (ParameterizedType) raw;
+                elem = (Class<?>) p.getRawType();
+                spare = supplier.lookup(elem);
             } else {
                 throw new Crash(
-                    "Can't lookup the Spare of '" + type + "'", false
+                    "Can't lookup the Spare of '" + raw + "'", false
                 );
             }
 
             size = 0;
             mark = 1;
             entity = Array.newInstance(
-                klass, length = 1
+                elem, length = 1
             );
         }
 
@@ -269,20 +526,21 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Value value
         ) throws IOException {
             Object data = null;
-            if (spare != null) {
+            Spare<?> coder = spare;
+
+            Type type = actual;
+            if (coder != null) {
                 value.setType(type);
-                data = spare.read(
+                data = coder.read(
                     event, value
                 );
             } else {
-                Spare<?> spare =
-                    supplier.lookup(space);
-
-                if (spare != null) {
+                coder = supplier.search(
+                    type, space
+                );
+                if (coder != null) {
                     value.setType(type);
-                    data = spare.read(
-                        event, value
-                    );
+                    data = coder.read(event, value);
                 }
             }
 
@@ -312,18 +570,21 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Space space,
             @NotNull Alias alias
         ) {
-            if (spare != null) {
-                return spare.getBuilder(type);
+            Type type = actual;
+            Spare<?> coder = spare;
+
+            if (coder != null) {
+                return coder.getBuilder(type);
             }
 
-            Spare<?> spare =
-                supplier.lookup(space);
-
-            if (spare == null) {
+            coder = supplier.search(
+                type, space
+            );
+            if (coder == null) {
                 return null;
             }
 
-            return spare.getBuilder(type);
+            return coder.getBuilder(type);
         }
     }
 
@@ -342,7 +603,7 @@ public class ArraySpare implements Spare<Object> {
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash, IOException {
+        ) {
             index = -1;
             entity = new Object[types.size()];
         }
@@ -354,9 +615,8 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Value value
         ) throws IOException {
             if (++index < entity.length) {
-                Type type = types
-                    .getType(index);
-                Spare<?> spare = lookup(
+                Type type = types.getType(index);
+                Spare<?> spare = supplier.search(
                     type, space
                 );
 
@@ -386,9 +646,8 @@ public class ArraySpare implements Spare<Object> {
                 return null;
             }
 
-            Type type = types
-                .getType(index);
-            Spare<?> spare = lookup(
+            Type type = types.getType(index);
+            Spare<?> spare = supplier.search(
                 type, space
             );
 
@@ -397,26 +656,6 @@ public class ArraySpare implements Spare<Object> {
             }
 
             return spare.getBuilder(type);
-        }
-
-        /**
-         * Lookup spare
-         */
-        protected Spare<?> lookup(
-            @NotNull Type type,
-            @NotNull Space space
-        ) {
-            if (type instanceof Class) {
-                if (type == Object.class) {
-                    return supplier.lookup(space);
-                } else {
-                    return supplier.lookup(
-                        (Class<?>) type
-                    );
-                }
-            } else {
-                return supplier.search(type);
-            }
         }
 
         @Override
