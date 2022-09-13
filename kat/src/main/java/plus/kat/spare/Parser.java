@@ -211,7 +211,7 @@ public class Parser implements Pipe, Closeable {
             );
         } else {
             Spare<?> spare = event
-                .getSpare(
+                .assign(
                     space, name
                 );
 
@@ -251,7 +251,7 @@ public class Parser implements Pipe, Closeable {
             );
         } else {
             Spare<?> spare = event
-                .getSpare(
+                .assign(
                     space, alias.copy()
                 );
 

@@ -30,7 +30,7 @@ public class SupplierTest {
         Supplier supplier = Supplier.ins();
         for (String o : list) {
             assertNotNull(
-                supplier.lookup(Object.class, o)
+                supplier.search(Object.class, o)
             );
         }
     }
@@ -430,19 +430,25 @@ public class SupplierTest {
     public void test_search_spare() {
         Supplier supplier = Supplier.ins();
 
-        Spare<?> spare1 = supplier.lookup(UserVO.class);
-        assertSame(spare1, supplier.search(User.class, "plus.kat.entity.UserVO"));
+        Type type = User.class;
+        Type object = Object.class;
 
-        Spare<?> spare2 = supplier.lookup(User.class);
-        assertSame(spare2, supplier.search(User.class, ""));
-        assertSame(spare2, supplier.search(User.class, "A"));
-        assertSame(spare2, supplier.search(User.class, "M"));
-        assertNull(supplier.search(User.class, "SuperUser"));
+        Spare<User> spare1 = supplier.lookup(User.class);
+        Spare<UserVO> spare2 = supplier.lookup(UserVO.class);
+
+        assertSame(spare1, supplier.search(type, ""));
+        assertSame(spare1, supplier.search(type, "A"));
+        assertSame(spare1, supplier.search(type, "M"));
+        assertNull(supplier.search(type, "SuperUser"));
+
+        assertSame(spare2, supplier.search(type, "plus.kat.entity.UserVO"));
+        assertSame(spare2, supplier.search(User.class, "plus.kat.entity.UserVO"));
+        assertSame(spare2, supplier.search(UserVO.class, "plus.kat.entity.UserVO"));
 
         Spare<?> spare3 = supplier.lookup(Object.class);
-        assertSame(spare3, supplier.search(Object.class, ""));
-        assertSame(spare3, supplier.search(Object.class, "A"));
-        assertSame(spare3, supplier.search(Object.class, "SuperUser"));
-        assertSame(spare3, supplier.search(Object.class, "plus.kat.entity.UserVO"));
+        assertSame(spare3, supplier.search(object, ""));
+        assertSame(spare3, supplier.search(object, "A"));
+        assertSame(spare3, supplier.search(object, "SuperUser"));
+        assertSame(spare3, supplier.search(object, "plus.kat.entity.UserVO"));
     }
 }

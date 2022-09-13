@@ -501,15 +501,33 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Custom capture treatment or throwing abnormal
+     * Returns the specified {@link Spare} being used
      *
-     * @param e the specified crash
-     * @throws RuntimeException If this {@link Event} wants to throw it
+     * @throws IOException If the specified coder was not found
+     * @since 0.0.4
      */
-    public void onError(
-        @NotNull Exception e
-    ) {
-        // Nothing
+    @NotNull
+    public Spare<?> assign(
+        @NotNull Space space,
+        @NotNull Alias alias
+    ) throws IOException {
+        this.alias = alias;
+        Spare<?> spare = this.spare;
+
+        if (spare != null) {
+            return spare;
+        }
+
+        Supplier supplier = getSupplier();
+        spare = supplier.search(type, space);
+
+        if (spare != null) {
+            return spare;
+        }
+
+        throw new UnexpectedCrash(
+            "Unexpectedly, the specified spare was not found"
+        );
     }
 
     /**
@@ -589,41 +607,6 @@ public class Event<T> implements Flag {
     @Nullable
     public Spare<?> getSpare() {
         return spare;
-    }
-
-    /**
-     * Returns the specified {@link Spare} being used
-     *
-     * @throws IOException If the specified coder was not found
-     * @since 0.0.3
-     */
-    @NotNull
-    public Spare<?> getSpare(
-        @NotNull Space space,
-        @NotNull Alias alias
-    ) throws IOException {
-        this.alias = alias;
-        if (spare != null) {
-            return spare;
-        }
-
-        Type clazz = type;
-        Supplier supplier = getSupplier();
-
-        Spare<?> spare;
-        if (clazz == null) {
-            spare = supplier.lookup(space);
-        } else {
-            spare = supplier.search(clazz);
-        }
-
-        if (spare != null) {
-            return spare;
-        }
-
-        throw new UnexpectedCrash(
-            "Unexpectedly, the specified spare was not found"
-        );
     }
 
     /**

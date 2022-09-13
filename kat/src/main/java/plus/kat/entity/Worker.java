@@ -688,6 +688,7 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             // specified coder
             Coder<?> coder = target.getCoder();
 
+            // skip if null
             if (coder != null) {
                 value.setType(
                     target.getRawType()
@@ -700,56 +701,21 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
                 return;
             }
 
-            Spare<?> spare;
-            Class<?> klass = target.getType();
+            // specified spare
+            Spare<?> spare = supplier.lookup(
+                target.getType(), space
+            );
 
-            // lookup
-            if (klass == null) {
-                // specified spare
-                spare = supplier.lookup(space);
-
-                if (spare != null) {
-                    value.setType(
-                        target.getRawType()
-                    );
-                    onAccept(
-                        target, spare.read(
-                            event, value
-                        )
-                    );
-                }
-            } else {
-                // specified spare
-                spare = supplier.lookup(klass);
-
-                // skip if null
-                if (spare != null) {
-                    value.setType(
-                        target.getRawType()
-                    );
-                    onAccept(
-                        target, spare.read(
-                            event, value
-                        )
-                    );
-                    return;
-                }
-
-                // specified spare
-                spare = supplier.lookup(klass, space);
-
-                // skip if null
-                if (spare != null &&
-                    spare.accept(klass)) {
-                    value.setType(
-                        target.getRawType()
-                    );
-                    onAccept(
-                        target, spare.read(
-                            event, value
-                        )
-                    );
-                }
+            // skip if null
+            if (spare != null) {
+                value.setType(
+                    target.getRawType()
+                );
+                onAccept(
+                    target, spare.read(
+                        event, value
+                    )
+                );
             }
         }
 
@@ -766,50 +732,26 @@ public interface Worker<K> extends Spare<K>, Maker<K> {
             // specified coder
             Coder<?> coder = target.getCoder();
 
+            // skip if null
             if (coder != null) {
                 return coder.getBuilder(
                     target.getRawType()
                 );
             }
 
-            Spare<?> spare;
-            Class<?> klass = target.getType();
+            // specified spare
+            Spare<?> spare = supplier.lookup(
+                target.getType(), space
+            );
 
-            // lookup
-            if (klass == null) {
-                // specified spare
-                spare = supplier.lookup(space);
-
-                // skip if null
-                if (spare != null) {
-                    return spare.getBuilder(
-                        target.getRawType()
-                    );
-                }
-            } else {
-                // specified spare
-                spare = supplier.lookup(klass);
-
-                // skip if null
-                if (spare != null) {
-                    return spare.getBuilder(
-                        target.getRawType()
-                    );
-                }
-
-                // specified spare
-                spare = supplier.lookup(klass, space);
-
-                // skip if null
-                if (spare != null &&
-                    spare.accept(klass)) {
-                    return spare.getBuilder(
-                        target.getRawType()
-                    );
-                }
+            // skip if null
+            if (spare == null) {
+                return null;
             }
 
-            return null;
+            return spare.getBuilder(
+                target.getRawType()
+            );
         }
     }
 }

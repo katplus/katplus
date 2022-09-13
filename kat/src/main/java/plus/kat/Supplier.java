@@ -145,6 +145,7 @@ public interface Supplier {
      * @param expose  the specified expose
      * @param element the specified target
      * @return the coder of {@code klass} or {@code null}
+     * @see Target
      * @see Impl#assign(Expose, Target)
      * @since 0.0.4
      */
@@ -152,51 +153,6 @@ public interface Supplier {
     Coder<T> assign(
         @Nullable Expose expose,
         @Nullable Target element
-    );
-
-    /**
-     * Returns the {@link Spare} of {@code type}.
-     * Find the class of the type, then look for an alternate of that class
-     *
-     * <pre>{@code
-     *  Supplier supplier = ...
-     *  Spare<User> spare = supplier.search(User.class);
-     * }</pre>
-     *
-     * @param type the specified type
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code type} is null
-     * @see Impl#search(Type)
-     * @see Supplier#lookup(Class)
-     * @since 0.0.4
-     */
-    @Nullable <T>
-    Spare<T> search(
-        @Nullable Type type
-    );
-
-    /**
-     * Returns the {@link Spare} of {@code type}.
-     * Find the class of this type as the parent of
-     * klass, and then look for an alternative to klass
-     *
-     * <pre>{@code
-     *  Supplier supplier = ...
-     *  Spare<User> spare = supplier.search(User.class, "plus.kat.entity.SuperUser");
-     * }</pre>
-     *
-     * @param type the specified type
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
-     * @see Spare#accept(Class)
-     * @see Supplier#lookup(Class)
-     * @see Impl#search(Type, CharSequence)
-     * @since 0.0.4
-     */
-    @Nullable <T>
-    Spare<T> search(
-        @Nullable Type type,
-        @NotNull CharSequence klass
     );
 
     /**
@@ -229,9 +185,6 @@ public interface Supplier {
      *  Spare<User> spare = supplier.lookup(
      *      "plus.kat.entity.User"
      *  );
-     *
-     *  // check for match
-     *  boolean status = spare.accept(User.class); // status may be false
      * }</pre>
      *
      * @param klass the specified klass
@@ -245,6 +198,74 @@ public interface Supplier {
     );
 
     /**
+     * Returns the {@link Spare} of {@code type}.
+     * If the spare of the type does not exist, search according to klass
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = supplier.lookup(
+     *      User.class, "plus.kat.entity.User"
+     *  );
+     * }</pre>
+     *
+     * @param type the specified type
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @see Spare#accept(Class)
+     * @see Impl#lookup(Class, CharSequence)
+     * @since 0.0.4
+     */
+    @Nullable <T>
+    Spare<T> lookup(
+        @Nullable Class<T> type,
+        @NotNull CharSequence klass
+    );
+
+    /**
+     * Returns the {@link Spare} of {@code type}.
+     * Find the class of the type, then look for an alternate to the class
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = supplier.search(User.class);
+     * }</pre>
+     *
+     * @param type the specified type
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code type} is null
+     * @see Impl#search(Type)
+     * @since 0.0.4
+     */
+    @Nullable <T>
+    Spare<T> search(
+        @Nullable Type type
+    );
+
+    /**
+     * Returns the {@link Spare} of {@code type}.
+     * Find the class of the type as the parent
+     * class, and then look for an alternative to the klass
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Type type = User.class;
+     *  Spare<UserVO> spare = supplier.search(type, "plus.kat.entity.UserVO");
+     * }</pre>
+     *
+     * @param type the specified type
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @see Spare#accept(Class)
+     * @see Impl#search(Type, CharSequence)
+     * @since 0.0.4
+     */
+    @Nullable <T>
+    Spare<T> search(
+        @Nullable Type type,
+        @NotNull CharSequence klass
+    );
+
+    /**
      * Returns the {@link Spare} of {@code klass}
      * and then you actively call {@link Spare#accept(Class)} to check.
      * <p>
@@ -254,23 +275,19 @@ public interface Supplier {
      *
      * <pre>{@code
      *  Supplier supplier = ...
-     *  Spare<User> spare = supplier.lookup(
-     *      "plus.kat.entity.User", User.class
-     *  );
-     *
-     *  // check for match
-     *  boolean status = spare.accept(User.class); // status may be false
+     *  Class<User> parent = User.class;
+     *  Spare<UserVO> spare = supplier.search(parent, "plus.kat.entity.UserVO");
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param parent the specified type
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#accept(Class)
-     * @see Impl#lookup(Class, CharSequence)
+     * @see Impl#search(Class, CharSequence)
      * @since 0.0.3
      */
     @Nullable <K, T extends K>
-    Spare<T> lookup(
+    Spare<T> search(
         @Nullable Class<K> parent,
         @NotNull CharSequence klass
     );
@@ -418,7 +435,7 @@ public interface Supplier {
         @NotNull CharSequence klass,
         @NotNull Object data
     ) {
-        Spare<E> spare = lookup(
+        Spare<E> spare = search(
             Object.class, klass
         );
 
@@ -824,7 +841,7 @@ public interface Supplier {
         @NotNull Job job,
         @NotNull Event<T> event
     ) {
-        Spare<T> spare = lookup(
+        Spare<T> spare = search(
             Object.class, klass
         );
 
@@ -968,6 +985,39 @@ public interface Supplier {
         }
 
         @Override
+        public <T> Spare<T> lookup(
+            @NotNull Class<T> klass
+        ) {
+            return Cluster.INS.load(klass, this);
+        }
+
+        @Override
+        public <T> Spare<T> lookup(
+            @NotNull CharSequence klass
+        ) {
+            return search(null, klass);
+        }
+
+        @Override
+        public <T> Spare<T> lookup(
+            @Nullable Class<T> type,
+            @NotNull CharSequence klass
+        ) {
+            if (type == null) {
+                return search(
+                    null, klass
+                );
+            }
+
+            Spare<T> spare = lookup(type);
+            if (spare != null) {
+                return spare;
+            }
+
+            return search(type, klass);
+        }
+
+        @Override
         public <T> Spare<T> search(
             @Nullable Type type
         ) {
@@ -980,7 +1030,7 @@ public interface Supplier {
             @NotNull CharSequence klass
         ) {
             if (type == null) {
-                return lookup(
+                return search(
                     null, klass
                 );
             }
@@ -992,7 +1042,7 @@ public interface Supplier {
                         (Class<T>) type
                     );
                 } else {
-                    return lookup(
+                    return search(
                         (Class<T>) type, klass
                     );
                 }
@@ -1049,21 +1099,7 @@ public interface Supplier {
         }
 
         @Override
-        public <T> Spare<T> lookup(
-            @NotNull Class<T> klass
-        ) {
-            return Cluster.INS.load(klass, this);
-        }
-
-        @Override
-        public <T> Spare<T> lookup(
-            @NotNull CharSequence klass
-        ) {
-            return lookup(null, klass);
-        }
-
-        @Override
-        public <K, T extends K> Spare<T> lookup(
+        public <K, T extends K> Spare<T> search(
             @Nullable Class<K> parent,
             @NotNull CharSequence klass
         ) {
