@@ -29,9 +29,12 @@ public class SupplierTest {
         };
 
         Supplier supplier = Supplier.ins();
-        for (String o : list) {
+        for (String clazz : list) {
+            assertNull(
+                supplier.lookup(clazz)
+            );
             assertNotNull(
-                supplier.search(Object.class, o)
+                supplier.search(clazz)
             );
         }
     }

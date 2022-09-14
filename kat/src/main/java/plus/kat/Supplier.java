@@ -180,8 +180,8 @@ public interface Supplier {
 
     /**
      * Returns the {@link Spare} of {@code klass}
-     * and then you actively call {@link Spare#accept(Class)} to check.
-     * If there is no cache, use a custom {@link Provider} set to look up.
+     * and then call {@link Spare#accept(Class)} to check.
+     * If there is no cache, use the {@link Provider} to search for it
      *
      * <pre>{@code
      *  Supplier supplier = ...
@@ -250,9 +250,35 @@ public interface Supplier {
     );
 
     /**
+     * Returns the {@link Spare} of {@code klass}
+     * and then call {@link Spare#accept(Class)} to check. If there is no cache,
+     * use the {@link Provider} to search for it, if null try to search as class name
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = supplier.search(
+     *      "plus.kat.entity.User"
+     *  );
+     * }</pre>
+     *
+     * @param klass the specified klass
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @see Spare#accept(Class)
+     * @see Impl#search(CharSequence)
+     * @see Supplier#search(Class, CharSequence)
+     * @since 0.0.4
+     */
+    @Nullable <T>
+    Spare<T> search(
+        @NotNull CharSequence klass
+    );
+
+    /**
      * Returns the {@link Spare} of {@code type}.
-     * Find the class of the type as the parent
-     * class, and then look for an alternative to the klass
+     * Find the class of the type as the parent class, and then
+     * look for an alternative to the klass. If there is no cache,
+     * use the {@link Provider} to search for it, if null try to search as class name
      *
      * <pre>{@code
      *  Supplier supplier = ...
@@ -265,6 +291,7 @@ public interface Supplier {
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#accept(Class)
      * @see Impl#search(Type, CharSequence)
+     * @see Supplier#search(Class, CharSequence)
      * @since 0.0.4
      */
     @Nullable <T>
@@ -275,10 +302,10 @@ public interface Supplier {
 
     /**
      * Returns the {@link Spare} of {@code klass}
-     * and then you actively call {@link Spare#accept(Class)} to check.
+     * and then call {@link Spare#accept(Class)} to check.
      * <p>
-     * If not cached first through the custom {@link Provider} set to look up,
-     * if not, then use {@link Class#forName(String, boolean, ClassLoader)}
+     * If not cached first through uses the {@link Provider} to search for it,
+     * if not found, then use {@link Class#forName(String, boolean, ClassLoader)}
      * to find and judge whether it is a subclass of {@code type} and then find its {@link Spare}.
      *
      * <pre>{@code
@@ -443,9 +470,7 @@ public interface Supplier {
         @NotNull CharSequence klass,
         @NotNull Object data
     ) {
-        Spare<E> spare = search(
-            Object.class, klass
-        );
+        Spare<E> spare = search(klass);
 
         if (spare == null) {
             return null;
@@ -886,9 +911,7 @@ public interface Supplier {
         @NotNull Job job,
         @NotNull Event<T> event
     ) {
-        Spare<T> spare = search(
-            Object.class, klass
-        );
+        Spare<T> spare = search(klass);
 
         if (spare == null) {
             throw new Collapse(
@@ -1057,7 +1080,7 @@ public interface Supplier {
                     PRO[i++] = pro;
                     try {
                         pro.init(INS);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         // Nothing
                     }
                 }
@@ -1086,7 +1109,9 @@ public interface Supplier {
             @NotNull Class<?> klass,
             @NotNull Spare<?> spare
         ) {
-            return put(klass, spare);
+            return put(
+                klass, spare
+            );
         }
 
         @Override
@@ -1101,7 +1126,9 @@ public interface Supplier {
             @NotNull CharSequence klass,
             @NotNull Spare<?> spare
         ) {
-            return table.put(klass, spare);
+            return table.put(
+                klass, spare
+            );
         }
 
         @Override
@@ -1236,7 +1263,7 @@ public interface Supplier {
             switch (name.charAt(0)) {
                 case 'j': {
                     if (name.startsWith("java.")) {
-                        return java(
+                        return onJava(
                             name, klass
                         );
                     }
@@ -1490,6 +1517,15 @@ public interface Supplier {
 
         @Override
         public <T> Spare<T> search(
+            @NotNull CharSequence klass
+        ) {
+            return search(
+                Object.class, klass
+            );
+        }
+
+        @Override
+        public <T> Spare<T> search(
             @Nullable Type type,
             @Nullable CharSequence klass
         ) {
@@ -1645,7 +1681,7 @@ public interface Supplier {
         }
 
         @Nullable
-        private <T> Spare<T> java(
+        protected <T> Spare<T> onJava(
             @NotNull String name,
             @NotNull Class<T> klass
         ) {

@@ -34,7 +34,7 @@ public interface Provider {
      */
     default void init(
         @NotNull Supplier supplier
-    ) throws Throwable {
+    ) {
         // Nothing
     }
 
