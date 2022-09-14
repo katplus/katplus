@@ -23,18 +23,24 @@ import plus.kat.entity.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
+import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.chain.Space.*;
-import static plus.kat.Spare.Cluster;
 
 /**
  * @author kraity
@@ -56,7 +62,6 @@ public interface Supplier {
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#embed(Class, Spare)
-     * @see Spare#embed(Class, Spare)
      * @since 0.0.2
      */
     @Nullable
@@ -78,7 +83,6 @@ public interface Supplier {
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#revoke(Class)
-     * @see Spare#revoke(Class)
      */
     @Nullable
     Spare<?> revoke(
@@ -168,7 +172,6 @@ public interface Supplier {
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#lookup(Class)
-     * @see Spare#lookup(Class)
      */
     @Nullable <T>
     Spare<T> lookup(
@@ -298,7 +301,7 @@ public interface Supplier {
     );
 
     /**
-     * Returns the default {@link Supplier}
+     * Returns the default supplier
      */
     @NotNull
     static Supplier ins() {
@@ -959,39 +962,123 @@ public interface Supplier {
      * @author kraity
      * @since 0.0.1
      */
-    @SuppressWarnings("unchecked")
-    class Impl extends ConcurrentHashMap<CharSequence, Spare<?>> implements Supplier {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    class Impl extends ConcurrentHashMap<Class<?>, Spare<?>> implements Supplier {
         /**
          * default supplier
          */
-        static final Impl INS = new Impl();
+        static final Impl INS;
+
+        /**
+         * default providers
+         */
+        static final Provider[] PRO;
 
         static {
-            INS.put($, ObjectSpare.INSTANCE);
-            INS.put($s, StringSpare.INSTANCE);
-            INS.put($b, BooleanSpare.INSTANCE);
-            INS.put($i, IntegerSpare.INSTANCE);
-            INS.put($l, LongSpare.INSTANCE);
-            INS.put($f, FloatSpare.INSTANCE);
-            INS.put($d, DoubleSpare.INSTANCE);
-            INS.put($c, CharSpare.INSTANCE);
-            INS.put($o, ByteSpare.INSTANCE);
-            INS.put($u, ShortSpare.INSTANCE);
-            INS.put($M, MapSpare.INSTANCE);
-            INS.put($A, ArraySpare.INSTANCE);
-            INS.put($L, ListSpare.INSTANCE);
-            INS.put($S, SetSpare.INSTANCE);
-            INS.put($E, ErrorSpare.INSTANCE);
-            INS.put($B, ByteArraySpare.INSTANCE);
-            INS.put($I, BigIntegerSpare.INSTANCE);
-            INS.put($D, BigDecimalSpare.INSTANCE);
-            INS.put(EMPTY, ObjectSpare.INSTANCE);
+            INS = new Impl(
+                Config.get(
+                    "kat.sponsor.capacity", 24
+                ),
+                Config.get(
+                    "kat.supplier.capacity", 32
+                )
+            );
+
+            INS.put(Object.class, ObjectSpare.INSTANCE);
+            INS.put(String.class, StringSpare.INSTANCE);
+            INS.put(int.class, IntegerSpare.INSTANCE);
+            INS.put(Integer.class, IntegerSpare.INSTANCE);
+            INS.put(long.class, LongSpare.INSTANCE);
+            INS.put(Long.class, LongSpare.INSTANCE);
+            INS.put(float.class, FloatSpare.INSTANCE);
+            INS.put(Float.class, FloatSpare.INSTANCE);
+            INS.put(double.class, DoubleSpare.INSTANCE);
+            INS.put(Double.class, DoubleSpare.INSTANCE);
+            INS.put(boolean.class, BooleanSpare.INSTANCE);
+            INS.put(Boolean.class, BooleanSpare.INSTANCE);
+            INS.put(byte.class, ByteSpare.INSTANCE);
+            INS.put(Byte.class, ByteSpare.INSTANCE);
+            INS.put(short.class, ShortSpare.INSTANCE);
+            INS.put(Short.class, ShortSpare.INSTANCE);
+            INS.put(char.class, CharSpare.INSTANCE);
+            INS.put(Character.class, CharSpare.INSTANCE);
+            INS.put(Number.class, NumberSpare.INSTANCE);
+            INS.put(byte[].class, ByteArraySpare.INSTANCE);
+            INS.put(Object[].class, ArraySpare.INSTANCE);
+            INS.put(Map.class, MapSpare.INSTANCE);
+            INS.put(Set.class, SetSpare.INSTANCE);
+            INS.put(List.class, ListSpare.INSTANCE);
+            INS.put(void.class, VoidSpare.INSTANCE);
+            INS.put(Void.class, VoidSpare.INSTANCE);
+            INS.put(CharSequence.class, StringSpare.INSTANCE);
+            INS.put(BigInteger.class, BigIntegerSpare.INSTANCE);
+            INS.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
+            INS.put(StringBuffer.class, StringBufferSpare.INSTANCE);
+            INS.put(StringBuilder.class, StringBuilderSpare.INSTANCE);
+
+            INS.table.put($, ObjectSpare.INSTANCE);
+            INS.table.put($s, StringSpare.INSTANCE);
+            INS.table.put($b, BooleanSpare.INSTANCE);
+            INS.table.put($i, IntegerSpare.INSTANCE);
+            INS.table.put($l, LongSpare.INSTANCE);
+            INS.table.put($f, FloatSpare.INSTANCE);
+            INS.table.put($d, DoubleSpare.INSTANCE);
+            INS.table.put($c, CharSpare.INSTANCE);
+            INS.table.put($o, ByteSpare.INSTANCE);
+            INS.table.put($u, ShortSpare.INSTANCE);
+            INS.table.put($M, MapSpare.INSTANCE);
+            INS.table.put($A, ArraySpare.INSTANCE);
+            INS.table.put($L, ListSpare.INSTANCE);
+            INS.table.put($S, SetSpare.INSTANCE);
+            INS.table.put($E, ErrorSpare.INSTANCE);
+            INS.table.put($B, ByteArraySpare.INSTANCE);
+            INS.table.put($I, BigIntegerSpare.INSTANCE);
+            INS.table.put($D, BigDecimalSpare.INSTANCE);
+            INS.table.put(EMPTY, ObjectSpare.INSTANCE);
+
+            KatLoader<Provider> loader =
+                new KatLoader<>(Provider.class);
+
+            try {
+                loader.load(
+                    Config.get(
+                        "kat.spare.provider",
+                        "plus.kat.spare.Provider"
+                    )
+                );
+
+                int size = loader.size();
+                PRO = new Provider[size];
+
+                int i = 0;
+                Provider pro;
+                while (loader.hasNext()) {
+                    pro = loader.next();
+                    PRO[i++] = pro;
+                    try {
+                        pro.init(INS);
+                    } catch (Throwable e) {
+                        // Nothing
+                    }
+                }
+            } catch (Exception e) {
+                throw new Error(
+                    "Unexpectedly, cannot be loaded", e
+                );
+            }
         }
 
-        private Impl() {
-            super(Config.get(
-                "kat.supplier.capacity", 24
-            ));
+        /**
+         * default relationship table
+         */
+        protected final Map<CharSequence, Spare<?>> table;
+
+        public Impl(
+            @NotNull int sponsor,
+            @NotNull int capacity
+        ) {
+            super(capacity);
+            table = new ConcurrentHashMap<>(sponsor);
         }
 
         @Override
@@ -999,16 +1086,14 @@ public interface Supplier {
             @NotNull Class<?> klass,
             @NotNull Spare<?> spare
         ) {
-            return Cluster.INS.put(
-                klass, spare
-            );
+            return put(klass, spare);
         }
 
         @Override
         public Spare<?> revoke(
             @NotNull Class<?> klass
         ) {
-            return Cluster.INS.remove(klass);
+            return remove(klass);
         }
 
         @Override
@@ -1016,14 +1101,14 @@ public interface Supplier {
             @NotNull CharSequence klass,
             @NotNull Spare<?> spare
         ) {
-            return put(klass, spare);
+            return table.put(klass, spare);
         }
 
         @Override
         public Spare<?> revoke(
             @NotNull CharSequence klass
         ) {
-            return remove(klass);
+            return table.remove(klass);
         }
 
         @Override
@@ -1065,8 +1150,7 @@ public interface Supplier {
             // Pointing to clazz?
             else if (!Coder.class.
                 isAssignableFrom(clazz)) {
-                coder = Cluster.INS
-                    .lookup(clazz, this);
+                coder = lookup(clazz);
             }
 
             // byte[]
@@ -1125,8 +1209,182 @@ public interface Supplier {
         public <T> Spare<T> lookup(
             @NotNull Class<T> klass
         ) {
-            return Cluster.INS
-                .lookup(klass, this);
+            Spare<?> spare = get(klass);
+
+            if (spare != null) {
+                return (Spare<T>) spare;
+            }
+
+            for (Provider p : PRO) {
+                try {
+                    spare = p.lookup(
+                        klass, this
+                    );
+                } catch (Collapse e) {
+                    return null;
+                } catch (Exception e) {
+                    continue;
+                }
+
+                if (spare != null) {
+                    return (Spare<T>) spare;
+                }
+            }
+
+            // filter platform type
+            String name = klass.getName();
+            switch (name.charAt(0)) {
+                case 'j': {
+                    if (name.startsWith("java.")) {
+                        return java(
+                            name, klass
+                        );
+                    }
+                    if (name.startsWith("jdk.") ||
+                        name.startsWith("javax.")) {
+                        return null;
+                    }
+                    break;
+                }
+                case 'k': {
+                    if (name.startsWith("kotlin.") ||
+                        name.startsWith("kotlinx.")) {
+                        return null;
+                    }
+                    break;
+                }
+                case 's': {
+                    if (name.startsWith("sun.") ||
+                        name.startsWith("scala.")) {
+                        return null;
+                    }
+                    break;
+                }
+                case 'a': {
+                    if (name.startsWith("android.") ||
+                        name.startsWith("androidx.")) {
+                        return null;
+                    }
+                    break;
+                }
+                case '[': {
+                    if (klass.isArray()) {
+                        putIfAbsent(klass, spare =
+                            new ArraySpare(klass)
+                        );
+                        return (Spare<T>) spare;
+                    }
+                }
+            }
+
+            Embed embed = klass
+                .getAnnotation(Embed.class);
+
+            if (embed == null) {
+                if (klass.isInterface() ||
+                    Kat.class.isAssignableFrom(klass) ||
+                    Coder.class.isAssignableFrom(klass)) {
+                    return null;
+                }
+            } else {
+                Class<?> clazz = embed.with();
+                if (clazz != Spare.class) {
+                    // Pointing to clazz?
+                    if (!Spare.class.
+                        isAssignableFrom(clazz)) {
+                        spare = lookup(clazz);
+                        if (spare != null) {
+                            putIfAbsent(
+                                klass, spare
+                            );
+                        }
+                    } else try {
+                        // double-checking
+                        spare = get(klass);
+
+                        // check for cache
+                        if (spare != null ||
+                            clazz.isInterface()) {
+                            return (Spare<T>) spare;
+                        }
+
+                        Constructor<?>[] cs = clazz
+                            .getDeclaredConstructors();
+                        Constructor<?> d, c = cs[0];
+                        for (int i = 1; i < cs.length; i++) {
+                            d = cs[i];
+                            if (c.getParameterCount() <=
+                                d.getParameterCount()) c = d;
+                        }
+
+                        Object[] args;
+                        int size = c.getParameterCount();
+
+                        if (size == 0) {
+                            args = Reflect.EMPTY;
+                        } else {
+                            args = new Object[size];
+                            Class<?>[] cls =
+                                c.getParameterTypes();
+                            for (int i = 0; i < size; i++) {
+                                Class<?> m = cls[i];
+                                if (m == Class.class) {
+                                    args[i] = klass;
+                                } else if (m == Embed.class) {
+                                    args[i] = embed;
+                                } else if (m == Supplier.class) {
+                                    args[i] = this;
+                                } else if (m.isAnnotation()) {
+                                    args[i] = klass.getAnnotation(
+                                        (Class<? extends Annotation>) m
+                                    );
+                                }
+                            }
+                        }
+
+                        if (!c.isAccessible()) {
+                            c.setAccessible(true);
+                        }
+                        putIfAbsent(klass, spare =
+                            (Spare<?>) c.newInstance(args)
+                        );
+                    } catch (Exception e) {
+                        // Nothing
+                    }
+                    return (Spare<T>) spare;
+                }
+
+                if (klass.isInterface()) {
+                    return (Spare<T>)
+                        new ProxySpare(
+                            embed, klass, this
+                        );
+                }
+            }
+
+            try {
+                Class<?> sc = klass.getSuperclass();
+                if (sc == Enum.class) {
+                    return new EnumSpare(
+                        embed, klass, this
+                    );
+                }
+
+                String sn = sc.getName();
+                if (sn.equals("java.lang.Record")) {
+                    return new RecordSpare<>(
+                        embed, klass, this
+                    );
+                } else {
+                    return new ReflectSpare<>(
+                        embed, klass, this
+                    );
+                }
+            } catch (Exception e) {
+                // Nothing
+            }
+
+            return null;
         }
 
         @Override
@@ -1306,7 +1564,7 @@ public interface Supplier {
                 return null;
             }
 
-            Spare<?> spare = get(klass);
+            Spare<?> spare = table.get(klass);
             if (spare != null) {
                 if (type == null ||
                     spare.accept(type)) {
@@ -1321,7 +1579,7 @@ public interface Supplier {
             }
 
             String name = klass.toString();
-            for (Provider p : Cluster.PRO) {
+            for (Provider p : PRO) {
                 try {
                     spare = p.search(
                         type, name, this
@@ -1373,10 +1631,9 @@ public interface Supplier {
                 }
 
                 if (type.isAssignableFrom(child)) {
-                    spare = Cluster.INS
-                        .lookup(child, this);
+                    spare = lookup(child);
                     if (spare != null) {
-                        putIfAbsent(
+                        table.putIfAbsent(
                             name, spare
                         );
                         return (Spare<T>) spare;
@@ -1385,6 +1642,134 @@ public interface Supplier {
             }
 
             return null;
+        }
+
+        @Nullable
+        private <T> Spare<T> java(
+            @NotNull String name,
+            @NotNull Class<T> klass
+        ) {
+            // filter internal class
+            int d = name.indexOf('$', 6);
+            if (d != -1) {
+                return null;
+            }
+
+            // lookup the appropriate spare
+            Spare<?> spare;
+            switch (name.charAt(5)) {
+                // java.io
+                case 'i': {
+                    if (klass == File.class) {
+                        spare = FileSpare.INSTANCE;
+                    } else {
+                        return null;
+                    }
+                    this.put(klass, spare);
+                    return (Spare<T>) spare;
+                }
+                // java.nio
+                // java.net
+                case 'n': {
+                    if (klass == URI.class) {
+                        spare = URISpare.INSTANCE;
+                    } else if (klass == URL.class) {
+                        spare = URLSpare.INSTANCE;
+                    } else if (ByteBuffer.class.isAssignableFrom(klass)) {
+                        spare = ByteBufferSpare.INSTANCE;
+                    } else {
+                        return null;
+                    }
+
+                    this.put(klass, spare);
+                    return (Spare<T>) spare;
+                }
+                // java.time
+                case 't': {
+                    if (klass == Instant.class) {
+                        spare = InstantSpare.INSTANCE;
+                    } else if (klass == LocalDate.class) {
+                        spare = LocalDateSpare.INSTANCE;
+                    } else if (klass == LocalTime.class) {
+                        spare = LocalTimeSpare.INSTANCE;
+                    } else if (klass == LocalDateTime.class) {
+                        spare = LocalDateTimeSpare.INSTANCE;
+                    } else if (klass == ZonedDateTime.class) {
+                        spare = ZonedDateTimeSpare.INSTANCE;
+                    } else {
+                        return null;
+                    }
+
+                    this.put(klass, spare);
+                    return (Spare<T>) spare;
+                }
+                // java.util
+                case 'u': {
+                    switch (name.lastIndexOf('.')) {
+                        // java.util.
+                        case 9: {
+                            if (klass == Date.class) {
+                                spare = DateSpare.INSTANCE;
+                            } else if (klass == UUID.class) {
+                                spare = UUIDSpare.INSTANCE;
+                            } else if (klass == BitSet.class) {
+                                spare = BitSetSpare.INSTANCE;
+                            } else if (klass == Currency.class) {
+                                spare = CurrencySpare.INSTANCE;
+                            } else if (klass == Locale.class) {
+                                spare = LocaleSpare.INSTANCE;
+                            } else if (Map.class.isAssignableFrom(klass)) {
+                                spare = MapSpare.of(klass);
+                            } else if (Set.class.isAssignableFrom(klass)) {
+                                spare = SetSpare.of(klass);
+                            } else if (List.class.isAssignableFrom(klass)) {
+                                spare = ListSpare.of(klass);
+                            } else {
+                                return null;
+                            }
+
+                            this.put(klass, spare);
+                            return (Spare<T>) spare;
+                        }
+                        // java.util.concurrent.
+                        case 20: {
+                            if (Map.class.isAssignableFrom(klass)) {
+                                spare = MapSpare.of(klass);
+                            } else if (Set.class.isAssignableFrom(klass)) {
+                                spare = SetSpare.of(klass);
+                            } else if (List.class.isAssignableFrom(klass)) {
+                                spare = ListSpare.of(klass);
+                            } else {
+                                return null;
+                            }
+
+                            this.put(klass, spare);
+                            return (Spare<T>) spare;
+                        }
+                        // java.util.concurrent.atomic.
+                        case 27: {
+                            if (klass == AtomicLong.class) {
+                                spare = AtomicLongSpare.INSTANCE;
+                            } else if (klass == AtomicInteger.class) {
+                                spare = AtomicIntegerSpare.INSTANCE;
+                            } else if (klass == AtomicBoolean.class) {
+                                spare = AtomicBooleanSpare.INSTANCE;
+                            } else {
+                                return null;
+                            }
+
+                            this.put(klass, spare);
+                            return (Spare<T>) spare;
+                        }
+                        default: {
+                            return null;
+                        }
+                    }
+                }
+                default: {
+                    return null;
+                }
+            }
         }
 
         @Override

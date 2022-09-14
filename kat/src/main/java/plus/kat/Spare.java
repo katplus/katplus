@@ -15,35 +15,20 @@
  */
 package plus.kat;
 
-import plus.kat.anno.Embed;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.crash.*;
 import plus.kat.entity.*;
 import plus.kat.spare.*;
-import plus.kat.reflex.*;
 import plus.kat.utils.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.nio.ByteBuffer;
 import java.sql.*;
-import java.time.*;
-import java.util.*;
-import java.util.Date;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.io.IOException;
+import java.lang.reflect.Type;
 
 import static plus.kat.Plan.DEF;
-import static plus.kat.Supplier.Impl;
+import static plus.kat.Supplier.Impl.INS;
 import static plus.kat.spare.Parser.Group;
 
 /**
@@ -124,7 +109,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull Spoiler spoiler
     ) throws Collapse {
         return apply(
-            spoiler, Impl.INS
+            spoiler, INS
         );
     }
 
@@ -178,7 +163,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull ResultSet result
     ) throws SQLException {
         return apply(
-            Impl.INS, result
+            INS, result
         );
     }
 
@@ -544,7 +529,7 @@ public interface Spare<K> extends Coder<K> {
         @Nullable Object data
     ) {
         return cast(
-            data, Impl.INS
+            data, INS
         );
     }
 
@@ -593,7 +578,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull Spoiler spoiler
     ) {
         return update(
-            entity, spoiler, Impl.INS
+            entity, spoiler, INS
         );
     }
 
@@ -736,7 +721,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull ResultSet resultSet
     ) throws SQLException {
         return update(
-            entity, Impl.INS, resultSet
+            entity, INS, resultSet
         );
     }
 
@@ -962,7 +947,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull Class<?> klass,
         @NotNull Spare<?> spare
     ) {
-        return Cluster.INS.put(
+        return INS.put(
             klass, spare
         );
     }
@@ -983,7 +968,7 @@ public interface Spare<K> extends Coder<K> {
     static Spare<?> revoke(
         @NotNull Class<?> klass
     ) {
-        return Cluster.INS.remove(klass);
+        return INS.revoke(klass);
     }
 
     /**
@@ -1002,431 +987,6 @@ public interface Spare<K> extends Coder<K> {
     static <T> Spare<T> lookup(
         @NotNull Class<T> klass
     ) {
-        return Cluster.INS.lookup(
-            klass, Impl.INS
-        );
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.1
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    class Cluster extends ConcurrentHashMap<Type, Spare<?>> {
-        /**
-         * default cluster
-         */
-        static final Cluster INS = new Cluster();
-
-        private Cluster() {
-            super(Config.get(
-                "kat.spare.capacity", 32
-            ));
-        }
-
-        static {
-            INS.put(Object.class, ObjectSpare.INSTANCE);
-            INS.put(String.class, StringSpare.INSTANCE);
-            INS.put(int.class, IntegerSpare.INSTANCE);
-            INS.put(Integer.class, IntegerSpare.INSTANCE);
-            INS.put(long.class, LongSpare.INSTANCE);
-            INS.put(Long.class, LongSpare.INSTANCE);
-            INS.put(float.class, FloatSpare.INSTANCE);
-            INS.put(Float.class, FloatSpare.INSTANCE);
-            INS.put(double.class, DoubleSpare.INSTANCE);
-            INS.put(Double.class, DoubleSpare.INSTANCE);
-            INS.put(boolean.class, BooleanSpare.INSTANCE);
-            INS.put(Boolean.class, BooleanSpare.INSTANCE);
-            INS.put(byte.class, ByteSpare.INSTANCE);
-            INS.put(Byte.class, ByteSpare.INSTANCE);
-            INS.put(short.class, ShortSpare.INSTANCE);
-            INS.put(Short.class, ShortSpare.INSTANCE);
-            INS.put(char.class, CharSpare.INSTANCE);
-            INS.put(Character.class, CharSpare.INSTANCE);
-            INS.put(Number.class, NumberSpare.INSTANCE);
-            INS.put(byte[].class, ByteArraySpare.INSTANCE);
-            INS.put(Object[].class, ArraySpare.INSTANCE);
-            INS.put(Map.class, MapSpare.INSTANCE);
-            INS.put(Set.class, SetSpare.INSTANCE);
-            INS.put(List.class, ListSpare.INSTANCE);
-            INS.put(void.class, VoidSpare.INSTANCE);
-            INS.put(Void.class, VoidSpare.INSTANCE);
-            INS.put(CharSequence.class, StringSpare.INSTANCE);
-            INS.put(BigInteger.class, BigIntegerSpare.INSTANCE);
-            INS.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
-            INS.put(StringBuffer.class, StringBufferSpare.INSTANCE);
-            INS.put(StringBuilder.class, StringBuilderSpare.INSTANCE);
-        }
-
-        /**
-         * default providers
-         */
-        static final Provider[] PRO;
-
-        static {
-            KatLoader<Provider> loader =
-                new KatLoader<>(Provider.class);
-
-            try {
-                loader.load(
-                    Config.get(
-                        "kat.spare.provider",
-                        "plus.kat.spare.Provider"
-                    )
-                );
-
-                int size = loader.size();
-                PRO = new Provider[size];
-
-                int i = 0;
-                Provider pro;
-                while (loader.hasNext()) {
-                    pro = loader.next();
-                    PRO[i++] = pro;
-                    try {
-                        pro.init(
-                            Impl.INS
-                        );
-                    } catch (Throwable e) {
-                        // Nothing
-                    }
-                }
-            } catch (Exception e) {
-                throw new Error(
-                    "Unexpectedly, cannot be loaded", e
-                );
-            }
-        }
-
-        /**
-         * Returns {@link Spare} of the specified {@code klass}
-         *
-         * @throws NullPointerException If the specified {@code klass} is null
-         */
-        @Nullable
-        public <T> Spare<T> lookup(
-            @NotNull Class<T> klass,
-            @NotNull Supplier supplier
-        ) {
-            Spare<?> spare = get(klass);
-
-            if (spare != null) {
-                return (Spare<T>) spare;
-            }
-
-            for (Provider p : Cluster.PRO) {
-                try {
-                    spare = p.lookup(
-                        klass, supplier
-                    );
-                } catch (Collapse e) {
-                    return null;
-                } catch (Exception e) {
-                    continue;
-                }
-
-                if (spare != null) {
-                    return (Spare<T>) spare;
-                }
-            }
-
-            // filter platform type
-            String name = klass.getName();
-            switch (name.charAt(0)) {
-                case 'j': {
-                    if (name.startsWith("java.")) {
-                        return onJava(
-                            name, klass
-                        );
-                    }
-                    if (name.startsWith("jdk.") ||
-                        name.startsWith("javax.")) {
-                        return null;
-                    }
-                    break;
-                }
-                case 'k': {
-                    if (name.startsWith("kotlin.") ||
-                        name.startsWith("kotlinx.")) {
-                        return null;
-                    }
-                    break;
-                }
-                case 's': {
-                    if (name.startsWith("sun.") ||
-                        name.startsWith("scala.")) {
-                        return null;
-                    }
-                    break;
-                }
-                case 'a': {
-                    if (name.startsWith("android.") ||
-                        name.startsWith("androidx.")) {
-                        return null;
-                    }
-                    break;
-                }
-                case '[': {
-                    if (klass.isArray()) {
-                        putIfAbsent(klass, spare =
-                            new ArraySpare(klass)
-                        );
-                        return (Spare<T>) spare;
-                    }
-                }
-            }
-
-            Embed embed = klass
-                .getAnnotation(Embed.class);
-
-            if (embed == null) {
-                if (klass.isInterface() ||
-                    Kat.class.isAssignableFrom(klass) ||
-                    Coder.class.isAssignableFrom(klass)) {
-                    return null;
-                }
-            } else {
-                Class<?> clazz = embed.with();
-                if (clazz != Spare.class) {
-                    // Pointing to clazz?
-                    if (!Spare.class.
-                        isAssignableFrom(clazz)) {
-                        spare = lookup(
-                            clazz, supplier
-                        );
-                        if (spare != null) {
-                            putIfAbsent(
-                                klass, spare
-                            );
-                        }
-                    } else try {
-                        // double-checking
-                        spare = get(klass);
-
-                        // check for cache
-                        if (spare != null ||
-                            clazz.isInterface()) {
-                            return (Spare<T>) spare;
-                        }
-
-                        Constructor<?>[] cs = clazz
-                            .getDeclaredConstructors();
-                        Constructor<?> d, c = cs[0];
-                        for (int i = 1; i < cs.length; i++) {
-                            d = cs[i];
-                            if (c.getParameterCount() <=
-                                d.getParameterCount()) c = d;
-                        }
-
-                        Object[] args;
-                        int size = c.getParameterCount();
-
-                        if (size == 0) {
-                            args = Reflect.EMPTY;
-                        } else {
-                            args = new Object[size];
-                            Class<?>[] cls =
-                                c.getParameterTypes();
-                            for (int i = 0; i < size; i++) {
-                                Class<?> m = cls[i];
-                                if (m == Class.class) {
-                                    args[i] = klass;
-                                } else if (m == Embed.class) {
-                                    args[i] = embed;
-                                } else if (m == Supplier.class) {
-                                    args[i] = supplier;
-                                } else if (m.isAnnotation()) {
-                                    args[i] = klass.getAnnotation(
-                                        (Class<? extends Annotation>) m
-                                    );
-                                }
-                            }
-                        }
-
-                        if (!c.isAccessible()) {
-                            c.setAccessible(true);
-                        }
-                        putIfAbsent(klass, spare =
-                            (Spare<?>) c.newInstance(args)
-                        );
-                    } catch (Exception e) {
-                        // Nothing
-                    }
-                    return (Spare<T>) spare;
-                }
-
-                if (klass.isInterface()) {
-                    return (Spare<T>)
-                        new ProxySpare(
-                            embed, klass, supplier
-                        );
-                }
-            }
-
-            try {
-                Class<?> sc = klass.getSuperclass();
-                if (sc == Enum.class) {
-                    return new EnumSpare(
-                        embed, klass, supplier
-                    );
-                }
-
-                String sn = sc.getName();
-                if (sn.equals("java.lang.Record")) {
-                    return new RecordSpare<>(
-                        embed, klass, supplier
-                    );
-                } else {
-                    return new ReflectSpare<>(
-                        embed, klass, supplier
-                    );
-                }
-            } catch (Exception e) {
-                // Nothing
-            }
-
-            return null;
-        }
-
-        /**
-         * Returns {@link Spare} of the specified {@link Class}
-         *
-         * @throws NullPointerException If the specified {@code klass} is null
-         */
-        @Nullable
-        public <T> Spare<T> onJava(
-            @NotNull String name,
-            @NotNull Class<T> klass
-        ) {
-            // filter internal class
-            int d = name.indexOf('$', 6);
-            if (d != -1) {
-                return null;
-            }
-
-            // lookup the appropriate spare
-            Spare<?> spare;
-            switch (name.charAt(5)) {
-                // java.io
-                case 'i': {
-                    if (klass == File.class) {
-                        spare = FileSpare.INSTANCE;
-                    } else {
-                        return null;
-                    }
-                    this.put(klass, spare);
-                    return (Spare<T>) spare;
-                }
-                // java.nio
-                // java.net
-                case 'n': {
-                    if (klass == URI.class) {
-                        spare = URISpare.INSTANCE;
-                    } else if (klass == URL.class) {
-                        spare = URLSpare.INSTANCE;
-                    } else if (ByteBuffer.class.isAssignableFrom(klass)) {
-                        spare = ByteBufferSpare.INSTANCE;
-                    } else {
-                        return null;
-                    }
-
-                    this.put(klass, spare);
-                    return (Spare<T>) spare;
-                }
-                // java.time
-                case 't': {
-                    if (klass == Instant.class) {
-                        spare = InstantSpare.INSTANCE;
-                    } else if (klass == LocalDate.class) {
-                        spare = LocalDateSpare.INSTANCE;
-                    } else if (klass == LocalTime.class) {
-                        spare = LocalTimeSpare.INSTANCE;
-                    } else if (klass == LocalDateTime.class) {
-                        spare = LocalDateTimeSpare.INSTANCE;
-                    } else if (klass == ZonedDateTime.class) {
-                        spare = ZonedDateTimeSpare.INSTANCE;
-                    } else {
-                        return null;
-                    }
-
-                    this.put(klass, spare);
-                    return (Spare<T>) spare;
-                }
-                // java.util
-                case 'u': {
-                    switch (name.lastIndexOf('.')) {
-                        // java.util.
-                        case 9: {
-                            if (klass == Date.class) {
-                                spare = DateSpare.INSTANCE;
-                            } else if (klass == UUID.class) {
-                                spare = UUIDSpare.INSTANCE;
-                            } else if (klass == BitSet.class) {
-                                spare = BitSetSpare.INSTANCE;
-                            } else if (klass == Currency.class) {
-                                spare = CurrencySpare.INSTANCE;
-                            } else if (klass == Locale.class) {
-                                spare = LocaleSpare.INSTANCE;
-                            } else if (Map.class.isAssignableFrom(klass)) {
-                                spare = MapSpare.of(klass);
-                            } else if (Set.class.isAssignableFrom(klass)) {
-                                spare = SetSpare.of(klass);
-                            } else if (List.class.isAssignableFrom(klass)) {
-                                spare = ListSpare.of(klass);
-                            } else {
-                                return null;
-                            }
-
-                            this.put(klass, spare);
-                            return (Spare<T>) spare;
-                        }
-                        // java.util.concurrent.
-                        case 20: {
-                            if (Map.class.isAssignableFrom(klass)) {
-                                spare = MapSpare.of(klass);
-                            } else if (Set.class.isAssignableFrom(klass)) {
-                                spare = SetSpare.of(klass);
-                            } else if (List.class.isAssignableFrom(klass)) {
-                                spare = ListSpare.of(klass);
-                            } else {
-                                return null;
-                            }
-
-                            this.put(klass, spare);
-                            return (Spare<T>) spare;
-                        }
-                        // java.util.concurrent.atomic.
-                        case 27: {
-                            if (klass == AtomicLong.class) {
-                                spare = AtomicLongSpare.INSTANCE;
-                            } else if (klass == AtomicInteger.class) {
-                                spare = AtomicIntegerSpare.INSTANCE;
-                            } else if (klass == AtomicBoolean.class) {
-                                spare = AtomicBooleanSpare.INSTANCE;
-                            } else {
-                                return null;
-                            }
-
-                            this.put(klass, spare);
-                            return (Spare<T>) spare;
-                        }
-                        default: {
-                            return null;
-                        }
-                    }
-                }
-                default: {
-                    return null;
-                }
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "plus.kat.Spare.Cluster@"
-                + Integer.toHexString(
-                System.identityHashCode(this)
-            );
-        }
+        return INS.lookup(klass);
     }
 }
