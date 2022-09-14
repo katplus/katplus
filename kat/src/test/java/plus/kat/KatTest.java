@@ -21,7 +21,7 @@ public class KatTest {
         user.name = "kraity";
 
         String pretty =
-            "plus.kat.entity.User{\n" +
+            "plus.kat.User{\n" +
                 "  i:id(1)\n" +
                 "  s:name(kraity)\n" +
                 "  b:blocked(0)\n" +
@@ -34,7 +34,7 @@ public class KatTest {
         String string =
             "M{\n" +
                 "  A:k{\n" +
-                "    plus.kat.entity.User{\n" +
+                "    plus.kat.User{\n" +
                 "      i:id(1)\n" +
                 "      s:name(kraity)\n" +
                 "      b:blocked(0)\n" +
@@ -87,7 +87,7 @@ public class KatTest {
         lookup(User.class);
         HashMap<String, User> map = Kat.decode(
             Map.class, new Event<>(
-                "M{plus.kat.entity.User:user{i:id(1)s:name(kraity)b:blocked(1)}}"
+                "M{plus.kat.User:user{i:id(1)s:name(kraity)b:blocked(1)}}"
             )
         );
 
@@ -150,7 +150,7 @@ public class KatTest {
         Spare<User> spare =
             lookup(User.class);
 
-        String text = "plus.kat.entity.User{i:id(1)s:name(kraity)b:blocked(1)}";
+        String text = "plus.kat.User{i:id(1)s:name(kraity)b:blocked(1)}";
 
         User user = spare.read(
             Event.ascii(text)
@@ -281,7 +281,7 @@ public class KatTest {
         supplier.lookup(User.class);
 
         User u1 = supplier.read(
-            "plus.kat.entity.User", new Event<>(
+            "plus.kat.User", new Event<>(
                 "${$:id(1)$:name(kraity)$:blocked(1)}"
             )
         );
@@ -297,7 +297,7 @@ public class KatTest {
         map.put("blocked", true);
 
         User u2 = supplier.cast(
-            "plus.kat.entity.User", map
+            "plus.kat.User", map
         );
 
         assertNotNull(u2);
@@ -359,7 +359,7 @@ public class KatTest {
         Spare<Note> spare =
             lookup(Note.class);
 
-        String text = "plus.kat.entity.Note{i:id(1)s:title(KAT+)B:cipher(S0FUKw==)A:meta{A{i(8)i(16)}A{i(32)}}A:tags{s(kat)}State:state(OPEN)f:version(0.1)l:created(1645539742000)b:deleted(1)L:authors{plus.kat.entity.User{i:id(1)s:name(kraity)b:blocked(1)}}}";
+        String text = "plus.kat.entity.Note{i:id(1)s:title(KAT+)B:cipher(S0FUKw==)A:meta{A{i(8)i(16)}A{i(32)}}A:tags{s(kat)}State:state(OPEN)f:version(0.1)l:created(1645539742000)b:deleted(1)L:authors{plus.kat.User{i:id(1)s:name(kraity)b:blocked(1)}}}";
         Note note = spare.read(
             new Event<>(text)
         );
@@ -411,7 +411,7 @@ public class KatTest {
         private List<? extends User> authors;
     }
 
-    @Embed("plus.kat.entity.User")
+    @Embed("plus.kat.User")
     static class User {
         @Expose("id")
         private int id;

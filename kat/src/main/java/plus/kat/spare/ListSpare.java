@@ -327,7 +327,7 @@ public class ListSpare implements Spare<List> {
         ) throws IOException {
             Type type = param;
             Spare<?> spare =
-                supplier.search(type, space);
+                supplier.lookup(type, space);
 
             if (spare != null) {
                 value.setType(type);
@@ -356,7 +356,7 @@ public class ListSpare implements Spare<List> {
         ) {
             Type type = param;
             Spare<?> spare =
-                supplier.search(type, space);
+                supplier.lookup(type, space);
 
             if (spare == null) {
                 return null;

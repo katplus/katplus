@@ -445,7 +445,7 @@ public class Event<T> implements Flag {
      * @param spare the specified spare
      */
     public Event<T> with(
-        @Nullable Spare<? super T> spare
+        @Nullable Spare<?> spare
     ) {
         this.spare = spare;
         return this;
@@ -518,7 +518,7 @@ public class Event<T> implements Flag {
         }
 
         Supplier supplier = getSupplier();
-        spare = supplier.search(type, space);
+        spare = supplier.lookup(type, space);
 
         if (spare != null) {
             return spare;

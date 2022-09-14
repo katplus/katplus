@@ -21,6 +21,8 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.crash.*;
 
+import java.lang.reflect.Type;
+
 /**
  * @author kraity
  * @since 0.0.2
@@ -43,11 +45,13 @@ public interface Provider {
      *
      * @throws Collapse             The Provider signals to interrupt subsequent lookup
      * @throws NullPointerException If the specified {@code klass} is null
+     * @see Supplier#lookup(Class, CharSequence)
+     * @see Supplier#search(Class, CharSequence)
      * @since 0.0.3
      */
     @Nullable
     default Spare<?> lookup(
-        @Nullable Class<?> parent,
+        @Nullable Class<?> type,
         @NotNull String klass,
         @NotNull Supplier supplier
     ) {

@@ -382,8 +382,8 @@ public class Doc extends Chan {
         if (text == null) {
             return null;
         }
-        return INS.down(
-            "$", new Event<>(text)
+        return INS.solve(
+            Job.DOC, new Event<>(text)
         );
     }
 
@@ -401,7 +401,10 @@ public class Doc extends Chan {
         if (event == null) {
             return null;
         }
-        return INS.down("$", event);
+
+        return INS.solve(
+            Job.DOC, event
+        );
     }
 
     /**

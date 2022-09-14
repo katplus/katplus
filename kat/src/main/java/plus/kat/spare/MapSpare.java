@@ -353,8 +353,8 @@ public class MapSpare implements Spare<Map> {
                 Type[] actual = p.getActualTypeArguments();
                 val = actual[1];
                 if (actual[0] != String.class) {
-                    spare0 = supplier.search(
-                        key = actual[0]
+                    spare0 = supplier.lookup(
+                        key = actual[0], null
                     );
                     if (spare0 == null) {
                         throw new Collapse(
@@ -377,7 +377,7 @@ public class MapSpare implements Spare<Map> {
         ) throws IOException {
             Type type1 = val;
             Spare<?> spare1 =
-                supplier.search(type1, space);
+                supplier.lookup(type1, space);
 
             if (spare1 != null) {
                 Type type0 = key;
@@ -432,7 +432,7 @@ public class MapSpare implements Spare<Map> {
         ) {
             Type type = val;
             Spare<?> spare =
-                supplier.search(type, space);
+                supplier.lookup(type, space);
 
             if (spare == null) {
                 return null;

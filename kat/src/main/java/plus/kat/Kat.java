@@ -145,8 +145,8 @@ public interface Kat {
         if (text == null) {
             return null;
         }
-        return INS.read(
-            "$", new Event<>(text)
+        return INS.solve(
+            Job.KAT, new Event<>(text)
         );
     }
 
@@ -164,7 +164,10 @@ public interface Kat {
         if (event == null) {
             return null;
         }
-        return INS.read("$", event);
+
+        return INS.solve(
+            Job.KAT, event
+        );
     }
 
     /**

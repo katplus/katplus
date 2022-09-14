@@ -341,8 +341,8 @@ public class Json extends Chan {
         if (text == null) {
             return null;
         }
-        return INS.parse(
-            "$", new Event<>(text)
+        return INS.solve(
+            Job.JSON, new Event<>(text)
         );
     }
 
@@ -360,7 +360,10 @@ public class Json extends Chan {
         if (event == null) {
             return null;
         }
-        return INS.parse("$", event);
+
+        return INS.solve(
+            Job.JSON, event
+        );
     }
 
     /**

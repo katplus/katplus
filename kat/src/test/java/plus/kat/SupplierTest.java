@@ -3,6 +3,7 @@ package plus.kat;
 import org.junit.jupiter.api.Test;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
+import plus.kat.chain.Space;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -314,6 +315,7 @@ public class SupplierTest {
         }
     }
 
+    @Embed("plus.kat.supplier.User")
     static class User {
         @Expose("id")
         private int id;
@@ -421,13 +423,33 @@ public class SupplierTest {
         assertEquals("kraity", s1.model.getName());
     }
 
-    @Embed("plus.kat.entity.UserVO")
+    @Test
+    public void test_lookup_spare() {
+        Supplier supplier = Supplier.ins();
+        assertNull(supplier.lookup(""));
+        assertNull(supplier.lookup("$"));
+        assertNull(supplier.lookup("i"));
+        assertNull(supplier.lookup("l"));
+        assertNull(supplier.lookup("A"));
+        assertNull(supplier.lookup("M"));
+        assertNull(supplier.lookup("L"));
+
+        assertNotNull(supplier.lookup(Space.EMPTY));
+        assertNotNull(supplier.lookup(Space.$));
+        assertNotNull(supplier.lookup(Space.$i));
+        assertNotNull(supplier.lookup(Space.$l));
+        assertNotNull(supplier.lookup(Space.$A));
+        assertNotNull(supplier.lookup(Space.$M));
+        assertNotNull(supplier.lookup(Space.$L));
+    }
+
+    @Embed("plus.kat.supplier.UserVO")
     static class UserVO extends User {
         public boolean blocked;
     }
 
     @Test
-    public void test_search_spare() {
+    public void test_compare_spare() {
         Supplier supplier = Supplier.ins();
 
         Type type = User.class;
@@ -435,20 +457,44 @@ public class SupplierTest {
 
         Spare<User> spare1 = supplier.lookup(User.class);
         Spare<UserVO> spare2 = supplier.lookup(UserVO.class);
+        Spare<Object> spare3 = supplier.lookup(Object.class);
 
-        assertSame(spare1, supplier.search(type, ""));
-        assertSame(spare1, supplier.search(type, "A"));
-        assertSame(spare1, supplier.search(type, "M"));
+        assertNull(supplier.search(type, ""));
+        assertNull(supplier.search(type, "A"));
+        assertNull(supplier.search(type, "M"));
         assertNull(supplier.search(type, "SuperUser"));
 
-        assertSame(spare2, supplier.search(type, "plus.kat.entity.UserVO"));
-        assertSame(spare2, supplier.search(User.class, "plus.kat.entity.UserVO"));
-        assertSame(spare2, supplier.search(UserVO.class, "plus.kat.entity.UserVO"));
+        assertNull(supplier.search(UserVO.class, "plus.kat.supplier.User"));
+        assertNotNull(supplier.lookup(UserVO.class, "plus.kat.supplier.User"));
 
-        Spare<?> spare3 = supplier.lookup(Object.class);
-        assertSame(spare3, supplier.search(object, ""));
-        assertSame(spare3, supplier.search(object, "A"));
-        assertSame(spare3, supplier.search(object, "SuperUser"));
-        assertSame(spare3, supplier.search(object, "plus.kat.entity.UserVO"));
+        assertSame(spare1, supplier.lookup(type, "plus.kat.supplier.User"));
+        assertSame(spare1, supplier.search(type, "plus.kat.supplier.User"));
+
+        assertSame(spare1, supplier.lookup(type, "plus.kat.supplier.UserVO"));
+        assertSame(spare2, supplier.search(type, "plus.kat.supplier.UserVO"));
+
+        assertSame(spare1, supplier.lookup(User.class, "plus.kat.supplier.User"));
+        assertSame(spare1, supplier.search(User.class, "plus.kat.supplier.User"));
+
+        assertSame(spare1, supplier.lookup(User.class, "plus.kat.supplier.UserVO"));
+        assertSame(spare2, supplier.search(User.class, "plus.kat.supplier.UserVO"));
+
+        assertSame(spare2, supplier.lookup(UserVO.class, "plus.kat.supplier.UserVO"));
+        assertSame(spare2, supplier.search(UserVO.class, "plus.kat.supplier.UserVO"));
+
+        assertNull(supplier.search(object, "SuperUser"));
+        assertSame(spare3, supplier.lookup(object, "SuperUser"));
+
+        assertSame(spare3, supplier.search(object, Space.$));
+        assertSame(spare3, supplier.search(object, Space.EMPTY));
+
+        assertSame(spare3, supplier.lookup(object, "plus.kat.supplier.User"));
+        assertSame(spare1, supplier.search(object, "plus.kat.supplier.User"));
+
+        assertSame(spare3, supplier.lookup(object, "plus.kat.supplier.UserVO"));
+        assertSame(spare2, supplier.search(object, "plus.kat.supplier.UserVO"));
+
+        assertSame(spare3, supplier.lookup(object, Space.$A));
+        assertSame(supplier.lookup(Object[].class), supplier.search(object, Space.$A));
     }
 }

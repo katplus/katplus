@@ -535,7 +535,7 @@ public class ArraySpare implements Spare<Object> {
                     event, value
                 );
             } else {
-                coder = supplier.search(
+                coder = supplier.lookup(
                     type, space
                 );
                 if (coder != null) {
@@ -577,7 +577,7 @@ public class ArraySpare implements Spare<Object> {
                 return coder.getBuilder(type);
             }
 
-            coder = supplier.search(
+            coder = supplier.lookup(
                 type, space
             );
             if (coder == null) {
@@ -616,7 +616,7 @@ public class ArraySpare implements Spare<Object> {
         ) throws IOException {
             if (++index < entity.length) {
                 Type type = types.getType(index);
-                Spare<?> spare = supplier.search(
+                Spare<?> spare = supplier.lookup(
                     type, space
                 );
 
@@ -647,7 +647,7 @@ public class ArraySpare implements Spare<Object> {
             }
 
             Type type = types.getType(index);
-            Spare<?> spare = supplier.search(
+            Spare<?> spare = supplier.lookup(
                 type, space
             );
 
