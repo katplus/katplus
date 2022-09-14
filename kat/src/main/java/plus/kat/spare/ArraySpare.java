@@ -77,6 +77,11 @@ public class ArraySpare implements Spare<Object> {
     }
 
     @Override
+    public Supplier getSupplier() {
+        return Supplier.ins();
+    }
+
+    @Override
     public void write(
         @NotNull Chan chan,
         @NotNull Object value

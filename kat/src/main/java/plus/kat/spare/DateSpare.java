@@ -91,6 +91,11 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
     }
 
     @Override
+    public Supplier getSupplier() {
+        return Supplier.ins();
+    }
+
+    @Override
     public Builder<Date> getBuilder(
         @Nullable Type type
     ) {

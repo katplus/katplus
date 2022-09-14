@@ -45,10 +45,9 @@ public class RecordSpare<T> extends Workman<T> {
     public RecordSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
-        @NotNull Supplier supplier,
-        @Nullable Provider provider
+        @NotNull Supplier supplier
     ) {
-        super(embed, klass, supplier, provider);
+        super(embed, klass, supplier);
     }
 
     @Override

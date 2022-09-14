@@ -195,14 +195,12 @@ public class SpareTest {
     }
 
     @Test
-    public void test_provider() {
+    public void test_supplier() {
         Spare<User> spare =
             Spare.lookup(User.class);
 
         assertNotNull(spare);
-
-        // assert not null
-        assertNotNull(spare.getProvider());
+        assertNotNull(spare.getSupplier());
     }
 
     static class User {

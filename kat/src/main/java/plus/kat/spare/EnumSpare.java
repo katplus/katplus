@@ -41,27 +41,25 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         @NotNull Supplier supplier
     ) {
         this(
-            klass.getAnnotation(Embed.class), klass, supplier, null
+            klass.getAnnotation(Embed.class), klass, supplier
         );
     }
 
     public EnumSpare(
         @Nullable Embed embed,
         @NotNull Class<K> klass,
-        @NotNull Supplier supplier,
-        @Nullable Provider provider
+        @NotNull Supplier supplier
     ) {
-        this(embed, null, klass, supplier, provider);
+        this(embed, null, klass, supplier);
     }
 
     public EnumSpare(
         @Nullable Embed embed,
         @Nullable K[] enums,
         @NotNull Class<K> klass,
-        @NotNull Supplier supplier,
-        @Nullable Provider provider
+        @NotNull Supplier supplier
     ) {
-        super(klass, provider);
+        super(klass, supplier);
         if (enums != null) {
             this.enums = enums;
         } else try {

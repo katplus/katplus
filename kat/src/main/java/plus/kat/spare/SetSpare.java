@@ -78,6 +78,11 @@ public class SetSpare implements Spare<Set> {
     }
 
     @Override
+    public Supplier getSupplier() {
+        return Supplier.ins();
+    }
+
+    @Override
     public Set read(
         @NotNull Flag flag,
         @NotNull Value value

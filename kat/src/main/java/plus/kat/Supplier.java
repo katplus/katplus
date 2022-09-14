@@ -33,7 +33,6 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static plus.kat.Plan.DEF;
-import static plus.kat.Supplier.Impl.INS;
 import static plus.kat.chain.Space.*;
 import static plus.kat.Spare.Cluster;
 
@@ -1032,10 +1031,12 @@ public interface Supplier {
             @Nullable Expose expose,
             @Nullable Target target
         ) {
-            Class<?> clazz;
             if (target == null) {
                 return null;
             }
+
+            Class<?> clazz;
+            Coder<?> coder = null;
 
             if (expose == null || (clazz =
                 expose.with()) == Coder.class) {
@@ -1045,34 +1046,27 @@ public interface Supplier {
                     return null;
                 }
 
-                Spare<?> spare = null;
                 Class<?> klass = target.getType();
-
                 if (klass == Date.class) {
-                    spare = new DateSpare(format);
+                    coder = new DateSpare(format);
                 } else if (klass == Instant.class) {
-                    spare = new InstantSpare(format);
+                    coder = new InstantSpare(format);
                 } else if (klass == LocalDate.class) {
-                    spare = new LocalDateSpare(format);
+                    coder = new LocalDateSpare(format);
                 } else if (klass == LocalTime.class) {
-                    spare = new LocalTimeSpare(format);
+                    coder = new LocalTimeSpare(format);
                 } else if (klass == LocalDateTime.class) {
-                    spare = new LocalDateTimeSpare(format);
+                    coder = new LocalDateTimeSpare(format);
                 } else if (klass == ZonedDateTime.class) {
-                    spare = new ZonedDateTimeSpare(format);
+                    coder = new ZonedDateTimeSpare(format);
                 }
-                return (Coder<T>) spare;
             }
 
-            // coder of klass
-            Object coder = null;
-            Cluster cluster = Cluster.INS;
-
-            // pointing to clazz?
-            if (!Coder.class.isAssignableFrom(clazz)) {
-                coder = cluster.load(
-                    clazz, this
-                );
+            // Pointing to clazz?
+            else if (!Coder.class.
+                isAssignableFrom(clazz)) {
+                coder = Cluster.INS
+                    .lookup(clazz, this);
             }
 
             // byte[]
@@ -1107,8 +1101,6 @@ public interface Supplier {
                             args[i] = expose;
                         } else if (m == Supplier.class) {
                             args[i] = this;
-                        } else if (m == Provider.class) {
-                            args[i] = cluster;
                         } else if (m.isAnnotation()) {
                             args[i] = target.getAnnotation(
                                 (Class<? extends Annotation>) m
@@ -1120,7 +1112,8 @@ public interface Supplier {
                 if (!c.isAccessible()) {
                     c.setAccessible(true);
                 }
-                coder = c.newInstance(args);
+                return (Coder<T>)
+                    c.newInstance(args);
             } catch (Exception e) {
                 // Nothing
             }
@@ -1132,7 +1125,8 @@ public interface Supplier {
         public <T> Spare<T> lookup(
             @NotNull Class<T> klass
         ) {
-            return Cluster.INS.load(klass, this);
+            return Cluster.INS
+                .lookup(klass, this);
         }
 
         @Override
@@ -1329,7 +1323,7 @@ public interface Supplier {
             String name = klass.toString();
             for (Provider p : Cluster.PRO) {
                 try {
-                    spare = p.lookup(
+                    spare = p.search(
                         type, name, this
                     );
                 } catch (Collapse e) {
@@ -1344,18 +1338,34 @@ public interface Supplier {
             }
 
             if (type != null) {
-                ClassLoader loader = Thread
-                    .currentThread()
-                    .getContextClassLoader();
+                ClassLoader cl = null;
+                try {
+                    cl = Thread.currentThread()
+                        .getContextClassLoader();
+                } catch (Throwable e) {
+                    // Cannot access thread ClassLoader
+                }
 
-                if (loader == null) {
-                    loader = ClassLoader.getSystemClassLoader();
+                if (cl == null) {
+                    try {
+                        cl = type.getClassLoader();
+                    } catch (Throwable e) {
+                        // Cannot access caller ClassLoader
+                    }
+
+                    if (cl == null) {
+                        try {
+                            cl = ClassLoader.getSystemClassLoader();
+                        } catch (Throwable e) {
+                            // Cannot access system ClassLoader
+                        }
+                    }
                 }
 
                 Class<?> child;
                 try {
                     child = Class.forName(
-                        name, false, loader
+                        name, false, cl
                     );
                 } catch (LinkageError |
                     ClassNotFoundException e) {
@@ -1363,19 +1373,26 @@ public interface Supplier {
                 }
 
                 if (type.isAssignableFrom(child)) {
-                    spare = Cluster.INS.load(
-                        child, this
-                    );
+                    spare = Cluster.INS
+                        .lookup(child, this);
                     if (spare != null) {
                         putIfAbsent(
                             name, spare
                         );
+                        return (Spare<T>) spare;
                     }
-                    return (Spare<T>) spare;
                 }
             }
 
             return null;
+        }
+
+        @Override
+        public String toString() {
+            return "plus.kat.Supplier.Impl@"
+                + Integer.toHexString(
+                System.identityHashCode(this)
+            );
         }
     }
 }

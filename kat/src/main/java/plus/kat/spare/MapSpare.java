@@ -76,6 +76,11 @@ public class MapSpare implements Spare<Map> {
     }
 
     @Override
+    public Supplier getSupplier() {
+        return Supplier.ins();
+    }
+
+    @Override
     public Map read(
         @NotNull Flag flag,
         @NotNull Value value

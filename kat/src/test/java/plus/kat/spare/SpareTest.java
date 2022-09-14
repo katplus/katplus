@@ -30,7 +30,7 @@ public class SpareTest {
     }
 
     @Test
-    public void test_provider() {
+    public void test_supplier() {
         Supplier supplier = Supplier.ins();
         for (Class<?> c : new Class[]{
             int.class,
@@ -43,8 +43,8 @@ public class SpareTest {
             Spare<?> spare = supplier.lookup(c);
             assertNotNull(spare);
 
-            // assert null
-            assertNull(spare.getProvider());
+            // assert not null
+            assertNotNull(spare.getSupplier());
         }
 
         Spare<?>[] spares = new Spare[]{
@@ -68,8 +68,8 @@ public class SpareTest {
         };
 
         for (Spare<?> spare : spares) {
-            // assert null
-            assertNull(spare.getProvider());
+            // assert not null
+            assertNotNull(spare.getSupplier());
         }
     }
 

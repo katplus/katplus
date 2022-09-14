@@ -78,6 +78,11 @@ public class ListSpare implements Spare<List> {
     }
 
     @Override
+    public Supplier getSupplier() {
+        return Supplier.ins();
+    }
+
+    @Override
     public List read(
         @NotNull Flag flag,
         @NotNull Value value

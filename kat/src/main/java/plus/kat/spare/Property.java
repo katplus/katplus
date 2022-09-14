@@ -31,21 +31,22 @@ import java.sql.SQLException;
  */
 public abstract class Property<T> implements Spare<T> {
 
-    protected Provider provider;
+    protected Supplier supplier;
     protected final Class<T> klass;
 
     protected Property(
         @NotNull Class<T> klass
     ) {
         this.klass = klass;
+        this.supplier = Supplier.ins();
     }
 
     protected Property(
         @NotNull Class<T> klass,
-        @Nullable Provider provider
+        @NotNull Supplier supplier
     ) {
         this.klass = klass;
-        this.provider = provider;
+        this.supplier = supplier;
     }
 
     @Override
@@ -125,8 +126,8 @@ public abstract class Property<T> implements Spare<T> {
     }
 
     @Override
-    public Provider getProvider() {
-        return provider;
+    public Supplier getSupplier() {
+        return supplier;
     }
 
     @Override

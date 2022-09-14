@@ -42,7 +42,31 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
     public KatLoader(
         Class<T> klass
     ) {
-        this(klass, Thread.currentThread().getContextClassLoader());
+        service = klass;
+        ClassLoader cl = null;
+        try {
+            cl = Thread.currentThread()
+                .getContextClassLoader();
+        } catch (Throwable e) {
+            // Cannot access thread ClassLoader
+        }
+
+        if (cl == null) {
+            try {
+                cl = klass.getClassLoader();
+            } catch (Throwable e) {
+                // Cannot access caller ClassLoader
+            }
+
+            if (cl == null) {
+                try {
+                    cl = ClassLoader.getSystemClassLoader();
+                } catch (Throwable e) {
+                    // Cannot access system ClassLoader
+                }
+            }
+        }
+        classLoader = cl;
     }
 
     public KatLoader(
@@ -50,7 +74,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
         ClassLoader loader
     ) {
         service = klass;
-        classLoader = loader != null ? loader : ClassLoader.getSystemClassLoader();
+        classLoader = loader;
     }
 
     /**
@@ -148,7 +172,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
         }
 
         Class<?> clazz;
-        String klass = string(
+        String name = string(
             index, offset
         );
 
@@ -157,17 +181,17 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
 
         try {
             clazz = Class.forName(
-                klass, false, classLoader
+                name, false, classLoader
             );
         } catch (ClassNotFoundException e) {
             throw new Collapse(
-                service.getName() + ": Provider '" + klass + "' not found", e
+                service.getName() + ": Provider '" + name + "' not found", e
             );
         }
 
         if (!service.isAssignableFrom(clazz)) {
             throw new Collapse(
-                service.getName() + ": Provider '" + klass + "' not a subtype"
+                service.getName() + ": Provider '" + name + "' not a subtype"
             );
         }
 
@@ -177,7 +201,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
             );
         } catch (Throwable e) {
             throw new Collapse(
-                service.getName() + ": Provider '" + klass + "' could not be instantiated ", e
+                service.getName() + ": Provider '" + name + "' could not be instantiated ", e
             );
         }
     }

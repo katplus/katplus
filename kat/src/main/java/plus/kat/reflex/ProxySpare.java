@@ -50,10 +50,9 @@ public class ProxySpare extends Workman<Object> {
     public ProxySpare(
         @Nullable Embed embed,
         @NotNull Class klass,
-        @NotNull Supplier supplier,
-        @Nullable Provider provider
+        @NotNull Supplier supplier
     ) {
-        super(embed, klass, supplier, provider);
+        super(embed, klass, supplier);
     }
 
     @Override

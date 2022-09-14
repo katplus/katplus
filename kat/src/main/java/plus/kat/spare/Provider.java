@@ -21,13 +21,23 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.crash.*;
 
-import java.lang.reflect.Type;
-
 /**
  * @author kraity
  * @since 0.0.2
  */
 public interface Provider {
+    /**
+     * Loads all spare of this provider to the supplier
+     *
+     * @param supplier the specified supplier to be loaded
+     * @since 0.0.4
+     */
+    default void init(
+        @NotNull Supplier supplier
+    ) throws Throwable {
+        // Nothing
+    }
+
     /**
      * Returns {@link Spare} of the specified {@code klass}
      *
@@ -43,14 +53,14 @@ public interface Provider {
     /**
      * Returns {@link Spare} of the specified {@code klass}
      *
-     * @throws Collapse             The Provider signals to interrupt subsequent lookup
+     * @throws Collapse             The Provider signals to interrupt subsequent search
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Supplier#lookup(Class, CharSequence)
      * @see Supplier#search(Class, CharSequence)
-     * @since 0.0.3
+     * @since 0.0.4
      */
     @Nullable
-    default Spare<?> lookup(
+    default Spare<?> search(
         @Nullable Class<?> type,
         @NotNull String klass,
         @NotNull Supplier supplier

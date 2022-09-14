@@ -366,7 +366,7 @@ public class KatTest {
 
         // assert not null
         assertNotNull(
-            spare.getProvider()
+            spare.getSupplier()
         );
 
         assertEquals(

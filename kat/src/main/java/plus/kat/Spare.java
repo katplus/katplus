@@ -75,6 +75,12 @@ public interface Spare<K> extends Coder<K> {
     );
 
     /**
+     * Returns the supplier of spare
+     */
+    @NotNull
+    Supplier getSupplier();
+
+    /**
      * Returns the {@link Class} of {@link K}
      */
     @NotNull
@@ -87,16 +93,6 @@ public interface Spare<K> extends Coder<K> {
     Builder<? extends K> getBuilder(
         @Nullable Type type
     );
-
-    /**
-     * Returns the {@link Provider} of {@link Spare}
-     *
-     * @since 0.0.3
-     */
-    @Nullable
-    default Provider getProvider() {
-        return null;
-    }
 
     /**
      * If this {@link Spare} can create an instance,
@@ -1006,7 +1002,7 @@ public interface Spare<K> extends Coder<K> {
     static <T> Spare<T> lookup(
         @NotNull Class<T> klass
     ) {
-        return Cluster.INS.load(
+        return Cluster.INS.lookup(
             klass, Impl.INS
         );
     }
@@ -1016,7 +1012,7 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.1
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    class Cluster extends ConcurrentHashMap<Type, Spare<?>> implements Provider {
+    class Cluster extends ConcurrentHashMap<Type, Spare<?>> {
         /**
          * default cluster
          */
@@ -1083,8 +1079,17 @@ public interface Spare<K> extends Coder<K> {
                 PRO = new Provider[size];
 
                 int i = 0;
+                Provider pro;
                 while (loader.hasNext()) {
-                    PRO[i++] = loader.next();
+                    pro = loader.next();
+                    PRO[i++] = pro;
+                    try {
+                        pro.init(
+                            Impl.INS
+                        );
+                    } catch (Throwable e) {
+                        // Nothing
+                    }
                 }
             } catch (Exception e) {
                 throw new Error(
@@ -1094,12 +1099,12 @@ public interface Spare<K> extends Coder<K> {
         }
 
         /**
-         * Embeds {@link Spare} of the specified {@link Class}
+         * Returns {@link Spare} of the specified {@code klass}
          *
          * @throws NullPointerException If the specified {@code klass} is null
          */
         @Nullable
-        public <T> Spare<T> load(
+        public <T> Spare<T> lookup(
             @NotNull Class<T> klass,
             @NotNull Supplier supplier
         ) {
@@ -1125,22 +1130,6 @@ public interface Spare<K> extends Coder<K> {
                 }
             }
 
-            return (Spare<T>) lookup(
-                klass, supplier
-            );
-        }
-
-        /**
-         * Returns {@link Spare} of the specified {@code klass}
-         *
-         * @throws Collapse             The Provider signals to interrupt subsequent lookup
-         * @throws NullPointerException If the specified {@code klass} is null
-         */
-        @Nullable
-        public Spare<?> lookup(
-            @NotNull Class<?> klass,
-            @NotNull Supplier supplier
-        ) {
             // filter platform type
             String name = klass.getName();
             switch (name.charAt(0)) {
@@ -1179,11 +1168,10 @@ public interface Spare<K> extends Coder<K> {
                 }
                 case '[': {
                     if (klass.isArray()) {
-                        Spare<?> spare;
                         putIfAbsent(klass, spare =
                             new ArraySpare(klass)
                         );
-                        return spare;
+                        return (Spare<T>) spare;
                     }
                 }
             }
@@ -1200,13 +1188,10 @@ public interface Spare<K> extends Coder<K> {
             } else {
                 Class<?> clazz = embed.with();
                 if (clazz != Spare.class) {
-                    // spare of klass
-                    Spare<?> spare = null;
-
-                    // pointing to clazz?
+                    // Pointing to clazz?
                     if (!Spare.class.
                         isAssignableFrom(clazz)) {
-                        spare = load(
+                        spare = lookup(
                             clazz, supplier
                         );
                         if (spare != null) {
@@ -1221,7 +1206,7 @@ public interface Spare<K> extends Coder<K> {
                         // check for cache
                         if (spare != null ||
                             clazz.isInterface()) {
-                            return spare;
+                            return (Spare<T>) spare;
                         }
 
                         Constructor<?>[] cs = clazz
@@ -1248,8 +1233,6 @@ public interface Spare<K> extends Coder<K> {
                                     args[i] = klass;
                                 } else if (m == Embed.class) {
                                     args[i] = embed;
-                                } else if (m == Provider.class) {
-                                    args[i] = this;
                                 } else if (m == Supplier.class) {
                                     args[i] = supplier;
                                 } else if (m.isAnnotation()) {
@@ -1269,13 +1252,14 @@ public interface Spare<K> extends Coder<K> {
                     } catch (Exception e) {
                         // Nothing
                     }
-                    return spare;
+                    return (Spare<T>) spare;
                 }
 
                 if (klass.isInterface()) {
-                    return new ProxySpare(
-                        embed, klass, supplier, this
-                    );
+                    return (Spare<T>)
+                        new ProxySpare(
+                            embed, klass, supplier
+                        );
                 }
             }
 
@@ -1283,23 +1267,25 @@ public interface Spare<K> extends Coder<K> {
                 Class<?> sc = klass.getSuperclass();
                 if (sc == Enum.class) {
                     return new EnumSpare(
-                        embed, klass, supplier, this
+                        embed, klass, supplier
                     );
                 }
 
                 String sn = sc.getName();
                 if (sn.equals("java.lang.Record")) {
                     return new RecordSpare<>(
-                        embed, klass, supplier, this
+                        embed, klass, supplier
                     );
                 } else {
                     return new ReflectSpare<>(
-                        embed, klass, supplier, this
+                        embed, klass, supplier
                     );
                 }
             } catch (Exception e) {
-                return null;
+                // Nothing
             }
+
+            return null;
         }
 
         /**
@@ -1308,9 +1294,9 @@ public interface Spare<K> extends Coder<K> {
          * @throws NullPointerException If the specified {@code klass} is null
          */
         @Nullable
-        public Spare<?> onJava(
+        public <T> Spare<T> onJava(
             @NotNull String name,
-            @NotNull Class<?> klass
+            @NotNull Class<T> klass
         ) {
             // filter internal class
             int d = name.indexOf('$', 6);
@@ -1328,10 +1314,8 @@ public interface Spare<K> extends Coder<K> {
                     } else {
                         return null;
                     }
-                    this.put(
-                        klass, spare
-                    );
-                    return spare;
+                    this.put(klass, spare);
+                    return (Spare<T>) spare;
                 }
                 // java.nio
                 // java.net
@@ -1346,10 +1330,8 @@ public interface Spare<K> extends Coder<K> {
                         return null;
                     }
 
-                    this.put(
-                        klass, spare
-                    );
-                    return spare;
+                    this.put(klass, spare);
+                    return (Spare<T>) spare;
                 }
                 // java.time
                 case 't': {
@@ -1367,10 +1349,8 @@ public interface Spare<K> extends Coder<K> {
                         return null;
                     }
 
-                    this.put(
-                        klass, spare
-                    );
-                    return spare;
+                    this.put(klass, spare);
+                    return (Spare<T>) spare;
                 }
                 // java.util
                 case 'u': {
@@ -1397,10 +1377,8 @@ public interface Spare<K> extends Coder<K> {
                                 return null;
                             }
 
-                            this.put(
-                                klass, spare
-                            );
-                            return spare;
+                            this.put(klass, spare);
+                            return (Spare<T>) spare;
                         }
                         // java.util.concurrent.
                         case 20: {
@@ -1414,10 +1392,8 @@ public interface Spare<K> extends Coder<K> {
                                 return null;
                             }
 
-                            this.put(
-                                klass, spare
-                            );
-                            return spare;
+                            this.put(klass, spare);
+                            return (Spare<T>) spare;
                         }
                         // java.util.concurrent.atomic.
                         case 27: {
@@ -1431,10 +1407,8 @@ public interface Spare<K> extends Coder<K> {
                                 return null;
                             }
 
-                            this.put(
-                                klass, spare
-                            );
-                            return spare;
+                            this.put(klass, spare);
+                            return (Spare<T>) spare;
                         }
                         default: {
                             return null;
@@ -1445,6 +1419,14 @@ public interface Spare<K> extends Coder<K> {
                     return null;
                 }
             }
+        }
+
+        @Override
+        public String toString() {
+            return "plus.kat.Spare.Cluster@"
+                + Integer.toHexString(
+                System.identityHashCode(this)
+            );
         }
     }
 }

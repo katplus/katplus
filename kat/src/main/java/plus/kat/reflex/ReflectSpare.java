@@ -61,10 +61,9 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
     public ReflectSpare(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
-        @NotNull Supplier supplier,
-        @Nullable Provider provider
+        @NotNull Supplier supplier
     ) {
-        super(embed, klass, supplier, provider);
+        super(embed, klass, supplier);
     }
 
     @Override

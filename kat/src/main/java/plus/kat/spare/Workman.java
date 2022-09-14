@@ -43,13 +43,12 @@ import static plus.kat.utils.Reflect.LOOKUP;
  */
 public abstract class Workman<T> extends KatMap<Object, Object> implements Worker<T> {
 
-    protected Provider provider;
+    protected int flags;
     protected Supplier supplier;
 
     protected Node<T, ?>[] table;
     protected Node<T, ?> head, tail;
 
-    protected int flags;
     protected final String space;
     protected final Class<T> klass;
 
@@ -58,18 +57,16 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
         @NotNull Supplier supplier
     ) {
         this(
-            klass.getAnnotation(Embed.class), klass, supplier, null
+            klass.getAnnotation(Embed.class), klass, supplier
         );
     }
 
     protected Workman(
         @Nullable Embed embed,
         @NotNull Class<T> klass,
-        @NotNull Supplier supplier,
-        @Nullable Provider provider
+        @NotNull Supplier supplier
     ) {
         this.klass = klass;
-        this.provider = provider;
         this.supplier = supplier;
 
         if (embed != null) {
@@ -130,8 +127,8 @@ public abstract class Workman<T> extends KatMap<Object, Object> implements Worke
     }
 
     @Override
-    public Provider getProvider() {
-        return provider;
+    public Supplier getSupplier() {
+        return supplier;
     }
 
     @Override

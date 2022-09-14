@@ -60,6 +60,11 @@ public class BitSetSpare implements Spare<BitSet> {
     }
 
     @Override
+    public Supplier getSupplier() {
+        return Supplier.ins();
+    }
+
+    @Override
     public Builder<BitSet> getBuilder(
         @Nullable Type type
     ) {
