@@ -36,6 +36,7 @@ public interface Kat {
      * Returns the space of {@link Kat}
      *
      * @return {@link CharSequence}
+     * @see Spare#getSpace()
      * @see Chan#set(CharSequence, CharSequence, Kat)
      */
     @NotNull

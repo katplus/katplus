@@ -37,13 +37,20 @@ import static plus.kat.spare.Parser.Group;
  */
 public interface Spare<K> extends Coder<K> {
     /**
-     * Returns the space of {@link Spare}
+     * Returns the space of {@link K}.
+     * Generally, it is class name, or custom name
      */
     @NotNull
     CharSequence getSpace();
 
     /**
-     * Returns the flag of {@link Spare}
+     * Returns the flag of {@link K}
+     *
+     * <pre>{@code
+     *  null  ->  the K is a attribute
+     *  true  ->  the K is a bean object
+     *  false ->  the K is a list or array
+     * }</pre>
      */
     @Nullable
     Boolean getFlag();
@@ -60,7 +67,7 @@ public interface Spare<K> extends Coder<K> {
     );
 
     /**
-     * Returns the supplier of spare
+     * Returns the supplier of {@link K}
      */
     @NotNull
     Supplier getSupplier();
@@ -553,12 +560,17 @@ public interface Spare<K> extends Coder<K> {
      * @return {@link K} or {@code null}
      */
     @Nullable
+    @SuppressWarnings("unchecked")
     default K cast(
         @Nullable Object data,
         @NotNull Supplier supplier
     ) {
         if (data == null) {
             return apply();
+        }
+
+        if (getType().isInstance(data)) {
+            return (K) data;
         }
 
         if (data instanceof CharSequence) {
