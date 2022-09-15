@@ -20,9 +20,14 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+
+import static plus.kat.kernel.Chain.Buffer.INS;
 
 /**
  * @author kraity
@@ -51,6 +56,28 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
             return (ByteBuffer) data;
         }
 
+        if (data instanceof byte[]) {
+            return ByteBuffer.wrap(
+                (byte[]) data
+            );
+        }
+
+        if (data instanceof Chain) {
+            return ByteBuffer.wrap(
+                ((Chain) data).copyBytes()
+            );
+        }
+
+        if (data instanceof String) {
+            return ByteBuffer.wrap(
+                Base64.RFC2045.INS.decode(
+                    ((String) data).getBytes(
+                        StandardCharsets.US_ASCII
+                    )
+                )
+            );
+        }
+
         return null;
     }
 
@@ -69,19 +96,24 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
+        int rem;
+        byte[] cache = null;
         ByteBuffer buf = (ByteBuffer) value;
-        if (buf.hasArray()) {
-            flow.emit(
-                buf.array()
-            );
-        } else {
-            int i = buf.position();
-            int o = i + buf.limit();
-            while (i < o) {
-                flow.emit(
-                    buf.get(i++)
-                );
+
+        while ((rem = buf.remaining()) > 0) {
+            if (cache == null) {
+                if (rem > 1024) {
+                    cache = INS.alloc();
+                } else {
+                    cache = new byte[Math.min(rem, 256)];
+                }
             }
+            int len = Math.min(
+                rem, cache.length
+            );
+            buf.get(cache, 0, len);
+            flow.emit(cache, 0, len);
         }
+        INS.push(cache);
     }
 }

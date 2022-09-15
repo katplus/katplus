@@ -52,7 +52,7 @@ public class StringBuilderSpare extends Property<StringBuilder> {
         @NotNull Supplier supplier
     ) {
         if (data == null) {
-            return new StringBuilder();
+            return apply();
         }
 
         if (data instanceof CharSequence) {

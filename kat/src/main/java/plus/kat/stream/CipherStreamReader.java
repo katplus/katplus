@@ -113,7 +113,7 @@ public class CipherStreamReader extends AbstractReader {
                 cipher.doFinal();
             }
         } catch (Exception e) {
-            // NOOP
+            // Nothing
         } finally {
             cache = null;
             value = null;

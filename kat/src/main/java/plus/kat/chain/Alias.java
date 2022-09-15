@@ -254,7 +254,7 @@ public final class Alias extends Chain {
         public void push(
             @NotNull byte[] it
         ) {
-            // NOOP
+            // Nothing
         }
 
         @NotNull

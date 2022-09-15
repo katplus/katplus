@@ -38,6 +38,11 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
     }
 
     @Override
+    public AtomicInteger apply() {
+        return new AtomicInteger();
+    }
+
+    @Override
     public String getSpace() {
         return "AtomicInteger";
     }
@@ -57,7 +62,7 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
         @NotNull Supplier supplier
     ) {
         if (data == null) {
-            return null;
+            return apply();
         }
 
         if (data instanceof AtomicInteger) {

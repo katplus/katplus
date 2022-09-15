@@ -72,7 +72,6 @@ public abstract class Property<T> implements Spare<T> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public T apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
@@ -83,45 +82,40 @@ public abstract class Property<T> implements Spare<T> {
             );
         }
 
-        Object val = spoiler.getValue();
-        if (klass.isInstance(val)) {
-            return (T) val;
-        }
-
-        T target = cast(
-            val, supplier
+        Object obj = spoiler
+            .getValue();
+        T value = cast(
+            obj, supplier
         );
-        if (target != null) {
-            return target;
+
+        if (value != null) {
+            return value;
         }
 
         throw new Collapse(
             "Cannot convert the type from "
-                + val.getClass() + " to " + klass
+                + obj + " to " + klass
         );
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public T apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
-        Object val = resultSet.getObject(1);
-        if (klass.isInstance(val)) {
-            return (T) val;
-        }
-
-        T target = cast(
-            val, supplier
+        Object obj = resultSet
+            .getObject(1);
+        T value = cast(
+            obj, supplier
         );
-        if (target != null) {
-            return target;
+
+        if (value != null) {
+            return value;
         }
 
         throw new SQLCrash(
             "Cannot convert the type from "
-                + val.getClass() + " to " + klass
+                + obj + " to " + klass
         );
     }
 

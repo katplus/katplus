@@ -61,8 +61,32 @@ public class ObjectSpare extends Property<Object> {
     @Override
     public Object read(
         @NotNull Flag flag,
+        @NotNull Alias alias
+    ) throws IOException {
+        Type type = alias.getType();
+        if (type != null && type != Object.class) {
+            Spare<?> spare = supplier.lookup(type, null);
+            if (spare != null) {
+                return spare.read(flag, alias);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Object read(
+        @NotNull Flag flag,
         @NotNull Value value
-    ) {
+    ) throws IOException {
+        Type type = value.getType();
+        if (type != null && type != Object.class) {
+            Spare<?> spare = supplier.lookup(type, null);
+            if (spare == null) {
+                return null;
+            }
+            return spare.read(flag, value);
+        }
+
         int length = value.length();
 
         if (length == 0) {
@@ -121,22 +145,14 @@ public class ObjectSpare extends Property<Object> {
 
     @Override
     public void write(
-        Chan chan,
-        Object value
+        @NotNull Chan chan,
+        @NotNull Object value
     ) throws IOException {
-        if (value instanceof Map) {
-            for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
-                chan.set(
-                    entry.getKey().toString(),
-                    entry.getValue()
-                );
-            }
-        } else if (value instanceof Iterable) {
-            for (Object entry : (Iterable<?>) value) {
-                chan.set(
-                    null, entry
-                );
-            }
+        Spare<?> spare = supplier.lookup(
+            value.getClass()
+        );
+        if (spare != null) {
+            spare.write(chan, value);
         }
     }
 
@@ -145,43 +161,11 @@ public class ObjectSpare extends Property<Object> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        if (value instanceof Number) {
-            if (value instanceof Integer) {
-                flow.addInt(
-                    (int) value
-                );
-            } else if (value instanceof Long) {
-                flow.addLong(
-                    (long) value
-                );
-            } else {
-                flow.addChars(
-                    value.toString()
-                );
-            }
-        } else if (value instanceof Boolean) {
-            if ((boolean) value) {
-                flow.addByte((byte) 't');
-                flow.addByte((byte) 'r');
-                flow.addByte((byte) 'u');
-                flow.addByte((byte) 'e');
-            } else {
-                flow.addByte((byte) 'f');
-                flow.addByte((byte) 'a');
-                flow.addByte((byte) 'l');
-                flow.addByte((byte) 's');
-                flow.addByte((byte) 'e');
-            }
-        } else {
-            if (flow.isFlag(Flag.UNICODE)) {
-                flow.text(
-                    value.toString()
-                );
-            } else {
-                flow.emit(
-                    value.toString()
-                );
-            }
+        Spare<?> spare = supplier.lookup(
+            value.getClass()
+        );
+        if (spare != null) {
+            spare.write(flow, value);
         }
     }
 

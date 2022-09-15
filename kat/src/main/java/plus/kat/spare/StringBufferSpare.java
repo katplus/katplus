@@ -52,7 +52,7 @@ public class StringBufferSpare extends Property<StringBuffer> {
         @NotNull Supplier supplier
     ) {
         if (data == null) {
-            return new StringBuffer();
+            return apply();
         }
 
         if (data instanceof CharSequence) {

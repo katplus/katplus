@@ -97,15 +97,6 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
     }
 
     @Override
-    public K apply() {
-        K[] e = enums;
-        if (e != null) {
-            return e[0];
-        }
-        return null;
-    }
-
-    @Override
     public String getSpace() {
         return space;
     }

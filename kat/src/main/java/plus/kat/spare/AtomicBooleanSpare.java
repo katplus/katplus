@@ -38,6 +38,11 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Seria
     }
 
     @Override
+    public AtomicBoolean apply() {
+        return new AtomicBoolean();
+    }
+
+    @Override
     public String getSpace() {
         return "AtomicBoolean";
     }
@@ -56,7 +61,7 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Seria
         @NotNull Supplier supplier
     ) {
         if (data == null) {
-            return null;
+            return apply();
         }
 
         if (data instanceof AtomicBoolean) {

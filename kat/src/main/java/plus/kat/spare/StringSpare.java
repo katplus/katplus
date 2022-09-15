@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 
@@ -60,7 +61,29 @@ public class StringSpare extends Property<String> {
         @Nullable Object data,
         @NotNull Supplier supplier
     ) {
-        return data == null ? "" : data.toString();
+        if (data instanceof String) {
+            return (String) data;
+        }
+
+        if (data == null) {
+            return "";
+        }
+
+        if (data instanceof char[]) {
+            return new String(
+                (char[]) data
+            );
+        }
+
+        if (data instanceof byte[]) {
+            return Binary.ascii(
+                Base64.REC4648.INS.encode(
+                    (byte[]) data
+                )
+            );
+        }
+
+        return data.toString();
     }
 
     @Override

@@ -61,7 +61,7 @@ public class InputStreamReader extends AbstractReader {
             );
             value.close();
         } catch (Exception e) {
-            // NOOP
+            // Nothing
         } finally {
             cache = null;
             value = null;

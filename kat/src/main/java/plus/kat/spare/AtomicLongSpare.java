@@ -38,6 +38,11 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializer 
     }
 
     @Override
+    public AtomicLong apply() {
+        return new AtomicLong();
+    }
+
+    @Override
     public String getSpace() {
         return "AtomicLong";
     }
@@ -57,7 +62,7 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializer 
         @NotNull Supplier supplier
     ) {
         if (data == null) {
-            return null;
+            return apply();
         }
 
         if (data instanceof AtomicLong) {

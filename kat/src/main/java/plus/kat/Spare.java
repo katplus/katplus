@@ -109,7 +109,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull Spoiler spoiler
     ) throws Collapse {
         return apply(
-            spoiler, INS
+            spoiler, getSupplier()
         );
     }
 
@@ -163,7 +163,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull ResultSet result
     ) throws SQLException {
         return apply(
-            INS, result
+            getSupplier(), result
         );
     }
 
@@ -529,7 +529,7 @@ public interface Spare<K> extends Coder<K> {
         @Nullable Object data
     ) {
         return cast(
-            data, INS
+            data, getSupplier()
         );
     }
 
@@ -557,11 +557,16 @@ public interface Spare<K> extends Coder<K> {
         @Nullable Object data,
         @NotNull Supplier supplier
     ) {
+        if (data == null) {
+            return apply();
+        }
+
         if (data instanceof CharSequence) {
             return Casting.cast(
                 this, (CharSequence) data, null, supplier
             );
         }
+
         return null;
     }
 
@@ -578,7 +583,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull Spoiler spoiler
     ) {
         return update(
-            entity, spoiler, INS
+            entity, spoiler, getSupplier()
         );
     }
 
@@ -721,7 +726,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull ResultSet resultSet
     ) throws SQLException {
         return update(
-            entity, INS, resultSet
+            entity, getSupplier(), resultSet
         );
     }
 

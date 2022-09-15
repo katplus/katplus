@@ -508,7 +508,7 @@ public final class Space extends Chain implements Type {
         public void push(
             @NotNull byte[] it
         ) {
-            // NOOP
+            // Nothing
         }
 
         @NotNull

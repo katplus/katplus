@@ -120,7 +120,7 @@ public class CipherByteReader extends AbstractReader {
         if (offset != -1) try {
             cipher.doFinal();
         } catch (Exception e) {
-            // NOOP
+            // Nothing
         } finally {
             offset = -1;
             cipher = null;

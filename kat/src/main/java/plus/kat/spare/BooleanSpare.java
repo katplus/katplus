@@ -40,7 +40,7 @@ public class BooleanSpare extends Property<Boolean> implements Serializer {
 
     @Override
     public Boolean apply() {
-        return false;
+        return Boolean.FALSE;
     }
 
     @Override

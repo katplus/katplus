@@ -24,6 +24,7 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author kraity
@@ -65,7 +66,19 @@ public class ByteArraySpare extends Property<byte[]> {
             return (byte[]) data;
         }
 
-        return null;
+        if (data instanceof Chain) {
+            return ((Chain) data).fromMime();
+        }
+
+        if (data instanceof String) {
+            return Base64.RFC2045.INS.decode(
+                ((String) data).getBytes(
+                    StandardCharsets.US_ASCII
+                )
+            );
+        }
+
+        return Chain.EMPTY_BYTES;
     }
 
     @Override

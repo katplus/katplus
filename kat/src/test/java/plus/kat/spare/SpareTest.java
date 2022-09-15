@@ -543,6 +543,28 @@ public class SpareTest {
     }
 
     @Test
+    public void test_bytes() {
+        ByteArraySpare spare = ByteArraySpare.INSTANCE;
+        assertNotNull(spare.cast(null));
+        assertEquals(0, spare.cast(null).length);
+
+        byte[] bytes = "kraity".getBytes();
+        assertSame(bytes, spare.cast(bytes));
+        assertArrayEquals(bytes, spare.cast("a3JhaXR5"));
+    }
+
+    @Test
+    public void test_string() {
+        StringSpare spare = StringSpare.INSTANCE;
+        assertEquals("", spare.cast(null));
+        assertEquals("1", spare.cast(1));
+        assertEquals("143", spare.cast(143L));
+        assertEquals("kraity", spare.cast("kraity"));
+        assertEquals("a3JhaXR5", spare.cast("kraity".getBytes()));
+        assertEquals("kraity", spare.cast("kraity".toCharArray()));
+    }
+
+    @Test
     public void test_string_buffer() {
         StringBufferSpare spare = StringBufferSpare.INSTANCE;
 

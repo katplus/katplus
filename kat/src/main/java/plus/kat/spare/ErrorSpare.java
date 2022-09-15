@@ -106,7 +106,7 @@ public class ErrorSpare extends Property<Exception> {
         public void onCreate(
             @NotNull Alias alias
         ) {
-            // NOOP
+            // Nothing
         }
 
         @Override
@@ -131,7 +131,7 @@ public class ErrorSpare extends Property<Exception> {
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) {
-            // NOOP
+            // Nothing
         }
 
         @Override

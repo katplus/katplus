@@ -149,7 +149,7 @@ public class BitSetSpare implements Spare<BitSet> {
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) {
-            // NOOP
+            // Nothing
         }
 
         @Override
