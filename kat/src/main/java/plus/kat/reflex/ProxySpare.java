@@ -24,28 +24,21 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
-import plus.kat.entity.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
 import java.lang.reflect.*;
+import java.util.HashMap;
 
 /**
  * @author kraity
  * @since 0.0.3
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class ProxySpare extends Workman<Object> {
+public class ProxySpare extends AbstractSpare<Object> {
 
     private Class<?> proxy;
     private Constructor<?> cons;
-
-    public ProxySpare(
-        @NotNull Class klass,
-        @NotNull Supplier supplier
-    ) {
-        super(klass, supplier);
-    }
 
     public ProxySpare(
         @Nullable Embed embed,
@@ -53,10 +46,6 @@ public class ProxySpare extends Workman<Object> {
         @NotNull Supplier supplier
     ) {
         super(embed, klass, supplier);
-    }
-
-    @Override
-    protected void initialize() {
         onMethods(
             klass.getMethods()
         );
@@ -99,23 +88,6 @@ public class ProxySpare extends Workman<Object> {
         }
     }
 
-    @Override
-    public Setter set(
-        @NotNull Object alias
-    ) {
-        return (Setter) getOrDefault(alias, null);
-    }
-
-    @Override
-    public Setter set(
-        @NotNull int index,
-        @NotNull Alias alias
-    ) {
-        return (Setter) getOrDefault(
-            alias.isEmpty() ? index : alias, null
-        );
-    }
-
     protected void onMethods(
         @NotNull Method[] methods
     ) {
@@ -147,13 +119,13 @@ public class ProxySpare extends Workman<Object> {
                     id = Binary.ascii(name);
                 }
 
-                Task node = new Task(
+                Handle node = new Handle(
                     method, expose, this
                 );
 
                 if (count != 0) {
                     if (expose == null) {
-                        super.put(
+                        setProperty(
                             id, node
                         );
                         continue;
@@ -161,26 +133,23 @@ public class ProxySpare extends Workman<Object> {
 
                     String[] keys = expose.value();
                     if (keys.length == 0) {
-                        super.put(
+                        setProperty(
                             id, node
                         );
                         continue;
                     }
 
                     for (String alias : expose.value()) {
-                        // check empty
                         if (!alias.isEmpty()) {
-                            super.put(
+                            setProperty(
                                 alias, node
                             );
                         }
                     }
                 } else {
-                    super.putIfAbsent(
-                        id, node
-                    );
+                    setup(false, id, node);
                     if (expose == null) {
-                        display(
+                        setAttribute(
                             id, node
                         );
                         continue;
@@ -189,14 +158,13 @@ public class ProxySpare extends Workman<Object> {
                     if ((expose.mode() & Expose.HIDDEN) == 0) {
                         String[] keys = expose.value();
                         if (keys.length == 0) {
-                            display(
+                            setAttribute(
                                 id, node
                             );
                         } else {
-                            // register all aliases
-                            for (int i = 0; i < keys.length; i++) {
-                                display(
-                                    keys[i], i == 0 ? node : new Task(node)
+                            for (String key : keys) {
+                                setAttribute(
+                                    key, node
                                 );
                             }
                         }
@@ -211,33 +179,36 @@ public class ProxySpare extends Workman<Object> {
      * @author kraity
      * @since 0.0.3
      */
-    public static class Task extends Node<Object, Object> {
+    public static class Handle extends Element<Object, Object> {
 
         final String alias;
         final Method method;
         final ProxySpare spare;
 
-        public Task(
-            Task node
+        public Handle(
+            Handle elem
         ) {
-            super(node);
-            spare = node.spare;
-            alias = node.alias;
-            method = node.method;
+            super(elem);
+            spare = elem.spare;
+            alias = elem.alias;
+            method = elem.method;
         }
 
-        public Task(
+        public Handle(
             Method method,
             Expose expose,
             ProxySpare spare
         ) {
-            super(expose, method, spare.supplier);
+            super(expose);
             this.spare = spare;
             this.method = method;
 
             if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
+            setup(method);
+            coder = spare.supplier
+                .assign(expose, this);
             String name = method.getName();
             if (!name.startsWith("set")) {
                 alias = name;
@@ -300,13 +271,18 @@ public class ProxySpare extends Workman<Object> {
             }
             return false;
         }
+
+        @Override
+        public Element<Object, Object> clone() {
+            return new Handle(this);
+        }
     }
 
     /**
      * @author kraity
      * @since 0.0.3
      */
-    public static class Explorer extends KatMap<Object, Object> implements InvocationHandler {
+    public static class Explorer extends HashMap<Object, Object> implements InvocationHandler {
 
         @Override
         public Object invoke(

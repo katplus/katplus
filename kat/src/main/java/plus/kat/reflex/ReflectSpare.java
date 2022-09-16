@@ -28,7 +28,6 @@ import plus.kat.*;
 import plus.kat.anno.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
@@ -39,24 +38,17 @@ import static plus.kat.utils.Reflect.LOOKUP;
  * @author kraity
  * @since 0.0.2
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
-public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
+@SuppressWarnings("unchecked")
+public class ReflectSpare<T> extends AbstractSpare<T> {
 
     private MethodHandle handle;
     private Constructor<T> builder;
 
-    private int edge;
-    private Class<?> master;
-
+    private Class<?> cxt;
     private Class<?>[] args;
-    private KatMap<Object, Target> params;
 
-    public ReflectSpare(
-        @NotNull Class<T> klass,
-        @NotNull Supplier supplier
-    ) {
-        super(klass, supplier);
-    }
+    private boolean marker;
+    private boolean variable;
 
     public ReflectSpare(
         @Nullable Embed embed,
@@ -64,10 +56,6 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
         @NotNull Supplier supplier
     ) {
         super(embed, klass, supplier);
-    }
-
-    @Override
-    protected void initialize() {
         Class<?> clazz = klass;
         onConstructors(
             clazz.getDeclaredConstructors()
@@ -131,7 +119,11 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
 
         int i = 0, flag = 0;
         Class<?>[] as = args;
-        for (; i < as.length; i++) {
+
+        int count = as.length;
+        if (marker) count -= 2;
+
+        for (; i < count; i++) {
             if (data[i] == null) {
                 flag |= (1 << i);
                 Class<?> c = as[i];
@@ -141,8 +133,7 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
             }
         }
 
-        if (as.length !=
-            data.length) {
+        if (marker) {
             data[i] = flag;
         }
 
@@ -161,7 +152,8 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
         @NotNull Supplier supplier
     ) throws Collapse {
         try {
-            if (params == null) {
+            Class<?>[] as = args;
+            if (as == null) {
                 T bean = apply(
                     Alias.EMPTY
                 );
@@ -171,8 +163,8 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                 return bean;
             }
 
-            if (size() == 0 && master == null) {
-                Object[] group = new Object[args.length];
+            if (cxt == null) {
+                Object[] group = new Object[as.length];
                 update(
                     group, spoiler, supplier
                 );
@@ -199,7 +191,8 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
         @NotNull ResultSet resultSet
     ) throws SQLException {
         try {
-            if (params == null) {
+            Class<?>[] as = args;
+            if (as == null) {
                 T bean = apply(
                     Alias.EMPTY
                 );
@@ -209,8 +202,8 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                 return bean;
             }
 
-            if (size() == 0 && master == null) {
-                Object[] group = new Object[args.length];
+            if (cxt == null) {
+                Object[] group = new Object[as.length];
                 update(
                     group, supplier, resultSet
                 );
@@ -235,61 +228,22 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
     public Builder<T> getBuilder(
         @Nullable Type type
     ) {
-        if (params == null) {
+        Class<?>[] as = args;
+        if (as == null) {
             return new Builder0<>(this);
         }
 
-        Class<?> main = master;
-        int size = args.length + edge;
+        Class<?> cls = cxt;
+        int size = as.length;
 
-        if (main == null && size() == 0) {
+        if (cls == null && !variable) {
             return new Builder1<>(
-                this, new Object[size]
+                new Object[size], this
             );
         }
 
         return new Builder2<>(
-            this, new Object[size], main
-        );
-    }
-
-    @Override
-    public Target tag(
-        Object alias
-    ) {
-        if (params == null) {
-            return null;
-        }
-        return params.get(alias);
-    }
-
-    @Override
-    public Target tag(
-        @NotNull int index,
-        @NotNull Alias alias
-    ) {
-        if (params == null) {
-            return null;
-        }
-        return params.get(
-            alias.isEmpty() ? index : alias
-        );
-    }
-
-    @Override
-    public Setter set(
-        @NotNull Object alias
-    ) {
-        return (Setter) getOrDefault(alias, null);
-    }
-
-    @Override
-    public Setter set(
-        @NotNull int index,
-        @NotNull Alias alias
-    ) {
-        return (Setter) getOrDefault(
-            alias.isEmpty() ? index : alias, null
+            cls, new Object[size], this
         );
     }
 
@@ -310,7 +264,7 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     continue;
                 }
 
-                Edge<T> node;
+                Accessor<T> member;
                 Expose expose = field
                     .getAnnotation(
                         Expose.class
@@ -334,71 +288,64 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
 
                 if (expose == null) {
                     name = field.getName();
-                    if (containsKey(name)) {
-                        continue;
+                    if (getProperty(name) == null) {
+                        variable = true;
+                        member = new Accessor<>(
+                            null, field, supplier
+                        );
+                        setup(
+                            grade, name, member
+                        );
+                        setProperty(
+                            name, member
+                        );
                     }
-
-                    node = new Edge<>(
-                        null, field, supplier
-                    );
-                    super.put(
-                        name, node
-                    );
-                    display(
-                        grade, name, node
-                    );
                     continue;
-                } else {
-                    keys = expose.value();
-                    if (keys.length != 0) {
-                        name = keys[0];
-                    } else {
-                        name = field.getName();
-                    }
-
-                    if (containsKey(name)) {
-                        continue;
-                    }
-
-                    node = new Edge<>(
-                        expose, field, supplier
-                    );
                 }
 
+                keys = expose.value();
+                if (keys.length != 0) {
+                    name = keys[0];
+                } else {
+                    name = field.getName();
+                }
+
+                if (getProperty(name) != null) {
+                    continue;
+                }
+
+                variable = true;
+                member = new Accessor<>(
+                    expose, field, supplier
+                );
+
                 if (direct) {
-                    int i = node.getIndex();
-                    if (i >= 0) {
-                        super.putIfAbsent(i, node);
+                    if (member.index >= 0) {
+                        setProperty(
+                            member.index, member
+                        );
                     }
                 }
 
                 if (keys.length == 0) {
-                    super.put(
-                        name, node
+                    setProperty(
+                        name, member
                     );
-                    if ((expose.mode() &
-                        Expose.HIDDEN) == 0) {
-                        display(
-                            grade, name, node
-                        );
-                    }
                 } else {
-                    // register only the first alias
-                    if ((expose.mode() &
-                        Expose.HIDDEN) == 0) {
-                        display(
-                            grade, name, node
-                        );
-                    }
-
                     for (String alias : keys) {
-                        // check empty
                         if (!alias.isEmpty()) {
-                            super.put(
-                                alias, node
+                            setProperty(
+                                alias, member
                             );
                         }
                     }
+                }
+
+                if ((expose.mode() &
+                    Expose.HIDDEN) == 0) {
+                    setup(
+                        grade, name, member
+                    );
                 }
             } catch (Exception e) {
                 // Nothing
@@ -429,7 +376,7 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     continue;
                 }
 
-                Edge<T> node;
+                Accessor<T> member;
                 Expose expose = method
                     .getAnnotation(
                         Expose.class
@@ -449,42 +396,42 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                     String[] keys = expose.value();
                     if (keys.length != 0) {
                         if (count == 0) {
-                            if (contains(keys[0])) {
+                            if (getAttribute(keys[0]) != null) {
                                 continue;
                             }
 
-                            node = new Edge<>(
+                            member = new Accessor<>(
                                 expose, method, supplier
                             );
 
                             // register all aliases
-                            for (int i = 0; i < keys.length; i++) {
-                                display(
-                                    grade, keys[i],
-                                    i == 0 ? node : new Edge<>(node)
+                            for (String key : keys) {
+                                setup(
+                                    grade, key, member
                                 );
                             }
                         } else {
-                            if (containsKey(keys[0])) {
+                            if (getProperty(keys[0]) != null) {
                                 continue;
                             }
 
-                            node = new Edge<>(
+                            variable = true;
+                            member = new Accessor<>(
                                 expose, method, supplier
                             );
 
                             if (direct) {
-                                int i = node.getIndex();
-                                if (i >= 0) {
-                                    super.putIfAbsent(i, node);
+                                if (member.index >= 0) {
+                                    setProperty(
+                                        member.index, member
+                                    );
                                 }
                             }
 
                             for (String alias : keys) {
-                                // check empty
                                 if (!alias.isEmpty()) {
-                                    super.put(
-                                        alias, node
+                                    setProperty(
+                                        alias, member
                                     );
                                 }
                             }
@@ -500,34 +447,30 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
                 }
 
                 if (count == 0) {
-                    String key = Binary
-                        .ascii(name);
-                    if (contains(key)) {
-                        continue;
+                    String key = Binary.ascii(name);
+                    if (getAttribute(key) == null) {
+                        setup(
+                            grade, key, new Accessor<>(
+                                expose, method, supplier
+                            )
+                        );
                     }
-
-                    display(
-                        grade, key, new Edge<>(
-                            expose, method, supplier
-                        )
-                    );
                 } else {
-                    Alias key = Binary
-                        .alias(name);
-                    if (containsKey(key)) {
-                        continue;
-                    }
+                    Alias key = Binary.alias(name);
+                    if (getProperty(key) == null) {
+                        variable = true;
+                        setProperty(
+                            key, member = new Accessor<>(
+                                expose, method, supplier
+                            )
+                        );
 
-                    super.put(
-                        key, node = new Edge<>(
-                            expose, method, supplier
-                        )
-                    );
-
-                    if (direct) {
-                        int i = node.getIndex();
-                        if (i >= 0) {
-                            super.putIfAbsent(i, node);
+                        if (direct) {
+                            if (member.index >= 0) {
+                                setProperty(
+                                    member.index, member
+                                );
+                            }
                         }
                     }
                 }
@@ -565,64 +508,49 @@ public class ReflectSpare<T> extends Workman<T> implements Maker<T> {
             if (count == 0) {
                 handle = LOOKUP.unreflectConstructor(b);
             } else {
-                params = new KatMap<>();
                 builder = (Constructor<T>) b;
-
                 args = b.getParameterTypes();
                 if ($ != null) {
                     int i = $.getParameterCount();
                     if (i + 2 == count && args[i] == int.class &&
                         "kotlin.jvm.internal.DefaultConstructorMarker".equals(args[i + 1].getName())) {
                         b = $;
-                        edge = 2;
-                        args = $.getParameterTypes();
+                        count -= 2;
+                        marker = true;
                     }
                 }
 
                 Type[] ts = b.getGenericParameterTypes();
                 Annotation[][] as = b.getParameterAnnotations();
 
-                int i = 0, j = as.length - args.length;
+                int i = 0, j = as.length - count;
                 Class<?> declaringClass = klass.getDeclaringClass();
 
                 if (declaringClass != null &&
                     (klass.getModifiers() & Modifier.STATIC) == 0) {
                     if (declaringClass == args[0]) {
                         i++;
-                        master = declaringClass;
+                        cxt = declaringClass;
                     }
                 }
 
-                for (; i < args.length; i++) {
-                    Item item = new Item(i);
-                    item.setRawType(ts[i]);
-
-                    Class<?> type = args[i];
-                    if (type.isPrimitive()) {
-                        type = Reflect.wrap(type);
-                    }
-
-                    item.setType(type);
+                for (; i < count; i++) {
                     int k = i + j;
-                    item.setAnnotations(as[k]);
-
-                    Expose expose = item
-                        .getAnnotation(Expose.class);
-                    item.setCoder(
-                        supplier.assign(
-                            expose, item
-                        )
+                    Argument arg = new Argument(
+                        i, ts[i], args[i], supplier, as[k]
                     );
 
+                    Expose expose = arg
+                        .annotate(Expose.class);
                     if (expose == null) {
-                        params.put(
-                            "arg" + k, item
+                        setArgument(
+                            "arg" + k, arg
                         );
                     } else {
                         String[] v = expose.value();
                         for (String alias : v) {
-                            params.put(
-                                alias, item
+                            setArgument(
+                                alias, arg
                             );
                         }
                     }

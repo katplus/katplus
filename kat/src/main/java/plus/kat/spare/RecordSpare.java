@@ -20,7 +20,6 @@ import plus.kat.anno.*;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 
 import java.lang.reflect.*;
 import java.sql.ResultSet;
@@ -30,17 +29,11 @@ import java.sql.SQLException;
  * @author kraity
  * @since 0.0.2
  */
-public class RecordSpare<T> extends Workman<T> {
+@SuppressWarnings("unchecked")
+public class RecordSpare<T> extends AbstractSpare<T> {
 
     private int width;
     private Constructor<T> ctor;
-
-    public RecordSpare(
-        @NotNull Class<T> klass,
-        @NotNull Supplier supplier
-    ) {
-        super(klass, supplier);
-    }
 
     public RecordSpare(
         @Nullable Embed embed,
@@ -48,10 +41,6 @@ public class RecordSpare<T> extends Workman<T> {
         @NotNull Supplier supplier
     ) {
         super(embed, klass, supplier);
-    }
-
-    @Override
-    protected void initialize() {
         onFields(
             klass.getDeclaredFields()
         );
@@ -134,20 +123,10 @@ public class RecordSpare<T> extends Workman<T> {
     }
 
     @Override
-    public Target tag(
-        Object alias
+    public Member<T, ?> getProperty(
+        @NotNull Object name
     ) {
-        return (Target) getOrDefault(alias, null);
-    }
-
-    @Override
-    public Target tag(
-        @NotNull int index,
-        @NotNull Alias alias
-    ) {
-        return (Target) getOrDefault(
-            alias.isEmpty() ? index : alias, null
-        );
+        return null;
     }
 
     @Override
@@ -155,7 +134,7 @@ public class RecordSpare<T> extends Workman<T> {
         @Nullable Type type
     ) {
         return new Builder1<>(
-            this, new Object[width]
+            new Object[width], this
         );
     }
 
@@ -172,28 +151,26 @@ public class RecordSpare<T> extends Workman<T> {
                 Expose e1 = field
                     .getAnnotation(Expose.class);
 
-                Item item = new Item(width++);
-                item.setField(field);
-                item.setCoder(
-                    supplier.assign(e1, item)
+                Argument arg = new Argument(
+                    width++, e1, field, supplier
                 );
 
                 String name = field.getName();
                 if (e1 == null) {
-                    super.put(
-                        name, item
+                    setArgument(
+                        name, arg
                     );
                 } else {
                     String[] keys = e1.value();
                     if (keys.length == 0) {
-                        super.put(
-                            name, item
+                        setArgument(
+                            name, arg
                         );
                     } else {
                         name = keys[0];
                         for (String key : keys) {
-                            super.put(
-                                key, item
+                            setArgument(
+                                key, arg
                             );
                         }
                     }
@@ -203,7 +180,7 @@ public class RecordSpare<T> extends Workman<T> {
                     }
                 }
 
-                Edge<T> node;
+                Accessor<T> accessor;
                 Method method = klass.getMethod(
                     field.getName()
                 );
@@ -212,26 +189,26 @@ public class RecordSpare<T> extends Workman<T> {
                     .getAnnotation(Expose.class);
 
                 if (e2 == null) {
-                    node = new Edge<>(
+                    accessor = new Accessor<>(
                         e1, method, supplier
                     );
-                    display(
-                        name, node
+                    setAttribute(
+                        name, accessor
                     );
                 } else if ((e2.mode() &
                     Expose.HIDDEN) == 0) {
-                    node = new Edge<>(
+                    accessor = new Accessor<>(
                         e2, method, supplier
                     );
                     String[] keys = e2.value();
                     if (keys.length == 0) {
-                        display(
-                            name, node
+                        setAttribute(
+                            name, accessor
                         );
                     } else {
-                        for (int i = 0; i < keys.length; i++) {
-                            display(
-                                keys[i], i == 0 ? node : new Edge<>(node)
+                        for (String key : keys) {
+                            setAttribute(
+                                key, accessor
                             );
                         }
                     }

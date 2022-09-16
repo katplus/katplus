@@ -33,6 +33,9 @@ import java.lang.reflect.Method;
 @SuppressWarnings("unchecked")
 public class EnumSpare<K extends Enum<K>> extends Property<K> implements Serializer {
 
+    private boolean expose;
+    protected String[] spaces;
+
     private K[] enums;
     private final String space;
 
@@ -75,23 +78,13 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
 
         if (embed == null) {
             space = klass.getSimpleName();
-            supplier.embed(klass, this);
         } else {
-            String[] spaces = embed.value();
-            if (spaces.length == 0) {
+            String[] names = embed.value();
+            if (names.length == 0) {
                 space = klass.getSimpleName();
-                supplier.embed(klass, this);
             } else {
-                space = spaces[0];
-                supplier.embed(klass, this);
-                if ((embed.mode() & Embed.HIDDEN) == 0) {
-                    for (String space : spaces) {
-                        // start from the second char, require contains '.'
-                        if (space.indexOf('.', 1) != -1) {
-                            supplier.embed(space, this);
-                        }
-                    }
-                }
+                space = (spaces = names)[0];
+                expose = (embed.mode() & Embed.HIDDEN) == 0;
             }
         }
     }
@@ -99,6 +92,20 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
     @Override
     public String getSpace() {
         return space;
+    }
+
+    @Override
+    public void embed(
+        @NotNull Supplier supplier
+    ) {
+        supplier.embed(klass, this);
+        if (expose) {
+            for (String space : spaces) {
+                if (space.indexOf('.', 1) != -1) {
+                    supplier.embed(space, this);
+                }
+            }
+        }
     }
 
     @Override

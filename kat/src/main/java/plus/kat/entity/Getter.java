@@ -24,9 +24,10 @@ import plus.kat.crash.*;
  * @author kraity
  * @since 0.0.1
  */
-public interface Getter<K, V> extends Target {
+public interface Getter<K, V> {
     /**
-     * @param bean the specified bean
+     * Gets the property of the bean
+     *
      * @return the specified value of property
      * @throws Collapse If the underlying method throws an exception
      */
@@ -36,14 +37,15 @@ public interface Getter<K, V> extends Target {
     );
 
     /**
-     * @param bean the specified bean
+     * Gets the property of the bean
+     *
      * @return the specified value of property
      * @throws Collapse If the underlying method throws an exception
-     * @since 0.0.4
+     * @see Getter#apply(Object)
      */
     @Nullable
     @SuppressWarnings("unchecked")
-    default V call(
+    default V invoke(
         @NotNull Object bean
     ) {
         try {

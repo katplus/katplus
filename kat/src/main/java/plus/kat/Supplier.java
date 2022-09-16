@@ -19,7 +19,6 @@ import plus.kat.anno.*;
 import plus.kat.spare.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.*;
 
@@ -41,6 +40,7 @@ import java.util.concurrent.atomic.*;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.chain.Space.*;
+import static plus.kat.entity.Subject.Member;
 
 /**
  * @author kraity
@@ -140,23 +140,21 @@ public interface Supplier {
      *
      * <pre>{@code
      *   Expose expose = ...
-     *   Target element = ...
+     *   Member member = ...
      *
      *   Supplier supplier = ...
-     *   Coder<User> coder = supplier.assign(expose, element);
+     *   Coder<User> coder = supplier.assign(expose, member);
      * }</pre>
      *
-     * @param expose  the specified expose
-     * @param element the specified target
+     * @param expose the specified expose
+     * @param member the specified member
      * @return the coder of {@code klass} or {@code null}
-     * @see Target
-     * @see Impl#assign(Expose, Target)
      * @since 0.0.4
      */
     @Nullable <T>
     Coder<T> assign(
         @Nullable Expose expose,
-        @Nullable Target element
+        @Nullable Member<?, ?> member
     );
 
     /**
@@ -1141,24 +1139,20 @@ public interface Supplier {
         @Override
         public <T> Coder<T> assign(
             @Nullable Expose expose,
-            @Nullable Target target
+            @Nullable Member<?, ?> member
         ) {
-            if (target == null) {
-                return null;
-            }
-
             Class<?> clazz;
             Coder<?> coder = null;
 
             if (expose == null || (clazz =
                 expose.with()) == Coder.class) {
-                Format format = target
-                    .getAnnotation(Format.class);
+                Format format = member
+                    .annotate(Format.class);
                 if (format == null) {
                     return null;
                 }
 
-                Class<?> klass = target.getType();
+                Class<?> klass = member.getKind();
                 if (klass == Date.class) {
                     coder = new DateSpare(format);
                 } else if (klass == Instant.class) {
@@ -1205,15 +1199,17 @@ public interface Supplier {
                     for (int i = 0; i < size; i++) {
                         Class<?> m = cls[i];
                         if (m == Class.class) {
-                            args[i] = target.getType();
+                            args[i] = member.getKind();
                         } else if (m == Type.class) {
-                            args[i] = target.getRawType();
+                            args[i] = member.getType();
                         } else if (m == Expose.class) {
                             args[i] = expose;
                         } else if (m == Supplier.class) {
                             args[i] = this;
+                        } else if (m.isPrimitive()) {
+                            args[i] = Reflect.def(m);
                         } else if (m.isAnnotation()) {
-                            args[i] = target.getAnnotation(
+                            args[i] = member.annotate(
                                 (Class<? extends Annotation>) m
                             );
                         }
@@ -1223,8 +1219,7 @@ public interface Supplier {
                 if (!c.isAccessible()) {
                     c.setAccessible(true);
                 }
-                return (Coder<T>)
-                    c.newInstance(args);
+                return (Coder<T>) c.newInstance(args);
             } catch (Exception e) {
                 // Nothing
             }
@@ -1361,6 +1356,8 @@ public interface Supplier {
                                     args[i] = embed;
                                 } else if (m == Supplier.class) {
                                     args[i] = this;
+                                } else if (m.isPrimitive()) {
+                                    args[i] = Reflect.def(m);
                                 } else if (m.isAnnotation()) {
                                     args[i] = klass.getAnnotation(
                                         (Class<? extends Annotation>) m
@@ -1382,31 +1379,35 @@ public interface Supplier {
                 }
 
                 if (klass.isInterface()) {
-                    return (Spare<T>)
-                        new ProxySpare(
-                            embed, klass, this
-                        );
+                    spare = new ProxySpare(
+                        embed, klass, this
+                    );
+                    spare.embed(this);
+                    return (Spare<T>) spare;
                 }
             }
 
             try {
                 Class<?> sc = klass.getSuperclass();
                 if (sc == Enum.class) {
-                    return new EnumSpare(
-                        embed, klass, this
-                    );
-                }
-
-                String sn = sc.getName();
-                if (sn.equals("java.lang.Record")) {
-                    return new RecordSpare<>(
+                    spare = new EnumSpare(
                         embed, klass, this
                     );
                 } else {
-                    return new ReflectSpare<>(
-                        embed, klass, this
-                    );
+                    String sn = sc.getName();
+                    if (sn.equals("java.lang.Record")) {
+                        spare = new RecordSpare<>(
+                            embed, klass, this
+                        );
+                    } else {
+                        spare = new ReflectSpare<>(
+                            embed, klass, this
+                        );
+                    }
                 }
+
+                spare.embed(this);
+                return (Spare<T>) spare;
             } catch (Exception e) {
                 // Nothing
             }

@@ -24,10 +24,10 @@ import plus.kat.crash.*;
  * @author kraity
  * @since 0.0.1
  */
-public interface Setter<K, V> extends Target {
+public interface Setter<K, V> {
     /**
-     * @param bean  the specified entity
-     * @param value the specified value of property
+     * Sets the specified value to the bean
+     *
      * @return {@code true} if successful otherwise {@code false}
      * @throws Collapse If the underlying method throws an exception
      */
@@ -37,14 +37,14 @@ public interface Setter<K, V> extends Target {
     );
 
     /**
-     * @param bean  the specified entity
-     * @param value the specified value of property
+     * Sets the specified value to the bean
+     *
      * @return {@code true} if successful otherwise {@code false}
      * @throws Collapse If the underlying method throws an exception
-     * @since 0.0.4
+     * @see Setter#accept(Object, Object)
      */
     @SuppressWarnings("unchecked")
-    default boolean call(
+    default boolean invoke(
         @NotNull Object bean,
         @Nullable Object value
     ) {
