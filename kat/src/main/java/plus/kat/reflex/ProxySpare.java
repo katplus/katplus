@@ -186,15 +186,6 @@ public class ProxySpare extends AbstractSpare<Object> {
         final ProxySpare spare;
 
         public Handle(
-            Handle elem
-        ) {
-            super(elem);
-            spare = elem.spare;
-            alias = elem.alias;
-            method = elem.method;
-        }
-
-        public Handle(
             Method method,
             Expose expose,
             ProxySpare spare
@@ -270,11 +261,6 @@ public class ProxySpare extends AbstractSpare<Object> {
                 }
             }
             return false;
-        }
-
-        @Override
-        public Element<Object, Object> clone() {
-            return new Handle(this);
         }
     }
 

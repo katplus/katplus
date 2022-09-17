@@ -155,7 +155,7 @@ public interface Spare<K> extends Coder<K> {
      * If {@link K} is a Bean or resultSet has elements,
      * then perform a given {@link ResultSet} to create a {@link K}
      *
-     * @param result the specified result to be used
+     * @param resultSet the specified result to be used
      * @return {@link K}, it is not null
      * @throws SQLCrash             If it fails to create
      * @throws SQLException         If a database access error occurs
@@ -167,10 +167,10 @@ public interface Spare<K> extends Coder<K> {
      */
     @NotNull
     default K apply(
-        @NotNull ResultSet result
+        @NotNull ResultSet resultSet
     ) throws SQLException {
         return apply(
-            getSupplier(), result
+            getSupplier(), resultSet
         );
     }
 

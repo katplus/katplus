@@ -24,6 +24,7 @@ import plus.kat.crash.*;
  * @author kraity
  * @since 0.0.1
  */
+@FunctionalInterface
 public interface Getter<K, V> {
     /**
      * Gets the property of the bean

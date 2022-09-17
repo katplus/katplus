@@ -37,7 +37,7 @@ import static plus.kat.utils.Reflect.LOOKUP;
  * @author kraity
  * @since 0.0.4
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class AbstractSpare<T> implements Subject<T> {
 
     protected String[] spaces;
@@ -50,7 +50,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     protected final Supplier supplier;
 
     protected Entry<T>[] table;
-    protected Element<T, ?>[] elems;
     protected Element<T, ?> head, tail;
 
     protected AbstractSpare(
@@ -145,26 +144,26 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     ) throws IOException {
         Element<T, ?> m = head;
         while (m != null) {
-            Object val = m.invoke(value);
-            if (val == null) {
+            Object data = m.invoke(value);
+            if (data == null) {
                 if ((m.flags & Expose.NOTNULL) == 0) {
                     chan.set(m.name, null);
                 }
             } else {
                 if ((m.flags & Expose.UNWRAPPED) == 0) {
                     chan.set(
-                        m.name, m.coder, val
+                        m.name, m.coder, data
                     );
                 } else {
                     Coder<?> coder = m.coder;
                     if (coder != null) {
-                        coder.write(chan, val);
+                        coder.write(chan, data);
                     } else {
                         coder = supplier.lookup(
-                            val.getClass()
+                            data.getClass()
                         );
                         if (coder != null) {
-                            coder.write(chan, val);
+                            coder.write(chan, data);
                         }
                     }
                 }
@@ -189,10 +188,10 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     ) {
         Element<T, ?> m = head;
         while (m != null) {
-            Object val = m.apply(bean);
-            if (val != null || (m.flags & Expose.NOTNULL) == 0) {
+            Object data = m.apply(bean);
+            if (data != null || (m.flags & Expose.NOTNULL) == 0) {
                 visitor.visit(
-                    m.name, val
+                    m.name, data
                 );
             }
             m = m.near;
@@ -240,6 +239,16 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     @NotNull
     @Override
     public T apply(
+        @NotNull Spoiler spoiler
+    ) throws Collapse {
+        return apply(
+            spoiler, supplier
+        );
+    }
+
+    @NotNull
+    @Override
+    public T apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
     ) throws Collapse {
@@ -258,6 +267,16 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 "Error creating " + getType(), e
             );
         }
+    }
+
+    @NotNull
+    @Override
+    public T apply(
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        return apply(
+            supplier, resultSet
+        );
     }
 
     @NotNull
@@ -290,9 +309,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     ) throws Exception {
         if (data instanceof Map) {
             return apply(
-                Spoiler.of(
-                    (Map<?, ?>) data
-                ), supplier
+                Spoiler.of((Map<?, ?>) data), supplier
             );
         }
 
@@ -340,17 +357,17 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             return null;
         }
 
-        int h = name.hashCode();
-        h = h ^ (h >>> 16);
+        int hash = name.hashCode();
+        hash = hash ^ (hash >>> 16);
 
         int m = tab.length - 1;
-        Entry<T> e = tab[m & h];
+        Entry<T> e = tab[m & hash];
 
         while (e != null) {
-            if (e.hash == h &&
+            if (e.hash == hash &&
                 (name.equals(e.key) ||
                     e.key.equals(name))) {
-                return e.attr;
+                return e.art;
             }
             e = e.next;
         }
@@ -362,20 +379,24 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     public Member<T, ?> getAttribute(
         @NotNull Object name
     ) {
-        Element<T, ?>[] tab = elems;
+        Entry<T>[] tab = table;
         if (tab == null) {
             return null;
         }
 
-        int h = name.hashCode() & 0xFFFF;
-        Element<T, ?> e = tab[h % tab.length];
+        int hash = name.hashCode();
+        hash = hash ^ (hash >>> 16);
+
+        int m = tab.length - 1;
+        Entry<T> e = tab[m & hash];
 
         while (e != null) {
-            if (e.home == h &&
-                name.equals(e.name)) {
-                return e;
+            if (e.hash == hash &&
+                (name.equals(e.key) ||
+                    e.key.equals(name))) {
+                return e.att;
             }
-            e = e.nest;
+            e = e.next;
         }
 
         return null;
@@ -390,17 +411,17 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             return null;
         }
 
-        int h = name.hashCode();
-        h = h ^ (h >>> 16);
+        int hash = name.hashCode();
+        hash = hash ^ (hash >>> 16);
 
         int m = tab.length - 1;
-        Entry<T> e = tab[m & h];
+        Entry<T> e = tab[m & hash];
 
         while (e != null) {
-            if (e.hash == h &&
+            if (e.hash == hash &&
                 (name.equals(e.key) ||
                     e.key.equals(name))) {
-                return e.args;
+                return e.arg;
             }
             e = e.next;
         }
@@ -420,32 +441,51 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull String k,
         @NotNull Element<T, ?> m
     ) {
-        Element<T, ?>[] tab = elems;
+        Entry[] tab = table;
         if (tab == null) {
-            tab = elems = new Element[6];
+            tab = table = new Entry[4];
         }
 
-        int i, h = k.hashCode() & 0xFFFF;
-        Element<T, ?> e = tab[i = (h % tab.length)];
+        int i, h = k.hashCode();
+        h = h ^ (h >>> 16);
+
+        i = (tab.length - 1) & h;
+        Entry<T> node, e = tab[i];
 
         if (e == null) {
-            if (m.name != null) {
-                m = m.clone();
+            node = m;
+            if (node.key != null) {
+                node = new Entry<>();
             }
-            tab[i] = m;
+            tab[i] = node;
+            node.att = m;
+            node.key = k;
+            node.hash = h;
         } else {
             while (true) {
-                if (e.home == h &&
-                    k.equals(e.name)) {
-                    return false;
-                }
-                if (e.nest != null) {
-                    e = e.nest;
-                } else {
-                    if (m.name != null) {
-                        m = m.clone();
+                if (e.hash == h &&
+                    (k.equals(e.key) ||
+                        e.key.equals(k))) {
+                    if (e.att == null) {
+                        e.att = m;
+                        break;
+                    } else {
+                        return false;
                     }
-                    e.nest = m;
+                }
+
+                Entry<T> next = e.next;
+                if (next != null) {
+                    e = next;
+                } else {
+                    node = m;
+                    if (node.key != null) {
+                        node = new Entry<>();
+                    }
+                    e.next = node;
+                    node.att = m;
+                    node.key = k;
+                    node.hash = h;
                     break;
                 }
             }
@@ -454,7 +494,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         Element<T, ?> n = head;
         Element<T, ?> u = null;
 
-        m.home = h;
         m.name = k;
         m.grade = g;
 
@@ -540,98 +579,84 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      * @param key  the specified key of elem
      * @param elem the specified elem to be settled
      */
-    protected <E> boolean setup(
-        @Nullable Boolean flag,
+    protected boolean setup(
+        @Nullable Boolean fix,
         @NotNull Object key,
-        @NotNull Element<E, ?> elem
+        @NotNull Element elem
     ) {
-        Entry<T>[] tab = table;
+        Entry[] tab = table;
         if (tab == null) {
             tab = table = new Entry[4];
         }
 
-        int h = key.hashCode();
-        h = h ^ (h >>> 16);
+        int hash = key.hashCode();
+        hash = hash ^ (hash >>> 16);
 
         while (true) {
-            int len = tab.length;
-            int m = len - 1;
-            int i = m & h;
+            int l = tab.length;
+            int i = (l - 1) & hash;
 
-            Entry<T> e = tab[i];
+            Entry node, e = tab[i];
             if (e == null) {
-                if (elem.key != null) {
-                    elem = elem.clone();
+                node = elem;
+                if (node.key != null) {
+                    node = new Entry();
                 }
-                tab[i] = (Entry<T>) elem;
-                elem.hash = h;
-                elem.key = key;
-                elem.next = null;
-                if (flag != null) {
-                    elem.attr = elem;
+                tab[i] = node;
+                node.key = key;
+                node.hash = hash;
+                if (fix == null) {
+                    node.arg = elem;
                 } else {
-                    elem.args = (Element<Object[], ?>) elem;
+                    node.art = elem;
                 }
                 return true;
             }
 
-            if (e.hash == h &&
-                (key.equals(e.key) ||
-                    e.key.equals(key))) {
-                if (flag != null) {
-                    if (flag) {
-                        e.attr = (Element<T, ?>) elem;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    e.args = (Element<Object[], ?>) elem;
-                }
-                return true;
-            }
-
-            for (int b = 0; b < m; ++b) {
-                if (e.next == null) {
-                    if (elem.key != null) {
-                        elem = elem.clone();
-                    }
-                    e.next = (Entry<T>) elem;
-                    elem.hash = h;
-                    elem.key = key;
-                    elem.next = null;
-                    if (flag != null) {
-                        elem.attr = elem;
-                    } else {
-                        elem.args = (Element<Object[], ?>) elem;
-                    }
-                    return true;
-                }
-
-                e = e.next;
-                if (e.hash == h &&
+            for (int k = 0; ; k++) {
+                if (e.hash == hash &&
                     (key.equals(e.key) ||
                         e.key.equals(key))) {
-                    if (flag != null) {
-                        if (flag) {
-                            e.attr = (Element<T, ?>) elem;
+                    if (fix == null) {
+                        e.arg = elem;
+                    } else {
+                        if (fix || e.art == null) {
+                            e.art = elem;
                         } else {
                             return false;
                         }
+                    }
+                    return true;
+                }
+
+                Entry next = e.next;
+                if (next != null) {
+                    e = next;
+                } else {
+                    if (l <= k) break;
+                    node = elem;
+                    if (node.key != null) {
+                        node = new Entry();
+                    }
+                    e.next = node;
+                    node.key = key;
+                    node.hash = hash;
+                    if (fix == null) {
+                        node.arg = elem;
                     } else {
-                        e.args = (Element<Object[], ?>) elem;
+                        node.art = elem;
                     }
                     return true;
                 }
             }
 
-            // resize
-            int size = len << 1;
-            Entry<T>[] bucket = new Entry[size];
+            int s = l << 1;
+            Entry[] bucket = new Entry[s];
 
-            m = size - 1;
-            Entry<T> n, b;
+            Entry n, b;
+            int m = s - 1;
 
-            for (int k = 0; k < len; ++k) {
+            for (int k = 0; k < l; k++) {
                 if ((e = tab[k]) != null) {
                     tab[k] = null;
                     do {
@@ -639,12 +664,12 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                         i = m & e.hash;
 
                         b = bucket[i];
-                        if (b == null) {
-                            bucket[i] = e;
-                            e.next = null;
-                        } else {
+                        if (b != null) {
                             e.next = b.next;
                             b.next = e;
+                        } else {
+                            e.next = null;
+                            bucket[i] = e;
                         }
                     } while (
                         (e = n) != null
@@ -698,42 +723,42 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     public static class Folder<K>
         implements Spoiler {
 
-        protected Element<K, ?> node;
-        protected Element<K, ?> next;
+        protected Element<K, ?> near;
+        protected Element<K, ?> elem;
 
         protected K bean;
-        protected AbstractSpare<K> sponge;
+        protected AbstractSpare<K> spare;
 
         public Folder(
             @NotNull K bean,
-            @NotNull AbstractSpare<K> bob
+            @NotNull AbstractSpare<K> abs
         ) {
             this.bean = bean;
-            next = bob.head;
-            this.sponge = bob;
+            near = abs.head;
+            this.spare = abs;
         }
 
         @Override
         public String getKey() {
-            return node.name;
+            return elem.name;
         }
 
         @Override
         public Object getValue() {
-            return node.apply(bean);
+            return elem.apply(bean);
         }
 
         @Override
         public Class<?> getType() {
-            return node.kind;
+            return elem.kind;
         }
 
         @Override
         public boolean hasNext() {
-            Element<K, ?> n = next;
+            Element<K, ?> n = near;
             if (n != null) {
-                node = n;
-                next = n.near;
+                elem = n;
+                near = n.near;
                 return true;
             } else {
                 return false;
@@ -746,17 +771,12 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      * @since 0.0.4
      */
     public static class Entry<K> {
+        private int hash;
+        private Object key;
+        private Entry<K> next;
 
-        Object key;
-        int hash;
-        Entry<K> next;
-
-        String name;
-        int home, grade;
-
-        Element<Object[], ?> args;
-        Element<K, ?> attr, near, nest;
-
+        private Element<K, ?> att, art;
+        private Element<Object[], ?> arg;
     }
 
     /**
@@ -764,7 +784,11 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      * @since 0.0.4
      */
     public abstract static class Element<K, V>
-        extends Entry<K> implements Member<K, V>, Cloneable {
+        extends Entry<K> implements Member<K, V> {
+
+        private int grade;
+        private String name;
+        private Element<K, ?> near;
 
         protected Type type;
         protected Class<?> kind;
@@ -914,12 +938,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         }
 
         /**
-         * Returns the clone of {@link Element}
-         */
-        @Override
-        public abstract Element<K, V> clone();
-
-        /**
          * Returns the annotation of the specified type
          */
         @Override
@@ -942,20 +960,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
 
         protected final MethodHandle getter;
         protected final MethodHandle setter;
-
-        /**
-         * <pre>{@code
-         *  Accessor accessor = ...
-         *  Accessor accessor0 = new Accessor(accessor);
-         * }</pre>
-         */
-        public Accessor(
-            @NotNull Accessor<K> accessor
-        ) {
-            super(accessor);
-            getter = accessor.getter;
-            setter = accessor.setter;
-        }
 
         public Accessor(
             @Nullable Expose expose,
@@ -1041,11 +1045,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             }
             return false;
         }
-
-        @Override
-        public Element<K, Object> clone() {
-            return new Accessor<>(this);
-        }
     }
 
     /**
@@ -1055,13 +1054,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     public static class Argument extends Element<Object[], Object> {
 
         protected Annotation[] annotations;
-
-        public Argument(
-            @NotNull Argument arg
-        ) {
-            super(arg);
-            annotations = arg.annotations;
-        }
 
         public Argument(
             int index,
@@ -1109,11 +1101,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 return true;
             }
             return false;
-        }
-
-        @Override
-        public Element<Object[], Object> clone() {
-            return new Argument(this);
         }
 
         @Override

@@ -24,6 +24,7 @@ import plus.kat.crash.*;
  * @author kraity
  * @since 0.0.1
  */
+@FunctionalInterface
 public interface Setter<K, V> {
     /**
      * Sets the specified value to the bean
