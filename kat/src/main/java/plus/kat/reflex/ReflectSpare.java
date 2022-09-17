@@ -293,7 +293,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                         member = new Accessor<>(
                             null, field, supplier
                         );
-                        setup(
+                        setMember(
                             grade, name, member
                         );
                         setProperty(
@@ -327,25 +327,31 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     }
                 }
 
+                int mode = expose.mode();
+                boolean display = (mode & Expose.HIDDEN) == 0;
+
                 if (keys.length == 0) {
                     setProperty(
                         name, member
                     );
+                    if (display) {
+                        setMember(
+                            grade, name, member
+                        );
+                    }
                 } else {
                     for (String alias : keys) {
                         if (!alias.isEmpty()) {
                             setProperty(
                                 alias, member
                             );
+                            if (display) {
+                                setMember(
+                                    grade, alias, member
+                                );
+                            }
                         }
                     }
-                }
-
-                if ((expose.mode() &
-                    Expose.HIDDEN) == 0) {
-                    setup(
-                        grade, name, member
-                    );
                 }
             } catch (Exception e) {
                 // Nothing
@@ -406,7 +412,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
 
                             // register all aliases
                             for (String key : keys) {
-                                setup(
+                                setMember(
                                     grade, key, member
                                 );
                             }
@@ -449,7 +455,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 if (count == 0) {
                     String key = Binary.ascii(name);
                     if (getAttribute(key) == null) {
-                        setup(
+                        setMember(
                             grade, key, new Accessor<>(
                                 expose, method, supplier
                             )

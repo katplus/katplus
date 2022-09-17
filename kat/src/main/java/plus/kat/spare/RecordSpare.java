@@ -155,20 +155,20 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                     width++, e1, field, supplier
                 );
 
+                String[] keys = null;
                 String name = field.getName();
                 if (e1 == null) {
                     setArgument(
                         name, arg
                     );
                 } else {
-                    String[] keys = e1.value();
-                    if (keys.length == 0) {
+                    String[] ks = e1.value();
+                    if (ks.length == 0) {
                         setArgument(
                             name, arg
                         );
                     } else {
-                        name = keys[0];
-                        for (String key : keys) {
+                        for (String key : (keys = ks)) {
                             setArgument(
                                 key, arg
                             );
@@ -192,15 +192,23 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                     accessor = new Accessor<>(
                         e1, method, supplier
                     );
-                    setAttribute(
-                        name, accessor
-                    );
+                    if (keys == null) {
+                        setAttribute(
+                            name, accessor
+                        );
+                    } else {
+                        for (String key : keys) {
+                            setAttribute(
+                                key, accessor
+                            );
+                        }
+                    }
                 } else if ((e2.mode() &
                     Expose.HIDDEN) == 0) {
                     accessor = new Accessor<>(
                         e2, method, supplier
                     );
-                    String[] keys = e2.value();
+                    keys = e2.value();
                     if (keys.length == 0) {
                         setAttribute(
                             name, accessor

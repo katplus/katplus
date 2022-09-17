@@ -391,4 +391,32 @@ public class ReflexTest {
         assertEquals("kraity", user.name);
         assertEquals("{}", Json.encode(user));
     }
+
+    static class UserVO {
+        @Expose({"id", "uid"})
+        private int id;
+
+        private String name;
+
+        @Expose({"name", "nickname"})
+        public String getName() {
+            return name;
+        }
+    }
+
+    @Test
+    public void test10() {
+        Supplier supplier = Supplier.ins();
+        Spare<UserVO> spare = supplier.lookup(UserVO.class);
+
+        UserVO vo = new UserVO();
+        vo.id = 1;
+        vo.name = "kraity";
+
+        assertEquals(1, spare.get("id").apply(vo));
+        assertEquals(1, spare.get("uid").apply(vo));
+        assertEquals("kraity", spare.get("name").apply(vo));
+        assertEquals("kraity", spare.get("nickname").apply(vo));
+        assertEquals("{\"id\":1,\"name\":\"kraity\"}", Json.encode(vo));
+    }
 }

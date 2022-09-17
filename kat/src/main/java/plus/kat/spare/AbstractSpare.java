@@ -436,7 +436,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      * @param k the specified key of elem
      * @param m the specified elem to be settled
      */
-    protected boolean setup(
+    protected boolean setMember(
         @NotNull int g,
         @NotNull String k,
         @NotNull Element<T, ?> m
@@ -491,11 +491,15 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             }
         }
 
+        if (m.name == null) {
+            m.name = k;
+            m.grade = g;
+        } else {
+            return false;
+        }
+
         Element<T, ?> n = head;
         Element<T, ?> u = null;
-
-        m.name = k;
-        m.grade = g;
 
         int d = m.index;
         if (d == -1 && g == 0) {
@@ -579,7 +583,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      * @param key  the specified key of elem
      * @param elem the specified elem to be settled
      */
-    protected boolean setup(
+    protected boolean setMember(
         @Nullable Boolean fix,
         @NotNull Object key,
         @NotNull Element elem
@@ -687,7 +691,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull Object key,
         @NotNull Element<T, ?> elem
     ) {
-        return setup(
+        return setMember(
             true, key, elem
         );
     }
@@ -699,7 +703,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull Object key,
         @NotNull Element<Object[], ?> elem
     ) {
-        return setup(
+        return setMember(
             null, key, elem
         );
     }
@@ -711,7 +715,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull String key,
         @NotNull Element<T, ?> elem
     ) {
-        return setup(
+        return setMember(
             0, key, elem
         );
     }

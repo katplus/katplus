@@ -147,7 +147,9 @@ public class ProxySpare extends AbstractSpare<Object> {
                         }
                     }
                 } else {
-                    setup(false, id, node);
+                    setMember(
+                        false, id, node
+                    );
                     if (expose == null) {
                         setAttribute(
                             id, node
