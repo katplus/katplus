@@ -620,7 +620,7 @@ public interface Supplier {
      *  Object target = ...
      *
      *  Supplier supplier = ...
-     *  supplier.migrate(source, target);
+     *  supplier.mutate(source, target);
      * }</pre>
      *
      * @return {@code true} if successful update
@@ -629,7 +629,7 @@ public interface Supplier {
      * @since 0.0.4
      */
     @SuppressWarnings("unchecked")
-    default <S, T> boolean migrate(
+    default <S, T> boolean mutate(
         @NotNull S source,
         @NotNull T target
     ) {
@@ -1147,12 +1147,12 @@ public interface Supplier {
             if (expose == null || (clazz =
                 expose.with()) == Coder.class) {
                 Format format = member
-                    .annotate(Format.class);
+                    .getAnnotation(Format.class);
                 if (format == null) {
                     return null;
                 }
 
-                Class<?> klass = member.getKind();
+                Class<?> klass = member.getType();
                 if (klass == Date.class) {
                     coder = new DateSpare(format);
                 } else if (klass == Instant.class) {
@@ -1199,9 +1199,9 @@ public interface Supplier {
                     for (int i = 0; i < size; i++) {
                         Class<?> m = cls[i];
                         if (m == Class.class) {
-                            args[i] = member.getKind();
-                        } else if (m == Type.class) {
                             args[i] = member.getType();
+                        } else if (m == Type.class) {
+                            args[i] = member.getActual();
                         } else if (m == Expose.class) {
                             args[i] = expose;
                         } else if (m == Supplier.class) {
@@ -1209,7 +1209,7 @@ public interface Supplier {
                         } else if (m.isPrimitive()) {
                             args[i] = Reflect.def(m);
                         } else if (m.isAnnotation()) {
-                            args[i] = member.annotate(
+                            args[i] = member.getAnnotation(
                                 (Class<? extends Annotation>) m
                             );
                         }

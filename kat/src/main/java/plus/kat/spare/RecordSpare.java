@@ -123,13 +123,6 @@ public class RecordSpare<T> extends AbstractSpare<T> {
     }
 
     @Override
-    public Member<T, ?> getProperty(
-        @NotNull Object name
-    ) {
-        return null;
-    }
-
-    @Override
     public Builder<T> getBuilder(
         @Nullable Type type
     ) {
@@ -158,18 +151,18 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                 String[] keys = null;
                 String name = field.getName();
                 if (e1 == null) {
-                    setArgument(
+                    setParam(
                         name, arg
                     );
                 } else {
                     String[] ks = e1.value();
                     if (ks.length == 0) {
-                        setArgument(
+                        setParam(
                             name, arg
                         );
                     } else {
                         for (String key : (keys = ks)) {
-                            setArgument(
+                            setParam(
                                 key, arg
                             );
                         }
@@ -193,12 +186,12 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                         e1, method, supplier
                     );
                     if (keys == null) {
-                        setAttribute(
+                        setWriter(
                             name, accessor
                         );
                     } else {
                         for (String key : keys) {
-                            setAttribute(
+                            setWriter(
                                 key, accessor
                             );
                         }
@@ -210,12 +203,12 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                     );
                     keys = e2.value();
                     if (keys.length == 0) {
-                        setAttribute(
+                        setWriter(
                             name, accessor
                         );
                     } else {
                         for (String key : keys) {
-                            setAttribute(
+                            setWriter(
                                 key, accessor
                             );
                         }

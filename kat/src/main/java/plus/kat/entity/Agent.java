@@ -40,13 +40,13 @@ public interface Agent {
      * @param source the specified source bean
      * @return {@code true} if successful update
      * @throws NullPointerException If the parameters contains null
-     * @see Supplier#migrate(Object, Object)
+     * @see Supplier#mutate(Object, Object)
      */
     default boolean combine(
         @NotNull Object source
     ) {
         Supplier supplier = Supplier.ins();
-        return supplier.migrate(source, this);
+        return supplier.mutate(source, this);
     }
 
     /**
@@ -123,12 +123,12 @@ public interface Agent {
      * @param target the specified target bean
      * @return {@code true} if successful update
      * @throws NullPointerException If the parameters contains null
-     * @see Supplier#migrate(Object, Object)
+     * @see Supplier#mutate(Object, Object)
      */
     default boolean migrate(
         @NotNull Object target
     ) {
         Supplier supplier = Supplier.ins();
-        return supplier.migrate(this, target);
+        return supplier.mutate(this, target);
     }
 }

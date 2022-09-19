@@ -181,14 +181,14 @@ public class SpareTest {
     }
 
     @Test
-    public void test_migrate() {
+    public void test_mutate() {
         User user = new User();
         user.id = 1;
         user.name = "kraity";
         Entity entity = new Entity();
 
         Supplier supplier = Supplier.ins();
-        assertTrue(supplier.migrate(user, entity));
+        assertTrue(supplier.mutate(user, entity));
 
         assertEquals(user.id, entity.id);
         assertEquals(user.name, entity.name);

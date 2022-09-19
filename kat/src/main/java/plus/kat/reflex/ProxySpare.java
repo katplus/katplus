@@ -125,7 +125,7 @@ public class ProxySpare extends AbstractSpare<Object> {
 
                 if (count != 0) {
                     if (expose == null) {
-                        setProperty(
+                        setReader(
                             id, node
                         );
                         continue;
@@ -133,7 +133,7 @@ public class ProxySpare extends AbstractSpare<Object> {
 
                     String[] keys = expose.value();
                     if (keys.length == 0) {
-                        setProperty(
+                        setReader(
                             id, node
                         );
                         continue;
@@ -141,17 +141,17 @@ public class ProxySpare extends AbstractSpare<Object> {
 
                     for (String alias : expose.value()) {
                         if (!alias.isEmpty()) {
-                            setProperty(
+                            setReader(
                                 alias, node
                             );
                         }
                     }
                 } else {
-                    setMember(
+                    setReader(
                         false, id, node
                     );
                     if (expose == null) {
-                        setAttribute(
+                        setWriter(
                             id, node
                         );
                         continue;
@@ -160,12 +160,12 @@ public class ProxySpare extends AbstractSpare<Object> {
                     if ((expose.mode() & Expose.HIDDEN) == 0) {
                         String[] keys = expose.value();
                         if (keys.length == 0) {
-                            setAttribute(
+                            setWriter(
                                 id, node
                             );
                         } else {
                             for (String key : keys) {
-                                setAttribute(
+                                setWriter(
                                     key, node
                                 );
                             }
@@ -181,7 +181,7 @@ public class ProxySpare extends AbstractSpare<Object> {
      * @author kraity
      * @since 0.0.3
      */
-    public static class Handle extends Element<Object, Object> {
+    public static class Handle extends Medium<Object, Object> {
 
         final String alias;
         final Method method;
@@ -199,7 +199,7 @@ public class ProxySpare extends AbstractSpare<Object> {
             if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
-            setup(method);
+            prepare(method);
             coder = spare.supplier
                 .assign(expose, this);
             String name = method.getName();

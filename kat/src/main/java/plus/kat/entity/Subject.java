@@ -25,6 +25,7 @@ import plus.kat.spare.*;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -86,6 +87,51 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     }
 
     /**
+     * Returns a set-capable {@link Member}
+     * of the specified property {@code name}
+     *
+     * @param name the property name of the bean
+     * @return {@link Member} or {@code null}
+     * @throws NullPointerException If the alias is null
+     */
+    @Override
+    default Member<K, ?> set(
+        @NotNull Object name
+    ) {
+        return null;
+    }
+
+    /**
+     * Returns a get-capable {@link Member}
+     * of the specified property {@code name}
+     *
+     * @param name the property name of the bean
+     * @return {@link Member} or {@code null}
+     * @throws NullPointerException If the alias is null
+     */
+    @Override
+    default Member<K, ?> get(
+        @NotNull Object name
+    ) {
+        return null;
+    }
+
+    /**
+     * Returns a set-capable {@link Member}
+     * of the specified parameter {@code name}
+     *
+     * @param name the parameter name of the bean
+     * @return {@link Member} or {@code null}
+     * @throws NullPointerException If the alias is null
+     */
+    @Nullable
+    default Member<Object[], ?> arg(
+        @NotNull Object name
+    ) {
+        return null;
+    }
+
+    /**
      * Copy the property values of the specified spoiler into the given specified bean
      *
      * @return the number of rows affected
@@ -99,7 +145,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     ) {
         int rows = 0;
         while (spoiler.hasNext()) {
-            Member<K, ?> setter = getProperty(
+            Member<K, ?> setter = set(
                 spoiler.getKey()
             );
             if (setter == null) {
@@ -111,8 +157,8 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 continue;
             }
 
-            Class<?> kind = setter.getKind();
-            if (kind.isInstance(value)) {
+            Class<?> clazz = setter.getType();
+            if (clazz.isInstance(value)) {
                 rows++;
                 setter.invoke(
                     entity, value
@@ -120,7 +166,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 continue;
             }
 
-            Spare<?> spare = supplier.lookup(kind);
+            Spare<?> spare = supplier.lookup(clazz);
             if (spare != null) {
                 rows++;
                 setter.invoke(
@@ -148,7 +194,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         int rows = 0;
         while (spoiler.hasNext()) {
             Member<Object[], ?> setter =
-                getArgument(spoiler.getKey());
+                arg(spoiler.getKey());
             if (setter == null) {
                 continue;
             }
@@ -158,8 +204,8 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 continue;
             }
 
-            Class<?> kind = setter.getKind();
-            if (kind.isInstance(value)) {
+            Class<?> clazz = setter.getType();
+            if (clazz.isInstance(value)) {
                 rows++;
                 setter.invoke(
                     group, value
@@ -167,7 +213,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 continue;
             }
 
-            Spare<?> spare = supplier.lookup(kind);
+            Spare<?> spare = supplier.lookup(clazz);
             if (spare != null) {
                 rows++;
                 setter.invoke(
@@ -206,8 +252,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 name = meta.getColumnName(i);
             }
 
-            Member<K, ?> setter =
-                getProperty(name);
+            Member<K, ?> setter = set(name);
             if (setter == null) {
                 throw new SQLCrash(
                     "Can't find the property of " + name
@@ -220,14 +265,14 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 continue;
             }
 
-            Class<?> kind = setter.getKind();
-            if (kind.isInstance(value)) {
+            Class<?> clazz = setter.getType();
+            if (clazz.isInstance(value)) {
                 rows++;
                 setter.invoke(entity, value);
                 continue;
             }
 
-            Object result = supplier.cast(kind, value);
+            Object result = supplier.cast(clazz, value);
             if (result != null) {
                 rows++;
                 setter.invoke(entity, result);
@@ -236,7 +281,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
 
             throw new SQLCrash(
                 "Cannot convert the type of " + name
-                    + " from " + value.getClass() + " to " + kind
+                    + " from " + value.getClass() + " to " + clazz
             );
         }
 
@@ -267,8 +312,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 name = meta.getColumnName(i);
             }
 
-            Member<Object[], ?> setter =
-                getArgument(name);
+            Member<Object[], ?> setter = arg(name);
             if (setter == null) {
                 throw new SQLCrash(
                     "Can't find the argument of " + name
@@ -281,14 +325,14 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 continue;
             }
 
-            Class<?> kind = setter.getKind();
-            if (kind.isInstance(value)) {
+            Class<?> clazz = setter.getType();
+            if (clazz.isInstance(value)) {
                 rows++;
                 setter.invoke(group, value);
                 continue;
             }
 
-            Object result = supplier.cast(kind, value);
+            Object result = supplier.cast(clazz, value);
             if (result != null) {
                 rows++;
                 setter.invoke(group, result);
@@ -297,7 +341,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
 
             throw new SQLCrash(
                 "Cannot convert the type of " + name
-                    + " from " + value.getClass() + " to " + kind
+                    + " from " + value.getClass() + " to " + clazz
             );
         }
 
@@ -318,51 +362,6 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     }
 
     /**
-     * Returns the {@link Member}
-     * of the specified property name
-     *
-     * @param name the property name of the bean
-     * @return {@link Member} or {@code null}
-     * @throws NullPointerException If the alias is null
-     */
-    @Nullable
-    default Member<K, ?> getProperty(
-        @NotNull Object name
-    ) {
-        return null;
-    }
-
-    /**
-     * Returns the {@link Member}
-     * of the specified attribute name
-     *
-     * @param name the attribute name of the bean
-     * @return {@link Member} or {@code null}
-     * @throws NullPointerException If the alias is null
-     */
-    @Nullable
-    default Member<K, ?> getAttribute(
-        @NotNull Object name
-    ) {
-        return null;
-    }
-
-    /**
-     * Returns the {@link Member}
-     * of the specified argument name
-     *
-     * @param name the argument name of the bean
-     * @return {@link Member} or {@code null}
-     * @throws NullPointerException If the alias is null
-     */
-    @Nullable
-    default Member<Object[], ?> getArgument(
-        @NotNull Object name
-    ) {
-        return null;
-    }
-
-    /**
      * @author kraity
      * @since 0.0.4
      */
@@ -372,37 +371,98 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * Returns the {@link Class} of {@link V}
          */
         @NotNull
-        Class<?> getKind();
+        Class<?> getType();
 
         /**
-         * Returns the {@link Type} of {@link V}
+         * Gets the property of the bean
+         *
+         * @see #get(Object)
+         * @see Getter#apply(Object)
          */
-        @NotNull
-        default Type getType() {
-            return getKind();
+        @Nullable
+        @Override
+        default V apply(
+            @NotNull K bean
+        ) {
+            throw new Collapse(
+                "Unsupported"
+            );
+        }
+
+        /**
+         * Sets the specified value to the bean
+         *
+         * @see #set(Object)
+         * @see Setter#accept(Object, Object)
+         */
+        @Override
+        default boolean accept(
+            @NotNull K bean,
+            @Nullable V value
+        ) {
+            throw new Collapse(
+                "Unsupported"
+            );
+        }
+
+        /**
+         * Returns {@code true} if processed
+         */
+        default boolean serialize(
+            @NotNull Chan chan,
+            @Nullable Object value
+        ) throws IOException {
+            return false;
         }
 
         /**
          * Returns the {@link Coder} of {@link V}
          */
         @Nullable
-        default Coder<?> assign(
+        default Coder<?> deserialize(
             @NotNull Space space,
-            @NotNull Supplier supplier
-        ) {
-            return supplier.lookup(
-                getKind(), space
+            @Nullable Supplier supplier
+        ) throws IOException {
+            if (supplier != null) {
+                return supplier.lookup(
+                    getType(), space
+                );
+            }
+
+            throw new UnexpectedCrash(
+                "Unexpectedly, supplier not found"
             );
         }
 
         /**
-         * Returns the annotation of the specified type
+         * Returns the actual {@link Type} of {@link V}
+         */
+        @NotNull
+        default Type getActual() {
+            return getType();
+        }
+
+        /**
+         * Returns the {@link AnnotatedElement} of {@link V}
          */
         @Nullable
-        default <A extends Annotation> A annotate(
+        default AnnotatedElement getAnnotated() {
+            return null;
+        }
+
+        /**
+         * Returns the annotation of the specified {@link Class}
+         */
+        @Nullable
+        default <A extends Annotation> A getAnnotation(
             @NotNull Class<A> target
         ) {
-            return getKind().getAnnotation(target);
+            AnnotatedElement elem = getAnnotated();
+            if (elem != null) {
+                return elem.getAnnotation(target);
+            } else {
+                return getType().getAnnotation(target);
+            }
         }
     }
 
@@ -464,17 +524,19 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             @NotNull Value value
         ) throws IOException {
             int i = index++;
-            setter = subject.getProperty(
+            setter = subject.set(
                 alias.isEmpty() ? i : alias
             );
 
             if (setter != null) {
                 Coder<?> coder = setter
-                    .assign(space, supplier);
+                    .deserialize(
+                        space, supplier
+                    );
 
                 if (coder != null) {
                     value.setType(
-                        setter.getType()
+                        setter.getActual()
                     );
                     setter.invoke(
                         bean, coder.read(
@@ -496,17 +558,19 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias
         ) throws IOException {
             int i = index++;
-            setter = subject.getProperty(
+            setter = subject.set(
                 alias.isEmpty() ? i : alias
             );
 
             if (setter != null) {
                 Coder<?> coder = setter
-                    .assign(space, supplier);
+                    .deserialize(
+                        space, supplier
+                    );
 
                 if (coder != null) {
                     return coder.getBuilder(
-                        setter.getType()
+                        setter.getActual()
                     );
                 }
             }
@@ -592,17 +656,19 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             @NotNull Value value
         ) throws IOException {
             int i = index++;
-            setter = subject.getArgument(
+            setter = subject.arg(
                 alias.isEmpty() ? i : alias
             );
 
             if (setter != null) {
                 Coder<?> coder = setter
-                    .assign(space, supplier);
+                    .deserialize(
+                        space, supplier
+                    );
 
                 if (coder != null) {
                     value.setType(
-                        setter.getType()
+                        setter.getActual()
                     );
                     setter.invoke(
                         data, coder.read(
@@ -625,17 +691,19 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias
         ) throws IOException {
             int i = index++;
-            setter = subject.getArgument(
+            setter = subject.arg(
                 alias.isEmpty() ? i : alias
             );
 
             if (setter != null) {
                 Coder<?> coder = setter
-                    .assign(space, supplier);
+                    .deserialize(
+                        space, supplier
+                    );
 
                 if (coder != null) {
                     return coder.getBuilder(
-                        setter.getType()
+                        setter.getActual()
                     );
                 }
             }
@@ -781,17 +849,19 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             @NotNull Value value
         ) throws IOException {
             int i = index++;
-            target = subject.getArgument(
+            target = subject.arg(
                 alias.isEmpty() ? i : alias
             );
 
             if (target != null) {
                 Coder<?> coder = target
-                    .assign(space, supplier);
+                    .deserialize(
+                        space, supplier
+                    );
 
                 if (coder != null) {
                     value.setType(
-                        target.getType()
+                        target.getActual()
                     );
                     target.invoke(
                         data, coder.read(
@@ -800,17 +870,19 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                     );
                 }
             } else {
-                setter = subject.getProperty(
+                setter = subject.set(
                     alias.isEmpty() ? i : alias
                 );
 
                 if (setter != null) {
                     Coder<?> coder = setter
-                        .assign(space, supplier);
+                        .deserialize(
+                            space, supplier
+                        );
 
                     if (coder != null) {
                         value.setType(
-                            setter.getType()
+                            setter.getActual()
                         );
 
                         Cache<K> ca = new Cache<>();
@@ -839,32 +911,32 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             @NotNull Alias alias
         ) throws IOException {
             int i = index++;
-            target = subject.getArgument(
+            target = subject.arg(
                 alias.isEmpty() ? i : alias
             );
 
             Coder<?> coder;
             if (target != null) {
-                coder = target.assign(
+                coder = target.deserialize(
                     space, supplier
                 );
                 if (coder != null) {
                     return coder.getBuilder(
-                        target.getType()
+                        target.getActual()
                     );
                 }
             } else {
-                setter = subject.getProperty(
+                setter = subject.set(
                     alias.isEmpty() ? i : alias
                 );
 
                 if (setter != null) {
-                    coder = setter.assign(
+                    coder = setter.deserialize(
                         space, supplier
                     );
                     if (coder != null) {
                         return coder.getBuilder(
-                            setter.getType()
+                            setter.getActual()
                         );
                     }
                 }

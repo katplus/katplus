@@ -31,6 +31,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
+import static plus.kat.utils.Reflect.wrap;
 import static plus.kat.utils.Reflect.LOOKUP;
 
 /**
@@ -49,8 +50,8 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     protected final Class<T> klass;
     protected final Supplier supplier;
 
-    protected Entry<T>[] table;
-    protected Element<T, ?> head, tail;
+    protected Bundle<T>[] table;
+    protected Medium<T, ?> head, tail;
 
     protected AbstractSpare(
         @NotNull String space,
@@ -142,33 +143,10 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        Element<T, ?> m = head;
-        while (m != null) {
-            Object data = m.invoke(value);
-            if (data == null) {
-                if ((m.flags & Expose.NOTNULL) == 0) {
-                    chan.set(m.name, null);
-                }
-            } else {
-                if ((m.flags & Expose.UNWRAPPED) == 0) {
-                    chan.set(
-                        m.name, m.coder, data
-                    );
-                } else {
-                    Coder<?> coder = m.coder;
-                    if (coder != null) {
-                        coder.write(chan, data);
-                    } else {
-                        coder = supplier.lookup(
-                            data.getClass()
-                        );
-                        if (coder != null) {
-                            coder.write(chan, data);
-                        }
-                    }
-                }
-            }
-            m = m.near;
+        for (Medium<T, ?> m = head; m != null; m = m.near) {
+            m.serialize(
+                chan, m.invoke(value)
+            );
         }
     }
 
@@ -186,15 +164,13 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull T bean,
         @NotNull Visitor visitor
     ) {
-        Element<T, ?> m = head;
-        while (m != null) {
+        for (Medium<T, ?> m = head; m != null; m = m.near) {
             Object data = m.apply(bean);
             if (data != null || (m.flags & Expose.NOTNULL) == 0) {
                 visitor.visit(
                     m.name, data
                 );
             }
-            m = m.near;
         }
         return true;
     }
@@ -335,24 +311,10 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     }
 
     @Override
-    public Setter<T, ?> set(
-        @NotNull Object key
-    ) {
-        return getProperty(key);
-    }
-
-    @Override
-    public Getter<T, ?> get(
-        @NotNull Object key
-    ) {
-        return getAttribute(key);
-    }
-
-    @Override
-    public Member<T, ?> getProperty(
+    public Member<T, ?> set(
         @NotNull Object name
     ) {
-        Entry<T>[] tab = table;
+        Bundle<T>[] tab = table;
         if (tab == null) {
             return null;
         }
@@ -361,52 +323,52 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         hash = hash ^ (hash >>> 16);
 
         int m = tab.length - 1;
-        Entry<T> e = tab[m & hash];
+        Bundle<T> b = tab[m & hash];
 
-        while (e != null) {
-            if (e.hash == hash &&
-                (name.equals(e.key) ||
-                    e.key.equals(name))) {
-                return e.art;
+        while (b != null) {
+            if (b.hash == hash &&
+                (name.equals(b.key) ||
+                    b.key.equals(name))) {
+                return b.setter;
             }
-            e = e.next;
+            b = b.next;
         }
 
         return null;
     }
 
     @Override
-    public Member<T, ?> getAttribute(
-        @NotNull Object name
+    public Member<T, ?> get(
+        @NotNull Object key
     ) {
-        Entry<T>[] tab = table;
+        Bundle<T>[] tab = table;
         if (tab == null) {
             return null;
         }
 
-        int hash = name.hashCode();
+        int hash = key.hashCode();
         hash = hash ^ (hash >>> 16);
 
         int m = tab.length - 1;
-        Entry<T> e = tab[m & hash];
+        Bundle<T> b = tab[m & hash];
 
-        while (e != null) {
-            if (e.hash == hash &&
-                (name.equals(e.key) ||
-                    e.key.equals(name))) {
-                return e.att;
+        while (b != null) {
+            if (b.hash == hash &&
+                (key.equals(b.key) ||
+                    b.key.equals(key))) {
+                return b.getter;
             }
-            e = e.next;
+            b = b.next;
         }
 
         return null;
     }
 
     @Override
-    public Member<Object[], ?> getArgument(
+    public Member<Object[], ?> arg(
         @NotNull Object name
     ) {
-        Entry<T>[] tab = table;
+        Bundle<T>[] tab = table;
         if (tab == null) {
             return null;
         }
@@ -415,182 +377,34 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         hash = hash ^ (hash >>> 16);
 
         int m = tab.length - 1;
-        Entry<T> e = tab[m & hash];
+        Bundle<T> b = tab[m & hash];
 
-        while (e != null) {
-            if (e.hash == hash &&
-                (name.equals(e.key) ||
-                    e.key.equals(name))) {
-                return e.arg;
+        while (b != null) {
+            if (b.hash == hash &&
+                (name.equals(b.key) ||
+                    b.key.equals(name))) {
+                return b.param;
             }
-            e = e.next;
+            b = b.next;
         }
 
         return null;
     }
 
     /**
-     * Returns true if the elem is settled otherwise false
+     * Returns the {@link Bundle} being used
      *
-     * @param g the specified grade of elem
-     * @param k the specified key of elem
-     * @param m the specified elem to be settled
+     * @param key  the specified key of bundle
+     * @param node the specified bundle to be settled
      */
-    protected boolean setMember(
-        @NotNull int g,
-        @NotNull String k,
-        @NotNull Element<T, ?> m
-    ) {
-        Entry[] tab = table;
-        if (tab == null) {
-            tab = table = new Entry[4];
-        }
-
-        int i, h = k.hashCode();
-        h = h ^ (h >>> 16);
-
-        i = (tab.length - 1) & h;
-        Entry<T> node, e = tab[i];
-
-        if (e == null) {
-            node = m;
-            if (node.key != null) {
-                node = new Entry<>();
-            }
-            tab[i] = node;
-            node.att = m;
-            node.key = k;
-            node.hash = h;
-        } else {
-            while (true) {
-                if (e.hash == h &&
-                    (k.equals(e.key) ||
-                        e.key.equals(k))) {
-                    if (e.att == null) {
-                        e.att = m;
-                        break;
-                    } else {
-                        return false;
-                    }
-                }
-
-                Entry<T> next = e.next;
-                if (next != null) {
-                    e = next;
-                } else {
-                    node = m;
-                    if (node.key != null) {
-                        node = new Entry<>();
-                    }
-                    e.next = node;
-                    node.att = m;
-                    node.key = k;
-                    node.hash = h;
-                    break;
-                }
-            }
-        }
-
-        if (m.name == null) {
-            m.name = k;
-            m.grade = g;
-        } else {
-            return false;
-        }
-
-        Element<T, ?> n = head;
-        Element<T, ?> u = null;
-
-        int d = m.index;
-        if (d == -1 && g == 0) {
-            if (n == null) {
-                head = m;
-                tail = m;
-                return true;
-            }
-
-            if (n.index < -1) {
-                head = m;
-                tail = m;
-                m.near = n;
-            } else {
-                u = tail;
-                tail = m;
-                if (u == null) {
-                    do {
-                        u = n;
-                        n = n.near;
-                    } while (
-                        n != null
-                    );
-                } else {
-                    m.near = u.near;
-                }
-                u.near = m;
-            }
-        } else {
-            if (n == null) {
-                head = m;
-                return true;
-            }
-
-            if (d < 0) {
-                int c;
-                if (d != -1) {
-                    n = tail;
-                    if (n == null) n = head;
-                }
-                do {
-                    if ((c = n.index) < d ||
-                        (c == d && g > n.grade)) {
-                        if (u == null) {
-                            head = m;
-                        } else {
-                            u.near = m;
-                        }
-                        m.near = n;
-                        return true;
-                    }
-                } while (
-                    (n = (u = n).near) != null
-                );
-            } else {
-                do {
-                    int c = n.index;
-                    if ((c < 0 || d < c) ||
-                        (c == d && g > n.grade)) {
-                        if (u == null) {
-                            head = m;
-                        } else {
-                            u.near = m;
-                        }
-                        m.near = n;
-                        return true;
-                    }
-                } while (
-                    (n = (u = n).near) != null
-                );
-            }
-            u.near = m;
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns true if the elem is settled otherwise false
-     *
-     * @param key  the specified key of elem
-     * @param elem the specified elem to be settled
-     */
-    protected boolean setMember(
-        @Nullable Boolean fix,
+    @NotNull
+    private <K> Bundle<K> bundle(
         @NotNull Object key,
-        @NotNull Element elem
+        @NotNull Bundle<K> node
     ) {
-        Entry[] tab = table;
+        Bundle[] tab = table;
         if (tab == null) {
-            tab = table = new Entry[4];
+            tab = table = new Bundle[4];
         }
 
         int hash = key.hashCode();
@@ -600,83 +414,60 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             int l = tab.length;
             int i = (l - 1) & hash;
 
-            Entry node, e = tab[i];
-            if (e == null) {
-                node = elem;
+            Bundle b = tab[i];
+            if (b == null) {
                 if (node.key != null) {
-                    node = new Entry();
+                    node = new Bundle<>();
                 }
-                tab[i] = node;
                 node.key = key;
                 node.hash = hash;
-                if (fix == null) {
-                    node.arg = elem;
-                } else {
-                    node.art = elem;
-                }
-                return true;
+                return tab[i] = node;
             }
 
             for (int k = 0; ; k++) {
-                if (e.hash == hash &&
-                    (key.equals(e.key) ||
-                        e.key.equals(key))) {
-                    if (fix == null) {
-                        e.arg = elem;
-                    } else {
-                        if (fix || e.art == null) {
-                            e.art = elem;
-                        } else {
-                            return false;
-                        }
-                    }
-                    return true;
+                if (b.hash == hash &&
+                    (key.equals(b.key) ||
+                        b.key.equals(key))) {
+                    return b;
                 }
 
-                Entry next = e.next;
+                Bundle next = b.next;
                 if (next != null) {
-                    e = next;
+                    b = next;
                 } else {
                     if (l <= k) break;
-                    node = elem;
                     if (node.key != null) {
-                        node = new Entry();
+                        node = new Bundle<>();
                     }
-                    e.next = node;
                     node.key = key;
                     node.hash = hash;
-                    if (fix == null) {
-                        node.arg = elem;
-                    } else {
-                        node.art = elem;
-                    }
-                    return true;
+                    return b.next = node;
                 }
             }
 
             int s = l << 1;
-            Entry[] bucket = new Entry[s];
+            Bundle[] bucket = new Bundle[s];
 
-            Entry n, b;
-            int m = s - 1;
+            Bundle m, n;
+            int u = s - 1;
 
             for (int k = 0; k < l; k++) {
-                if ((e = tab[k]) != null) {
+                if ((b = tab[k]) != null) {
                     tab[k] = null;
                     do {
-                        n = e.next;
-                        i = m & e.hash;
+                        n = b.next;
+                        i = u & b.hash;
 
-                        b = bucket[i];
-                        if (b != null) {
-                            e.next = b.next;
-                            b.next = e;
+                        m = bucket[i];
+                        if (m != null) {
+                            b.next = m.next;
+                            m.next = b;
                         } else {
-                            e.next = null;
-                            bucket[i] = e;
+                            b.next = null;
+                            bucket[i] = b;
                         }
                     } while (
-                        (e = n) != null
+                        (b = n) != null
                     );
                 }
             }
@@ -685,39 +476,189 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     }
 
     /**
-     * Returns true if the elem is settled otherwise false
+     * Returns true if the {@link Medium} is settled
+     *
+     * @param name the specified key of bundle
+     * @param node the specified bundle to be settled
      */
-    protected boolean setProperty(
-        @NotNull Object key,
-        @NotNull Element<T, ?> elem
+    private boolean bundle(
+        @NotNull int grade,
+        @NotNull String name,
+        @NotNull Medium<T, ?> node
     ) {
-        return setMember(
-            true, key, elem
+        if (node.name == null) {
+            node.name = name;
+            node.grade = grade;
+        } else {
+            return false;
+        }
+
+        Medium<T, ?> m = head;
+        Medium<T, ?> n = null;
+
+        int d = node.index;
+        if (d == -1 && grade == 0) {
+            if (m == null) {
+                head = node;
+                tail = node;
+                return true;
+            }
+
+            if (m.index < -1) {
+                head = node;
+                tail = node;
+                node.near = m;
+            } else {
+                n = tail;
+                tail = node;
+                if (n == null) {
+                    do {
+                        n = m;
+                        m = m.near;
+                    } while (
+                        m != null
+                    );
+                } else {
+                    node.near = n.near;
+                }
+                n.near = node;
+            }
+        } else {
+            if (m == null) {
+                head = node;
+                return true;
+            }
+
+            if (d < 0) {
+                int c;
+                if (d != -1) {
+                    m = tail;
+                    if (m == null) m = head;
+                }
+                do {
+                    if ((c = m.index) < d ||
+                        (c == d && grade > m.grade)) {
+                        if (n == null) {
+                            head = node;
+                        } else {
+                            n.near = node;
+                        }
+                        node.near = m;
+                        return true;
+                    }
+                } while (
+                    (m = (n = m).near) != null
+                );
+            } else {
+                do {
+                    int c = m.index;
+                    if ((c < 0 || d < c) ||
+                        (c == d && grade > m.grade)) {
+                        if (n == null) {
+                            head = node;
+                        } else {
+                            n.near = node;
+                        }
+                        node.near = m;
+                        return true;
+                    }
+                } while (
+                    (m = (n = m).near) != null
+                );
+            }
+            n.near = node;
+        }
+
+        return true;
+    }
+
+    /**
+     * Sets the specified property
+     */
+    protected void setReader(
+        @NotNull Object key,
+        @NotNull Medium<T, ?> node
+    ) {
+        bundle(key, node).setter = node;
+    }
+
+    /**
+     * Sets the specified property.
+     * Returns true if the node is settled
+     */
+    protected boolean setReader(
+        @NotNull boolean fix,
+        @NotNull Object key,
+        @NotNull Medium<T, ?> node
+    ) {
+        Bundle<T> e = bundle(key, node);
+        if (fix || e.setter == null) {
+            e.setter = node;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Sets the specified attribute.
+     * Returns true if the node is settled
+     */
+    protected boolean setWriter(
+        @NotNull String name,
+        @NotNull Medium<T, ?> node
+    ) {
+        return setWriter(
+            0, name, node
         );
     }
 
     /**
-     * Returns true if the elem is settled otherwise false
+     * Sets the specified attribute.
+     * Returns true if the node is settled
      */
-    protected boolean setArgument(
-        @NotNull Object key,
-        @NotNull Element<Object[], ?> elem
+    protected boolean setWriter(
+        @NotNull int grade,
+        @NotNull String name,
+        @NotNull Medium<T, ?> node
     ) {
-        return setMember(
-            null, key, elem
-        );
+        Bundle<T> e = bundle(name, node);
+        if (e.getter != null) {
+            return false;
+        } else {
+            e.getter = node;
+            return bundle(
+                grade, name, node
+            );
+        }
     }
 
     /**
-     * Returns true if the elem is settled otherwise false
+     * Sets the specified parameter
      */
-    protected boolean setAttribute(
-        @NotNull String key,
-        @NotNull Element<T, ?> elem
+    protected void setParam(
+        @NotNull Object key,
+        @NotNull Medium<Object[], ?> node
     ) {
-        return setMember(
-            0, key, elem
-        );
+        bundle(key, node).param = node;
+    }
+
+    /**
+     * Sets the specified parameter.
+     * Returns true if the node is settled
+     */
+    protected boolean setParam(
+        @NotNull boolean fix,
+        @NotNull Object key,
+        @NotNull Medium<Object[], ?> node
+    ) {
+        Bundle<Object[]> e = bundle(key, node);
+        if (fix || e.param == null) {
+            e.param = node;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -727,8 +668,8 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     public static class Folder<K>
         implements Spoiler {
 
-        protected Element<K, ?> near;
-        protected Element<K, ?> elem;
+        protected Medium<K, ?> near;
+        protected Medium<K, ?> node;
 
         protected K bean;
         protected AbstractSpare<K> spare;
@@ -744,24 +685,24 @@ public abstract class AbstractSpare<T> implements Subject<T> {
 
         @Override
         public String getKey() {
-            return elem.name;
+            return node.name;
         }
 
         @Override
         public Object getValue() {
-            return elem.apply(bean);
+            return node.apply(bean);
         }
 
         @Override
         public Class<?> getType() {
-            return elem.kind;
+            return node.clazz;
         }
 
         @Override
         public boolean hasNext() {
-            Element<K, ?> n = near;
+            Medium<K, ?> n = near;
             if (n != null) {
-                elem = n;
+                node = n;
                 near = n.near;
                 return true;
             } else {
@@ -774,28 +715,29 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      * @author kraity
      * @since 0.0.4
      */
-    public static class Entry<K> {
+    public static class Bundle<K> {
         private int hash;
         private Object key;
-        private Entry<K> next;
+        private Bundle<K> next;
 
-        private Element<K, ?> att, art;
-        private Element<Object[], ?> arg;
+        private Member<K, ?> setter;
+        private Member<K, ?> getter;
+        private Member<Object[], ?> param;
     }
 
     /**
      * @author kraity
      * @since 0.0.4
      */
-    public abstract static class Element<K, V>
-        extends Entry<K> implements Member<K, V> {
+    public abstract static class Medium<K, V>
+        extends Bundle<K> implements Member<K, V> {
 
         private int grade;
         private String name;
-        private Element<K, ?> near;
+        private Medium<K, ?> near;
 
-        protected Type type;
-        protected Class<?> kind;
+        protected Type actual;
+        protected Class<?> clazz;
 
         protected int flags;
         public final int index;
@@ -805,10 +747,10 @@ public abstract class AbstractSpare<T> implements Subject<T> {
 
         /**
          * <pre>{@code
-         *  Element elem = new ElementImpl(0);
+         *  Medium node = new MediumImpl(0);
          * }</pre>
          */
-        protected Element(
+        protected Medium(
             int index
         ) {
             this.index = index;
@@ -817,10 +759,10 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         /**
          * <pre>{@code
          *  Expose expose = ...
-         *  Element elem = new ElementImpl(expose);
+         *  Medium node = new MediumImpl(expose);
          * }</pre>
          */
-        protected Element(
+        protected Medium(
             @Nullable Expose elem
         ) {
             if (elem == null) {
@@ -833,52 +775,118 @@ public abstract class AbstractSpare<T> implements Subject<T> {
 
         /**
          * <pre>{@code
-         *  Element element = ...
-         *  Element element0 = new ElementImpl(element);
+         *  Medium node = ...
+         *  Medium node0 = new MediumImpl(node);
          * }</pre>
          */
-        protected Element(
-            @NotNull Element<?, ?> elem
+        protected Medium(
+            @NotNull Medium<?, ?> node
         ) {
-            kind = elem.kind;
-            type = elem.type;
-            coder = elem.coder;
-            flags = elem.flags;
-            index = elem.index;
-            element = elem.element;
-        }
-
-        /**
-         * Returns the {@link Type} of {@link V}
-         */
-        @Override
-        public Type getType() {
-            return type;
+            coder = node.coder;
+            clazz = node.clazz;
+            index = node.index;
+            flags = node.flags;
+            actual = node.actual;
+            element = node.element;
         }
 
         /**
          * Returns the {@link Class} of {@link V}
          */
         @Override
-        public Class<?> getKind() {
-            return kind;
+        public Class<?> getType() {
+            return clazz;
+        }
+
+        /**
+         * Returns {@code true} if processed
+         */
+        @Override
+        public boolean serialize(
+            @NotNull Chan chan,
+            @Nullable Object value
+        ) throws IOException {
+            if (value == null) {
+                if ((flags & Expose.NOTNULL) == 0) {
+                    chan.set(name, null);
+                }
+            } else {
+                if ((flags & Expose.UNWRAPPED) == 0) {
+                    chan.set(
+                        name, coder, value
+                    );
+                } else {
+                    Coder<?> it = coder;
+                    if (it != null) {
+                        it.write(chan, value);
+                    } else {
+                        it = chan.getSupplier().lookup(
+                            value.getClass()
+                        );
+                        if (it == null) {
+                            return false;
+                        } else {
+                            it.write(chan, value);
+                        }
+                    }
+                }
+            }
+            return true;
         }
 
         /**
          * Returns the {@link Coder} of {@link V}
          */
         @Override
-        public Coder<?> assign(
+        public Coder<?> deserialize(
             @NotNull Space space,
-            @NotNull Supplier supplier
-        ) {
-            Coder<?> co = coder;
-            if (co != null) {
-                return co;
+            @Nullable Supplier supplier
+        ) throws IOException {
+            Coder<?> it = coder;
+            if (it != null) {
+                return it;
             }
-            return supplier.lookup(
-                kind, space
+
+            if (supplier != null) {
+                return supplier.lookup(
+                    clazz, space
+                );
+            }
+
+            throw new UnexpectedCrash(
+                "Unexpectedly, supplier not found"
             );
+        }
+
+        /**
+         * Returns the {@link Type} of {@link V}
+         */
+        @Override
+        public Type getActual() {
+            return actual;
+        }
+
+        /**
+         * Returns the {@link AnnotatedElement} of {@link V}
+         */
+        @Override
+        public AnnotatedElement getAnnotated() {
+            return element;
+        }
+
+        /**
+         * Returns the annotation of the specified type
+         */
+        @Override
+        public <A extends Annotation> A getAnnotation(
+            @NotNull Class<A> target
+        ) {
+            AnnotatedElement elem = element;
+            if (elem != null) {
+                return elem.getAnnotation(target);
+            } else {
+                return clazz.getAnnotation(target);
+            }
         }
 
         /**
@@ -886,14 +894,14 @@ public abstract class AbstractSpare<T> implements Subject<T> {
          *
          * @param type the specified type
          */
-        protected void setup(
+        protected void prepare(
             @NotNull Class<?> type
         ) {
             if (!type.isPrimitive()) {
-                kind = type;
+                clazz = type;
             } else {
+                clazz = wrap(type);
                 flags |= Expose.NOTNULL;
-                kind = Reflect.wrap(type);
             }
         }
 
@@ -902,14 +910,12 @@ public abstract class AbstractSpare<T> implements Subject<T> {
          *
          * @param field the specified field
          */
-        protected void setup(
+        protected void prepare(
             @NotNull Field field
         ) {
             element = field;
-            type = field.getGenericType();
-            setup(
-                field.getType()
-            );
+            actual = field.getGenericType();
+            prepare(field.getType());
         }
 
         /**
@@ -917,20 +923,20 @@ public abstract class AbstractSpare<T> implements Subject<T> {
          *
          * @param method the specified method
          */
-        protected void setup(
+        protected void prepare(
             @NotNull Method method
         ) {
             element = method;
             switch (method.getParameterCount()) {
                 case 0: {
                     Class<?> kind = method.getReturnType();
-                    setup(kind);
-                    type = kind;
+                    actual = kind;
+                    prepare(kind);
                     break;
                 }
                 case 1: {
-                    setup(method.getParameterTypes()[0]);
-                    type = method.getGenericParameterTypes()[0];
+                    actual = method.getGenericParameterTypes()[0];
+                    prepare(method.getParameterTypes()[0]);
                     break;
                 }
                 default: {
@@ -940,27 +946,13 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 }
             }
         }
-
-        /**
-         * Returns the annotation of the specified type
-         */
-        @Override
-        public <A extends Annotation> A annotate(
-            @NotNull Class<A> target
-        ) {
-            AnnotatedElement elem = element;
-            if (elem != null) {
-                return elem.getAnnotation(target);
-            }
-            return null;
-        }
     }
 
     /**
      * @author kraity
      * @since 0.0.4
      */
-    public static class Accessor<K> extends Element<K, Object> {
+    public static class Accessor<K> extends Medium<K, Object> {
 
         protected final MethodHandle getter;
         protected final MethodHandle setter;
@@ -974,7 +966,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             if (!field.isAccessible()) {
                 field.setAccessible(true);
             }
-            setup(field);
+            prepare(field);
             coder = supplier.assign(
                 expose, this
             );
@@ -991,7 +983,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
-            setup(method);
+            prepare(method);
             coder = supplier.assign(
                 expose, this
             );
@@ -1055,7 +1047,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      * @author kraity
      * @since 0.0.4
      */
-    public static class Argument extends Element<Object[], Object> {
+    public static class Argument extends Medium<Object[], Object> {
 
         protected Annotation[] annotations;
 
@@ -1066,7 +1058,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             Supplier supplier
         ) {
             super(index);
-            setup(field);
+            prepare(field);
             coder = supplier.assign(
                 expose, this
             );
@@ -1080,11 +1072,11 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             Annotation[] annotations
         ) {
             super(index);
-            this.type = type;
-            setup(kind);
+            this.actual = type;
+            prepare(kind);
             this.annotations = annotations;
             coder = supplier.assign(
-                annotate(Expose.class), this
+                getAnnotation(Expose.class), this
             );
         }
 
@@ -1108,7 +1100,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         }
 
         @Override
-        public <A extends Annotation> A annotate(
+        public <A extends Annotation> A getAnnotation(
             @NotNull Class<A> target
         ) {
             AnnotatedElement elem = element;

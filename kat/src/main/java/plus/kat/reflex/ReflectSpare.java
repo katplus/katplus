@@ -288,15 +288,15 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
 
                 if (expose == null) {
                     name = field.getName();
-                    if (getProperty(name) == null) {
+                    if (set(name) == null) {
                         variable = true;
                         member = new Accessor<>(
                             null, field, supplier
                         );
-                        setMember(
+                        setWriter(
                             grade, name, member
                         );
-                        setProperty(
+                        setReader(
                             name, member
                         );
                     }
@@ -310,7 +310,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     name = field.getName();
                 }
 
-                if (getProperty(name) != null) {
+                if (set(name) != null) {
                     continue;
                 }
 
@@ -321,7 +321,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
 
                 if (direct) {
                     if (member.index >= 0) {
-                        setProperty(
+                        setReader(
                             member.index, member
                         );
                     }
@@ -331,22 +331,22 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 boolean display = (mode & Expose.HIDDEN) == 0;
 
                 if (keys.length == 0) {
-                    setProperty(
+                    setReader(
                         name, member
                     );
                     if (display) {
-                        setMember(
+                        setWriter(
                             grade, name, member
                         );
                     }
                 } else {
                     for (String alias : keys) {
                         if (!alias.isEmpty()) {
-                            setProperty(
+                            setReader(
                                 alias, member
                             );
                             if (display) {
-                                setMember(
+                                setWriter(
                                     grade, alias, member
                                 );
                             }
@@ -402,7 +402,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     String[] keys = expose.value();
                     if (keys.length != 0) {
                         if (count == 0) {
-                            if (getAttribute(keys[0]) != null) {
+                            if (get(keys[0]) != null) {
                                 continue;
                             }
 
@@ -412,12 +412,12 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
 
                             // register all aliases
                             for (String key : keys) {
-                                setMember(
+                                setWriter(
                                     grade, key, member
                                 );
                             }
                         } else {
-                            if (getProperty(keys[0]) != null) {
+                            if (set(keys[0]) != null) {
                                 continue;
                             }
 
@@ -428,7 +428,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
 
                             if (direct) {
                                 if (member.index >= 0) {
-                                    setProperty(
+                                    setReader(
                                         member.index, member
                                     );
                                 }
@@ -436,7 +436,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
 
                             for (String alias : keys) {
                                 if (!alias.isEmpty()) {
-                                    setProperty(
+                                    setReader(
                                         alias, member
                                     );
                                 }
@@ -454,8 +454,8 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
 
                 if (count == 0) {
                     String key = Binary.ascii(name);
-                    if (getAttribute(key) == null) {
-                        setMember(
+                    if (get(key) == null) {
+                        setWriter(
                             grade, key, new Accessor<>(
                                 expose, method, supplier
                             )
@@ -463,9 +463,9 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     }
                 } else {
                     Alias key = Binary.alias(name);
-                    if (getProperty(key) == null) {
+                    if (set(key) == null) {
                         variable = true;
-                        setProperty(
+                        setReader(
                             key, member = new Accessor<>(
                                 expose, method, supplier
                             )
@@ -473,7 +473,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
 
                         if (direct) {
                             if (member.index >= 0) {
-                                setProperty(
+                                setReader(
                                     member.index, member
                                 );
                             }
@@ -547,15 +547,15 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     );
 
                     Expose expose = arg
-                        .annotate(Expose.class);
+                        .getAnnotation(Expose.class);
                     if (expose == null) {
-                        setArgument(
+                        setParam(
                             "arg" + k, arg
                         );
                     } else {
                         String[] v = expose.value();
                         for (String alias : v) {
-                            setArgument(
+                            setParam(
                                 alias, arg
                             );
                         }
