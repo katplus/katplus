@@ -15,6 +15,7 @@
  */
 package plus.kat.anno;
 
+import plus.kat.It;
 import plus.kat.Spare;
 
 import java.lang.annotation.*;
@@ -28,13 +29,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Embed {
     /**
-     * Embed Flags
-     */
-    int SEALED = 0x1;
-    int DIRECT = 0x2;
-    int HIDDEN = 0x4;
-
-    /**
      * Returns the space of this
      *
      * @since 0.0.1
@@ -44,9 +38,10 @@ public @interface Embed {
     /**
      * Returns the flags of this
      *
+     * @see It
      * @since 0.0.4
      */
-    int mode() default 0;
+    int require() default 0;
 
     /**
      * Returns the specified {@link Spare} or the pointing {@link Class}

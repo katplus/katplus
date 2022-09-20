@@ -80,11 +80,10 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
             space = klass.getSimpleName();
         } else {
             String[] names = embed.value();
-            if (names.length == 0) {
-                space = klass.getSimpleName();
-            } else {
+            if (names.length != 0) {
                 space = (spaces = names)[0];
-                expose = (embed.mode() & Embed.HIDDEN) == 0;
+            } else {
+                space = klass.getSimpleName();
             }
         }
     }
@@ -99,7 +98,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         @NotNull Supplier supplier
     ) {
         supplier.embed(klass, this);
-        if (expose) {
+        if (spaces != null) {
             for (String space : spaces) {
                 if (space.indexOf('.', 1) != -1) {
                     supplier.embed(space, this);

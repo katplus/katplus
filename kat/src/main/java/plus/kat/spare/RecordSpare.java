@@ -151,24 +151,23 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                 String[] keys = null;
                 String name = field.getName();
                 if (e1 == null) {
-                    setParam(
+                    setParameter(
                         name, arg
                     );
                 } else {
                     String[] ks = e1.value();
                     if (ks.length == 0) {
-                        setParam(
+                        setParameter(
                             name, arg
                         );
                     } else {
                         for (String key : (keys = ks)) {
-                            setParam(
+                            setParameter(
                                 key, arg
                             );
                         }
                     }
-                    if ((e1.mode() &
-                        Expose.HIDDEN) != 0) {
+                    if (It.internal(e1.require())) {
                         continue;
                     }
                 }
@@ -196,8 +195,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                             );
                         }
                     }
-                } else if ((e2.mode() &
-                    Expose.HIDDEN) == 0) {
+                } else if (!It.internal(e2.require())) {
                     accessor = new Accessor<>(
                         e2, method, supplier
                     );

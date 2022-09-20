@@ -7,7 +7,7 @@ import plus.kat.Spare;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 
-import static plus.kat.anno.Embed.*;
+import static plus.kat.It.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -34,13 +34,19 @@ public class WorkerTest {
         assertEquals("User{Meta:meta{i:sig(101)s:key(K)s:algo(RSA)}}", spare.write(user).toString());
     }
 
-    @Embed("User")
+    @Embed(
+        value = "User",
+        require = sealed
+    )
     static class User {
         @Expose("meta")
         private Meta meta;
     }
 
-    @Embed(value = "Meta", mode = DIRECT)
+    @Embed(
+        value = "Meta",
+        require = nimble
+    )
     static class Meta {
         @Expose(index = 0)
         private int sig;

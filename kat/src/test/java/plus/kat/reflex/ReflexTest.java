@@ -6,6 +6,7 @@ import plus.kat.*;
 
 import plus.kat.anno.*;
 
+import static plus.kat.It.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ReflexTest {
@@ -188,7 +189,10 @@ public class ReflexTest {
 
     @Embed("Tag")
     static class Tag {
-        @Expose(value = "id", mode = 1)
+        @Expose(
+            value = "id",
+            require = NotNull
+        )
         private String id;
         private String name;
 
@@ -198,7 +202,7 @@ public class ReflexTest {
             this.name = name;
         }
 
-        @Expose(mode = 1)
+        @Expose(require = NotNull)
         public String getName() {
             return name;
         }
@@ -286,7 +290,9 @@ public class ReflexTest {
     static class Master {
         public int id;
 
-        @Expose(mode = 2)
+        @Expose(
+            require = unwrapped
+        )
         public Name name;
     }
 

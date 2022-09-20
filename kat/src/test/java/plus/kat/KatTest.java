@@ -9,10 +9,23 @@ import plus.kat.crash.Crash;
 import java.io.*;
 import java.util.*;
 
+import static plus.kat.It.*;
 import static plus.kat.Spare.lookup;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class KatTest {
+
+    @Embed("plus.kat.User")
+    static class User {
+        @Expose("id")
+        private int id;
+
+        @Expose("name")
+        private String name;
+
+        @Expose({"blocked", "disabled"})
+        private boolean blocked;
+    }
 
     @Test
     public void test_pretty() {
@@ -359,7 +372,7 @@ public class KatTest {
         Spare<Note> spare =
             lookup(Note.class);
 
-        String text = "plus.kat.entity.Note{i:id(1)s:title(KAT+)B:cipher(S0FUKw==)A:meta{A{i(8)i(16)}A{i(32)}}A:tags{s(kat)}State:state(OPEN)f:version(0.1)l:created(1645539742000)b:deleted(1)L:authors{plus.kat.User{i:id(1)s:name(kraity)b:blocked(1)}}}";
+        String text = "plus.kat.Note{i:id(1)s:title(KAT+)B:cipher(S0FUKw==)A:meta{A{i(8)i(16)}A{i(32)}}A:tags{s(kat)}State:state(OPEN)f:version(0.1)l:created(1645539742000)b:deleted(1)L:authors{plus.kat.User{i:id(1)s:name(kraity)b:blocked(1)}}}";
         Note note = spare.read(
             new Event<>(text)
         );
@@ -378,7 +391,7 @@ public class KatTest {
         OPEN, SELF
     }
 
-    @Embed("plus.kat.entity.Note")
+    @Embed("plus.kat.Note")
     static class Note {
         @Expose("id")
         private int id;
@@ -411,20 +424,11 @@ public class KatTest {
         private List<? extends User> authors;
     }
 
-    @Embed("plus.kat.User")
-    static class User {
-        @Expose("id")
-        private int id;
-
-        @Expose("name")
-        private String name;
-
-        @Expose({"blocked", "disabled"})
-        private boolean blocked;
-    }
-
     static class Meta {
-        @Expose("user")
+        @Expose(
+            value = "user",
+            require = NotNull
+        )
         private User user;
     }
 
@@ -444,5 +448,34 @@ public class KatTest {
 
         @Expose("list")
         private ArrayList list;
+    }
+
+    @Embed("UserVO")
+    static class UserVO {
+        @Expose("uid")
+        private int uid;
+
+        @Expose(
+            value = "token",
+            require = readonly
+        )
+        private String token;
+    }
+
+    @Test
+    public void test_serialOnly() {
+        Supplier supplier = Supplier.ins();
+
+        UserVO user = supplier.read(
+            UserVO.class, new Event<>(
+                "{:uid(1):token(TOKEN)}"
+            )
+        );
+
+        assertNull(user.token);
+        assertEquals(1, user.uid);
+
+        user.token = "ACCESS";
+        assertEquals("UserVO{i:uid(1)s:token(ACCESS)}", Kat.encode(user));
     }
 }

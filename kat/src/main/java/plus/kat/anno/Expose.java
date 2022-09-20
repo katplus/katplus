@@ -15,6 +15,7 @@
  */
 package plus.kat.anno;
 
+import plus.kat.It;
 import plus.kat.spare.Coder;
 
 import java.lang.annotation.*;
@@ -32,13 +33,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Expose {
     /**
-     * Expose Flags
-     */
-    int HIDDEN = 0x4;
-    int NOTNULL = 0x1;
-    int UNWRAPPED = 0x2;
-
-    /**
      * Returns the alias of this
      *
      * @since 0.0.1
@@ -46,18 +40,19 @@ public @interface Expose {
     String[] value() default {};
 
     /**
-     * Returns the flags of this
-     *
-     * @since 0.0.4
-     */
-    int mode() default 0;
-
-    /**
      * Returns the index of this
      *
      * @since 0.0.1
      */
     int index() default -1;
+
+    /**
+     * Returns the flags of this
+     *
+     * @see It
+     * @since 0.0.4
+     */
+    int require() default 0;
 
     /**
      * Returns the specified {@link Coder} or the pointing {@link Class}

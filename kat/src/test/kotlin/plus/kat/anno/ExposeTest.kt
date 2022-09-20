@@ -2,6 +2,7 @@ package plus.kat.anno
 
 import plus.kat.*
 
+import plus.kat.It.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
@@ -25,7 +26,9 @@ class ExposeKtTest {
     class Meta {
         var id: Number? = 1
 
-        @set:Expose(mode = 1)
+        @set:Expose(
+            require = NotNull
+        )
         var tag: Number? = 2
     }
 }

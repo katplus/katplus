@@ -41,12 +41,10 @@ import static plus.kat.utils.Reflect.LOOKUP;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class AbstractSpare<T> implements Subject<T> {
 
-    protected String[] spaces;
-    protected final String space;
-
     protected int flags;
-    protected boolean expose;
+    protected String[] spaces;
 
+    protected final String space;
     protected final Class<T> klass;
     protected final Supplier supplier;
 
@@ -73,13 +71,12 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         if (embed == null) {
             space = klass.getName();
         } else {
-            flags = embed.mode();
+            flags = embed.require();
             String[] names = embed.value();
             if (names.length == 0) {
                 space = klass.getName();
             } else {
                 space = (spaces = names)[0];
-                expose = (embed.mode() & Embed.HIDDEN) == 0;
             }
         }
     }
@@ -116,7 +113,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull Supplier supplier
     ) {
         supplier.embed(klass, this);
-        if (expose) {
+        if (spaces != null) {
             for (String space : spaces) {
                 if (space.indexOf('.', 1) != -1) {
                     supplier.embed(space, this);
@@ -166,7 +163,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     ) {
         for (Medium<T, ?> m = head; m != null; m = m.near) {
             Object data = m.apply(bean);
-            if (data != null || (m.flags & Expose.NOTNULL) == 0) {
+            if (data != null || (m.flags & It.NotNull) == 0) {
                 visitor.visit(
                     m.name, data
                 );
@@ -634,9 +631,43 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     }
 
     /**
+     * Sets the specified property.
+     * Returns true if the node is settled
+     */
+    protected boolean setProperty(
+        @NotNull String name,
+        @NotNull Medium<T, ?> node
+    ) {
+        return setProperty(
+            0, name, node
+        );
+    }
+
+    /**
+     * Sets the specified property.
+     * Returns true if the node is settled
+     */
+    protected boolean setProperty(
+        @NotNull int grade,
+        @NotNull String name,
+        @NotNull Medium<T, ?> node
+    ) {
+        Bundle<T> e = bundle(name, node);
+        e.setter = node;
+        if (e.getter != null) {
+            return false;
+        } else {
+            e.getter = node;
+            return bundle(
+                grade, name, node
+            );
+        }
+    }
+
+    /**
      * Sets the specified parameter
      */
-    protected void setParam(
+    protected void setParameter(
         @NotNull Object key,
         @NotNull Medium<Object[], ?> node
     ) {
@@ -647,7 +678,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      * Sets the specified parameter.
      * Returns true if the node is settled
      */
-    protected boolean setParam(
+    protected boolean setParameter(
         @NotNull boolean fix,
         @NotNull Object key,
         @NotNull Medium<Object[], ?> node
@@ -768,8 +799,8 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             if (elem == null) {
                 index = -1;
             } else {
-                flags = elem.mode();
                 index = elem.index();
+                flags = elem.require();
             }
         }
 
@@ -807,11 +838,11 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             @Nullable Object value
         ) throws IOException {
             if (value == null) {
-                if ((flags & Expose.NOTNULL) == 0) {
+                if ((flags & It.NotNull) == 0) {
                     chan.set(name, null);
                 }
             } else {
-                if ((flags & Expose.UNWRAPPED) == 0) {
+                if ((flags & It.unwrapped) == 0) {
                     chan.set(
                         name, coder, value
                     );
@@ -901,7 +932,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 clazz = type;
             } else {
                 clazz = wrap(type);
-                flags |= Expose.NOTNULL;
+                flags |= It.NotNull;
             }
         }
 
@@ -954,13 +985,25 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      */
     public static class Accessor<K> extends Medium<K, Object> {
 
-        protected final MethodHandle getter;
-        protected final MethodHandle setter;
+        protected MethodHandle getter;
+        protected MethodHandle setter;
 
         public Accessor(
-            @Nullable Expose expose,
-            @NotNull Field field,
-            @NotNull Supplier supplier
+            Expose expose,
+            Field field,
+            Supplier supplier
+        ) throws IllegalAccessException {
+            this(
+                expose, field,
+                false, supplier
+            );
+        }
+
+        public Accessor(
+            Expose expose,
+            Field field,
+            Boolean readonly,
+            Supplier supplier
         ) throws IllegalAccessException {
             super(expose);
             if (!field.isAccessible()) {
@@ -970,14 +1013,21 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             coder = supplier.assign(
                 expose, this
             );
-            getter = LOOKUP.unreflectGetter(field);
-            setter = LOOKUP.unreflectSetter(field);
+
+            if (readonly == null) {
+                getter = LOOKUP.unreflectGetter(field);
+            } else {
+                setter = LOOKUP.unreflectSetter(field);
+                if (!readonly) {
+                    getter = LOOKUP.unreflectGetter(field);
+                }
+            }
         }
 
         public Accessor(
-            @Nullable Expose expose,
-            @NotNull Method method,
-            @NotNull Supplier supplier
+            Expose expose,
+            Method method,
+            Supplier supplier
         ) throws IllegalAccessException {
             super(expose);
             if (!method.isAccessible()) {
@@ -987,12 +1037,11 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             coder = supplier.assign(
                 expose, this
             );
-            if (method.getParameterCount() == 0) {
-                setter = null;
-                getter = LOOKUP.unreflect(method);
-            } else {
-                getter = null;
+
+            if (method.getParameterCount() != 0) {
                 setter = LOOKUP.unreflect(method);
+            } else {
+                getter = LOOKUP.unreflect(method);
             }
         }
 
@@ -1027,7 +1076,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                     "Setter is not supported"
                 );
             }
-            if (value != null || (flags & Expose.NOTNULL) == 0) {
+            if (value != null || (flags & It.NotNull) == 0) {
                 try {
                     method.invoke(
                         bean, value
@@ -1092,7 +1141,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             @NotNull Object[] bean,
             @Nullable Object value
         ) {
-            if (value != null || (flags & Expose.NOTNULL) == 0) {
+            if (value != null || (flags & It.NotNull) == 0) {
                 bean[index] = value;
                 return true;
             }

@@ -251,8 +251,8 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
         @NotNull int grade,
         @NotNull Field[] fields
     ) {
-        boolean sealed = (flags & Embed.SEALED) != 0;
-        boolean direct = (flags & Embed.DIRECT) != 0;
+        boolean sealed = It.sealed(flags);
+        boolean nimble = It.nimble(flags);
 
         for (Field field : fields)
             try {
@@ -293,13 +293,17 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                         member = new Accessor<>(
                             null, field, supplier
                         );
-                        setWriter(
+                        setProperty(
                             grade, name, member
                         );
-                        setReader(
-                            name, member
-                        );
                     }
+                    continue;
+                }
+
+                int flag = expose.require();
+                boolean solveOnly = It.internal(flag);
+                boolean serialOnly = It.readonly(flag);
+                if (solveOnly && serialOnly) {
                     continue;
                 }
 
@@ -310,46 +314,69 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     name = field.getName();
                 }
 
-                if (set(name) != null) {
-                    continue;
-                }
-
-                variable = true;
-                member = new Accessor<>(
-                    expose, field, supplier
-                );
-
-                if (direct) {
-                    if (member.index >= 0) {
-                        setReader(
-                            member.index, member
-                        );
+                if (serialOnly) {
+                    if (get(name) != null) {
+                        continue;
                     }
-                }
 
-                int mode = expose.mode();
-                boolean display = (mode & Expose.HIDDEN) == 0;
-
-                if (keys.length == 0) {
-                    setReader(
-                        name, member
+                    member = new Accessor<>(
+                        expose, field, null, supplier
                     );
-                    if (display) {
+
+                    if (keys.length == 0) {
                         setWriter(
                             grade, name, member
                         );
-                    }
-                } else {
-                    for (String alias : keys) {
-                        if (!alias.isEmpty()) {
-                            setReader(
-                                alias, member
-                            );
-                            if (display) {
+                    } else {
+                        for (String alias : keys) {
+                            if (!alias.isEmpty()) {
                                 setWriter(
                                     grade, alias, member
                                 );
                             }
+                        }
+                    }
+                } else {
+                    if (set(name) != null) {
+                        continue;
+                    }
+
+                    variable = true;
+                    member = new Accessor<>(
+                        expose, field, solveOnly, supplier
+                    );
+
+                    if (keys.length == 0) {
+                        if (solveOnly) {
+                            setReader(
+                                name, member
+                            );
+                        } else {
+                            setProperty(
+                                grade, name, member
+                            );
+                        }
+                    } else {
+                        for (String alias : keys) {
+                            if (!alias.isEmpty()) {
+                                if (solveOnly) {
+                                    setReader(
+                                        alias, member
+                                    );
+                                } else {
+                                    setProperty(
+                                        grade, alias, member
+                                    );
+                                }
+                            }
+                        }
+                    }
+
+                    if (nimble) {
+                        if (member.index >= 0) {
+                            setReader(
+                                member.index, member
+                            );
                         }
                     }
                 }
@@ -362,8 +389,8 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
         @NotNull int grade,
         @NotNull Method[] methods
     ) {
-        boolean sealed = (flags & Embed.SEALED) != 0;
-        boolean direct = (flags & Embed.DIRECT) != 0;
+        boolean sealed = It.sealed(flags);
+        boolean nimble = It.nimble(flags);
 
         for (Method method : methods)
             try {
@@ -399,9 +426,14 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                         continue;
                     }
                 } else {
+                    int flag = expose.require();
                     String[] keys = expose.value();
-                    if (keys.length != 0) {
-                        if (count == 0) {
+
+                    if (count == 0) {
+                        if (It.internal(flag)) {
+                            continue;
+                        }
+                        if (keys.length != 0) {
                             if (get(keys[0]) != null) {
                                 continue;
                             }
@@ -410,13 +442,18 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                                 expose, method, supplier
                             );
 
-                            // register all aliases
                             for (String key : keys) {
                                 setWriter(
                                     grade, key, member
                                 );
                             }
-                        } else {
+                            continue;
+                        }
+                    } else {
+                        if (It.readonly(flag)) {
+                            continue;
+                        }
+                        if (keys.length != 0) {
                             if (set(keys[0]) != null) {
                                 continue;
                             }
@@ -426,14 +463,6 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                                 expose, method, supplier
                             );
 
-                            if (direct) {
-                                if (member.index >= 0) {
-                                    setReader(
-                                        member.index, member
-                                    );
-                                }
-                            }
-
                             for (String alias : keys) {
                                 if (!alias.isEmpty()) {
                                     setReader(
@@ -441,8 +470,15 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                                     );
                                 }
                             }
+
+                            if (nimble) {
+                                if (member.index >= 0) {
+                                    setReader(
+                                        member.index, member
+                                    );
+                                }
+                            }
                         }
-                        continue;
                     }
                 }
 
@@ -471,7 +507,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                             )
                         );
 
-                        if (direct) {
+                        if (nimble) {
                             if (member.index >= 0) {
                                 setReader(
                                     member.index, member
@@ -549,13 +585,13 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     Expose expose = arg
                         .getAnnotation(Expose.class);
                     if (expose == null) {
-                        setParam(
+                        setParameter(
                             "arg" + k, arg
                         );
                     } else {
                         String[] v = expose.value();
                         for (String alias : v) {
-                            setParam(
+                            setParameter(
                                 alias, arg
                             );
                         }

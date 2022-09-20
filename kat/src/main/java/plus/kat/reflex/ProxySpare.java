@@ -157,7 +157,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                         continue;
                     }
 
-                    if ((expose.mode() & Expose.HIDDEN) == 0) {
+                    if (!It.internal(expose.require())) {
                         String[] keys = expose.value();
                         if (keys.length == 0) {
                             setWriter(
@@ -243,7 +243,7 @@ public class ProxySpare extends AbstractSpare<Object> {
             @NotNull Object bean,
             @Nullable Object value
         ) {
-            if (value != null || (flags & Expose.NOTNULL) == 0) {
+            if (value != null || (flags & It.NotNull) == 0) {
                 try {
                     Class<?> cl = bean.getClass();
                     if (cl != spare.proxy) {
