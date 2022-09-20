@@ -822,6 +822,67 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         }
 
         /**
+         * <pre>{@code
+         *  Field field = ...
+         *  Expose expose = ...
+         *  Medium medium = new MediumImpl(field, expose);
+         * }</pre>
+         */
+        protected Medium(
+            @NotNull Field field,
+            @Nullable Expose expose
+        ) {
+            this(expose);
+            element = field;
+            actual = field.getGenericType();
+            Class<?> type = field.getType();
+            if (!type.isPrimitive()) {
+                clazz = type;
+            } else {
+                clazz = wrap(type);
+                flags |= It.NotNull;
+            }
+        }
+
+        /**
+         * <pre>{@code
+         *  Method method = ...
+         *  Expose expose = ...
+         *  Medium medium = new MediumImpl(method, expose);
+         * }</pre>
+         */
+        protected Medium(
+            @NotNull Method method,
+            @Nullable Expose expose
+        ) {
+            this(expose);
+            Class<?> type;
+            element = method;
+            switch (method.getParameterCount()) {
+                case 0: {
+                    actual = type = method.getReturnType();
+                    break;
+                }
+                case 1: {
+                    type = method.getParameterTypes()[0];
+                    actual = method.getGenericParameterTypes()[0];
+                    break;
+                }
+                default: {
+                    throw new NullPointerException(
+                        "Unexpectedly, the parameter length of '" + method.getName() + "' is greater than '1'"
+                    );
+                }
+            }
+            if (!type.isPrimitive()) {
+                clazz = type;
+            } else {
+                clazz = wrap(type);
+                flags |= It.NotNull;
+            }
+        }
+
+        /**
          * Returns the {@link Class} of {@link V}
          */
         @Override
@@ -919,64 +980,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 return clazz.getAnnotation(target);
             }
         }
-
-        /**
-         * Sets the {@code element} of {@link Member}
-         *
-         * @param type the specified type
-         */
-        protected void prepare(
-            @NotNull Class<?> type
-        ) {
-            if (!type.isPrimitive()) {
-                clazz = type;
-            } else {
-                clazz = wrap(type);
-                flags |= It.NotNull;
-            }
-        }
-
-        /**
-         * Sets the {@code element} of {@link Member}
-         *
-         * @param field the specified field
-         */
-        protected void prepare(
-            @NotNull Field field
-        ) {
-            element = field;
-            actual = field.getGenericType();
-            prepare(field.getType());
-        }
-
-        /**
-         * Sets the {@code element} of {@link Member}
-         *
-         * @param method the specified method
-         */
-        protected void prepare(
-            @NotNull Method method
-        ) {
-            element = method;
-            switch (method.getParameterCount()) {
-                case 0: {
-                    Class<?> kind = method.getReturnType();
-                    actual = kind;
-                    prepare(kind);
-                    break;
-                }
-                case 1: {
-                    actual = method.getGenericParameterTypes()[0];
-                    prepare(method.getParameterTypes()[0]);
-                    break;
-                }
-                default: {
-                    throw new NullPointerException(
-                        "Unexpectedly, the parameter length of '" + method.getName() + "' is greater than '1'"
-                    );
-                }
-            }
-        }
     }
 
     /**
@@ -1005,15 +1008,14 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             Boolean readonly,
             Supplier supplier
         ) throws IllegalAccessException {
-            super(expose);
-            if (!field.isAccessible()) {
-                field.setAccessible(true);
-            }
-            prepare(field);
+            super(field, expose);
             coder = supplier.assign(
                 expose, this
             );
 
+            if (!field.isAccessible()) {
+                field.setAccessible(true);
+            }
             if (readonly == null) {
                 getter = LOOKUP.unreflectGetter(field);
             } else {
@@ -1029,15 +1031,14 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             Method method,
             Supplier supplier
         ) throws IllegalAccessException {
-            super(expose);
-            if (!method.isAccessible()) {
-                method.setAccessible(true);
-            }
-            prepare(method);
+            super(method, expose);
             coder = supplier.assign(
                 expose, this
             );
 
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
+            }
             if (method.getParameterCount() != 0) {
                 setter = LOOKUP.unreflect(method);
             } else {
@@ -1107,7 +1108,14 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             Supplier supplier
         ) {
             super(index);
-            prepare(field);
+            actual = field.getGenericType();
+            Class<?> type = field.getType();
+            if (!type.isPrimitive()) {
+                clazz = type;
+            } else {
+                clazz = wrap(type);
+                flags |= It.NotNull;
+            }
             coder = supplier.assign(
                 expose, this
             );
@@ -1122,7 +1130,12 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         ) {
             super(index);
             this.actual = type;
-            prepare(kind);
+            if (!kind.isPrimitive()) {
+                clazz = kind;
+            } else {
+                clazz = wrap(kind);
+                flags |= It.NotNull;
+            }
             this.annotations = annotations;
             coder = supplier.assign(
                 getAnnotation(Expose.class), this

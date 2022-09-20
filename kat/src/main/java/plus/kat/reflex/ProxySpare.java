@@ -192,16 +192,16 @@ public class ProxySpare extends AbstractSpare<Object> {
             Expose expose,
             ProxySpare spare
         ) {
-            super(expose);
+            super(method, expose);
             this.spare = spare;
             this.method = method;
+
+            coder = spare.supplier
+                .assign(expose, this);
 
             if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
-            prepare(method);
-            coder = spare.supplier
-                .assign(expose, this);
             String name = method.getName();
             if (!name.startsWith("set")) {
                 alias = name;
