@@ -43,10 +43,10 @@ public class NumberSpare extends Property<Number> implements Serializer {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == Number.class
-            || klass == Object.class;
+        return clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

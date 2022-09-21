@@ -45,10 +45,10 @@ public class URISpare extends Property<URI> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == URI.class
-            || klass == Object.class;
+        return clazz == URI.class
+            || clazz == Object.class;
     }
 
     @Override

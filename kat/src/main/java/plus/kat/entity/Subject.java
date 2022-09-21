@@ -94,6 +94,38 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     }
 
     /**
+     * Returns the flag of {@link K}
+     */
+    @Override
+    default Boolean getFlag() {
+        return Boolean.TRUE;
+    }
+
+    /**
+     * Check if {@code clazz} is a parent Class of {@link K}
+     * or this {@link Subject} can create an instance of {@code clazz}
+     */
+    @Override
+    default boolean accept(
+        @NotNull Class<?> clazz
+    ) {
+        return clazz.isAssignableFrom(getType());
+    }
+
+    /**
+     * Returns a {@link Builder} of {@link K}
+     *
+     * @param type the specified actual type
+     */
+    @Nullable
+    @Override
+    default Builder<K> getBuilder(
+        @Nullable Type type
+    ) {
+        return new Builder0<>(this);
+    }
+
+    /**
      * Returns a set-capable {@link Member}
      * of the specified property {@code name}
      *
@@ -452,19 +484,6 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         return null;
-    }
-
-    /**
-     * Returns a {@link Builder} of {@link K}
-     *
-     * @see Builder0
-     */
-    @Nullable
-    @Override
-    default Builder<K> getBuilder(
-        @Nullable Type type
-    ) {
-        return new Builder0<>(this);
     }
 
     /**

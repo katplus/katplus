@@ -46,10 +46,10 @@ public class UUIDSpare extends Property<UUID> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == UUID.class
-            || klass == Object.class;
+        return clazz == UUID.class
+            || clazz == Object.class;
     }
 
     @Override

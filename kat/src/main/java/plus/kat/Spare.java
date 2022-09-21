@@ -56,14 +56,14 @@ public interface Spare<K> extends Coder<K> {
     Boolean getFlag();
 
     /**
-     * Check if {@code klass} is a parent Class of {@link K}
-     * or this {@link Spare} can create an instance of {@code klass}
+     * Check if {@code clazz} is a parent Class of {@link K}
+     * or this {@link Spare} can create an instance of {@code clazz}
      *
-     * @param klass the specified klass to be compared
-     * @throws NullPointerException If the specified {@code klass} is null
+     * @param clazz the specified clazz to be compared
+     * @throws NullPointerException If the specified {@code clazz} is null
      */
     boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     );
 
     /**

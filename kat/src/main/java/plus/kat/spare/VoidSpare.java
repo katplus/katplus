@@ -50,11 +50,11 @@ public class VoidSpare extends Property<Void> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == void.class
-            || klass == Void.class
-            || klass == Object.class;
+        return clazz == void.class
+            || clazz == Void.class
+            || clazz == Object.class;
     }
 
     @Override

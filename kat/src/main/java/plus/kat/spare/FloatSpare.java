@@ -49,12 +49,12 @@ public class FloatSpare extends Property<Float> implements Serializer {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == float.class
-            || klass == Float.class
-            || klass == Number.class
-            || klass == Object.class;
+        return clazz == float.class
+            || clazz == Float.class
+            || clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

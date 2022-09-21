@@ -45,10 +45,10 @@ public class URLSpare extends Property<URL> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == URL.class
-            || klass == Object.class;
+        return clazz == URL.class
+            || clazz == Object.class;
     }
 
     @Override

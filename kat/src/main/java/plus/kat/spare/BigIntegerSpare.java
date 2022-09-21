@@ -50,11 +50,11 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializer 
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == BigInteger.class
-            || klass == Number.class
-            || klass == Object.class;
+        return clazz == BigInteger.class
+            || clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

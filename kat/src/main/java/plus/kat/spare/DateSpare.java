@@ -74,10 +74,10 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == Date.class
-            || klass == Object.class;
+        return clazz == Date.class
+            || clazz == Object.class;
     }
 
     @Override

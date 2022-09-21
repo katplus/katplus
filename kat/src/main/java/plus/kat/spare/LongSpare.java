@@ -50,12 +50,12 @@ public class LongSpare extends Property<Long> implements Serializer {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == long.class
-            || klass == Long.class
-            || klass == Number.class
-            || klass == Object.class;
+        return clazz == long.class
+            || clazz == Long.class
+            || clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

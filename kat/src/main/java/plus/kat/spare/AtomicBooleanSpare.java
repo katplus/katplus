@@ -49,10 +49,10 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Seria
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == AtomicBoolean.class
-            || klass == Object.class;
+        return clazz == AtomicBoolean.class
+            || clazz == Object.class;
     }
 
     @Override

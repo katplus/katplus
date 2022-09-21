@@ -43,10 +43,10 @@ public class BitSetSpare implements Spare<BitSet> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == BitSet.class
-            || klass == Object.class;
+        return clazz == BitSet.class
+            || clazz == Object.class;
     }
 
     @Override

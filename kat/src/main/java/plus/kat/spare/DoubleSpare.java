@@ -49,12 +49,12 @@ public class DoubleSpare extends Property<Double> implements Serializer {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == double.class
-            || klass == Double.class
-            || klass == Number.class
-            || klass == Object.class;
+        return clazz == double.class
+            || clazz == Double.class
+            || clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

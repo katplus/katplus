@@ -47,10 +47,10 @@ public class LocaleSpare extends Property<Locale> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == Locale.class
-            || klass == Object.class;
+        return clazz == Locale.class
+            || clazz == Object.class;
     }
 
     @Override

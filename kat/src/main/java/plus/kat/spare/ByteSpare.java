@@ -50,12 +50,12 @@ public class ByteSpare extends Property<Byte> implements Serializer {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == byte.class
-            || klass == Byte.class
-            || klass == Number.class
-            || klass == Object.class;
+        return clazz == byte.class
+            || clazz == Byte.class
+            || clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

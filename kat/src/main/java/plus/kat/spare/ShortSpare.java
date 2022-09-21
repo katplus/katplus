@@ -50,12 +50,12 @@ public class ShortSpare extends Property<Short> implements Serializer {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == short.class
-            || klass == Short.class
-            || klass == Number.class
-            || klass == Object.class;
+        return clazz == short.class
+            || clazz == Short.class
+            || clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

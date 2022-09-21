@@ -49,11 +49,11 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == AtomicInteger.class
-            || klass == Number.class
-            || klass == Object.class;
+        return clazz == AtomicInteger.class
+            || clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

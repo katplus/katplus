@@ -46,10 +46,10 @@ public class FileSpare extends Property<File> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == File.class
-            || klass == Object.class;
+        return clazz == File.class
+            || clazz == Object.class;
     }
 
     @Override

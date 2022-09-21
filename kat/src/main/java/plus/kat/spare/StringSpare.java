@@ -49,11 +49,11 @@ public class StringSpare extends Property<String> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == String.class
-            || klass == Object.class
-            || klass == CharSequence.class;
+        return clazz == String.class
+            || clazz == Object.class
+            || clazz == CharSequence.class;
     }
 
     @Override

@@ -49,11 +49,11 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializer 
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == AtomicLong.class
-            || klass == Number.class
-            || klass == Object.class;
+        return clazz == AtomicLong.class
+            || clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

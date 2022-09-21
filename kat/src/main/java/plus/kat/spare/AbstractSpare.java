@@ -104,11 +104,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     }
 
     @Override
-    public Boolean getFlag() {
-        return Boolean.TRUE;
-    }
-
-    @Override
     public Class<T> getType() {
         return klass;
     }

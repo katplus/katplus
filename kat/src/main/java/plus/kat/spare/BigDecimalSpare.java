@@ -50,11 +50,11 @@ public class BigDecimalSpare extends Property<BigDecimal> implements Serializer 
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == BigDecimal.class
-            || klass == Number.class
-            || klass == Object.class;
+        return clazz == BigDecimal.class
+            || clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

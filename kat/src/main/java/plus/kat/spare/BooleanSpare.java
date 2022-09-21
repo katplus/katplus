@@ -50,11 +50,11 @@ public class BooleanSpare extends Property<Boolean> implements Serializer {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == boolean.class
-            || klass == Boolean.class
-            || klass == Object.class;
+        return clazz == boolean.class
+            || clazz == Boolean.class
+            || clazz == Object.class;
     }
 
     @Override

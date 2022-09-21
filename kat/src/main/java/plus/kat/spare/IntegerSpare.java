@@ -50,12 +50,12 @@ public class IntegerSpare extends Property<Integer> implements Serializer {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == int.class
-            || klass == Integer.class
-            || klass == Number.class
-            || klass == Object.class;
+        return clazz == int.class
+            || clazz == Integer.class
+            || clazz == Number.class
+            || clazz == Object.class;
     }
 
     @Override

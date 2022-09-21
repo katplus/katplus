@@ -49,11 +49,11 @@ public class CharSpare extends Property<Character> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == char.class
-            || klass == Character.class
-            || klass == Object.class;
+        return clazz == char.class
+            || clazz == Character.class
+            || clazz == Object.class;
     }
 
     @Override

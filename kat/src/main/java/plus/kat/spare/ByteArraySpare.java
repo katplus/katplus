@@ -51,10 +51,10 @@ public class ByteArraySpare extends Property<byte[]> {
 
     @Override
     public boolean accept(
-        @NotNull Class<?> klass
+        @NotNull Class<?> clazz
     ) {
-        return klass == byte[].class
-            || klass == Object.class;
+        return clazz == byte[].class
+            || clazz == Object.class;
     }
 
     @Override
