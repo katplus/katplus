@@ -291,7 +291,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     if (set(name) == null) {
                         variable = true;
                         member = new Accessor<>(
-                            null, field, supplier
+                            null, field, this
                         );
                         setProperty(
                             grade, name, member
@@ -320,7 +320,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     }
 
                     member = new Accessor<>(
-                        expose, field, null, supplier
+                        expose, field, null, this
                     );
 
                     if (keys.length == 0) {
@@ -343,7 +343,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
 
                     variable = true;
                     member = new Accessor<>(
-                        expose, field, solveOnly, supplier
+                        expose, field, solveOnly, this
                     );
 
                     if (keys.length == 0) {
@@ -439,7 +439,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                             }
 
                             member = new Accessor<>(
-                                expose, method, supplier
+                                expose, method, this
                             );
 
                             for (String key : keys) {
@@ -460,7 +460,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
 
                             variable = true;
                             member = new Accessor<>(
-                                expose, method, supplier
+                                expose, method, this
                             );
 
                             for (String alias : keys) {
@@ -493,7 +493,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     if (get(key) == null) {
                         setWriter(
                             grade, key, new Accessor<>(
-                                expose, method, supplier
+                                expose, method, this
                             )
                         );
                     }
@@ -503,7 +503,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                         variable = true;
                         setReader(
                             key, member = new Accessor<>(
-                                expose, method, supplier
+                                expose, method, this
                             )
                         );
 
@@ -579,7 +579,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 for (; i < count; i++) {
                     int k = i + j;
                     Argument arg = new Argument(
-                        i, ts[i], args[i], supplier, as[k]
+                        i, ts[i], args[i], this, as[k]
                     );
 
                     Expose expose = arg

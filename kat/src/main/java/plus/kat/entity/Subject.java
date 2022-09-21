@@ -15,6 +15,8 @@
  */
 package plus.kat.entity;
 
+import plus.kat.anno.Expose;
+import plus.kat.anno.Format;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
@@ -22,19 +24,24 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
+import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.time.*;
+import java.util.Date;
 
 /**
  * @author kraity
  * @since 0.0.4
  */
+@SuppressWarnings("unchecked")
 public interface Subject<K> extends Spare<K>, Maker<K> {
     /**
      * If this {@link Subject} can create an instance,
@@ -346,6 +353,105 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         return rows;
+    }
+
+    /**
+     * Returns the custom {@link Coder} for the {@link Member}
+     *
+     * @param expose the specified expose
+     * @param member the specified member to be solved
+     * @return {@link Coder} or {@code null}
+     */
+    @Nullable
+    default Coder<?> inflate(
+        @Nullable Expose expose,
+        @Nullable Member<?, ?> member
+    ) {
+        Class<?> clazz;
+        if (member == null) {
+            return null;
+        }
+
+        if (expose == null || (clazz =
+            expose.with()) == Coder.class) {
+            Format format = member
+                .getAnnotation(Format.class);
+            if (format != null) {
+                Class<?> type = member.getType();
+                if (type == Date.class) {
+                    return new DateSpare(format);
+                } else if (type == Instant.class) {
+                    return new InstantSpare(format);
+                } else if (type == LocalDate.class) {
+                    return new LocalDateSpare(format);
+                } else if (type == LocalTime.class) {
+                    return new LocalTimeSpare(format);
+                } else if (type == LocalDateTime.class) {
+                    return new LocalDateTimeSpare(format);
+                } else if (type == ZonedDateTime.class) {
+                    return new ZonedDateTimeSpare(format);
+                }
+            }
+            return null;
+        }
+
+        if (!Coder.class.
+            isAssignableFrom(clazz)) {
+            return getSupplier().lookup(clazz);
+        }
+
+        if (clazz == ByteArrayCoder.class) {
+            return ByteArrayCoder.INSTANCE;
+        }
+
+        try {
+            Constructor<?>[] cs = clazz
+                .getDeclaredConstructors();
+            Constructor<?> d, c = cs[0];
+            for (int i = 1; i < cs.length; i++) {
+                d = cs[i];
+                if (c.getParameterCount() <=
+                    d.getParameterCount()) c = d;
+            }
+
+            Object[] args;
+            int size = c.getParameterCount();
+
+            if (size == 0) {
+                args = Reflect.EMPTY;
+            } else {
+                args = new Object[size];
+                Class<?>[] cls =
+                    c.getParameterTypes();
+                for (int i = 0; i < size; i++) {
+                    Class<?> m = cls[i];
+                    if (m == Class.class) {
+                        args[i] = member.getType();
+                    } else if (m == Type.class) {
+                        args[i] = member.getActual();
+                    } else if (m == Expose.class) {
+                        args[i] = expose;
+                    } else if (m == Supplier.class) {
+                        args[i] = getSupplier();
+                    } else if (m.isPrimitive()) {
+                        args[i] = Reflect.def(m);
+                    } else if (m.isAnnotation()) {
+                        args[i] = member.getAnnotation(
+                            (Class<? extends Annotation>) m
+                        );
+                    }
+                }
+            }
+
+            if (!c.isAccessible()) {
+                c.setAccessible(true);
+            }
+            return (Coder<?>) c.newInstance(args);
+        } catch (Exception e) {
+            // Nothing
+        }
+
+        return null;
     }
 
     /**

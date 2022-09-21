@@ -23,6 +23,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
+import plus.kat.entity.Subject;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
@@ -193,11 +194,12 @@ public class ProxySpare extends AbstractSpare<Object> {
             ProxySpare spare
         ) {
             super(method, expose);
+            coder = spare.inflate(
+                expose, this
+            );
+
             this.spare = spare;
             this.method = method;
-
-            coder = spare.supplier
-                .assign(expose, this);
 
             if (!method.isAccessible()) {
                 method.setAccessible(true);

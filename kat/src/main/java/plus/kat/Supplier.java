@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.*;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.chain.Space.*;
-import static plus.kat.entity.Subject.Member;
 
 /**
  * @author kraity
@@ -132,29 +131,6 @@ public interface Supplier {
     @Nullable
     Spare<?> revoke(
         @NotNull CharSequence klass
-    );
-
-    /**
-     * Returns the coder of {@code element}, and applies
-     * for a coder if the {@code element} needs it, otherwise returns null
-     *
-     * <pre>{@code
-     *   Expose expose = ...
-     *   Member member = ...
-     *
-     *   Supplier supplier = ...
-     *   Coder<User> coder = supplier.assign(expose, member);
-     * }</pre>
-     *
-     * @param expose the specified expose
-     * @param member the specified member
-     * @return the coder of {@code klass} or {@code null}
-     * @since 0.0.4
-     */
-    @Nullable <T>
-    Coder<T> assign(
-        @Nullable Expose expose,
-        @Nullable Member<?, ?> member
     );
 
     /**
@@ -1134,97 +1110,6 @@ public interface Supplier {
             @NotNull CharSequence klass
         ) {
             return table.remove(klass);
-        }
-
-        @Override
-        public <T> Coder<T> assign(
-            @Nullable Expose expose,
-            @Nullable Member<?, ?> member
-        ) {
-            Class<?> clazz;
-            Coder<?> coder = null;
-
-            if (expose == null || (clazz =
-                expose.with()) == Coder.class) {
-                Format format = member
-                    .getAnnotation(Format.class);
-                if (format == null) {
-                    return null;
-                }
-
-                Class<?> klass = member.getType();
-                if (klass == Date.class) {
-                    coder = new DateSpare(format);
-                } else if (klass == Instant.class) {
-                    coder = new InstantSpare(format);
-                } else if (klass == LocalDate.class) {
-                    coder = new LocalDateSpare(format);
-                } else if (klass == LocalTime.class) {
-                    coder = new LocalTimeSpare(format);
-                } else if (klass == LocalDateTime.class) {
-                    coder = new LocalDateTimeSpare(format);
-                } else if (klass == ZonedDateTime.class) {
-                    coder = new ZonedDateTimeSpare(format);
-                }
-            }
-
-            // Pointing to clazz?
-            else if (!Coder.class.
-                isAssignableFrom(clazz)) {
-                coder = lookup(clazz);
-            }
-
-            // byte[]
-            else if (clazz == ByteArrayCoder.class) {
-                coder = ByteArrayCoder.INSTANCE;
-            } else try {
-                Constructor<?>[] cs = clazz
-                    .getDeclaredConstructors();
-                Constructor<?> d, c = cs[0];
-                for (int i = 1; i < cs.length; i++) {
-                    d = cs[i];
-                    if (c.getParameterCount() <=
-                        d.getParameterCount()) c = d;
-                }
-
-                Object[] args;
-                int size = c.getParameterCount();
-
-                if (size == 0) {
-                    args = Reflect.EMPTY;
-                } else {
-                    args = new Object[size];
-                    Class<?>[] cls =
-                        c.getParameterTypes();
-                    for (int i = 0; i < size; i++) {
-                        Class<?> m = cls[i];
-                        if (m == Class.class) {
-                            args[i] = member.getType();
-                        } else if (m == Type.class) {
-                            args[i] = member.getActual();
-                        } else if (m == Expose.class) {
-                            args[i] = expose;
-                        } else if (m == Supplier.class) {
-                            args[i] = this;
-                        } else if (m.isPrimitive()) {
-                            args[i] = Reflect.def(m);
-                        } else if (m.isAnnotation()) {
-                            args[i] = member.getAnnotation(
-                                (Class<? extends Annotation>) m
-                            );
-                        }
-                    }
-                }
-
-                if (!c.isAccessible()) {
-                    c.setAccessible(true);
-                }
-                return (Coder<T>) c.newInstance(args);
-            } catch (Exception e) {
-                // Nothing
-            }
-
-            return (Coder<T>) coder;
         }
 
         @Override

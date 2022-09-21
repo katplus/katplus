@@ -145,7 +145,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                     .getAnnotation(Expose.class);
 
                 Argument arg = new Argument(
-                    width++, e1, field, supplier
+                    width++, e1, field, this
                 );
 
                 String[] keys = null;
@@ -182,7 +182,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
 
                 if (e2 == null) {
                     accessor = new Accessor<>(
-                        e1, method, supplier
+                        e1, method, this
                     );
                     if (keys == null) {
                         setWriter(
@@ -197,7 +197,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                     }
                 } else if (!It.internal(e2.require())) {
                     accessor = new Accessor<>(
-                        e2, method, supplier
+                        e2, method, this
                     );
                     keys = e2.value();
                     if (keys.length == 0) {

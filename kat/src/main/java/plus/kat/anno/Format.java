@@ -22,7 +22,12 @@ import java.lang.annotation.*;
  * @since 0.0.1
  */
 @Documented
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
+@Target({
+    ElementType.TYPE,
+    ElementType.FIELD,
+    ElementType.METHOD,
+    ElementType.PARAMETER
+})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Format {
     /**

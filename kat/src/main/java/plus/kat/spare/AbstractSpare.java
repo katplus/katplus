@@ -1021,10 +1021,10 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         public Accessor(
             Expose expose,
             Field field,
-            Supplier supplier
+            Subject<?> subject
         ) throws IllegalAccessException {
             this(
-                expose, field, false, supplier
+                expose, field, false, subject
             );
         }
 
@@ -1032,10 +1032,10 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             Expose expose,
             Field field,
             Boolean status,
-            Supplier supplier
+            Subject<?> subject
         ) throws IllegalAccessException {
             super(field, expose);
-            coder = supplier.assign(
+            coder = subject.inflate(
                 expose, this
             );
 
@@ -1055,10 +1055,10 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         public Accessor(
             Expose expose,
             Method method,
-            Supplier supplier
+            Subject<?> subject
         ) throws IllegalAccessException {
             super(method, expose);
-            coder = supplier.assign(
+            coder = subject.inflate(
                 expose, this
             );
 
@@ -1131,7 +1131,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             int index,
             Expose expose,
             Field field,
-            Supplier supplier
+            Subject<?> subject
         ) {
             super(index);
             element = field;
@@ -1143,7 +1143,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 flags |= NotNull;
                 clazz = wrap(type);
             }
-            coder = supplier.assign(
+            coder = subject.inflate(
                 expose, this
             );
         }
@@ -1152,7 +1152,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             int index,
             Type type,
             Class<?> kind,
-            Supplier supplier,
+            Subject<?> subject,
             Annotation[] annotations
         ) {
             super(index);
@@ -1164,7 +1164,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 clazz = wrap(kind);
             }
             this.annotations = annotations;
-            coder = supplier.assign(
+            coder = subject.inflate(
                 getAnnotation(Expose.class), this
             );
         }
