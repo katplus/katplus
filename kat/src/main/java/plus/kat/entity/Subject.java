@@ -423,6 +423,11 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             @NotNull Space space,
             @Nullable Supplier supplier
         ) throws IOException {
+            Coder<?> it = getCoder();
+            if (it != null) {
+                return it;
+            }
+
             if (supplier != null) {
                 return supplier.lookup(
                     getType(), space
@@ -435,11 +440,29 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         /**
+         * Returns the flags of {@link V}
+         *
+         * @see It
+         */
+        @NotNull
+        default int getFlags() {
+            return 0;
+        }
+
+        /**
          * Returns the actual {@link Type} of {@link V}
          */
         @NotNull
         default Type getActual() {
             return getType();
+        }
+
+        /**
+         * Returns the {@link Coder} of {@link V}
+         */
+        @Nullable
+        default Coder<?> getCoder() {
+            return null;
         }
 
         /**
