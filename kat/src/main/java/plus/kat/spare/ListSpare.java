@@ -273,7 +273,7 @@ public class ListSpare implements Spare<List> {
         @Nullable Type type
     ) {
         return new Builder$<List>(
-            klass, type
+            type == null || type == Object.class ? klass : type
         ) {
             @Override
             public List onCreate(
@@ -286,18 +286,16 @@ public class ListSpare implements Spare<List> {
 
     public static class Builder$<T extends Collection> extends Builder<T> {
 
+        protected Type act;
         protected Type tag;
-        protected Type type;
 
         protected T entity;
-        protected Type param;
+        protected Spare<?> spare0;
 
         public Builder$(
-            @NotNull Type tag,
-            @Nullable Type type
+            @NotNull Type tag
         ) {
             this.tag = tag;
-            this.type = type;
         }
 
         @NotNull
@@ -313,15 +311,19 @@ public class ListSpare implements Spare<List> {
         public void onCreate(
             @NotNull Alias alias
         ) {
-            Type raw = type;
-            if (raw instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) raw;
-                raw = p.getRawType();
-                param = p.getActualTypeArguments()[0];
+            Type t, type = tag;
+            if (type instanceof ParameterizedType) {
+                ParameterizedType p = (ParameterizedType) type;
+                type = p.getRawType();
+                Class<?> v = Reflect.getClass(
+                    t = p.getActualTypeArguments()[0]
+                );
+                if (v != Object.class) {
+                    act = t;
+                    spare0 = supplier.lookup(v);
+                }
             }
-            entity = onCreate(
-                raw == null ? tag : raw
-            );
+            entity = onCreate(type);
         }
 
         @Override
@@ -330,18 +332,20 @@ public class ListSpare implements Spare<List> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            Type type = param;
-            Spare<?> spare =
-                supplier.lookup(type, space);
-
-            if (spare != null) {
-                value.setType(type);
-                entity.add(
-                    spare.read(
-                        event, value
-                    )
-                );
+            Spare<?> spare = spare0;
+            if (spare == null) {
+                spare = supplier.lookup(space);
+                if (spare == null) {
+                    return;
+                }
             }
+
+            value.setType(act);
+            entity.add(
+                spare.read(
+                    event, value
+                )
+            );
         }
 
         @Override
@@ -359,15 +363,15 @@ public class ListSpare implements Spare<List> {
             @NotNull Space space,
             @NotNull Alias alias
         ) {
-            Type type = param;
-            Spare<?> spare =
-                supplier.lookup(type, space);
-
+            Spare<?> spare = spare0;
             if (spare == null) {
-                return null;
+                spare = supplier.lookup(space);
+                if (spare == null) {
+                    return null;
+                }
             }
 
-            return spare.getBuilder(type);
+            return spare.getBuilder(act);
         }
 
         @Override

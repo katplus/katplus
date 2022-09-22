@@ -121,4 +121,28 @@ class KatKtTest {
         @Expose("blocked", "disabled")
         val blocked = false
     }
+
+    @Embed("Meta")
+    class Meta {
+        @Expose("mid")
+        val mid = ""
+
+        @Expose("tag")
+        var tag: Map<*, *>? = null
+
+        @Expose("extra")
+        var extra: Map<String, Any>? = null
+    }
+
+    @Test
+    fun test_decode() {
+        val supplier = Supplier.ins()
+        val meta = supplier.read<Meta>(
+            Event("M{s:mid(kat.plus)M:tag{i:c1(12)b:c2(1)d:c3(1.2)}M:extra{i:c1(12)b:c2(1)d:c3(1.2)}}")
+        )
+
+        assertEquals("kat.plus", meta.mid)
+        assertEquals("M{i:c1(12)b:c2(1)d:c3(1.2)}", Kat.encode(meta.tag))
+        assertEquals("M{i:c1(12)b:c2(1)d:c3(1.2)}", Kat.encode(meta.extra))
+    }
 }

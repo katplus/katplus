@@ -1254,9 +1254,8 @@ public interface Supplier {
                         if (!c.isAccessible()) {
                             c.setAccessible(true);
                         }
-                        putIfAbsent(klass, spare =
-                            (Spare<?>) c.newInstance(args)
-                        );
+                        spare = (Spare<?>) c.newInstance(args);
+                        spare.embed(this);
                     } catch (Exception e) {
                         // Nothing
                     }
@@ -1347,6 +1346,12 @@ public interface Supplier {
                 );
             }
 
+            if (type instanceof ArrayType) {
+                return (Spare<T>) lookup(
+                    Object[].class
+                );
+            }
+
             if (type instanceof TypeVariable) {
                 TypeVariable<?> v = (TypeVariable<?>) type;
                 return lookup(
@@ -1366,15 +1371,20 @@ public interface Supplier {
                 return lookup(type, klass);
             }
 
-            if (type instanceof ArrayType) {
-                return (Spare<T>) lookup(
-                    Object[].class
-                );
-            }
-
             if (type instanceof GenericArrayType) {
+                GenericArrayType g = (GenericArrayType) type;
+                Class<?> cls = Reflect.getClass(
+                    g.getGenericComponentType()
+                );
+                if (cls != null &&
+                    cls != Object.class) {
+                    return (Spare<T>) lookup(
+                        Object[].class
+                    );
+                }
+
                 return (Spare<T>) lookup(
-                    Object[].class
+                    Array.newInstance(cls, 0).getClass()
                 );
             }
 
@@ -1443,6 +1453,12 @@ public interface Supplier {
                 );
             }
 
+            if (type instanceof ArrayType) {
+                return (Spare<T>) lookup(
+                    Object[].class
+                );
+            }
+
             if (type instanceof TypeVariable) {
                 TypeVariable<?> v = (TypeVariable<?>) type;
                 return search(
@@ -1462,15 +1478,20 @@ public interface Supplier {
                 return search(type, klass);
             }
 
-            if (type instanceof ArrayType) {
-                return (Spare<T>) lookup(
-                    Object[].class
-                );
-            }
-
             if (type instanceof GenericArrayType) {
+                GenericArrayType g = (GenericArrayType) type;
+                Class<?> cls = Reflect.getClass(
+                    g.getGenericComponentType()
+                );
+                if (cls != null &&
+                    cls != Object.class) {
+                    return (Spare<T>) lookup(
+                        Object[].class
+                    );
+                }
+
                 return (Spare<T>) lookup(
-                    Object[].class
+                    Array.newInstance(cls, 0).getClass()
                 );
             }
 

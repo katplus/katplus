@@ -269,7 +269,7 @@ public class SetSpare implements Spare<Set> {
         @Nullable Type type
     ) {
         return new ListSpare.Builder$<Set>(
-            klass, type
+            type == null || type == Object.class ? klass : type
         ) {
             @Override
             public Set onCreate(

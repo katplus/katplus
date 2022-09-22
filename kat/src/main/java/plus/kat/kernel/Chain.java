@@ -123,15 +123,18 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @Override
     public int hashCode() {
-        if (hash == 0 && count != 0) {
-            byte[] v = value;
-            int h = v[0], l = count;
-            for (int i = 1; i < l; i++) {
-                h = 31 * h + v[i];
+        int h = hash;
+        if (h == 0) {
+            int l = count;
+            if (l != 0) {
+                byte[] v = value;
+                for (int i = 0; i < l; i++) {
+                    h = 31 * h + v[i];
+                }
+                hash = h;
             }
-            hash = h;
         }
-        return hash;
+        return h;
     }
 
     /**

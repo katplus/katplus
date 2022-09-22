@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -64,13 +65,19 @@ public class ObjectSpare extends Property<Object> {
         @NotNull Alias alias
     ) throws IOException {
         Type type = alias.getType();
-        if (type != null && type != Object.class) {
+        if (type == null ||
+            type == Object.class) {
+            return solve(alias);
+        } else {
             Spare<?> spare = supplier.lookup(type, null);
-            if (spare != null) {
-                return spare.read(flag, alias);
+            if (spare == null) {
+                return null;
             }
+            if (spare == this) {
+                return solve(alias);
+            }
+            return spare.read(flag, alias);
         }
-        return null;
     }
 
     @Override
@@ -79,68 +86,19 @@ public class ObjectSpare extends Property<Object> {
         @NotNull Value value
     ) throws IOException {
         Type type = value.getType();
-        if (type != null && type != Object.class) {
+        if (type == null ||
+            type == Object.class) {
+            return solve(value);
+        } else {
             Spare<?> spare = supplier.lookup(type, null);
             if (spare == null) {
                 return null;
             }
+            if (spare == this) {
+                return solve(value);
+            }
             return spare.read(flag, value);
         }
-
-        int length = value.length();
-
-        if (length == 0) {
-            return null;
-        }
-
-        byte b = value.at(0);
-
-        if (b < 0x3A) {
-            Number num = value.toNumber();
-            if (num != null) {
-                return num;
-            }
-            return value.toString();
-        }
-
-        switch (length) {
-            case 4: {
-                if (b == 't') {
-                    if (value.at(1) == 'r' &&
-                        value.at(2) == 'u' &&
-                        value.at(3) == 'e') {
-                        return Boolean.TRUE;
-                    }
-                } else if (b == 'T') {
-                    if (value.at(1) == 'R' &&
-                        value.at(2) == 'U' &&
-                        value.at(3) == 'E') {
-                        return Boolean.TRUE;
-                    }
-                }
-                return value.toString();
-            }
-            case 5: {
-                if (b == 'f') {
-                    if (value.at(1) == 'a' &&
-                        value.at(2) == 'l' &&
-                        value.at(3) == 's' &&
-                        value.at(4) == 'e') {
-                        return Boolean.FALSE;
-                    }
-                } else if (b == 'F') {
-                    if (value.at(1) == 'A' &&
-                        value.at(2) == 'L' &&
-                        value.at(3) == 'S' &&
-                        value.at(4) == 'E') {
-                        return Boolean.FALSE;
-                    }
-                }
-                return value.toString();
-            }
-        }
-
-        return value.toString();
     }
 
     @Override
@@ -151,7 +109,8 @@ public class ObjectSpare extends Property<Object> {
         Spare<?> spare = supplier.lookup(
             value.getClass()
         );
-        if (spare != null) {
+        if (spare != null &&
+            spare != this) {
             spare.write(chan, value);
         }
     }
@@ -164,18 +123,86 @@ public class ObjectSpare extends Property<Object> {
         Spare<?> spare = supplier.lookup(
             value.getClass()
         );
-        if (spare != null) {
+        if (spare != null &&
+            spare != this) {
             spare.write(flow, value);
         }
     }
 
+    @Nullable
+    private Object solve(
+        @NotNull Chain chain
+    ) {
+        int length = chain.length();
+
+        if (length == 0) {
+            return null;
+        }
+
+        byte b = chain.at(0);
+
+        if (b < 0x3A) {
+            Number num = chain.toNumber();
+            if (num != null) {
+                return num;
+            }
+            return chain.toString();
+        }
+
+        switch (length) {
+            case 4: {
+                if (b == 't') {
+                    if (chain.at(1) == 'r' &&
+                        chain.at(2) == 'u' &&
+                        chain.at(3) == 'e') {
+                        return Boolean.TRUE;
+                    }
+                } else if (b == 'T') {
+                    if (chain.at(1) == 'R' &&
+                        chain.at(2) == 'U' &&
+                        chain.at(3) == 'E') {
+                        return Boolean.TRUE;
+                    }
+                }
+                return chain.toString();
+            }
+            case 5: {
+                if (b == 'f') {
+                    if (chain.at(1) == 'a' &&
+                        chain.at(2) == 'l' &&
+                        chain.at(3) == 's' &&
+                        chain.at(4) == 'e') {
+                        return Boolean.FALSE;
+                    }
+                } else if (b == 'F') {
+                    if (chain.at(1) == 'A' &&
+                        chain.at(2) == 'L' &&
+                        chain.at(3) == 'S' &&
+                        chain.at(4) == 'E') {
+                        return Boolean.FALSE;
+                    }
+                }
+                return chain.toString();
+            }
+        }
+
+        return chain.toString();
+    }
+
     @Override
-    @SuppressWarnings("rawtypes")
-    public Builder<Map> getBuilder(
+    public Builder<?> getBuilder(
         @Nullable Type type
     ) {
-        return new MapSpare.Builder0(
-            Map.class, type
-        );
+        if (type != null &&
+            type != Object.class) {
+            Spare<?> spare = supplier.lookup(type, null);
+            if (spare == null) {
+                return null;
+            }
+            if (spare != this) {
+                return spare.getBuilder(type);
+            }
+        }
+        return new MapSpare.Builder0(Map.class);
     }
 }

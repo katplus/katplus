@@ -460,12 +460,13 @@ public class SupplierTest {
 
         Spare<User> spare1 = supplier.lookup(User.class);
         Spare<UserVO> spare2 = supplier.lookup(UserVO.class);
-        Spare<Object> spare3 = supplier.lookup(Object.class);
 
         assertNull(supplier.search(type, ""));
         assertNull(supplier.search(type, "A"));
         assertNull(supplier.search(type, "M"));
+
         assertNull(supplier.search(type, "SuperUser"));
+        assertSame(spare1, supplier.lookup(type, "SuperUser"));
 
         assertNull(supplier.search(UserVO.class, "plus.kat.supplier.User"));
         assertNotNull(supplier.lookup(UserVO.class, "plus.kat.supplier.User"));
@@ -485,6 +486,9 @@ public class SupplierTest {
         assertSame(spare2, supplier.lookup(UserVO.class, "plus.kat.supplier.UserVO"));
         assertSame(spare2, supplier.search(UserVO.class, "plus.kat.supplier.UserVO"));
 
+        Spare<Object> spare3 = supplier.lookup(Object.class);
+        Spare<Object[]> spare4 = supplier.lookup(Object[].class);
+
         assertNull(supplier.search(object, "SuperUser"));
         assertSame(spare3, supplier.lookup(object, "SuperUser"));
 
@@ -498,6 +502,6 @@ public class SupplierTest {
         assertSame(spare2, supplier.search(object, "plus.kat.supplier.UserVO"));
 
         assertSame(spare3, supplier.lookup(object, Space.$A));
-        assertSame(supplier.lookup(Object[].class), supplier.search(object, Space.$A));
+        assertSame(spare4, supplier.search(object, Space.$A));
     }
 }

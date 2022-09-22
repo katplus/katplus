@@ -18,7 +18,9 @@ package plus.kat.utils;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.chain.*;
 import plus.kat.crash.*;
+import plus.kat.reflex.*;
 
 import java.lang.invoke.*;
 import java.lang.reflect.*;
@@ -209,5 +211,73 @@ public final class Reflect {
             name.getBytes(i, l, alias, 1);
         }
         return alias;
+    }
+
+    /**
+     * @since 0.0.4
+     */
+    @Nullable
+    public static Class<?> getClass(
+        @Nullable Type type
+    ) {
+        if (type == null) {
+            return null;
+        }
+
+        if (type instanceof Class) {
+            return (Class<?>) type;
+        }
+
+        if (type instanceof ParameterizedType) {
+            ParameterizedType p = (ParameterizedType) type;
+            return getClass(
+                p.getRawType()
+            );
+        }
+
+        if (type instanceof Space) {
+            Space s = (Space) type;
+            return getClass(
+                s.getType()
+            );
+        }
+
+        if (type instanceof TypeVariable) {
+            TypeVariable<?> v = (TypeVariable<?>) type;
+            return getClass(
+                v.getBounds()[0]
+            );
+        }
+
+        if (type instanceof WildcardType) {
+            WildcardType w = (WildcardType) type;
+            type = w.getUpperBounds()[0];
+            if (type == Object.class) {
+                Type[] bounds = w.getLowerBounds();
+                if (bounds.length != 0) {
+                    type = bounds[0];
+                }
+            }
+            return getClass(type);
+        }
+
+        if (type instanceof ArrayType) {
+            return Object[].class;
+        }
+
+        if (type instanceof GenericArrayType) {
+            GenericArrayType g = (GenericArrayType) type;
+            Class<?> cls = getClass(
+                g.getGenericComponentType()
+            );
+            if (cls == null ||
+                cls == Object.class) {
+                return Object[].class;
+            } else {
+                return Array.newInstance(cls, 0).getClass();
+            }
+        }
+
+        return null;
     }
 }
