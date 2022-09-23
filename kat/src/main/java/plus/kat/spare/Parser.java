@@ -351,7 +351,7 @@ public class Parser implements Pipe, Closeable {
      * @author kraity
      * @since 0.0.1
      */
-    public static class Group extends KatPool<Parser> {
+    public static class Group extends KatCluster<Parser> {
 
         /**
          * default cluster
@@ -370,6 +370,14 @@ public class Parser implements Pipe, Closeable {
         @Override
         public Parser make() {
             return new Parser();
+        }
+
+        @Override
+        public boolean stop(
+            Parser target
+        ) {
+            target.close();
+            return true;
         }
 
         @Override

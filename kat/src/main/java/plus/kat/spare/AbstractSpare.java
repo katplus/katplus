@@ -21,19 +21,19 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
+import plus.kat.stream.*;
 import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
 import static plus.kat.It.*;
-import static plus.kat.utils.Reflect.wrap;
-import static plus.kat.utils.Reflect.LOOKUP;
 
 /**
  * @author kraity
@@ -133,7 +133,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull Value value
     ) throws IOException {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, value, flag, supplier
             );
         }
@@ -200,7 +200,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         }
 
         if (data instanceof CharSequence) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, (CharSequence) data, null, supplier
             );
         }
@@ -845,7 +845,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 clazz = type;
             } else {
                 flags |= NotNull;
-                clazz = wrap(type);
+                clazz = Find.kind(type);
             }
         }
 
@@ -884,7 +884,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 clazz = type;
             } else {
                 flags |= NotNull;
-                clazz = wrap(type);
+                clazz = Find.kind(type);
             }
         }
 
@@ -1003,6 +1003,13 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             }
         }
     }
+
+    /**
+     * @see MethodHandles
+     * @since 0.0.4
+     */
+    protected static final MethodHandles.Lookup
+        LOOKUP = MethodHandles.lookup();
 
     /**
      * @author kraity
@@ -1136,7 +1143,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 clazz = type;
             } else {
                 flags |= NotNull;
-                clazz = wrap(type);
+                clazz = Find.kind(type);
             }
             coder = subject.inflate(
                 expose, this
@@ -1156,7 +1163,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 clazz = kind;
             } else {
                 flags |= NotNull;
-                clazz = wrap(kind);
+                clazz = Find.kind(kind);
             }
             this.annotations = annotations;
             coder = subject.inflate(

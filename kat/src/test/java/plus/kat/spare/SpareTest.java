@@ -322,20 +322,18 @@ public class SpareTest {
 
     @Test
     public void test_array_hook() throws Exception {
-        for (Method method : Hook.class.getMethods()) {
-            if (method.getName().equals("on")) {
-                Spare<Object> spare = ArraySpare.INSTANCE;
-                Event<Object[]> event = new Event<>(
-                    "${${$(1)}${$:name(kraity)}}"
-                );
-                event.with(
-                    ArrayType.of(
-                        method.getGenericParameterTypes()
-                    )
-                );
-
+        for (Method method : Hook.class.getDeclaredMethods()) {
+            if (method.getName().equals("test")) {
+                Spare<Object[]> spare =
+                    Spare.lookup(Object[].class);
                 method.invoke(
-                    new Hook(), spare.read(event)
+                    new Hook(), spare.read(
+                        new Event<Object[]>(
+                            "{{(1)(2)}{:name(kraity)}}"
+                        ).with(
+                            ArrayType.of(method)
+                        )
+                    )
                 );
             }
         }
@@ -587,14 +585,15 @@ public class SpareTest {
     }
 
     static class Hook {
-        public void on(
-            ArrayList<Integer> data,
-            HashMap<String, String> extra
+        public void test(
+            List<Integer> list,
+            Map<String, String> data
         ) {
             assertEquals(1, data.size());
-            assertEquals(1, extra.size());
-            assertEquals(1, data.get(0));
-            assertEquals("kraity", extra.get("name"));
+            assertEquals(2, list.size());
+            assertEquals(1, list.get(0));
+            assertEquals(2, list.get(1));
+            assertEquals("kraity", data.get("name"));
         }
     }
 }

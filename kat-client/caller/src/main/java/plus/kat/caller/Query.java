@@ -11,7 +11,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import static plus.kat.stream.Binary.hex;
+import static plus.kat.stream.Binary.digit;
 import static plus.kat.stream.Binary.upper;
 
 /**
@@ -633,11 +633,11 @@ public class Query extends Chain {
                 if (i + 1 < o) {
                     try {
                         byte d;
-                        d = (byte) hex(
+                        d = (byte) digit(
                             data[i++]
                         );
                         d <<= 4;
-                        d |= (byte) hex(
+                        d |= (byte) digit(
                             data[i++]
                         );
                         chain(d);
@@ -669,11 +669,11 @@ public class Query extends Chain {
                 if (i + 1 < o) {
                     try {
                         byte d;
-                        d = (byte) hex(
+                        d = (byte) digit(
                             (byte) c.charAt(i++)
                         );
                         d <<= 4;
-                        d |= (byte) hex(
+                        d |= (byte) digit(
                             (byte) c.charAt(i++)
                         );
                         chain(d);

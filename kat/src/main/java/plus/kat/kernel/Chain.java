@@ -196,9 +196,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     public CharSequence subSequence(
         int start, int end
     ) {
-        return new String(
-            copyBytes(start, end)
-        );
+        if (end <= count) {
+            return new String(
+                value, start, end - start, UTF_8
+            );
+        } else {
+            throw new StringIndexOutOfBoundsException(end);
+        }
     }
 
     /**
@@ -217,7 +221,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return 0;
         }
 
-        int len1, len2, diff,
+        int len1, len2, res,
             limit = Math.min(
                 len1 = count,
                 len2 = o.length()
@@ -225,11 +229,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
         byte[] it = value;
         for (int i = 0; i < limit; i++) {
-            diff = (it[i] & 0xFF) - (
+            res = (it[i] & 0xFF) - (
                 o.charAt(i) & 0xFFFF
             );
-            if (diff != 0) {
-                return diff;
+            if (res != 0) {
+                return res;
             }
         }
 
@@ -581,21 +585,18 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     public boolean same(
         @Nullable byte[] b
     ) {
-        if (b == null) {
-            return false;
-        }
-
-        int range = b.length;
-        if (count == range) {
-            byte[] it = value;
-            for (int i = 0; i < range; i++) {
-                if (it[i] != b[i]) {
-                    return false;
+        if (b != null) {
+            int range = b.length;
+            if (count == range) {
+                byte[] it = value;
+                for (int i = 0; i < range; i++) {
+                    if (it[i] != b[i]) {
+                        return false;
+                    }
                 }
+                return true;
             }
-            return true;
         }
-
         return false;
     }
 
@@ -619,21 +620,18 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     public boolean same(
         @Nullable char[] c
     ) {
-        if (c == null) {
-            return false;
-        }
-
-        int range = c.length;
-        if (count == range) {
-            byte[] it = value;
-            for (int i = 0; i < range; i++) {
-                if (c[i] != (char) (it[i] & 0xFF)) {
-                    return false;
+        if (c != null) {
+            int range = c.length;
+            if (count == range) {
+                byte[] it = value;
+                for (int i = 0; i < range; i++) {
+                    if (c[i] != (char) (it[i] & 0xFF)) {
+                        return false;
+                    }
                 }
+                return true;
             }
-            return true;
         }
-
         return false;
     }
 
@@ -1379,12 +1377,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @NotNull
     public char[] copyChars() {
-        if (count != 0) {
-            return Strings.toChars(
-                value, 0, count
-            );
+        int size = count;
+        if (size == 0) {
+            return EMPTY_CHARS;
         }
-        return EMPTY_CHARS;
+        return Convert.toChars(
+            value, 0, size
+        );
     }
 
     /**
@@ -1406,13 +1405,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             );
         }
 
-        if (length != 0) {
-            return Strings.toChars(
-                value, start, end
-            );
+        if (length == 0) {
+            return EMPTY_CHARS;
         }
 
-        return EMPTY_CHARS;
+        return Convert.toChars(
+            value, start, end
+        );
     }
 
     /**
@@ -1420,10 +1419,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @NotNull
     public byte[] copyBytes() {
-        if (count != 0) {
-            byte[] copy = new byte[count];
+        int size = count;
+        if (size != 0) {
+            byte[] copy = new byte[size];
             System.arraycopy(
-                value, 0, copy, 0, count
+                value, 0, copy, 0, size
             );
             return copy;
         }

@@ -20,12 +20,13 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.stream.Binary;
 
 import java.io.IOException;
 import java.util.Locale;
 
-import static plus.kat.stream.Strings.lowerAt;
-import static plus.kat.stream.Strings.upperAt;
+import static plus.kat.stream.Binary.lower;
+import static plus.kat.stream.Binary.upper;
 
 /**
  * @author kraity
@@ -117,8 +118,11 @@ public class LocaleSpare extends Property<Locale> {
             return null;
         }
 
-        char c1 = lowerAt(c, 0);
-        char c2 = lowerAt(c, 1);
+        char c1 = c.charAt(0);
+        char c2 = c.charAt(1);
+
+        if (c1 > 0x40 && c1 < 0x5B) c1 += 0x20;
+        if (c2 > 0x40 && c2 < 0x5B) c2 += 0x20;
 
         if (len == 2) {
             if (c1 == 'z' && c2 == 'h') {
@@ -149,8 +153,10 @@ public class LocaleSpare extends Property<Locale> {
         }
 
         if (len == 5 && c.charAt(2) == '_') {
-            char c3 = upperAt(c, 3);
-            char c4 = upperAt(c, 4);
+            char c3 = c.charAt(3);
+            char c4 = c.charAt(4);
+            if (c3 > 0x60 && c3 < 0x7B) c3 -= 0x20;
+            if (c4 > 0x60 && c4 < 0x7B) c4 -= 0x20;
 
             if (c1 == 'z' && c2 == 'h') {
                 if (c3 == 'C' && c4 == 'N') {

@@ -76,7 +76,7 @@ public class StringSpare extends Property<String> {
         }
 
         if (data instanceof byte[]) {
-            return Binary.ascii(
+            return Binary.latin(
                 Base64.REC4648.INS.encode(
                     (byte[]) data
                 )

@@ -450,7 +450,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             int size = c.getParameterCount();
 
             if (size == 0) {
-                args = Reflect.EMPTY;
+                args = ArraySpare.EMPTY_ARRAY;
             } else {
                 args = new Object[size];
                 Class<?>[] cls =
@@ -466,7 +466,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                     } else if (m == Supplier.class) {
                         args[i] = getSupplier();
                     } else if (m.isPrimitive()) {
-                        args[i] = Reflect.def(m);
+                        args[i] = Find.value(m);
                     } else if (m.isAnnotation()) {
                         args[i] = member.getAnnotation(
                             (Class<? extends Annotation>) m

@@ -17,7 +17,7 @@ package plus.kat.reflex;
 
 import plus.kat.anno.NotNull;
 
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 
 /**
  * @author kraity
@@ -25,38 +25,97 @@ import java.lang.reflect.Type;
  */
 public interface ArrayType extends Type {
     /**
-     * Returns the length of Type array
+     * Returns the length of type array
      */
     int size();
 
     /**
-     * Returns the {@link Type} of specified index
+     * Returns the type of specified index
+     *
+     * @param i the specified index
+     * @return {@link Type}
+     * @throws ArrayIndexOutOfBoundsException If the {@code index} out of range
      */
     @NotNull
-    Type getType(
-        int index
-    );
+    Type getType(int i);
 
     /**
-     * Returns an implementation of {@code types}
+     * Returns an arrayType of parameters
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<Object[]> spare = supplier.lookup(Object[].class);
+     *
+     *  Proxy proxy = ...
+     *  Method method = ...
+     *
+     *  String text = "..."
+     *  method.invoke(
+     *     proxy, spare.read(
+     *        new Event<Object[]>(text).with(ArrayType.of(method))
+     *     )
+     *  );
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code executor} is null
+     * @since 0.0.4
      */
-    static Impl of(
-        @NotNull Type[] types
+    @NotNull
+    static ArrayType of(
+        @NotNull Executable executor
     ) {
-        return new Impl(
-            types, false
+        return of(
+            executor.getGenericParameterTypes()
         );
     }
 
     /**
-     * Returns an implementation of {@code types}
+     * Returns an arrayType of arguments
+     *
+     * @throws NullPointerException If the specified {@code types} is null
+     * @since 0.0.4
      */
-    static Impl of(
+    @NotNull
+    static ArrayType of(
+        @NotNull ParameterizedType type
+    ) {
+        return of(
+            type.getActualTypeArguments()
+        );
+    }
+
+    /**
+     * Returns an arrayType of {@code types}
+     *
+     * @throws NullPointerException If the specified {@code types} is null
+     */
+    @NotNull
+    static ArrayType of(
+        @NotNull Type[] types
+    ) {
+        if (types != null) {
+            return new Impl(types);
+        } else {
+            throw new NullPointerException();
+        }
+    }
+
+    /**
+     * Returns an arrayType of {@code types}
+     *
+     * @throws NullPointerException If the specified {@code types} is null
+     */
+    @NotNull
+    static ArrayType of(
         @NotNull Type[] types, boolean copy
     ) {
-        return new Impl(
-            types, copy
-        );
+        if (!copy) {
+            return of(types);
+        } else {
+            return new Impl(
+                types.clone()
+            );
+        }
     }
 
     /**
@@ -67,16 +126,10 @@ public interface ArrayType extends Type {
 
         private final Type[] types;
 
-        public Impl(
-            @NotNull Type[] types
+        private Impl(
+            @NotNull Type[] it
         ) {
-            this(types, false);
-        }
-
-        public Impl(
-            @NotNull Type[] types, boolean copy
-        ) {
-            this.types = copy ? types.clone() : types;
+            types = it;
         }
 
         @Override
@@ -85,10 +138,29 @@ public interface ArrayType extends Type {
         }
 
         @Override
-        public Type getType(
-            int index
-        ) {
-            return types[index];
+        public Type getType(int i) {
+            return types[i];
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append('<');
+
+            boolean bo = true;
+            for (Type type : types) {
+                if (bo) {
+                    bo = false;
+                } else {
+                    sb.append(", ");
+                }
+                sb.append(
+                    type.getTypeName()
+                );
+            }
+
+            sb.append('>');
+            return sb.toString();
         }
     }
 }

@@ -27,6 +27,7 @@ import java.util.concurrent.*;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
+import plus.kat.stream.*;
 import plus.kat.utils.*;
 
 /**
@@ -86,7 +87,7 @@ public class MapSpare implements Spare<Map> {
         @NotNull Value value
     ) throws IOException {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, value, flag, null
             );
         }
@@ -173,7 +174,7 @@ public class MapSpare implements Spare<Map> {
         }
 
         if (data instanceof CharSequence) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, (CharSequence) data, null, supplier
             );
         }
@@ -360,14 +361,14 @@ public class MapSpare implements Spare<Map> {
                 ParameterizedType p = (ParameterizedType) type;
                 type = p.getRawType();
                 Type[] actual = p.getActualTypeArguments();
-                Class<?> v = Reflect
-                    .getClass(actual[1]);
+                Class<?> v = Find
+                    .clazz(actual[1]);
                 if (v != Object.class) {
                     val = actual[1];
                     spare1 = supplier.lookup(v);
                 }
-                Class<?> k = Reflect
-                    .getClass(actual[0]);
+                Class<?> k = Find
+                    .clazz(actual[0]);
                 if (k != Object.class &&
                     k != String.class) {
                     key = actual[0];

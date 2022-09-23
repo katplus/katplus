@@ -17,7 +17,6 @@ package plus.kat;
 
 import plus.kat.anno.*;
 import plus.kat.spare.*;
-import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.*;
@@ -1228,7 +1227,7 @@ public interface Supplier {
                         int size = c.getParameterCount();
 
                         if (size == 0) {
-                            args = Reflect.EMPTY;
+                            args = ArraySpare.EMPTY_ARRAY;
                         } else {
                             args = new Object[size];
                             Class<?>[] cls =
@@ -1242,7 +1241,7 @@ public interface Supplier {
                                 } else if (m == Supplier.class) {
                                     args[i] = this;
                                 } else if (m.isPrimitive()) {
-                                    args[i] = Reflect.def(m);
+                                    args[i] = Find.value(m);
                                 } else if (m.isAnnotation()) {
                                     args[i] = klass.getAnnotation(
                                         (Class<? extends Annotation>) m
@@ -1311,84 +1310,9 @@ public interface Supplier {
             @Nullable Type type,
             @Nullable CharSequence klass
         ) {
-            if (type == null) {
-                return search(
-                    null, klass
-                );
-            }
-
-            if (type instanceof Class) {
-                Class<T> clazz;
-                Spare<T> spare = lookup(
-                    clazz = (Class<T>) type
-                );
-                if (spare != null ||
-                    klass == null) {
-                    return spare;
-                }
-
-                return search(clazz, klass);
-            }
-
-            if (type instanceof Space) {
-                Space s = (Space) type;
-                type = s.getType();
-                if (type == null) {
-                    return lookup(s);
-                }
-                return lookup(type, klass);
-            }
-
-            if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
-                return lookup(
-                    p.getRawType(), klass
-                );
-            }
-
-            if (type instanceof ArrayType) {
-                return (Spare<T>) lookup(
-                    Object[].class
-                );
-            }
-
-            if (type instanceof TypeVariable) {
-                TypeVariable<?> v = (TypeVariable<?>) type;
-                return lookup(
-                    v.getBounds()[0], klass
-                );
-            }
-
-            if (type instanceof WildcardType) {
-                WildcardType w = (WildcardType) type;
-                type = w.getUpperBounds()[0];
-                if (type == Object.class) {
-                    Type[] bounds = w.getLowerBounds();
-                    if (bounds.length != 0) {
-                        type = bounds[0];
-                    }
-                }
-                return lookup(type, klass);
-            }
-
-            if (type instanceof GenericArrayType) {
-                GenericArrayType g = (GenericArrayType) type;
-                Class<?> cls = Reflect.getClass(
-                    g.getGenericComponentType()
-                );
-                if (cls != null &&
-                    cls != Object.class) {
-                    return (Spare<T>) lookup(
-                        Object[].class
-                    );
-                }
-
-                return (Spare<T>) lookup(
-                    Array.newInstance(cls, 0).getClass()
-                );
-            }
-
-            return null;
+            return lookup(
+                (Class<T>) Find.clazz(type), klass
+            );
         }
 
         @Override
@@ -1425,77 +1349,9 @@ public interface Supplier {
             @Nullable Type type,
             @Nullable CharSequence klass
         ) {
-            if (type == null) {
-                return search(
-                    null, klass
-                );
-            }
-
-            if (type instanceof Class) {
-                return search(
-                    (Class<T>) type, klass
-                );
-            }
-
-            if (type instanceof Space) {
-                Space s = (Space) type;
-                type = s.getType();
-                if (type == null) {
-                    return lookup(s);
-                }
-                return search(type, klass);
-            }
-
-            if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
-                return search(
-                    p.getRawType(), klass
-                );
-            }
-
-            if (type instanceof ArrayType) {
-                return (Spare<T>) lookup(
-                    Object[].class
-                );
-            }
-
-            if (type instanceof TypeVariable) {
-                TypeVariable<?> v = (TypeVariable<?>) type;
-                return search(
-                    v.getBounds()[0], klass
-                );
-            }
-
-            if (type instanceof WildcardType) {
-                WildcardType w = (WildcardType) type;
-                type = w.getUpperBounds()[0];
-                if (type == Object.class) {
-                    Type[] bounds = w.getLowerBounds();
-                    if (bounds.length != 0) {
-                        type = bounds[0];
-                    }
-                }
-                return search(type, klass);
-            }
-
-            if (type instanceof GenericArrayType) {
-                GenericArrayType g = (GenericArrayType) type;
-                Class<?> cls = Reflect.getClass(
-                    g.getGenericComponentType()
-                );
-                if (cls != null &&
-                    cls != Object.class) {
-                    return (Spare<T>) lookup(
-                        Object[].class
-                    );
-                }
-
-                return (Spare<T>) lookup(
-                    Array.newInstance(cls, 0).getClass()
-                );
-            }
-
-            return null;
+            return search(
+                (Class<T>) Find.clazz(type), klass
+            );
         }
 
         @Override

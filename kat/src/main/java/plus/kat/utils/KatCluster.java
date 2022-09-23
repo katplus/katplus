@@ -24,19 +24,20 @@ import java.util.Arrays;
  * @author kraity
  * @since 0.0.4
  */
-public abstract class KatPool<T> {
+@SuppressWarnings("unchecked")
+public abstract class KatCluster<T> {
 
-    protected volatile int count;
+    protected final int size;
     protected final boolean block;
 
     protected int grow;
-    protected final int size;
+    protected volatile int count;
     protected final Object[] group;
 
     /**
      * @param size the specified size of pool
      */
-    public KatPool(
+    public KatCluster(
         int size
     ) {
         this(size, true);
@@ -46,7 +47,7 @@ public abstract class KatPool<T> {
      * @param size  the specified size of pool
      * @param block the specified blocked mode
      */
-    public KatPool(
+    public KatCluster(
         int size, boolean block
     ) {
         this.size = size;
@@ -61,6 +62,15 @@ public abstract class KatPool<T> {
      */
     @NotNull
     public abstract T make();
+
+    /**
+     * Releases the {@code target}
+     *
+     * @param target the specified {@link T}
+     */
+    public abstract boolean stop(
+        @NotNull T target
+    );
 
     /**
      * Verify lock the {@code target}
@@ -85,7 +95,7 @@ public abstract class KatPool<T> {
      *
      * @return {@link T}, it is not null
      */
-    @SuppressWarnings("unchecked")
+    @NotNull
     public T borrow() {
         synchronized (this) {
             while (true) {
@@ -124,16 +134,19 @@ public abstract class KatPool<T> {
     /**
      * Returns a specified instance
      *
-     * @param t the specified {@link T}, maybe is null
+     * @param it the specified {@link T}, maybe is null
      */
     public boolean retreat(
-        @Nullable T t
+        @Nullable T it
     ) {
-        if (t != null &&
-            count < size && unlock(t)) {
+        if (it == null) {
+            return false;
+        }
+
+        if (unlock(it)) {
             synchronized (this) {
                 if (count < size) {
-                    group[count++] = t;
+                    group[count++] = it;
                     if (block) {
                         notify();
                     }
@@ -142,11 +155,11 @@ public abstract class KatPool<T> {
             }
         }
 
-        return false;
+        return stop(it);
     }
 
     /**
-     * Close this {@link KatPool}
+     * Close this {@link KatCluster}
      */
     public void close() {
         grow = 0;

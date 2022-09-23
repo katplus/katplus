@@ -21,7 +21,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.utils.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -85,7 +85,7 @@ public class BitSetSpare implements Spare<BitSet> {
         }
 
         if (data instanceof CharSequence) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, (CharSequence) data, null, supplier
             );
         }
@@ -99,7 +99,7 @@ public class BitSetSpare implements Spare<BitSet> {
         @NotNull Value value
     ) {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, value, flag, null
             );
         }

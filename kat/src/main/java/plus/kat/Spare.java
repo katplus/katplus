@@ -18,10 +18,10 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.spare.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
-import plus.kat.spare.*;
-import plus.kat.utils.*;
+import plus.kat.stream.*;
 
 import java.sql.*;
 import java.io.IOException;
@@ -579,7 +579,7 @@ public interface Spare<K> extends Coder<K> {
         }
 
         if (data instanceof CharSequence) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, (CharSequence) data, null, supplier
             );
         }

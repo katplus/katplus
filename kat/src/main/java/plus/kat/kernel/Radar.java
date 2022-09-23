@@ -23,7 +23,7 @@ import plus.kat.stream.*;
 
 import java.io.IOException;
 
-import static plus.kat.stream.Binary.hex;
+import static plus.kat.stream.Binary.digit;
 
 /**
  * @author kraity
@@ -386,10 +386,10 @@ public class Radar implements Solver {
         @NotNull Reader r
     ) throws IOException {
         // hex number
-        int c1 = hex(r.next());
-        int c2 = hex(r.next());
-        int c3 = hex(r.next());
-        int c4 = hex(r.next());
+        int c1 = digit(r.next());
+        int c2 = digit(r.next());
+        int c3 = digit(r.next());
+        int c4 = digit(r.next());
 
         // U+0000 ~ U+0080 ~ U+07FF
         // 0xxxxxx & 110xxxxx 10xxxxxx
@@ -431,10 +431,10 @@ public class Radar implements Solver {
             }
 
             // hex number
-            int d1 = hex(r.next());
-            int d2 = hex(r.next());
-            int d3 = hex(r.next());
-            int d4 = hex(r.next());
+            int d1 = digit(r.next());
+            int d2 = digit(r.next());
+            int d3 = digit(r.next());
+            int d4 = digit(r.next());
 
             // check surrogate pair
             if (d1 != 0xD || d2 < 0xC) {

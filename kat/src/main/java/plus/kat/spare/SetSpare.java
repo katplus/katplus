@@ -29,7 +29,7 @@ import java.util.concurrent.*;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.utils.*;
+import plus.kat.stream.*;
 
 /**
  * @author kraity
@@ -88,7 +88,7 @@ public class SetSpare implements Spare<Set> {
         @NotNull Value value
     ) throws IOException {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, value, flag, null
             );
         }
@@ -178,7 +178,7 @@ public class SetSpare implements Spare<Set> {
         }
 
         if (data instanceof CharSequence) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, (CharSequence) data, null, supplier
             );
         }

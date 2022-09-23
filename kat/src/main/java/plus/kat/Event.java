@@ -78,7 +78,7 @@ public class Event<T> implements Flag {
      * @param reader the specified {@link Reader} to be used
      */
     public Event(
-        @NotNull Reader reader
+        @Nullable Reader reader
     ) {
         this(Event.class);
         this.reader = reader;
@@ -91,7 +91,7 @@ public class Event<T> implements Flag {
      */
     public Event(
         @Nullable Flag flag,
-        @NotNull Reader reader
+        @Nullable Reader reader
     ) {
         this(Event.class);
         this.flag = flag;
@@ -400,8 +400,9 @@ public class Event<T> implements Flag {
      * <pre>{@code
      *  Event<User> event = ...
      *  event.with(User.class);
-     *  event.with(new ComplexType<Map<Long, User>>().getType());
+     *  event.with(ArrayType.of(method)) // Method method = ...
      *
+     *  event.with(new ComplexType<Map<Long, User>>().getType());
      *  // You can use this:
      *  // Event<Map<Long, User>> event = new Event<Map<Long, User>>() {};
      * }</pre>

@@ -18,6 +18,14 @@ package plus.kat.stream;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.*;
+import plus.kat.chain.*;
+import plus.kat.kernel.*;
+
+import static plus.kat.Job.*;
+import static plus.kat.kernel.Chain.*;
+import static plus.kat.stream.Binary.*;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -49,6 +57,91 @@ public final class Convert {
         }
 
         return def;
+    }
+
+    /**
+     * Parses the UTF-8 {@code byte[]} as a {@code char[]}.
+     * Strictly check UTF-8 code, if illegal returns the empty array
+     *
+     * @param i the specified begin index, include
+     * @param e the specified end index, exclude
+     * @since 0.0.4
+     */
+    @NotNull
+    public static char[] toChars(
+        @NotNull byte[] it, int i, int e
+    ) {
+        int size = length(
+            it, i, e
+        );
+
+        if (size == 0) {
+            return EMPTY_CHARS;
+        }
+
+        int len = e - i;
+        char[] ch = new char[size];
+
+        if (size == len) {
+            for (int m = 0, n = i; n < e; ) {
+                ch[m++] = (char) it[n++];
+            }
+            return ch;
+        }
+
+        for (int m = 0, n = i; n < e; ) {
+            // get byte
+            byte b = it[n++];
+
+            // U+0000 ~ U+007F
+            // 0xxxxxxx
+            if (b >= 0) {
+                ch[m++] = (char) b;
+            }
+
+            // U+0080 ~ U+07FF
+            // 110xxxxx 10xxxxxx
+            else if ((b >> 5) == -2) {
+                ch[m++] = (char) (
+                    (b << 6) | (it[n++] & 0x3F)
+                );
+            }
+
+            // U+0800 ~ U+FFFF
+            // 1110xxxx 10xxxxxx 10xxxxxx
+            else if ((b >> 4) == -2) {
+                ch[m++] = (char) (
+                    (b << 12) | ((it[n++] & 0x3F) << 6) | (it[n++] & 0x3F)
+                );
+            }
+
+            // U+10000 ~ U+10FFFF
+            // 11110x xx : 10xxxx xx : 10xx xx xx : 10xx xxxx
+            // 11110x xx : 10x100 00
+            // 1101 10xx xxxx xxxx 1101 11xx xxxx xxxx
+            else if ((b >> 3) == -2) {
+                byte b2 = it[n++];
+                byte b3 = it[n++];
+                ch[m++] = (char) (
+                    ((0xD8 | (b & 0x03)) << 8) |
+                        ((((b2 - 0x10 >> 2)) & 0x0F) << 4) |
+                        (((b2 & 0x03) << 2) | ((b3 >> 4) & 0x03))
+                );
+
+                byte b4 = it[n++];
+                ch[m++] = (char) (
+                    ((0xDC | ((b3 >> 2) & 0x03)) << 8) |
+                        ((((b3 & 0x3) << 2) | ((b4 >> 4) & 0x03)) << 4) | (b4 & 0x0F)
+                );
+            }
+
+            // beyond the current range
+            else {
+                return EMPTY_CHARS;
+            }
+        }
+
+        return ch;
     }
 
     /**
@@ -699,5 +792,189 @@ public final class Convert {
         }
 
         return toLong(it, len, 10L, 0L) != 0L;
+    }
+
+    /**
+     * Parse {@link CharSequence} and convert result to {@link T}
+     *
+     * @param text specify the {@code text} to be parsed
+     * @return {@link T} or {@code null}
+     * @throws NullPointerException If the {@code spare} is null
+     * @since 0.0.4
+     */
+    @Nullable
+    public static <T> T toObject(
+        @NotNull Spare<T> spare,
+        @Nullable CharSequence text
+    ) {
+        if (text == null) {
+            return null;
+        }
+
+        if (spare == null) {
+            throw new NullPointerException();
+        }
+
+        return Convert.toObject(
+            spare, text, null, null
+        );
+    }
+
+    /**
+     * Parse {@link CharSequence} and convert result to {@link T}
+     *
+     * @param clazz the specified {@code class}
+     * @param text  specify the {@code text} to be parsed
+     * @return {@link T} or {@code null}
+     * @throws NullPointerException If the {@code clazz} is null
+     * @since 0.0.4
+     */
+    @Nullable
+    public static <T> T toObject(
+        @NotNull Class<T> clazz,
+        @Nullable CharSequence text
+    ) {
+        if (text == null) {
+            return null;
+        }
+
+        Supplier supplier = Supplier.ins();
+        Spare<T> spare = supplier.lookup(clazz);
+
+        if (spare == null) {
+            return null;
+        }
+
+        return Convert.toObject(
+            spare, text, null, supplier
+        );
+    }
+
+    /**
+     * Parse {@link CharSequence} and convert result to {@link T}
+     *
+     * @param supplier the specified {@code supplier}
+     * @param text     specify the {@code text} to be parsed
+     * @return {@link T} or {@code null}
+     * @throws NullPointerException If the {@code text} or {@code spare} is null
+     * @since 0.0.4
+     */
+    @Nullable
+    public static <T> T toObject(
+        @NotNull Spare<T> spare,
+        @NotNull CharSequence text,
+        @Nullable Flag flag,
+        @Nullable Supplier supplier
+    ) {
+        int e = text.length();
+        if (e < 2) {
+            return null;
+        }
+
+        if (spare == null) {
+            throw new NullPointerException();
+        }
+
+        int i = 0;
+        char c1, c2;
+
+        do {
+            c1 = text.charAt(i);
+            if (c1 <= 0x20) {
+                i++;
+            } else {
+                break;
+            }
+        } while (i < e);
+
+        do {
+            c2 = text.charAt(e - 1);
+            if (c2 <= 0x20) {
+                e--;
+            } else {
+                break;
+            }
+        } while (i < e);
+
+        Job job;
+        if (c2 != '}') {
+            // ()
+            if (c2 == ')') {
+                job = KAT;
+            }
+
+            // []
+            else if (c2 == ']') {
+                if (c1 == '[') {
+                    job = JSON;
+                } else {
+                    return null;
+                }
+            }
+
+            // <>
+            else if (c2 == '>') {
+                if (c1 == '<' && e > 6) {
+                    job = DOC;
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            if (c1 != '{') {
+                job = Job.KAT;
+            } else {
+                char ch;
+                int t = i + 1;
+
+                Strap:
+                while (true) {
+                    ch = text.charAt(t++);
+                    switch (ch) {
+                        case '"':
+                        case '\'':
+                        case '\\': {
+                            job = JSON;
+                            break Strap;
+                        }
+                        default: {
+                            if (ch > 0x20 || t >= e) {
+                                job = KAT;
+                                break Strap;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Event<T> event;
+        if (text instanceof Chain) {
+            Chain c = (Chain) text;
+            event = new Event<>(
+                flag, c.reader(i, e - i)
+            );
+            if (c instanceof Value) {
+                event.with(
+                    ((Value) c).getType()
+                );
+            }
+        } else {
+            event = new Event<>(
+                flag, new CharReader(text, i, e - i)
+            );
+        }
+
+        try {
+            return spare.solve(
+                job, event.with(supplier)
+            );
+        } catch (Exception ex) {
+            // Nothing
+        }
+
+        return null;
     }
 }

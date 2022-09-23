@@ -29,6 +29,7 @@ import java.util.concurrent.*;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
+import plus.kat.stream.*;
 import plus.kat.utils.*;
 
 /**
@@ -88,7 +89,7 @@ public class ListSpare implements Spare<List> {
         @NotNull Value value
     ) throws IOException {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, value, flag, null
             );
         }
@@ -179,7 +180,7 @@ public class ListSpare implements Spare<List> {
         }
 
         if (data instanceof CharSequence) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, (CharSequence) data, null, supplier
             );
         }
@@ -315,7 +316,7 @@ public class ListSpare implements Spare<List> {
             if (type instanceof ParameterizedType) {
                 ParameterizedType p = (ParameterizedType) type;
                 type = p.getRawType();
-                Class<?> v = Reflect.getClass(
+                Class<?> v = Find.clazz(
                     t = p.getActualTypeArguments()[0]
                 );
                 if (v != Object.class) {

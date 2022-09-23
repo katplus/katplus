@@ -22,7 +22,7 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.reflex.*;
-import plus.kat.utils.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.lang.reflect.*;
@@ -31,8 +31,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
-
-import static plus.kat.utils.Reflect.EMPTY;
 
 /**
  * @author kraity
@@ -43,6 +41,9 @@ public class ArraySpare implements Spare<Object> {
 
     public static final ArraySpare
         INSTANCE = new ArraySpare(Object[].class);
+
+    public static final Object[]
+        EMPTY_ARRAY = new Object[0];
 
     protected final Class<?> klass;
     protected final Class<?> element;
@@ -108,7 +109,7 @@ public class ArraySpare implements Spare<Object> {
         Class<?> elem = element;
         if (elem == Object.class) {
             if (!spoiler.hasNext()) {
-                return EMPTY;
+                return EMPTY_ARRAY;
             }
             Object[] data = new Object[]{
                 spoiler.getValue()
@@ -213,7 +214,7 @@ public class ArraySpare implements Spare<Object> {
             int size = col.size();
             if (elem == Object.class) {
                 if (size == 0) {
-                    return EMPTY;
+                    return EMPTY_ARRAY;
                 } else {
                     return col.toArray();
                 }
@@ -241,7 +242,7 @@ public class ArraySpare implements Spare<Object> {
             int size = map.size();
             if (elem == Object.class) {
                 if (size == 0) {
-                    return EMPTY;
+                    return EMPTY_ARRAY;
                 }
                 return map.values().toArray();
             }
@@ -262,7 +263,7 @@ public class ArraySpare implements Spare<Object> {
         }
 
         if (data instanceof CharSequence) {
-            return Casting.cast(
+            return Convert.toObject(
                 this, (CharSequence) data, null, supplier
             );
         }
@@ -273,13 +274,14 @@ public class ArraySpare implements Spare<Object> {
 
             if (elem == Object.class) {
                 if (size == 0) {
-                    return EMPTY;
+                    return EMPTY_ARRAY;
+                } else {
+                    Object[] array = new Object[size];
+                    for (int i = 0; i < size; i++) {
+                        array[i] = Array.get(data, i);
+                    }
+                    return array;
                 }
-                Object[] array = new Object[size];
-                for (int i = 0; i < size; i++) {
-                    array[i] = Array.get(data, i);
-                }
-                return array;
             }
 
             Spare<?> spare = null;
@@ -486,24 +488,22 @@ public class ArraySpare implements Spare<Object> {
 
     public static class Builder1 extends Builder0 {
 
-        protected Type actual;
+        protected Type type;
 
         public Builder1(
             @NotNull Type component
         ) {
             super(Object.class);
-            actual = component;
+            type = component;
         }
 
         @Override
         public void onCreate(
             @NotNull Alias alias
         ) throws Crash {
-            Type raw = actual;
+            Type raw = type;
             if (raw instanceof Class) {
-                if (raw == Object.class) {
-                    actual = null;
-                } else {
+                if (raw != Object.class) {
                     elem = (Class<?>) raw;
                     spare = supplier.lookup(elem);
                 }
@@ -530,22 +530,22 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            Object data = null;
-            Spare<?> coder = spare;
+            Type type0 = type;
+            Spare<?> spare0 = spare;
 
-            Type type = actual;
-            if (coder != null) {
-                value.setType(type);
-                data = coder.read(
+            Object data = null;
+            if (spare0 != null) {
+                value.setType(type0);
+                data = spare0.read(
                     event, value
                 );
             } else {
-                coder = supplier.lookup(
-                    type, space
+                spare0 = supplier.lookup(
+                    type0, space
                 );
-                if (coder != null) {
-                    value.setType(type);
-                    data = coder.read(event, value);
+                if (spare0 != null) {
+                    value.setType(type0);
+                    data = spare0.read(event, value);
                 }
             }
 
@@ -575,7 +575,7 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Space space,
             @NotNull Alias alias
         ) {
-            Type type = actual;
+            Type type = this.type;
             Spare<?> coder = spare;
 
             if (coder != null) {
@@ -595,14 +595,14 @@ public class ArraySpare implements Spare<Object> {
 
     public static class Builder2 extends Builder<Object> {
 
-        protected ArrayType types;
+        protected ArrayType tag;
         protected int index;
         protected Object[] entity;
 
         public Builder2(
-            @NotNull ArrayType tag
+            @NotNull ArrayType type
         ) {
-            types = tag;
+            tag = type;
         }
 
         @Override
@@ -610,7 +610,7 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Alias alias
         ) {
             index = -1;
-            entity = new Object[types.size()];
+            entity = new Object[tag.size()];
         }
 
         @Override
@@ -620,7 +620,7 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Value value
         ) throws IOException {
             if (++index < entity.length) {
-                Type type = types.getType(index);
+                Type type = tag.getType(index);
                 Spare<?> spare = supplier.lookup(
                     type, space
                 );
@@ -651,7 +651,7 @@ public class ArraySpare implements Spare<Object> {
                 return null;
             }
 
-            Type type = types.getType(index);
+            Type type = tag.getType(index);
             Spare<?> spare = supplier.lookup(
                 type, space
             );

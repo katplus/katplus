@@ -29,10 +29,7 @@ import plus.kat.anno.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
-import plus.kat.stream.*;
 import plus.kat.utils.*;
-
-import static plus.kat.utils.Reflect.LOOKUP;
 
 /**
  * @author kraity
@@ -128,7 +125,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 flag |= (1 << i);
                 Class<?> c = as[i];
                 if (c.isPrimitive()) {
-                    data[i] = Reflect.def(c);
+                    data[i] = Find.value(c);
                 }
             }
         }
@@ -482,27 +479,24 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     }
                 }
 
-                byte[] name = Reflect
-                    .alias(method);
+                String name = Find.name(method);
                 if (name == null) {
                     continue;
                 }
 
                 if (count == 0) {
-                    String key = Binary.ascii(name);
-                    if (get(key) == null) {
+                    if (get(name) == null) {
                         setWriter(
-                            grade, key, new Accessor<>(
+                            grade, name, new Accessor<>(
                                 expose, method, this
                             )
                         );
                     }
                 } else {
-                    Alias key = Binary.alias(name);
-                    if (set(key) == null) {
+                    if (set(name) == null) {
                         variable = true;
                         setReader(
-                            key, member = new Accessor<>(
+                            name, member = new Accessor<>(
                                 expose, method, this
                             )
                         );

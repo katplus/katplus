@@ -153,12 +153,12 @@ public class UUIDSpare extends Property<UUID> {
     private static long hex(
         Chain c, int i, int o
     ) throws IOException {
-        long d = Binary.hex(
+        long d = Binary.digit(
             c.at(i++)
         );
         while (i < o) {
             d <<= 4;
-            d |= Binary.hex(
+            d |= Binary.digit(
                 c.at(i++)
             );
         }

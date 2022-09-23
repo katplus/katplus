@@ -23,7 +23,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.entity.Subject;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
@@ -111,13 +110,9 @@ public class ProxySpare extends AbstractSpare<Object> {
                         Expose.class
                     );
 
-                String id;
-                byte[] name = Reflect
-                    .alias(method);
+                String name = Find.name(method);
                 if (name == null) {
-                    id = method.getName();
-                } else {
-                    id = Binary.ascii(name);
+                    name = method.getName();
                 }
 
                 Handle node = new Handle(
@@ -127,7 +122,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                 if (count != 0) {
                     if (expose == null) {
                         setReader(
-                            id, node
+                            name, node
                         );
                         continue;
                     }
@@ -135,7 +130,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                     String[] keys = expose.value();
                     if (keys.length == 0) {
                         setReader(
-                            id, node
+                            name, node
                         );
                         continue;
                     }
@@ -149,11 +144,11 @@ public class ProxySpare extends AbstractSpare<Object> {
                     }
                 } else {
                     setReader(
-                        false, id, node
+                        false, name, node
                     );
                     if (expose == null) {
                         setWriter(
-                            id, node
+                            name, node
                         );
                         continue;
                     }
@@ -162,7 +157,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                         String[] keys = expose.value();
                         if (keys.length == 0) {
                             setWriter(
-                                id, node
+                                name, node
                             );
                         } else {
                             for (String key : keys) {
@@ -232,7 +227,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                 Class<?> c = method
                     .getReturnType();
                 if (c.isPrimitive()) {
-                    return Reflect.def(c);
+                    return Find.value(c);
                 }
                 return null;
             } catch (Throwable e) {
@@ -294,7 +289,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                 Class<?> c = method
                     .getReturnType();
                 if (c.isPrimitive()) {
-                    return Reflect.def(c);
+                    return Find.value(c);
                 }
                 return null;
             }

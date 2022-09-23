@@ -19,89 +19,29 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 import plus.kat.reflex.*;
 
-import java.lang.invoke.*;
 import java.lang.reflect.*;
+import java.beans.Introspector;
 
 /**
  * @author kraity
- * @since 0.0.2
+ * @since 0.0.4
  */
-public final class Reflect {
-
-    public static final Object[]
-        EMPTY = new Object[0];
-
-    public static final MethodHandles.Lookup
-        LOOKUP = MethodHandles.lookup();
-
+@SuppressWarnings("deprecation")
+public final class Find {
     /**
-     * @since 0.0.2
-     */
-    @Nullable
-    @SuppressWarnings("unchecked")
-    public static <T> T apply(
-        @NotNull Class<?> klass
-    ) {
-        try {
-            Constructor<?> c = klass
-                .getDeclaredConstructor();
-            if (!c.isAccessible()) {
-                c.setAccessible(true);
-            }
-            return (T) c.newInstance(EMPTY);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
-     * @since 0.0.3
-     */
-    @Nullable
-    public static Object def(
-        @NotNull Class<?> type
-    ) {
-        if (type == int.class) {
-            return 0;
-        }
-        if (type == long.class) {
-            return 0L;
-        }
-        if (type == boolean.class) {
-            return false;
-        }
-        if (type == byte.class) {
-            return (byte) 0;
-        }
-        if (type == short.class) {
-            return (short) 0;
-        }
-        if (type == float.class) {
-            return 0F;
-        }
-        if (type == double.class) {
-            return 0D;
-        }
-        if (type == void.class) {
-            return null;
-        }
-        if (type == char.class) {
-            return (char) 0;
-        }
-
-        throw new Collapse(
-            "Not support type:" + type
-        );
-    }
-
-    /**
-     * @since 0.0.3
+     * Returns a wrapper class of primitive type
+     *
+     * <pre>{@code
+     *  Class cls = Find.out(int.class); // Integer.class
+     *  Class cls = Find.out(boolean.class); // Boolean.class
+     * }</pre>
+     *
+     * @return {@link Class} or {@code itself}
      */
     @NotNull
-    public static Class<?> wrap(
+    public static Class<?> kind(
         @NotNull Class<?> type
     ) {
         if (type == int.class) {
@@ -135,6 +75,47 @@ public final class Reflect {
     }
 
     /**
+     * Returns the default value of primitive type
+     *
+     * <pre>{@code
+     *  Object obj = Find.value(int.class); // 0
+     *  Object obj = Find.value(boolean.class); // false
+     * }</pre>
+     *
+     * @return {@link Object} or {@code null}
+     */
+    @Nullable
+    public static Object value(
+        @NotNull Class<?> type
+    ) {
+        if (type == int.class) {
+            return 0;
+        }
+        if (type == long.class) {
+            return 0L;
+        }
+        if (type == boolean.class) {
+            return false;
+        }
+        if (type == byte.class) {
+            return (byte) 0;
+        }
+        if (type == short.class) {
+            return (short) 0;
+        }
+        if (type == float.class) {
+            return 0F;
+        }
+        if (type == double.class) {
+            return 0D;
+        }
+        if (type == char.class) {
+            return (char) 0;
+        }
+        return null;
+    }
+
+    /**
      * Convert name of method to alias
      *
      * <pre>{@code
@@ -152,32 +133,40 @@ public final class Reflect {
      *   // setName(Param, Param) -> null
      * }</pre>
      *
-     * @see java.beans.Introspector#decapitalize(String)
-     * @since 0.0.3
+     * @see Introspector#decapitalize(String)
      */
     @Nullable
-    @SuppressWarnings("deprecation")
-    public static byte[] alias(
+    public static String name(
         @NotNull Method method
     ) {
         String name = method.getName();
-        int i = 1, l = name.length();
+        int i = 1, len = name.length();
 
+        // setXXX
         char ch = name.charAt(0);
         if (ch == 's') {
-            if (method.getParameterCount() == 0 || l < 4 ||
+            if (method.getParameterCount()
+                == 0 || len < 4 ||
                 name.charAt(i++) != 'e' ||
                 name.charAt(i++) != 't') {
                 return null;
             }
-        } else if (ch == 'g') {
-            if (method.getParameterCount() != 0 || l < 4 ||
+        }
+
+        // getXXX
+        else if (ch == 'g') {
+            if (method.getParameterCount()
+                != 0 || len < 4 ||
                 name.charAt(i++) != 'e' ||
                 name.charAt(i++) != 't') {
                 return null;
             }
-        } else if (ch == 'i') {
-            if (method.getParameterCount() != 0 || l < 3 ||
+        }
+
+        // isXXX
+        else if (ch == 'i') {
+            if (method.getParameterCount()
+                != 0 || len < 3 ||
                 name.charAt(i++) != 's') {
                 return null;
             }
@@ -195,29 +184,34 @@ public final class Reflect {
             return null;
         }
 
-        byte[] alias;
-        if (i == l) {
-            alias = new byte[]{
-                (byte) (c1 + 0x20)
-            };
-        } else {
-            char c2 = name.charAt(i);
-            if (c2 < 'A' || 'Z' < c2) {
-                c1 += 0x20;
-            }
-
-            alias = new byte[l - i + 1];
-            alias[0] = (byte) c1;
-            name.getBytes(i, l, alias, 1);
+        if (i == len) {
+            return String.valueOf(
+                (char) (c1 + 0x20)
+            );
         }
-        return alias;
+
+        char c2 = name.charAt(i);
+        if (c2 < 'A' || 'Z' < c2) {
+            c1 += 0x20;
+        }
+
+        byte[] it = new byte[len - i + 1];
+        it[0] = (byte) c1;
+        name.getBytes(
+            i, len, it, 1
+        );
+
+        return new String(it, 0, 0, it.length);
     }
 
     /**
+     * Returns the class corresponding to the type
+     *
+     * @return {@link Class} or {@code null}
      * @since 0.0.4
      */
     @Nullable
-    public static Class<?> getClass(
+    public static Class<?> clazz(
         @Nullable Type type
     ) {
         if (type == null) {
@@ -230,21 +224,21 @@ public final class Reflect {
 
         if (type instanceof ParameterizedType) {
             ParameterizedType p = (ParameterizedType) type;
-            return getClass(
+            return clazz(
                 p.getRawType()
             );
         }
 
         if (type instanceof Space) {
             Space s = (Space) type;
-            return getClass(
+            return clazz(
                 s.getType()
             );
         }
 
         if (type instanceof TypeVariable) {
             TypeVariable<?> v = (TypeVariable<?>) type;
-            return getClass(
+            return clazz(
                 v.getBounds()[0]
             );
         }
@@ -258,7 +252,7 @@ public final class Reflect {
                     type = bounds[0];
                 }
             }
-            return getClass(type);
+            return clazz(type);
         }
 
         if (type instanceof ArrayType) {
@@ -267,7 +261,7 @@ public final class Reflect {
 
         if (type instanceof GenericArrayType) {
             GenericArrayType g = (GenericArrayType) type;
-            Class<?> cls = getClass(
+            Class<?> cls = clazz(
                 g.getGenericComponentType()
             );
             if (cls == null ||
