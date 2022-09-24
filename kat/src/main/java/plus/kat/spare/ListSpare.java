@@ -273,9 +273,7 @@ public class ListSpare implements Spare<List> {
     public Builder<List> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder$<List>(
-            type == null || type == Object.class ? klass : type
-        ) {
+        return new Builder0<List>(type, klass) {
             @Override
             public List onCreate(
                 @NotNull Type type
@@ -285,18 +283,51 @@ public class ListSpare implements Spare<List> {
         };
     }
 
-    public static class Builder$<T extends Collection> extends Builder<T> {
+    public static class Builder0<T extends Collection> extends Builder<T> {
 
-        protected Type act;
-        protected Type tag;
+        protected Type tag, raw;
+        protected Class<?> kind;
 
         protected T entity;
         protected Spare<?> spare0;
 
-        public Builder$(
-            @NotNull Type tag
+        public Builder0(
+            Type type,
+            Class<?> clazz
         ) {
-            this.tag = tag;
+            if (type == null) {
+                raw = clazz;
+            }
+
+            // class
+            else if (type instanceof Class) {
+                if (type != Object.class) {
+                    raw = type;
+                } else {
+                    raw = clazz;
+                }
+            }
+
+            // param
+            else if (type instanceof ParameterizedType) {
+                ParameterizedType p = (ParameterizedType) type;
+                Type[] act = p.getActualTypeArguments();
+                raw = p.getRawType();
+                if (act[0] != Object.class) {
+                    tag = act[0];
+                }
+            }
+
+            // other
+            else {
+                Class<?> cls = Find.clazz(type);
+                if (cls != null &&
+                    cls != Object.class) {
+                    raw = cls;
+                } else {
+                    raw = clazz;
+                }
+            }
         }
 
         @NotNull
@@ -312,19 +343,16 @@ public class ListSpare implements Spare<List> {
         public void onCreate(
             @NotNull Alias alias
         ) {
-            Type t, type = tag;
-            if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
-                type = p.getRawType();
-                Class<?> v = Find.clazz(
-                    t = p.getActualTypeArguments()[0]
-                );
-                if (v != Object.class) {
-                    act = t;
-                    spare0 = supplier.lookup(v);
+            Type tv = tag;
+            if (tv != null) {
+                Class<?> cls = Find.clazz(tv);
+                if (cls != null &&
+                    cls != Object.class) {
+                    kind = cls;
+                    spare0 = supplier.lookup(cls);
                 }
             }
-            entity = onCreate(type);
+            entity = onCreate(raw);
         }
 
         @Override
@@ -335,13 +363,15 @@ public class ListSpare implements Spare<List> {
         ) throws IOException {
             Spare<?> spare = spare0;
             if (spare == null) {
-                spare = supplier.lookup(space);
+                spare = supplier.search(
+                    kind, space
+                );
                 if (spare == null) {
                     return;
                 }
             }
 
-            value.setType(act);
+            value.setType(tag);
             entity.add(
                 spare.read(
                     event, value
@@ -366,13 +396,15 @@ public class ListSpare implements Spare<List> {
         ) {
             Spare<?> spare = spare0;
             if (spare == null) {
-                spare = supplier.lookup(space);
+                spare = supplier.search(
+                    kind, space
+                );
                 if (spare == null) {
                     return null;
                 }
             }
 
-            return spare.getBuilder(act);
+            return spare.getBuilder(tag);
         }
 
         @Override

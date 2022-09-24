@@ -268,9 +268,7 @@ public class SetSpare implements Spare<Set> {
     public Builder<Set> getBuilder(
         @Nullable Type type
     ) {
-        return new ListSpare.Builder$<Set>(
-            type == null || type == Object.class ? klass : type
-        ) {
+        return new ListSpare.Builder0<Set>(type, klass) {
             @Override
             public Set onCreate(
                 @NotNull Type type

@@ -23,6 +23,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.reflex.*;
 import plus.kat.stream.*;
+import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.lang.reflect.*;
@@ -333,7 +334,7 @@ public class ArraySpare implements Spare<Object> {
             if (e.isPrimitive()) {
                 return new Builder0(e);
             } else {
-                return new Builder1(e);
+                return new Builder1(e, e);
             }
         }
 
@@ -346,7 +347,7 @@ public class ArraySpare implements Spare<Object> {
             if (k.isPrimitive()) {
                 return new Builder0(k);
             } else {
-                return new Builder1(k);
+                return new Builder1(k, k);
             }
         }
 
@@ -358,8 +359,11 @@ public class ArraySpare implements Spare<Object> {
 
         if (type instanceof GenericArrayType) {
             GenericArrayType g = (GenericArrayType) type;
+            Class<?> cls = Find.clazz(
+                type = g.getGenericComponentType()
+            );
             return new Builder1(
-                g.getGenericComponentType()
+                type, cls != null ? cls : element
             );
         }
 
@@ -378,9 +382,9 @@ public class ArraySpare implements Spare<Object> {
         protected Spare<?> spare;
 
         public Builder0(
-            @NotNull Class<?> tag
+            Class<?> type
         ) {
-            elem = tag;
+            elem = type;
         }
 
         @Override
@@ -488,39 +492,31 @@ public class ArraySpare implements Spare<Object> {
 
     public static class Builder1 extends Builder0 {
 
-        protected Type type;
+        protected Type tag;
+        protected Class<?> kind;
 
         public Builder1(
-            @NotNull Type component
+            Type type,
+            Class<?> clazz
         ) {
-            super(Object.class);
-            type = component;
+            super(clazz);
+            this.tag = type;
         }
 
         @Override
         public void onCreate(
             @NotNull Alias alias
-        ) throws Crash {
-            Type raw = type;
-            if (raw instanceof Class) {
-                if (raw != Object.class) {
-                    elem = (Class<?>) raw;
-                    spare = supplier.lookup(elem);
-                }
-            } else if (raw instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) raw;
-                elem = (Class<?>) p.getRawType();
-                spare = supplier.lookup(elem);
-            } else {
-                throw new Crash(
-                    "Can't lookup the Spare of '" + raw + "'", false
-                );
+        ) {
+            Class<?> clazz = elem;
+            if (clazz != Object.class) {
+                kind = clazz;
+                spare = supplier.lookup(clazz);
             }
 
             size = 0;
             mark = 1;
             entity = Array.newInstance(
-                elem, length = 1
+                clazz, length = 1
             );
         }
 
@@ -530,30 +526,23 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            Type type0 = type;
             Spare<?> spare0 = spare;
-
-            Object data = null;
-            if (spare0 != null) {
-                value.setType(type0);
-                data = spare0.read(
-                    event, value
+            if (spare0 == null) {
+                spare0 = supplier.search(
+                    kind, space
                 );
-            } else {
-                spare0 = supplier.lookup(
-                    type0, space
-                );
-                if (spare0 != null) {
-                    value.setType(type0);
-                    data = spare0.read(event, value);
+                if (spare0 == null) {
+                    return;
                 }
             }
 
             if (length == size) {
                 enlarge();
             }
+
+            value.setType(tag);
             Array.set(
-                entity, size++, data
+                entity, size++, spare0.read(event, value)
             );
         }
 
@@ -575,34 +564,33 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Space space,
             @NotNull Alias alias
         ) {
-            Type type = this.type;
-            Spare<?> coder = spare;
-
-            if (coder != null) {
-                return coder.getBuilder(type);
+            Spare<?> spare0 = spare;
+            if (spare0 == null) {
+                spare0 = supplier.search(
+                    kind, space
+                );
+                if (spare0 == null) {
+                    return null;
+                }
             }
 
-            coder = supplier.lookup(
-                type, space
-            );
-            if (coder == null) {
-                return null;
-            }
-
-            return coder.getBuilder(type);
+            return spare0.getBuilder(tag);
         }
     }
 
     public static class Builder2 extends Builder<Object> {
 
-        protected ArrayType tag;
+        protected int size;
         protected int index;
+
+        protected ArrayType tag;
         protected Object[] entity;
 
         public Builder2(
-            @NotNull ArrayType type
+            ArrayType type
         ) {
             tag = type;
+            size = tag.size();
         }
 
         @Override
@@ -610,7 +598,7 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Alias alias
         ) {
             index = -1;
-            entity = new Object[tag.size()];
+            entity = new Object[size];
         }
 
         @Override
@@ -619,11 +607,17 @@ public class ArraySpare implements Spare<Object> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            if (++index < entity.length) {
+            if (++index < size) {
                 Type type = tag.getType(index);
-                Spare<?> spare = supplier.lookup(
-                    type, space
-                );
+                Class<?> clazz = Find.clazz(type);
+
+                Spare<?> spare;
+                if (clazz == null ||
+                    clazz == Object.class) {
+                    spare = supplier.lookup(space);
+                } else {
+                    spare = supplier.lookup(clazz, space);
+                }
 
                 if (spare != null) {
                     value.setType(type);
@@ -631,6 +625,10 @@ public class ArraySpare implements Spare<Object> {
                         event, value
                     );
                 }
+            } else {
+                throw new UnexpectedCrash(
+                    "Unexpectedly, the number of elements exceeds the range: " + size
+                );
             }
         }
 
@@ -646,21 +644,29 @@ public class ArraySpare implements Spare<Object> {
         public Builder<?> getBuilder(
             @NotNull Space space,
             @NotNull Alias alias
-        ) {
-            if (++index >= entity.length) {
-                return null;
+        ) throws IOException {
+            if (++index < size) {
+                Type type = tag.getType(index);
+                Class<?> clazz = Find.clazz(type);
+
+                Spare<?> spare;
+                if (clazz == null ||
+                    clazz == Object.class) {
+                    spare = supplier.lookup(space);
+                } else {
+                    spare = supplier.lookup(clazz, space);
+                }
+
+                if (spare == null) {
+                    return null;
+                }
+
+                return spare.getBuilder(type);
+            } else {
+                throw new UnexpectedCrash(
+                    "Unexpectedly, the number of elements exceeds the range: " + size
+                );
             }
-
-            Type type = tag.getType(index);
-            Spare<?> spare = supplier.lookup(
-                type, space
-            );
-
-            if (spare == null) {
-                return null;
-            }
-
-            return spare.getBuilder(type);
         }
 
         @Override

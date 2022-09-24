@@ -101,14 +101,13 @@ public class MapSpare implements Spare<Map> {
     ) throws IOException {
         for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
             Object key = entry.getKey();
-            if (key == null) {
+            if (key instanceof CharSequence) {
                 chan.set(
-                    null, entry.getValue()
+                    (CharSequence) key, entry.getValue()
                 );
             } else {
                 chan.set(
-                    key.toString(),
-                    entry.getValue()
+                    String.valueOf(key), entry.getValue()
                 );
             }
         }
@@ -298,7 +297,7 @@ public class MapSpare implements Spare<Map> {
         @Nullable Type type
     ) {
         return new Builder0(
-            type == null || type == Object.class ? klass : type
+            type, klass
         );
     }
 
@@ -340,47 +339,81 @@ public class MapSpare implements Spare<Map> {
 
     public static class Builder0 extends Builder<Map> {
 
-        protected Type tag;
-        protected Type key, val;
+        protected Class<?> kind;
+        protected Type key, val, raw;
 
         protected Map entity;
         protected Spare spare0, spare1;
 
         public Builder0(
-            @NotNull Type tag
+            Type type,
+            Class<?> clazz
         ) {
-            this.tag = tag;
+            if (type == null) {
+                raw = clazz;
+            }
+
+            // class
+            else if (type instanceof Class) {
+                if (type != Object.class) {
+                    raw = type;
+                } else {
+                    raw = clazz;
+                }
+            }
+
+            // param
+            else if (type instanceof ParameterizedType) {
+                ParameterizedType p = (ParameterizedType) type;
+                Type[] act = p.getActualTypeArguments();
+                raw = p.getRawType();
+                if (act[0] != Object.class) {
+                    key = act[0];
+                }
+                if (act[1] != Object.class) {
+                    val = act[1];
+                }
+            }
+
+            // other
+            else {
+                Class<?> cls = Find.clazz(type);
+                if (cls != null &&
+                    cls != Object.class) {
+                    raw = cls;
+                } else {
+                    raw = clazz;
+                }
+            }
         }
 
         @Override
         public void onCreate(
             @NotNull Alias alias
         ) {
-            Type type = tag;
-            if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
-                type = p.getRawType();
-                Type[] actual = p.getActualTypeArguments();
-                Class<?> v = Find
-                    .clazz(actual[1]);
-                if (v != Object.class) {
-                    val = actual[1];
-                    spare1 = supplier.lookup(v);
+            Type tv = val;
+            if (tv != null) {
+                Class<?> cls = Find.clazz(tv);
+                if (cls != null &&
+                    cls != Object.class) {
+                    kind = cls;
+                    spare1 = supplier.lookup(cls);
                 }
-                Class<?> k = Find
-                    .clazz(actual[0]);
-                if (k != Object.class &&
-                    k != String.class) {
-                    key = actual[0];
-                    spare0 = supplier.lookup(k);
+            }
+            Type tk = key;
+            if (tk != null) {
+                Class<?> cls = Find.clazz(tk);
+                if (cls != Object.class &&
+                    cls != String.class) {
+                    spare0 = supplier.lookup(cls);
                     if (spare0 == null) {
                         throw new Collapse(
-                            k + "'s spare does not exist"
+                            tk + "'s spare does not exist"
                         );
                     }
                 }
             }
-            entity = apply(type);
+            entity = apply(raw);
         }
 
         @Override
@@ -391,7 +424,9 @@ public class MapSpare implements Spare<Map> {
         ) throws IOException {
             Spare<?> s1 = spare1;
             if (s1 == null) {
-                s1 = supplier.lookup(space);
+                s1 = supplier.search(
+                    kind, space
+                );
                 if (s1 == null) {
                     return;
                 }
@@ -449,7 +484,9 @@ public class MapSpare implements Spare<Map> {
         ) {
             Spare<?> s1 = spare1;
             if (s1 == null) {
-                s1 = supplier.lookup(space);
+                s1 = supplier.search(
+                    kind, space
+                );
                 if (s1 == null) {
                     return null;
                 }

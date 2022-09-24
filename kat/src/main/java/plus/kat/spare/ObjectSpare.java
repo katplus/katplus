@@ -203,6 +203,6 @@ public class ObjectSpare extends Property<Object> {
                 return spare.getBuilder(type);
             }
         }
-        return new MapSpare.Builder0(Map.class);
+        return new MapSpare.Builder0(type, Map.class);
     }
 }
