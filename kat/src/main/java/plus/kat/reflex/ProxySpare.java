@@ -24,7 +24,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
-import plus.kat.stream.*;
 import plus.kat.utils.*;
 
 import java.lang.reflect.*;
@@ -48,6 +47,39 @@ public class ProxySpare extends AbstractSpare<Object> {
         super(embed, klass, supplier);
         onMethods(
             klass.getMethods()
+        );
+    }
+
+    @Override
+    public Object apply(
+        @NotNull Type type
+    ) {
+        if (type == klass ||
+            type == proxy) {
+            try {
+                return apply(
+                    Alias.EMPTY
+                );
+            } catch (Exception e) {
+                throw new Collapse(
+                    "Failed to create"
+                );
+            }
+        }
+
+        Class<?> clazz = Find.clazz(type);
+        if (klass.isAssignableFrom(clazz)) {
+            Supplier supplier = getSupplier();
+            Spare<?> spare = supplier.lookup(clazz);
+
+            if (spare != null &&
+                spare != this) {
+                return spare.apply(type);
+            }
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
         );
     }
 

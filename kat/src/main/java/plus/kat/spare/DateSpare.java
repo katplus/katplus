@@ -32,6 +32,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author kraity
@@ -155,48 +157,6 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
     }
 
     @Override
-    public Date cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (data instanceof Date) {
-            return (Date) data;
-        }
-
-        if (data instanceof Long) {
-            return new Date(
-                (long) data
-            );
-        }
-
-        if (data instanceof Integer) {
-            return new Date(
-                (int) data * 1000L
-            );
-        }
-
-        if (data instanceof CharSequence) {
-            String d = data.toString();
-            if (d.isEmpty()) {
-                return null;
-            }
-            synchronized (this) {
-                try {
-                    return parse(d);
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public Date read(
         @NotNull Flag flag,
         @NotNull Value value
@@ -244,5 +204,60 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
                 flow.addByte((byte) '"');
             }
         }
+    }
+
+    @Override
+    public Date cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Date) {
+                return (Date) data;
+            }
+
+            if (data instanceof Long) {
+                // as millisecond
+                return new Date(
+                    (long) data
+                );
+            }
+
+            if (data instanceof Integer) {
+                // as seconds
+                return new Date(
+                    (int) data * 1000L
+                );
+            }
+
+            if (data instanceof CharSequence) {
+                String d = data.toString();
+                if (d.isEmpty()) {
+                    return null;
+                }
+                synchronized (this) {
+                    try {
+                        return parse(d);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
+            }
+
+            if (data instanceof AtomicLong) {
+                // as millisecond
+                return new Date(
+                    ((AtomicLong) data).get()
+                );
+            }
+
+            if (data instanceof AtomicInteger) {
+                // as seconds
+                return new Date(
+                    ((AtomicInteger) data).get() * 1000L
+                );
+            }
+        }
+        return null;
     }
 }

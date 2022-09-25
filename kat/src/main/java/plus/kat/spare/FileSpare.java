@@ -53,54 +53,6 @@ public class FileSpare extends Property<File> {
     }
 
     @Override
-    public File cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (data instanceof File) {
-            return (File) data;
-        }
-
-        if (data instanceof URI) {
-            try {
-                return new File(
-                    (URI) data
-                );
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        if (data instanceof URL) {
-            try {
-                return new File(
-                    ((URL) data).toExternalForm()
-                );
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        if (data instanceof CharSequence) {
-            String d = data.toString();
-            if (d.isEmpty()) {
-                return null;
-            }
-            try {
-                return new File(d);
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public File read(
         @NotNull Flag flag,
         @NotNull Value value
@@ -121,5 +73,50 @@ public class FileSpare extends Property<File> {
         flow.text(
             ((File) value).getPath()
         );
+    }
+
+    @Override
+    public File cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof File) {
+                return (File) data;
+            }
+
+            if (data instanceof URI) {
+                try {
+                    return new File(
+                        (URI) data
+                    );
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+
+            if (data instanceof URL) {
+                try {
+                    return new File(
+                        ((URL) data).toExternalForm()
+                    );
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+
+            if (data instanceof CharSequence) {
+                String d = data.toString();
+                if (d.isEmpty()) {
+                    return null;
+                }
+                try {
+                    return new File(d);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 }

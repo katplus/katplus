@@ -52,42 +52,6 @@ public class URLSpare extends Property<URL> {
     }
 
     @Override
-    public URL cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (data instanceof URL) {
-            return (URL) data;
-        }
-
-        if (data instanceof URI) {
-            try {
-                return ((URI) data).toURL();
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        if (data instanceof CharSequence) {
-            String d = data.toString();
-            if (d.isEmpty()) {
-                return null;
-            }
-            try {
-                return new URL(d);
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public URL read(
         @NotNull Flag flag,
         @NotNull Value value
@@ -112,5 +76,38 @@ public class URLSpare extends Property<URL> {
         flow.text(
             ((URL) value).toExternalForm()
         );
+    }
+
+    @Override
+    public URL cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof URL) {
+                return (URL) data;
+            }
+
+            if (data instanceof URI) {
+                try {
+                    return ((URI) data).toURL();
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+
+            if (data instanceof CharSequence) {
+                String d = data.toString();
+                if (d.isEmpty()) {
+                    return null;
+                }
+                try {
+                    return new URL(d);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 }

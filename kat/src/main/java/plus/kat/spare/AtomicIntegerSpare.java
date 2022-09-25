@@ -57,26 +57,6 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
     }
 
     @Override
-    public AtomicInteger cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return apply();
-        }
-
-        if (data instanceof AtomicInteger) {
-            return (AtomicInteger) data;
-        }
-
-        return new AtomicInteger(
-            IntegerSpare.INSTANCE.cast(
-                data, supplier
-            )
-        );
-    }
-
-    @Override
     public AtomicInteger read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -103,6 +83,26 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
     ) throws IOException {
         flow.addInt(
             ((AtomicInteger) value).get()
+        );
+    }
+
+    @Override
+    public AtomicInteger cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data == null) {
+            return apply();
+        }
+
+        if (data instanceof AtomicInteger) {
+            return (AtomicInteger) data;
+        }
+
+        return new AtomicInteger(
+            IntegerSpare.INSTANCE.cast(
+                data, supplier
+            )
         );
     }
 }

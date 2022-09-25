@@ -112,6 +112,13 @@ public class VoidSpare extends Property<Void> {
 
     @Override
     public Void cast(
+        @Nullable Object data
+    ) {
+        return null;
+    }
+
+    @Override
+    public Void cast(
         @Nullable Object data,
         @NotNull Supplier supplier
     ) {

@@ -21,10 +21,12 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -89,6 +91,36 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
     }
 
     @Override
+    public K apply() {
+        K[] e = enums;
+        if (e != null &&
+            e.length != 0) {
+            return e[0];
+        }
+        return null;
+    }
+
+    @Override
+    public K apply(
+        @NotNull Type type
+    ) {
+        if (type == klass) {
+            K[] e = enums;
+            if (e != null &&
+                e.length != 0) {
+                return e[0];
+            }
+            throw new Collapse(
+                "Failed to create"
+            );
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    @Override
     public String getSpace() {
         return space;
     }
@@ -105,65 +137,6 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
                 }
             }
         }
-    }
-
-    @Override
-    public K cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (klass.isInstance(data)) {
-            return (K) data;
-        }
-
-        if (data instanceof String) {
-            K[] e = enums;
-            if (e != null) {
-                String key = (String) data;
-                if (!key.isEmpty()) {
-                    for (K em : e) {
-                        if (key.equals(em.name())) {
-                            return em;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
-        if (data instanceof Chain) {
-            K[] e = enums;
-            if (e != null) {
-                Chain c = (Chain) data;
-                if (c.isNotBlank()) {
-                    for (K em : e) {
-                        if (c.same(em.name())) {
-                            return em;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
-        if (data instanceof Number) {
-            K[] e = enums;
-            if (e != null) {
-                Number num = (Number) data;
-                int index = num.intValue();
-                if (index >= 0 &&
-                    index < e.length) {
-                    return e[index];
-                }
-            }
-            return null;
-        }
-
-        return null;
     }
 
     @Override
@@ -235,5 +208,61 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
                 flow.addByte((byte) '"');
             }
         }
+    }
+
+    @Override
+    public K cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (klass.isInstance(data)) {
+                return (K) data;
+            }
+
+            if (data instanceof String) {
+                K[] e = enums;
+                if (e != null) {
+                    String key = (String) data;
+                    if (!key.isEmpty()) {
+                        for (K em : e) {
+                            if (key.equals(em.name())) {
+                                return em;
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+
+            if (data instanceof Chain) {
+                K[] e = enums;
+                if (e != null) {
+                    Chain c = (Chain) data;
+                    if (c.isNotBlank()) {
+                        for (K em : e) {
+                            if (c.same(em.name())) {
+                                return em;
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+
+            if (data instanceof Number) {
+                K[] e = enums;
+                if (e != null) {
+                    Number num = (Number) data;
+                    int index = num.intValue();
+                    if (index >= 0 &&
+                        index < e.length) {
+                        return e[index];
+                    }
+                }
+                return null;
+            }
+        }
+        return null;
     }
 }

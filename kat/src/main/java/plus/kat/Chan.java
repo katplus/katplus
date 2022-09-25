@@ -132,11 +132,11 @@ public class Chan implements Flag, Closeable {
             return coding(
                 alias, value
             );
+        } else {
+            return coding(
+                alias, spare, value
+            );
         }
-
-        return coding(
-            alias, spare, value
-        );
     }
 
     /**
@@ -235,11 +235,11 @@ public class Chan implements Flag, Closeable {
 
         if (value == null) {
             return coding(alias);
+        } else {
+            return coding(
+                alias, coder, value
+            );
         }
-
-        return coding(
-            alias, coder, value
-        );
     }
 
     /**
@@ -277,11 +277,11 @@ public class Chan implements Flag, Closeable {
             return coding(
                 alias, value
             );
+        } else {
+            return coding(
+                alias, spare, value
+            );
         }
-
-        return coding(
-            alias, spare, value
-        );
     }
 
     /**
@@ -330,6 +330,13 @@ public class Chan implements Flag, Closeable {
         if (value instanceof Iterable) {
             return coding(
                 alias, ListSpare.INSTANCE, value
+            );
+        }
+
+        if (value instanceof Optional) {
+            Optional<?> o = (Optional<?>) value;
+            return set(
+                alias, o.orElse(null)
             );
         }
 

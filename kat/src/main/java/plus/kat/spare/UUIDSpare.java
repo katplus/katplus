@@ -53,49 +53,6 @@ public class UUIDSpare extends Property<UUID> {
     }
 
     @Override
-    public UUID cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (data instanceof UUID) {
-            return (UUID) data;
-        }
-
-        if (data instanceof Chain) {
-            try {
-                return parse(
-                    (Chain) data
-                );
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        if (data instanceof CharSequence) {
-            CharSequence c = (CharSequence) data;
-            int len = c.length();
-            if (len < 8 ||
-                len > 36) {
-                return null;
-            }
-
-            try {
-                return parse(
-                    new Value(c)
-                );
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public UUID read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -148,6 +105,46 @@ public class UUIDSpare extends Property<UUID> {
         flow.addLong(
             least & 0xFFFFFFFFFFFFL, 4, 12
         );
+    }
+
+    @Override
+    public UUID cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof UUID) {
+                return (UUID) data;
+            }
+
+            if (data instanceof Chain) {
+                try {
+                    return parse(
+                        (Chain) data
+                    );
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+
+            if (data instanceof CharSequence) {
+                CharSequence c = (CharSequence) data;
+                int len = c.length();
+                if (len < 8 ||
+                    len > 36) {
+                    return null;
+                }
+
+                try {
+                    return parse(
+                        new Value(c)
+                    );
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 
     private static long hex(

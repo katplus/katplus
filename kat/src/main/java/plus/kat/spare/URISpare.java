@@ -52,42 +52,6 @@ public class URISpare extends Property<URI> {
     }
 
     @Override
-    public URI cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (data instanceof URI) {
-            return (URI) data;
-        }
-
-        if (data instanceof URL) {
-            try {
-                return ((URL) data).toURI();
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        if (data instanceof CharSequence) {
-            String d = data.toString();
-            if (d.isEmpty()) {
-                return null;
-            }
-            try {
-                return new URI(d);
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public URI read(
         @NotNull Flag flag,
         @NotNull Value value
@@ -112,5 +76,38 @@ public class URISpare extends Property<URI> {
         flow.emit(
             ((URI) value).toASCIIString()
         );
+    }
+
+    @Override
+    public URI cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof URI) {
+                return (URI) data;
+            }
+
+            if (data instanceof URL) {
+                try {
+                    return ((URL) data).toURI();
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+
+            if (data instanceof CharSequence) {
+                String d = data.toString();
+                if (d.isEmpty()) {
+                    return null;
+                }
+                try {
+                    return new URI(d);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 }

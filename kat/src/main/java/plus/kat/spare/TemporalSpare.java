@@ -131,26 +131,23 @@ public abstract class TemporalSpare<K extends TemporalAccessor> extends Property
         @Nullable Object data,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (klass == data.getClass()) {
-            return (K) data;
-        }
-
-        if (data instanceof CharSequence) {
-            String d = data.toString();
-            if (d.isEmpty()) {
-                return null;
+        if (data != null) {
+            if (klass.isInstance(data)) {
+                return (K) data;
             }
-            try {
-                return cast(d);
-            } catch (Exception e) {
-                return null;
+
+            if (data instanceof CharSequence) {
+                String d = data.toString();
+                if (d.isEmpty()) {
+                    return null;
+                }
+                try {
+                    return cast(d);
+                } catch (Exception e) {
+                    return null;
+                }
             }
         }
-
         return null;
     }
 

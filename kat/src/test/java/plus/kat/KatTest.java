@@ -85,6 +85,15 @@ public class KatTest {
         );
     }
 
+
+    @Test
+    public void test_optional() {
+        assertEquals("i(1)", Kat.encode(Optional.of(1)));
+        assertEquals("$()", Kat.encode(Optional.empty()));
+        assertEquals("s(kraity)", Kat.encode(Optional.of("kraity")));
+        assertEquals("plus.kat.User{i:id(0)$:name()b:blocked(0)}", Kat.encode(Optional.of(new User())));
+    }
+
     @Test
     public void test_decode1() {
         HashMap<String, Object> any = new HashMap<>();

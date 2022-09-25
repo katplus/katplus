@@ -31,10 +31,14 @@ import java.util.BitSet;
  * @author kraity
  * @since 0.0.2
  */
-public class BitSetSpare implements Spare<BitSet> {
+public class BitSetSpare extends Property<BitSet> {
 
     public static final BitSetSpare
         INSTANCE = new BitSetSpare();
+
+    public BitSetSpare() {
+        super(BitSet.class);
+    }
 
     @Override
     public String getSpace() {
@@ -55,52 +59,13 @@ public class BitSetSpare implements Spare<BitSet> {
     }
 
     @Override
-    public Class<BitSet> getType() {
-        return BitSet.class;
-    }
-
-    @Override
-    public Supplier getSupplier() {
-        return Supplier.ins();
-    }
-
-    @Override
-    public Builder<BitSet> getBuilder(
-        @Nullable Type type
-    ) {
-        return new Builder0();
-    }
-
-    @Override
-    public BitSet cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (data instanceof BitSet) {
-            return (BitSet) data;
-        }
-
-        if (data instanceof CharSequence) {
-            return Convert.toObject(
-                this, (CharSequence) data, null, supplier
-            );
-        }
-
-        return null;
-    }
-
-    @Override
     public BitSet read(
         @NotNull Flag flag,
         @NotNull Value value
     ) {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
             return Convert.toObject(
-                this, value, flag, null
+                this, flag, value
             );
         }
         return null;
@@ -118,6 +83,32 @@ public class BitSetSpare implements Spare<BitSet> {
                 null, set.get(i) ? 1 : 0
             );
         }
+    }
+
+    @Override
+    public BitSet cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof BitSet) {
+                return (BitSet) data;
+            }
+
+            if (data instanceof CharSequence) {
+                return Convert.toObject(
+                    this, (CharSequence) data, null, supplier
+                );
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Builder<BitSet> getBuilder(
+        @Nullable Type type
+    ) {
+        return new Builder0();
     }
 
     public static class Builder0 extends Builder<BitSet> {

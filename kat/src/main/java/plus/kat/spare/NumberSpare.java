@@ -50,25 +50,9 @@ public class NumberSpare extends Property<Number> implements Serializer {
     }
 
     @Override
-    public Number cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof Number) {
-            return (Number) data;
-        }
-
-        if (data instanceof Boolean) {
-            return ((boolean) data) ? 1 : 0;
-        }
-
-        return 0;
-    }
-
-    @Override
     public Number read(
-        Flag flag,
-        Alias alias
+        @NotNull Flag flag,
+        @NotNull Alias alias
     ) {
         return alias.toNumber();
     }
@@ -115,5 +99,22 @@ public class NumberSpare extends Property<Number> implements Serializer {
                 value.toString()
             );
         }
+    }
+
+    @Override
+    public Number cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Number) {
+                return (Number) data;
+            }
+
+            if (data instanceof Boolean) {
+                return ((boolean) data) ? 1 : 0;
+            }
+        }
+        return null;
     }
 }

@@ -57,26 +57,6 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializer 
     }
 
     @Override
-    public AtomicLong cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return apply();
-        }
-
-        if (data instanceof AtomicLong) {
-            return (AtomicLong) data;
-        }
-
-        return new AtomicLong(
-            LongSpare.INSTANCE.cast(
-                data, supplier
-            )
-        );
-    }
-
-    @Override
     public AtomicLong read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -103,6 +83,26 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializer 
     ) throws IOException {
         flow.addLong(
             ((AtomicLong) value).get()
+        );
+    }
+
+    @Override
+    public AtomicLong cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data == null) {
+            return apply();
+        }
+
+        if (data instanceof AtomicLong) {
+            return (AtomicLong) data;
+        }
+
+        return new AtomicLong(
+            LongSpare.INSTANCE.cast(
+                data, supplier
+            )
         );
     }
 }

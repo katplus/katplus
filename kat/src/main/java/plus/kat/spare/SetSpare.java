@@ -69,7 +69,7 @@ public class SetSpare extends Property<Set> {
     ) throws IOException {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
             return Convert.toObject(
-                this, value, flag, null
+                this, flag, value
             );
         }
         return null;

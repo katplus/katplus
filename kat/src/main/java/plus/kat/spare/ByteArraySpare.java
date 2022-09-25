@@ -58,30 +58,6 @@ public class ByteArraySpare extends Property<byte[]> {
     }
 
     @Override
-    public byte[] cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof byte[]) {
-            return (byte[]) data;
-        }
-
-        if (data instanceof Chain) {
-            return ((Chain) data).fromMime();
-        }
-
-        if (data instanceof String) {
-            return Base64.RFC2045.INS.decode(
-                ((String) data).getBytes(
-                    StandardCharsets.US_ASCII
-                )
-            );
-        }
-
-        return Chain.EMPTY_BYTES;
-    }
-
-    @Override
     public byte[] read(
         @NotNull Flag flag,
         @NotNull Value value
@@ -99,5 +75,30 @@ public class ByteArraySpare extends Property<byte[]> {
                 (byte[]) value
             )
         );
+    }
+
+    @Override
+    public byte[] cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof byte[]) {
+                return (byte[]) data;
+            }
+
+            if (data instanceof Chain) {
+                return ((Chain) data).fromMime();
+            }
+
+            if (data instanceof String) {
+                return Base64.RFC2045.INS.decode(
+                    ((String) data).getBytes(
+                        StandardCharsets.US_ASCII
+                    )
+                );
+            }
+        }
+        return Chain.EMPTY_BYTES;
     }
 }

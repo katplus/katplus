@@ -53,36 +53,6 @@ public class CurrencySpare extends Property<Currency> {
     }
 
     @Override
-    public Currency cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (data instanceof Currency) {
-            return (Currency) data;
-        }
-
-        if (data instanceof CharSequence) {
-            CharSequence d = (CharSequence) data;
-            if (d.length() != 3) {
-                return null;
-            }
-            try {
-                return getInstance(
-                    data.toString()
-                );
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public Currency read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -118,5 +88,32 @@ public class CurrencySpare extends Property<Currency> {
         flow.emit(
             value.toString()
         );
+    }
+
+    @Override
+    public Currency cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Currency) {
+                return (Currency) data;
+            }
+
+            if (data instanceof CharSequence) {
+                CharSequence d = (CharSequence) data;
+                if (d.length() != 3) {
+                    return null;
+                }
+                try {
+                    return getInstance(
+                        data.toString()
+                    );
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 }

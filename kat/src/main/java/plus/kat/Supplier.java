@@ -1167,7 +1167,6 @@ public interface Supplier {
                 }
             }
 
-            // filter platform type
             String name = klass.getName();
             switch (name.charAt(0)) {
                 case 'j': {

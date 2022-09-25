@@ -134,7 +134,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     ) throws IOException {
         if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
             return Convert.toObject(
-                this, value, flag, supplier
+                this, flag, value
             );
         }
         return null;

@@ -47,24 +47,6 @@ public class StringBuilderSpare extends Property<StringBuilder> {
     }
 
     @Override
-    public StringBuilder cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return apply();
-        }
-
-        if (data instanceof CharSequence) {
-            return new StringBuilder(
-                (CharSequence) data
-            );
-        }
-
-        return new StringBuilder(data.toString());
-    }
-
-    @Override
     public StringBuilder read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -92,5 +74,23 @@ public class StringBuilderSpare extends Property<StringBuilder> {
         flow.append(
             (CharSequence) value
         );
+    }
+
+    @Override
+    public StringBuilder cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data == null) {
+            return apply();
+        }
+
+        if (data instanceof CharSequence) {
+            return new StringBuilder(
+                (CharSequence) data
+            );
+        }
+
+        return new StringBuilder(data.toString());
     }
 }

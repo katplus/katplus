@@ -58,50 +58,6 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializer 
     }
 
     @Override
-    public BigInteger cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return BigInteger.ZERO;
-        }
-
-        if (data instanceof BigInteger) {
-            return (BigInteger) data;
-        }
-
-        if (data instanceof Number) {
-            if (data instanceof BigDecimal) {
-                return ((BigDecimal) data).toBigInteger();
-            }
-
-            return BigInteger.valueOf(
-                ((Number) data).longValue()
-            );
-        }
-
-        if (data instanceof Boolean) {
-            return ((boolean) data) ? BigInteger.ONE : BigInteger.ZERO;
-        }
-
-        if (data instanceof Value) {
-            return ((Value) data).toBigInteger();
-        }
-
-        if (data instanceof CharSequence) {
-            try {
-                return new BigInteger(
-                    data.toString()
-                );
-            } catch (Exception e) {
-                // Nothing
-            }
-        }
-
-        return BigInteger.ZERO;
-    }
-
-    @Override
     public BigInteger read(
         @NotNull Flag flag,
         @NotNull Value value
@@ -117,5 +73,46 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializer 
         flow.addChars(
             value.toString()
         );
+    }
+
+    @Override
+    public BigInteger cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof BigInteger) {
+                return (BigInteger) data;
+            }
+
+            if (data instanceof Number) {
+                if (data instanceof BigDecimal) {
+                    return ((BigDecimal) data).toBigInteger();
+                }
+
+                return BigInteger.valueOf(
+                    ((Number) data).longValue()
+                );
+            }
+
+            if (data instanceof Boolean) {
+                return ((boolean) data) ? BigInteger.ONE : BigInteger.ZERO;
+            }
+
+            if (data instanceof Value) {
+                return ((Value) data).toBigInteger();
+            }
+
+            if (data instanceof CharSequence) {
+                try {
+                    return new BigInteger(
+                        data.toString()
+                    );
+                } catch (Exception e) {
+                    // Nothing
+                }
+            }
+        }
+        return BigInteger.ZERO;
     }
 }

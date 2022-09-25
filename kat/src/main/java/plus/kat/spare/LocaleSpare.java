@@ -20,13 +20,11 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.stream.Binary;
+import plus.kat.crash.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Locale;
-
-import static plus.kat.stream.Binary.lower;
-import static plus.kat.stream.Binary.upper;
 
 /**
  * @author kraity
@@ -42,6 +40,24 @@ public class LocaleSpare extends Property<Locale> {
     }
 
     @Override
+    public Locale apply() {
+        return Locale.getDefault();
+    }
+
+    @Override
+    public Locale apply(
+        @NotNull Type type
+    ) {
+        if (type == Locale.class) {
+            return Locale.getDefault();
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    @Override
     public String getSpace() {
         return "Locale";
     }
@@ -52,32 +68,6 @@ public class LocaleSpare extends Property<Locale> {
     ) {
         return clazz == Locale.class
             || clazz == Object.class;
-    }
-
-    @Override
-    public Locale cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (data instanceof Locale) {
-            return (Locale) data;
-        }
-
-        if (data instanceof CharSequence) {
-            try {
-                return lookup(
-                    (CharSequence) data
-                );
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        return null;
     }
 
     @Override
@@ -104,6 +94,29 @@ public class LocaleSpare extends Property<Locale> {
         flow.text(
             value.toString()
         );
+    }
+
+    @Override
+    public Locale cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Locale) {
+                return (Locale) data;
+            }
+
+            if (data instanceof CharSequence) {
+                try {
+                    return lookup(
+                        (CharSequence) data
+                    );
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 
     /**

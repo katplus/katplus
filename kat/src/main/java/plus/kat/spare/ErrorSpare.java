@@ -53,28 +53,6 @@ public class ErrorSpare extends Property<Exception> {
     }
 
     @Override
-    public Exception cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (klass.isInstance(data)) {
-            return (Exception) data;
-        }
-
-        if (data instanceof CharSequence) {
-            return Convert.toObject(
-                this, (CharSequence) data, null, supplier
-            );
-        }
-
-        return null;
-    }
-
-    @Override
     public void write(
         @NotNull Chan chan,
         @NotNull Object value
@@ -87,6 +65,25 @@ public class ErrorSpare extends Property<Exception> {
             Exception e = (Exception) value;
             chan.set("message", e.getMessage());
         }
+    }
+
+    @Override
+    public Exception cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (klass.isInstance(data)) {
+                return (Exception) data;
+            }
+
+            if (data instanceof CharSequence) {
+                return Convert.toObject(
+                    this, (CharSequence) data, null, supplier
+                );
+            }
+        }
+        return null;
     }
 
     @Override

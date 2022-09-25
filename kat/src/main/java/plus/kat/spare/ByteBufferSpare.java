@@ -48,40 +48,6 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
     }
 
     @Override
-    public ByteBuffer cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof ByteBuffer) {
-            return (ByteBuffer) data;
-        }
-
-        if (data instanceof byte[]) {
-            return ByteBuffer.wrap(
-                (byte[]) data
-            );
-        }
-
-        if (data instanceof Chain) {
-            return ByteBuffer.wrap(
-                ((Chain) data).copyBytes()
-            );
-        }
-
-        if (data instanceof String) {
-            return ByteBuffer.wrap(
-                Base64.RFC2045.INS.decode(
-                    ((String) data).getBytes(
-                        StandardCharsets.US_ASCII
-                    )
-                )
-            );
-        }
-
-        return null;
-    }
-
-    @Override
     public ByteBuffer read(
         @NotNull Flag flag,
         @NotNull Value value
@@ -115,5 +81,40 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
             flow.emit(cache, 0, len);
         }
         INS.push(cache);
+    }
+
+    @Override
+    public ByteBuffer cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof ByteBuffer) {
+                return (ByteBuffer) data;
+            }
+
+            if (data instanceof byte[]) {
+                return ByteBuffer.wrap(
+                    (byte[]) data
+                );
+            }
+
+            if (data instanceof Chain) {
+                return ByteBuffer.wrap(
+                    ((Chain) data).copyBytes()
+                );
+            }
+
+            if (data instanceof String) {
+                return ByteBuffer.wrap(
+                    Base64.RFC2045.INS.decode(
+                        ((String) data).getBytes(
+                            StandardCharsets.US_ASCII
+                        )
+                    )
+                );
+            }
+        }
+        return null;
     }
 }

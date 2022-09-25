@@ -110,13 +110,16 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.4
      */
     @NotNull
+    @SuppressWarnings("unchecked")
     default K apply(
         @NotNull Type type
     ) {
-        // Use the spare itself
         Class<?> kind = getType();
         if (type == kind) {
+            // default value
             K it = apply();
+
+            // check for null
             if (it != null) {
                 return it;
             }
@@ -129,12 +132,11 @@ public interface Spare<K> extends Coder<K> {
         // Find the class of the type
         Class<?> clazz = clazz(type);
 
-        // Use Supplier by default to solve
+        // Check if subclass of the kind
         if (kind.isAssignableFrom(clazz)) {
             // Using this spare's Supplier
             Supplier supplier = getSupplier();
 
-            @SuppressWarnings("unchecked")
             // Find the spare of the subclass
             Spare<K> spare = supplier.lookup(
                 (Class<K>) clazz

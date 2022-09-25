@@ -797,7 +797,7 @@ public final class Convert {
     /**
      * Parse {@link CharSequence} and convert result to {@link T}
      *
-     * @param text specify the {@code text} to be parsed
+     * @param text the specified {@code text} to be parsed
      * @return {@link T} or {@code null}
      * @throws NullPointerException If the {@code spare} is null
      * @since 0.0.4
@@ -823,8 +823,7 @@ public final class Convert {
     /**
      * Parse {@link CharSequence} and convert result to {@link T}
      *
-     * @param clazz the specified {@code class}
-     * @param text  specify the {@code text} to be parsed
+     * @param text the specified {@code text} to be parsed
      * @return {@link T} or {@code null}
      * @throws NullPointerException If the {@code clazz} is null
      * @since 0.0.4
@@ -853,8 +852,33 @@ public final class Convert {
     /**
      * Parse {@link CharSequence} and convert result to {@link T}
      *
-     * @param supplier the specified {@code supplier}
-     * @param text     specify the {@code text} to be parsed
+     * @param text the specified {@code text} to be parsed
+     * @return {@link T} or {@code null}
+     * @throws NullPointerException If the {@code text} or {@code spare} is null
+     * @since 0.0.4
+     */
+    @Nullable
+    public static <T> T toObject(
+        @NotNull Spare<T> spare,
+        @NotNull Flag flag,
+        @NotNull CharSequence text
+    ) {
+        if (flag instanceof Event) {
+            Event<?> event = (Event<?>) flag;
+            return toObject(
+                spare, text, flag, event.getSupplier()
+            );
+        } else {
+            return toObject(
+                spare, text, flag, null
+            );
+        }
+    }
+
+    /**
+     * Parse {@link CharSequence} and convert result to {@link T}
+     *
+     * @param text the specified {@code text} to be parsed
      * @return {@link T} or {@code null}
      * @throws NullPointerException If the {@code text} or {@code spare} is null
      * @since 0.0.4

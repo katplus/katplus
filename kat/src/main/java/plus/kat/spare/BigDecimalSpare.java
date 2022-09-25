@@ -58,59 +58,6 @@ public class BigDecimalSpare extends Property<BigDecimal> implements Serializer 
     }
 
     @Override
-    public BigDecimal cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return BigDecimal.ZERO;
-        }
-
-        if (data instanceof BigDecimal) {
-            return (BigDecimal) data;
-        }
-
-        if (data instanceof Number) {
-            if (data instanceof BigInteger) {
-                return new BigDecimal(
-                    (BigInteger) data
-                );
-            }
-
-            if (data instanceof Float
-                || data instanceof Double) {
-                return new BigDecimal(
-                    data.toString()
-                );
-            }
-
-            return BigDecimal.valueOf(
-                ((Number) data).longValue()
-            );
-        }
-
-        if (data instanceof Boolean) {
-            return ((boolean) data) ? BigDecimal.ONE : BigDecimal.ZERO;
-        }
-
-        if (data instanceof Value) {
-            return ((Value) data).toBigDecimal();
-        }
-
-        if (data instanceof CharSequence) {
-            try {
-                return new BigDecimal(
-                    data.toString()
-                );
-            } catch (Exception e) {
-                // Nothing
-            }
-        }
-
-        return BigDecimal.ZERO;
-    }
-
-    @Override
     public BigDecimal read(
         @NotNull Flag flag,
         @NotNull Value value
@@ -126,5 +73,55 @@ public class BigDecimalSpare extends Property<BigDecimal> implements Serializer 
         flow.addChars(
             value.toString()
         );
+    }
+
+    @Override
+    public BigDecimal cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof BigDecimal) {
+                return (BigDecimal) data;
+            }
+
+            if (data instanceof Number) {
+                if (data instanceof BigInteger) {
+                    return new BigDecimal(
+                        (BigInteger) data
+                    );
+                }
+
+                if (data instanceof Float
+                    || data instanceof Double) {
+                    return new BigDecimal(
+                        data.toString()
+                    );
+                }
+
+                return BigDecimal.valueOf(
+                    ((Number) data).longValue()
+                );
+            }
+
+            if (data instanceof Boolean) {
+                return ((boolean) data) ? BigDecimal.ONE : BigDecimal.ZERO;
+            }
+
+            if (data instanceof Value) {
+                return ((Value) data).toBigDecimal();
+            }
+
+            if (data instanceof CharSequence) {
+                try {
+                    return new BigDecimal(
+                        data.toString()
+                    );
+                } catch (Exception e) {
+                    // Nothing
+                }
+            }
+        }
+        return BigDecimal.ZERO;
     }
 }

@@ -47,24 +47,6 @@ public class StringBufferSpare extends Property<StringBuffer> {
     }
 
     @Override
-    public StringBuffer cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return apply();
-        }
-
-        if (data instanceof CharSequence) {
-            return new StringBuffer(
-                (CharSequence) data
-            );
-        }
-
-        return new StringBuffer(data.toString());
-    }
-
-    @Override
     public StringBuffer read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -92,5 +74,23 @@ public class StringBufferSpare extends Property<StringBuffer> {
         flow.append(
             (CharSequence) value
         );
+    }
+
+    @Override
+    public StringBuffer cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data == null) {
+            return apply();
+        }
+
+        if (data instanceof CharSequence) {
+            return new StringBuffer(
+                (CharSequence) data
+            );
+        }
+
+        return new StringBuffer(data.toString());
     }
 }

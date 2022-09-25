@@ -56,26 +56,6 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Seria
     }
 
     @Override
-    public AtomicBoolean cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return apply();
-        }
-
-        if (data instanceof AtomicBoolean) {
-            return (AtomicBoolean) data;
-        }
-
-        return new AtomicBoolean(
-            BooleanSpare.INSTANCE.cast(
-                data, supplier
-            )
-        );
-    }
-
-    @Override
     public AtomicBoolean read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -102,6 +82,26 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Seria
     ) throws IOException {
         flow.addBoolean(
             ((AtomicBoolean) value).get()
+        );
+    }
+
+    @Override
+    public AtomicBoolean cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data == null) {
+            return apply();
+        }
+
+        if (data instanceof AtomicBoolean) {
+            return (AtomicBoolean) data;
+        }
+
+        return new AtomicBoolean(
+            BooleanSpare.INSTANCE.cast(
+                data, supplier
+            )
         );
     }
 }

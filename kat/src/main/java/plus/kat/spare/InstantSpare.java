@@ -25,6 +25,9 @@ import plus.kat.chain.*;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 
@@ -52,48 +55,6 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializer {
     @Override
     public String getSpace() {
         return "Instant";
-    }
-
-    @Override
-    public Instant cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data == null) {
-            return null;
-        }
-
-        if (data instanceof Instant) {
-            return (Instant) data;
-        }
-
-        if (data instanceof Long) {
-            return Instant.ofEpochMilli(
-                (long) data
-            );
-        }
-
-        if (data instanceof Integer) {
-            return Instant.ofEpochSecond(
-                ((Number) data).longValue()
-            );
-        }
-
-        if (data instanceof CharSequence) {
-            String d = data.toString();
-            if (d.isEmpty()) {
-                return null;
-            }
-            try {
-                return Instant.from(
-                    formatter.parse(d)
-                );
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        return null;
     }
 
     @Override
@@ -140,5 +101,61 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializer {
                 flow.addByte((byte) '"');
             }
         }
+    }
+
+    @Override
+    public Instant cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Instant) {
+                return (Instant) data;
+            }
+
+            if (data instanceof Long) {
+                // as millisecond
+                return Instant.ofEpochMilli(
+                    (long) data
+                );
+            }
+
+            if (data instanceof Integer) {
+                // as seconds
+                return Instant.ofEpochSecond(
+                    (int) data
+                );
+            }
+
+            if (data instanceof CharSequence) {
+                String d = data.toString();
+                if (d.isEmpty()) {
+                    return null;
+                }
+                try {
+                    return Instant.from(
+                        formatter.parse(d)
+                    );
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+
+
+            if (data instanceof AtomicLong) {
+                // as millisecond
+                return Instant.ofEpochMilli(
+                    ((AtomicLong) data).get()
+                );
+            }
+
+            if (data instanceof AtomicInteger) {
+                // as seconds
+                return Instant.ofEpochSecond(
+                    ((AtomicInteger) data).get()
+                );
+            }
+        }
+        return null;
     }
 }

@@ -51,14 +51,6 @@ public class ObjectSpare extends Property<Object> {
     }
 
     @Override
-    public Object cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        return data;
-    }
-
-    @Override
     public Object read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -186,6 +178,21 @@ public class ObjectSpare extends Property<Object> {
         }
 
         return chain.toString();
+    }
+
+    @Override
+    public Object cast(
+        @Nullable Object data
+    ) {
+        return data;
+    }
+
+    @Override
+    public Object cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        return data;
     }
 
     @Override
