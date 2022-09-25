@@ -29,6 +29,7 @@ import java.lang.reflect.Type;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
+import static plus.kat.utils.Find.clazz;
 import static plus.kat.spare.Parser.Group;
 
 /**
@@ -99,7 +100,59 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * If {@link K} is a Bean or spoiler has elements,
+     * If this {@link Spare} can create an instance of the actual
+     * subclass type, it returns it, otherwise it will throw collapse
+     *
+     * @param type the specified actual subclass type
+     * @return {@link K} or throws collapse
+     * @throws Collapse If failed to create an instance of a subclass
+     *                  or the {@code type} is not a subclass of {@link K}
+     * @since 0.0.4
+     */
+    @NotNull
+    default K apply(
+        @NotNull Type type
+    ) {
+        // Use the spare itself
+        Class<?> kind = getType();
+        if (type == kind) {
+            K it = apply();
+            if (it != null) {
+                return it;
+            }
+
+            throw new Collapse(
+                "Failed to create"
+            );
+        }
+
+        // Find the class of the type
+        Class<?> clazz = clazz(type);
+
+        // Use Supplier by default to solve
+        if (kind.isAssignableFrom(clazz)) {
+            // Using this spare's Supplier
+            Supplier supplier = getSupplier();
+
+            @SuppressWarnings("unchecked")
+            // Find the spare of the subclass
+            Spare<K> spare = supplier.lookup(
+                (Class<K>) clazz
+            );
+
+            if (spare != null &&
+                spare != this) {
+                return spare.apply(type);
+            }
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    /**
+     * If this spare can be built with spiller,
      * then perform a given {@link Spoiler} to create a {@link K}
      *
      * @param spoiler the specified spoiler to be used
@@ -121,7 +174,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * If {@link K} is a Bean or spoiler has elements,
+     * If this spare can be built with spiller,
      * then perform a given {@link Spoiler} to create a {@link K}
      *
      * <pre>{@code
@@ -152,7 +205,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * If {@link K} is a Bean or resultSet has elements,
+     * If this spare can be built with resultSet,
      * then perform a given {@link ResultSet} to create a {@link K}
      *
      * @param resultSet the specified result to be used
@@ -175,7 +228,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * If {@link K} is a Bean or resultSet has elements,
+     * If this spare can be built with resultSet,
      * then perform a given {@link ResultSet} to create a {@link K}
      *
      * <pre>{@code

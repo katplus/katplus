@@ -22,6 +22,7 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
+import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -41,6 +42,22 @@ public class VoidSpare extends Property<Void> {
     @Override
     public Void apply() {
         return null;
+    }
+
+    @Override
+    public Void apply(
+        @NotNull Type type
+    ) {
+        if (type == void.class ||
+            type == Void.class) {
+            throw new Collapse(
+                "Failed to create"
+            );
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
     }
 
     @Override
@@ -78,14 +95,6 @@ public class VoidSpare extends Property<Void> {
     }
 
     @Override
-    public Void cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        return null;
-    }
-
-    @Override
     public Void read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -97,6 +106,14 @@ public class VoidSpare extends Property<Void> {
     public Void read(
         @NotNull Flag flag,
         @NotNull Value value
+    ) {
+        return null;
+    }
+
+    @Override
+    public Void cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
     ) {
         return null;
     }

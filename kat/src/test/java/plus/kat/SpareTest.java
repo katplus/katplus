@@ -211,6 +211,31 @@ public class SpareTest {
         private String name;
     }
 
+    static class UserVO extends User {
+        public boolean blocked;
+    }
+
+    @Test
+    public void test_apply() {
+        Spare<User> spare =
+            Spare.lookup(User.class);
+
+        assertNotNull(spare.apply());
+    }
+
+    @Test
+    public void test_apply_type() {
+        Spare<User> spare =
+            Spare.lookup(User.class);
+
+        assertSame(User.class, spare.apply(User.class).getClass());
+        assertSame(UserVO.class, spare.apply(UserVO.class).getClass());
+
+        assertThrows(Collapse.class, () -> spare.apply(Object.class));
+        assertThrows(Collapse.class, () -> spare.apply(Entity.class));
+        assertThrows(Collapse.class, () -> spare.apply(HashMap.class));
+    }
+
     @Test
     public void test_getType() {
         Type[] types = new Type[]{

@@ -20,10 +20,12 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -44,6 +46,20 @@ public class LongSpare extends Property<Long> implements Serializer {
     }
 
     @Override
+    public Long apply(
+        @NotNull Type type
+    ) {
+        if (type == long.class ||
+            type == Long.class) {
+            return 0L;
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    @Override
     public Space getSpace() {
         return Space.$l;
     }
@@ -56,37 +72,6 @@ public class LongSpare extends Property<Long> implements Serializer {
             || clazz == Long.class
             || clazz == Number.class
             || clazz == Object.class;
-    }
-
-    @Override
-    public Long cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof Long) {
-            return (Long) data;
-        }
-
-        if (data instanceof Number) {
-            return ((Number) data).longValue();
-        }
-
-        if (data instanceof Boolean) {
-            return ((boolean) data) ? 1L : 0L;
-        }
-
-        if (data instanceof Chain) {
-            return ((Chain) data).toLong();
-        }
-
-        if (data instanceof CharSequence) {
-            CharSequence num = (CharSequence) data;
-            return Convert.toLong(
-                num, num.length(), 10L, 0L
-            );
-        }
-
-        return 0L;
     }
 
     @Override
@@ -113,5 +98,37 @@ public class LongSpare extends Property<Long> implements Serializer {
         flow.addLong(
             (long) value
         );
+    }
+
+    @Override
+    public Long cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Long) {
+                return (Long) data;
+            }
+
+            if (data instanceof Number) {
+                return ((Number) data).longValue();
+            }
+
+            if (data instanceof Boolean) {
+                return ((boolean) data) ? 1L : 0L;
+            }
+
+            if (data instanceof Chain) {
+                return ((Chain) data).toLong();
+            }
+
+            if (data instanceof CharSequence) {
+                CharSequence num = (CharSequence) data;
+                return Convert.toLong(
+                    num, num.length(), 10L, 0L
+                );
+            }
+        }
+        return 0L;
     }
 }

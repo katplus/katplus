@@ -24,7 +24,6 @@ import plus.kat.kernel.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.*;
 
 /**
  * @author kraity
@@ -203,6 +202,6 @@ public class ObjectSpare extends Property<Object> {
                 return spare.getBuilder(type);
             }
         }
-        return new MapSpare.Builder0(type, Map.class);
+        return MapSpare.INSTANCE.getBuilder(type);
     }
 }

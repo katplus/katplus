@@ -309,7 +309,37 @@ public interface Supplier {
     }
 
     /**
-     * If {@link E} is a Bean or spoiler has elements,
+     * If this spare can be built,
+     * then perform a given type to create a {@link E}
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  User user = supplier.apply(User.class);
+     * }</pre>
+     *
+     * @return {@link E}, it is not null
+     * @throws Collapse             If it fails to create
+     * @throws NullPointerException If the klass is null
+     * @see Spare#apply(Type)
+     * @since 0.0.4
+     */
+    @NotNull
+    default <E> E apply(
+        @NotNull Class<E> klass
+    ) throws Collapse {
+        Spare<E> spare = lookup(klass);
+
+        if (spare == null) {
+            throw new Collapse(
+                "No spare of " + klass
+            );
+        }
+
+        return spare.apply(klass);
+    }
+
+    /**
+     * If the spare can be built with spiller,
      * then perform a given {@link Spoiler} to create a {@link E}
      *
      * <pre>{@code
@@ -343,7 +373,7 @@ public interface Supplier {
     }
 
     /**
-     * If {@link E} is a Bean or resultSet has elements,
+     * If the spare can be built with resultSet,
      * then perform a given {@link ResultSet} to create a {@link E}
      *
      * <pre>{@code
@@ -1518,11 +1548,26 @@ public interface Supplier {
                             } else if (klass == Locale.class) {
                                 spare = LocaleSpare.INSTANCE;
                             } else if (Map.class.isAssignableFrom(klass)) {
-                                spare = MapSpare.of(klass);
+                                if (klass == Map.class ||
+                                    klass == LinkedHashMap.class) {
+                                    spare = MapSpare.INSTANCE;
+                                } else {
+                                    spare = new MapSpare(klass);
+                                }
                             } else if (Set.class.isAssignableFrom(klass)) {
-                                spare = SetSpare.of(klass);
+                                if (klass == Set.class ||
+                                    klass == HashSet.class) {
+                                    spare = SetSpare.INSTANCE;
+                                } else {
+                                    spare = new SetSpare(klass);
+                                }
                             } else if (List.class.isAssignableFrom(klass)) {
-                                spare = ListSpare.of(klass);
+                                if (klass == List.class ||
+                                    klass == ArrayList.class) {
+                                    spare = ListSpare.INSTANCE;
+                                } else {
+                                    spare = new ListSpare(klass);
+                                }
                             } else {
                                 return null;
                             }
@@ -1533,11 +1578,11 @@ public interface Supplier {
                         // java.util.concurrent.
                         case 20: {
                             if (Map.class.isAssignableFrom(klass)) {
-                                spare = MapSpare.of(klass);
+                                spare = new MapSpare(klass);
                             } else if (Set.class.isAssignableFrom(klass)) {
-                                spare = SetSpare.of(klass);
+                                spare = new SetSpare(klass);
                             } else if (List.class.isAssignableFrom(klass)) {
-                                spare = ListSpare.of(klass);
+                                spare = new ListSpare(klass);
                             } else {
                                 return null;
                             }

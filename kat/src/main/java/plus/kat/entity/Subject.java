@@ -56,7 +56,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             return apply(
                 Alias.EMPTY
             );
-        } catch (Throwable e) {
+        } catch (Exception e) {
             return null;
         }
     }

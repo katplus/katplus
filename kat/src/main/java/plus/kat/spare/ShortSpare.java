@@ -20,10 +20,12 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -44,6 +46,20 @@ public class ShortSpare extends Property<Short> implements Serializer {
     }
 
     @Override
+    public Short apply(
+        @NotNull Type type
+    ) {
+        if (type == short.class ||
+            type == Short.class) {
+            return (short) 0;
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    @Override
     public Space getSpace() {
         return Space.$u;
     }
@@ -56,36 +72,6 @@ public class ShortSpare extends Property<Short> implements Serializer {
             || clazz == Short.class
             || clazz == Number.class
             || clazz == Object.class;
-    }
-
-    @Override
-    public Short cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof Short) {
-            return (Short) data;
-        }
-
-        if (data instanceof Number) {
-            return ((Number) data).shortValue();
-        }
-
-        if (data instanceof Boolean) {
-            return ((boolean) data) ? (short) 1 : (short) 0;
-        }
-
-        int i = 0;
-        if (data instanceof Chain) {
-            i = ((Chain) data).toInt();
-        } else if (data instanceof CharSequence) {
-            CharSequence num = (CharSequence) data;
-            i = Convert.toInt(
-                num, num.length(), 10, 0
-            );
-        }
-
-        return i < Short.MIN_VALUE || i > Short.MAX_VALUE ? (short) 0 : (short) i;
     }
 
     @Override
@@ -112,5 +98,39 @@ public class ShortSpare extends Property<Short> implements Serializer {
         flow.addShort(
             (short) value
         );
+    }
+
+    @Override
+    public Short cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Short) {
+                return (Short) data;
+            }
+
+            if (data instanceof Number) {
+                return ((Number) data).shortValue();
+            }
+
+            if (data instanceof Boolean) {
+                return ((boolean) data) ? (short) 1 : (short) 0;
+            }
+
+            int i = 0;
+            if (data instanceof Chain) {
+                i = ((Chain) data).toInt();
+            } else if (data instanceof CharSequence) {
+                CharSequence num = (CharSequence) data;
+                i = Convert.toInt(
+                    num, num.length(), 10, 0
+                );
+            }
+
+            return i < Short.MIN_VALUE
+                || i > Short.MAX_VALUE ? (short) 0 : (short) i;
+        }
+        return (short) 0;
     }
 }

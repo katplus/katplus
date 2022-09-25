@@ -31,8 +31,8 @@ import java.sql.SQLException;
  */
 public abstract class Property<T> implements Spare<T> {
 
-    protected Supplier supplier;
     protected final Class<T> klass;
+    protected final Supplier supplier;
 
     protected Property(
         @NotNull Class<T> klass

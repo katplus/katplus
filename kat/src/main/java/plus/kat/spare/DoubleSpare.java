@@ -20,9 +20,11 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -43,6 +45,20 @@ public class DoubleSpare extends Property<Double> implements Serializer {
     }
 
     @Override
+    public Double apply(
+        @NotNull Type type
+    ) {
+        if (type == double.class ||
+            type == Double.class) {
+            return 0D;
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    @Override
     public Space getSpace() {
         return Space.$d;
     }
@@ -55,40 +71,6 @@ public class DoubleSpare extends Property<Double> implements Serializer {
             || clazz == Double.class
             || clazz == Number.class
             || clazz == Object.class;
-    }
-
-    @Override
-    public Double cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof Double) {
-            return (Double) data;
-        }
-
-        if (data instanceof Number) {
-            return ((Number) data).doubleValue();
-        }
-
-        if (data instanceof Boolean) {
-            return ((boolean) data) ? 1D : 0D;
-        }
-
-        if (data instanceof Chain) {
-            return ((Chain) data).toDouble();
-        }
-
-        if (data instanceof CharSequence) {
-            try {
-                return Double.parseDouble(
-                    data.toString()
-                );
-            } catch (Exception e) {
-                // Nothing
-            }
-        }
-
-        return 0D;
     }
 
     @Override
@@ -121,5 +103,40 @@ public class DoubleSpare extends Property<Double> implements Serializer {
                 (double) value
             );
         }
+    }
+
+    @Override
+    public Double cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Double) {
+                return (Double) data;
+            }
+
+            if (data instanceof Number) {
+                return ((Number) data).doubleValue();
+            }
+
+            if (data instanceof Boolean) {
+                return ((boolean) data) ? 1D : 0D;
+            }
+
+            if (data instanceof Chain) {
+                return ((Chain) data).toDouble();
+            }
+
+            if (data instanceof CharSequence) {
+                try {
+                    return Double.parseDouble(
+                        data.toString()
+                    );
+                } catch (Exception e) {
+                    // Nothing
+                }
+            }
+        }
+        return 0D;
     }
 }

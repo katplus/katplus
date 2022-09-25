@@ -20,10 +20,12 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -44,6 +46,20 @@ public class BooleanSpare extends Property<Boolean> implements Serializer {
     }
 
     @Override
+    public Boolean apply(
+        @NotNull Type type
+    ) {
+        if (type == boolean.class ||
+            type == Boolean.class) {
+            return Boolean.FALSE;
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    @Override
     public Space getSpace() {
         return Space.$b;
     }
@@ -55,33 +71,6 @@ public class BooleanSpare extends Property<Boolean> implements Serializer {
         return clazz == boolean.class
             || clazz == Boolean.class
             || clazz == Object.class;
-    }
-
-    @Override
-    public Boolean cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof Boolean) {
-            return (Boolean) data;
-        }
-
-        if (data instanceof Number) {
-            return ((Number) data).intValue() != 0;
-        }
-
-        if (data instanceof Chain) {
-            return ((Chain) data).toBoolean();
-        }
-
-        if (data instanceof CharSequence) {
-            CharSequence val = (CharSequence) data;
-            return Convert.toBoolean(
-                val, val.length(), false
-            );
-        }
-
-        return Boolean.FALSE;
     }
 
     @Override
@@ -108,5 +97,33 @@ public class BooleanSpare extends Property<Boolean> implements Serializer {
         flow.addBoolean(
             (boolean) value
         );
+    }
+
+    @Override
+    public Boolean cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Boolean) {
+                return (Boolean) data;
+            }
+
+            if (data instanceof Number) {
+                return ((Number) data).intValue() != 0;
+            }
+
+            if (data instanceof Chain) {
+                return ((Chain) data).toBoolean();
+            }
+
+            if (data instanceof CharSequence) {
+                CharSequence val = (CharSequence) data;
+                return Convert.toBoolean(
+                    val, val.length(), false
+                );
+            }
+        }
+        return Boolean.FALSE;
     }
 }

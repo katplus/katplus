@@ -36,17 +36,15 @@ import plus.kat.stream.*;
  * @since 0.0.1
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class SetSpare implements Spare<Set> {
+public class SetSpare extends Property<Set> {
 
     public static final SetSpare
         INSTANCE = new SetSpare(HashSet.class);
 
-    protected final Class<Set> klass;
-
     public SetSpare(
         @NotNull Class<?> klass
     ) {
-        this.klass = (Class<Set>) klass;
+        super((Class<Set>) klass);
     }
 
     @Override
@@ -60,26 +58,8 @@ public class SetSpare implements Spare<Set> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz.isAssignableFrom(klass)
-            || klass.isAssignableFrom(clazz);
-    }
-
-    @Override
     public Boolean getFlag() {
         return Boolean.FALSE;
-    }
-
-    @Override
-    public Class<Set> getType() {
-        return klass;
-    }
-
-    @Override
-    public Supplier getSupplier() {
-        return Supplier.ins();
     }
 
     @Override
@@ -105,6 +85,38 @@ public class SetSpare implements Spare<Set> {
                 null, entry
             );
         }
+    }
+
+    @Override
+    public Set apply(
+        @NotNull Type type
+    ) {
+        if (type == Set.class ||
+            type == HashSet.class) {
+            return new HashSet<>();
+        }
+
+        if (type == LinkedHashSet.class) {
+            return new LinkedHashSet<>();
+        }
+
+        if (type == TreeSet.class ||
+            type == SortedSet.class ||
+            type == NavigableSet.class) {
+            return new TreeSet<>();
+        }
+
+        if (type == ConcurrentSkipListSet.class) {
+            return new ConcurrentSkipListSet<>();
+        }
+
+        if (type == AbstractSet.class) {
+            return new HashSet<>();
+        }
+
+        throw new Collapse(
+            "Unable to create 'Set' instance of '" + type + "'"
+        );
     }
 
     @Override
@@ -220,61 +232,12 @@ public class SetSpare implements Spare<Set> {
         return apply(spoiler, supplier);
     }
 
-    @NotNull
-    public static Set apply(
-        @Nullable Type type
-    ) {
-        if (type == Set.class ||
-            type == Object.class ||
-            type == HashSet.class) {
-            return new HashSet<>();
-        }
-
-        if (type == LinkedHashSet.class) {
-            return new LinkedHashSet<>();
-        }
-
-        if (type == TreeSet.class ||
-            type == SortedSet.class ||
-            type == NavigableSet.class) {
-            return new TreeSet<>();
-        }
-
-        if (type == ConcurrentSkipListSet.class) {
-            return new ConcurrentSkipListSet<>();
-        }
-
-        if (type == AbstractSet.class) {
-            return new HashSet<>();
-        }
-
-        throw new Collapse(
-            "Unable to create 'Set' instance of '" + type + "'"
-        );
-    }
-
-    public static Spare<Set> of(
-        @NotNull Class<?> type
-    ) {
-        if (type == Set.class ||
-            type == HashSet.class) {
-            return INSTANCE;
-        }
-
-        return new SetSpare(type);
-    }
-
     @Override
     public Builder<Set> getBuilder(
         @Nullable Type type
     ) {
-        return new ListSpare.Builder0<Set>(type, klass) {
-            @Override
-            public Set onCreate(
-                @NotNull Type type
-            ) {
-                return apply(type);
-            }
-        };
+        return new ListSpare.Builder0(
+            type, klass, this
+        );
     }
 }

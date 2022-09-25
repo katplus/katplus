@@ -37,8 +37,8 @@ import java.util.Map;
  * @author kraity
  * @since 0.0.1
  */
-@SuppressWarnings("rawtypes")
-public class ArraySpare implements Spare<Object> {
+@SuppressWarnings({"unchecked", "rawtypes"})
+public class ArraySpare extends Property<Object> {
 
     public static final ArraySpare
         INSTANCE = new ArraySpare(Object[].class);
@@ -46,13 +46,12 @@ public class ArraySpare implements Spare<Object> {
     public static final Object[]
         EMPTY_ARRAY = new Object[0];
 
-    protected final Class<?> klass;
     protected final Class<?> element;
 
     public ArraySpare(
         @NotNull Class<?> clazz
     ) {
-        klass = clazz;
+        super((Class<Object>) clazz);
         element = clazz.getComponentType();
     }
 
@@ -62,25 +61,8 @@ public class ArraySpare implements Spare<Object> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz.isAssignableFrom(klass);
-    }
-
-    @Override
     public Boolean getFlag() {
         return Boolean.FALSE;
-    }
-
-    @Override
-    public Class<?> getType() {
-        return klass;
-    }
-
-    @Override
-    public Supplier getSupplier() {
-        return Supplier.ins();
     }
 
     @Override

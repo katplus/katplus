@@ -20,10 +20,12 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -44,6 +46,20 @@ public class IntegerSpare extends Property<Integer> implements Serializer {
     }
 
     @Override
+    public Integer apply(
+        @NotNull Type type
+    ) {
+        if (type == int.class ||
+            type == Integer.class) {
+            return 0;
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    @Override
     public Space getSpace() {
         return Space.$i;
     }
@@ -56,37 +72,6 @@ public class IntegerSpare extends Property<Integer> implements Serializer {
             || clazz == Integer.class
             || clazz == Number.class
             || clazz == Object.class;
-    }
-
-    @Override
-    public Integer cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof Integer) {
-            return (Integer) data;
-        }
-
-        if (data instanceof Number) {
-            return ((Number) data).intValue();
-        }
-
-        if (data instanceof Boolean) {
-            return ((boolean) data) ? 1 : 0;
-        }
-
-        if (data instanceof Chain) {
-            return ((Chain) data).toInt();
-        }
-
-        if (data instanceof CharSequence) {
-            CharSequence num = (CharSequence) data;
-            return Convert.toInt(
-                num, num.length(), 10, 0
-            );
-        }
-
-        return 0;
     }
 
     @Override
@@ -113,5 +98,38 @@ public class IntegerSpare extends Property<Integer> implements Serializer {
         flow.addInt(
             (int) value
         );
+    }
+
+
+    @Override
+    public Integer cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Integer) {
+                return (Integer) data;
+            }
+
+            if (data instanceof Number) {
+                return ((Number) data).intValue();
+            }
+
+            if (data instanceof Boolean) {
+                return ((boolean) data) ? 1 : 0;
+            }
+
+            if (data instanceof Chain) {
+                return ((Chain) data).toInt();
+            }
+
+            if (data instanceof CharSequence) {
+                CharSequence num = (CharSequence) data;
+                return Convert.toInt(
+                    num, num.length(), 10, 0
+                );
+            }
+        }
+        return 0;
     }
 }

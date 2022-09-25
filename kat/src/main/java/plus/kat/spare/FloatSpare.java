@@ -20,9 +20,11 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -40,6 +42,20 @@ public class FloatSpare extends Property<Float> implements Serializer {
     @Override
     public Float apply() {
         return 0F;
+    }
+
+    @Override
+    public Float apply(
+        @NotNull Type type
+    ) {
+        if (type == float.class ||
+            type == Float.class) {
+            return 0F;
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
     }
 
     @Override
@@ -94,32 +110,33 @@ public class FloatSpare extends Property<Float> implements Serializer {
         @Nullable Object data,
         @NotNull Supplier supplier
     ) {
-        if (data instanceof Float) {
-            return (Float) data;
-        }
+        if (data != null) {
+            if (data instanceof Float) {
+                return (Float) data;
+            }
 
-        if (data instanceof Number) {
-            return ((Number) data).floatValue();
-        }
+            if (data instanceof Number) {
+                return ((Number) data).floatValue();
+            }
 
-        if (data instanceof Boolean) {
-            return ((boolean) data) ? 1F : 0F;
-        }
+            if (data instanceof Boolean) {
+                return ((boolean) data) ? 1F : 0F;
+            }
 
-        if (data instanceof Chain) {
-            return ((Chain) data).toFloat();
-        }
+            if (data instanceof Chain) {
+                return ((Chain) data).toFloat();
+            }
 
-        if (data instanceof CharSequence) {
-            try {
-                return Float.parseFloat(
-                    data.toString()
-                );
-            } catch (Exception e) {
-                // Nothing
+            if (data instanceof CharSequence) {
+                try {
+                    return Float.parseFloat(
+                        data.toString()
+                    );
+                } catch (Exception e) {
+                    // Nothing
+                }
             }
         }
-
         return 0F;
     }
 }

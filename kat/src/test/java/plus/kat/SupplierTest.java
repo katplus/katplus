@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 import plus.kat.chain.Space;
+import plus.kat.crash.Collapse;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -444,6 +445,54 @@ public class SupplierTest {
         assertNotNull(supplier.lookup(Space.$A));
         assertNotNull(supplier.lookup(Space.$M));
         assertNotNull(supplier.lookup(Space.$L));
+    }
+
+    @Test
+    public void test_apply_class0() {
+        Supplier supplier = Supplier.ins();
+
+        User user = supplier.apply(User.class);
+        assertSame(User.class, user.getClass());
+        assertEquals("", supplier.apply(String.class));
+
+        UserVO vo = supplier.apply(UserVO.class);
+        assertSame(UserVO.class, vo.getClass());
+
+        assertEquals(0, supplier.apply(int.class));
+        assertEquals(0, supplier.apply(Integer.class));
+
+        assertEquals(0L, supplier.apply(long.class));
+        assertEquals(0L, supplier.apply(Long.class));
+
+        assertEquals(0F, supplier.apply(float.class));
+        assertEquals(0F, supplier.apply(Float.class));
+
+        assertEquals(0D, supplier.apply(double.class));
+        assertEquals(0D, supplier.apply(Double.class));
+
+        assertEquals(false, supplier.apply(boolean.class));
+        assertEquals(false, supplier.apply(Boolean.class));
+
+        assertEquals((byte) 0, supplier.apply(byte.class));
+        assertEquals((byte) 0, supplier.apply(Byte.class));
+
+        assertEquals('\0', supplier.apply(char.class));
+        assertEquals('\0', supplier.apply(Character.class));
+
+        assertThrows(Collapse.class, () -> supplier.apply(void.class));
+        assertThrows(Collapse.class, () -> supplier.apply(Void.class));
+    }
+
+    @Test
+    public void test_apply_class1() {
+        Supplier supplier = Supplier.ins();
+        Map<String, Object> map = supplier.apply(Map.class);
+        assertTrue(map.isEmpty());
+        map.put("id", 0);
+        map.put("name", "kraity");
+        assertEquals(2, map.size());
+        assertEquals(0, map.get("id"));
+        assertEquals("kraity", map.get("name"));
     }
 
     @Embed("plus.kat.supplier.UserVO")

@@ -20,9 +20,11 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -43,6 +45,20 @@ public class CharSpare extends Property<Character> {
     }
 
     @Override
+    public Character apply(
+        @NotNull Type type
+    ) {
+        if (type == char.class ||
+            type == Character.class) {
+            return '\0';
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    @Override
     public Space getSpace() {
         return Space.$c;
     }
@@ -54,37 +70,6 @@ public class CharSpare extends Property<Character> {
         return clazz == char.class
             || clazz == Character.class
             || clazz == Object.class;
-    }
-
-    @Override
-    public Character cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof Character) {
-            return (Character) data;
-        }
-
-        if (data instanceof Number) {
-            return (char) ((Number) data).intValue();
-        }
-
-        if (data instanceof Boolean) {
-            return ((boolean) data) ? '1' : '0';
-        }
-
-        if (data instanceof Chain) {
-            return ((Chain) data).toChar();
-        }
-
-        if (data instanceof CharSequence) {
-            CharSequence ch = (CharSequence) data;
-            if (ch.length() == 1) {
-                return ch.charAt(0);
-            }
-        }
-
-        return '\0';
     }
 
     @NotNull
@@ -113,5 +98,37 @@ public class CharSpare extends Property<Character> {
         flow.emit(
             (char) value
         );
+    }
+
+    @Override
+    public Character cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Character) {
+                return (Character) data;
+            }
+
+            if (data instanceof Number) {
+                return (char) ((Number) data).intValue();
+            }
+
+            if (data instanceof Boolean) {
+                return ((boolean) data) ? '1' : '0';
+            }
+
+            if (data instanceof Chain) {
+                return ((Chain) data).toChar();
+            }
+
+            if (data instanceof CharSequence) {
+                CharSequence ch = (CharSequence) data;
+                if (ch.length() == 1) {
+                    return ch.charAt(0);
+                }
+            }
+        }
+        return '\0';
     }
 }

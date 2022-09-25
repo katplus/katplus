@@ -37,17 +37,15 @@ import plus.kat.utils.*;
  * @since 0.0.1
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class ListSpare implements Spare<List> {
+public class ListSpare extends Property<List> {
 
     public static final ListSpare
         INSTANCE = new ListSpare(ArrayList.class);
 
-    protected final Class<List> klass;
-
     public ListSpare(
         @NotNull Class<?> klass
     ) {
-        this.klass = (Class<List>) klass;
+        super((Class<List>) klass);
     }
 
     @Override
@@ -61,26 +59,8 @@ public class ListSpare implements Spare<List> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz.isAssignableFrom(klass)
-            || klass.isAssignableFrom(clazz);
-    }
-
-    @Override
     public Boolean getFlag() {
         return Boolean.FALSE;
-    }
-
-    @Override
-    public Class<List> getType() {
-        return klass;
-    }
-
-    @Override
-    public Supplier getSupplier() {
-        return Supplier.ins();
     }
 
     @Override
@@ -107,6 +87,41 @@ public class ListSpare implements Spare<List> {
         for (Object v : val) {
             chan.set(null, v);
         }
+    }
+
+    @Override
+    public List apply(
+        @NotNull Type type
+    ) {
+        if (type == List.class ||
+            type == ArrayList.class) {
+            return new ArrayList<>();
+        }
+
+        if (type == Stack.class) {
+            return new Stack<>();
+        }
+
+        if (type == Vector.class) {
+            return new Vector<>();
+        }
+
+        if (type == LinkedList.class ||
+            type == AbstractSequentialList.class) {
+            return new LinkedList<>();
+        }
+
+        if (type == CopyOnWriteArrayList.class) {
+            return new CopyOnWriteArrayList<>();
+        }
+
+        if (type == AbstractList.class) {
+            return new ArrayList<>();
+        }
+
+        throw new Collapse(
+            "Unable to create 'List' instance of '" + type + "'"
+        );
     }
 
     @Override
@@ -222,65 +237,13 @@ public class ListSpare implements Spare<List> {
         return apply(spoiler, supplier);
     }
 
-    @NotNull
-    public static List apply(
-        @Nullable Type type
-    ) {
-        if (type == List.class ||
-            type == Object.class ||
-            type == ArrayList.class) {
-            return new ArrayList<>();
-        }
-
-        if (type == Stack.class) {
-            return new Stack<>();
-        }
-
-        if (type == Vector.class) {
-            return new Vector<>();
-        }
-
-        if (type == LinkedList.class ||
-            type == AbstractSequentialList.class) {
-            return new LinkedList<>();
-        }
-
-        if (type == CopyOnWriteArrayList.class) {
-            return new CopyOnWriteArrayList<>();
-        }
-
-        if (type == AbstractList.class) {
-            return new ArrayList<>();
-        }
-
-        throw new Collapse(
-            "Unable to create 'List' instance of '" + type + "'"
-        );
-    }
-
-    public static Spare<List> of(
-        @NotNull Class<?> type
-    ) {
-        if (type == List.class ||
-            type == ArrayList.class) {
-            return INSTANCE;
-        }
-
-        return new ListSpare(type);
-    }
-
     @Override
     public Builder<List> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder0<List>(type, klass) {
-            @Override
-            public List onCreate(
-                @NotNull Type type
-            ) {
-                return apply(type);
-            }
-        };
+        return new Builder0(
+            type, klass, this
+        );
     }
 
     public static class Builder0<T extends Collection> extends Builder<T> {
@@ -289,14 +252,17 @@ public class ListSpare implements Spare<List> {
         protected Class<?> kind;
 
         protected T entity;
+        protected Spare<T> owner;
         protected Spare<?> spare0;
 
         public Builder0(
             Type type,
-            Class<?> clazz
+            Class<?> kind,
+            Spare<T> spare
         ) {
+            owner = spare;
             if (type == null) {
-                raw = clazz;
+                raw = kind;
             }
 
             // class
@@ -304,7 +270,7 @@ public class ListSpare implements Spare<List> {
                 if (type != Object.class) {
                     raw = type;
                 } else {
-                    raw = clazz;
+                    raw = kind;
                 }
             }
 
@@ -325,18 +291,9 @@ public class ListSpare implements Spare<List> {
                     cls != Object.class) {
                     raw = cls;
                 } else {
-                    raw = clazz;
+                    raw = kind;
                 }
             }
-        }
-
-        @NotNull
-        public T onCreate(
-            @NotNull Type type
-        ) {
-            throw new Collapse(
-                "Failed to create"
-            );
         }
 
         @Override
@@ -352,7 +309,7 @@ public class ListSpare implements Spare<List> {
                     spare0 = supplier.lookup(cls);
                 }
             }
-            entity = onCreate(raw);
+            entity = owner.apply(raw);
         }
 
         @Override

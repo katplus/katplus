@@ -20,9 +20,11 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -43,6 +45,19 @@ public class StringSpare extends Property<String> {
     }
 
     @Override
+    public String apply(
+        @NotNull Type type
+    ) {
+        if (type == String.class) {
+            return apply();
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    @Override
     public Space getSpace() {
         return Space.$s;
     }
@@ -54,36 +69,6 @@ public class StringSpare extends Property<String> {
         return clazz == String.class
             || clazz == Object.class
             || clazz == CharSequence.class;
-    }
-
-    @Override
-    public String cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof String) {
-            return (String) data;
-        }
-
-        if (data == null) {
-            return "";
-        }
-
-        if (data instanceof char[]) {
-            return new String(
-                (char[]) data
-            );
-        }
-
-        if (data instanceof byte[]) {
-            return Binary.latin(
-                Base64.REC4648.INS.encode(
-                    (byte[]) data
-                )
-            );
-        }
-
-        return data.toString();
     }
 
     @Override
@@ -116,5 +101,35 @@ public class StringSpare extends Property<String> {
                 (CharSequence) value
             );
         }
+    }
+
+    @Override
+    public String cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data == null) {
+            return apply();
+        }
+
+        if (data instanceof String) {
+            return (String) data;
+        }
+
+        if (data instanceof char[]) {
+            return new String(
+                (char[]) data
+            );
+        }
+
+        if (data instanceof byte[]) {
+            return Binary.latin(
+                Base64.REC4648.INS.encode(
+                    (byte[]) data
+                )
+            );
+        }
+
+        return data.toString();
     }
 }

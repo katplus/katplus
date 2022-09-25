@@ -35,17 +35,15 @@ import plus.kat.utils.*;
  * @since 0.0.1
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class MapSpare implements Spare<Map> {
+public class MapSpare extends Property<Map> {
 
     public static final MapSpare
         INSTANCE = new MapSpare(LinkedHashMap.class);
 
-    protected final Class<Map> klass;
-
     public MapSpare(
         @NotNull Class<?> klass
     ) {
-        this.klass = (Class<Map>) klass;
+        super((Class<Map>) klass);
     }
 
     @Override
@@ -59,26 +57,8 @@ public class MapSpare implements Spare<Map> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz.isAssignableFrom(klass)
-            || klass.isAssignableFrom(clazz);
-    }
-
-    @Override
     public Boolean getFlag() {
         return Boolean.TRUE;
-    }
-
-    @Override
-    public Class<Map> getType() {
-        return klass;
-    }
-
-    @Override
-    public Supplier getSupplier() {
-        return Supplier.ins();
     }
 
     @Override
@@ -113,6 +93,62 @@ public class MapSpare implements Spare<Map> {
         }
     }
 
+    @NotNull
+    public Map apply(
+        @NotNull Type type
+    ) {
+        if (type == Map.class) {
+            return new LinkedHashMap<>();
+        }
+
+        if (type == HashMap.class) {
+            return new HashMap<>();
+        }
+
+        if (type == LinkedHashMap.class) {
+            return new LinkedHashMap<>();
+        }
+
+        if (type == ConcurrentHashMap.class ||
+            type == ConcurrentMap.class) {
+            return new ConcurrentHashMap<>();
+        }
+
+        if (type == Properties.class) {
+            return new Properties();
+        }
+
+        if (type == TreeMap.class) {
+            return new TreeMap<>();
+        }
+
+        if (type == Hashtable.class) {
+            return new Hashtable<>();
+        }
+
+        if (type == WeakHashMap.class) {
+            return new WeakHashMap<>();
+        }
+
+        if (type == SortedMap.class ||
+            type == NavigableMap.class) {
+            return new TreeMap<>();
+        }
+
+        if (type == AbstractMap.class) {
+            return new HashMap<>();
+        }
+
+        if (type == ConcurrentSkipListMap.class ||
+            type == ConcurrentNavigableMap.class) {
+            return new ConcurrentSkipListMap<>();
+        }
+
+        throw new Collapse(
+            "Unable to create 'Map' instance of '" + type + "'"
+        );
+    }
+
     @Override
     public Map apply(
         @NotNull Spoiler spoiler,
@@ -139,12 +175,12 @@ public class MapSpare implements Spare<Map> {
 
         int count = meta.getColumnCount();
         for (int i = 1; i <= count; i++) {
-            String key = meta.getColumnLabel(i);
-            if (key == null) {
-                key = meta.getColumnName(i);
+            String name = meta.getColumnLabel(i);
+            if (name == null) {
+                name = meta.getColumnName(i);
             }
             map.put(
-                key, resultSet.getObject(i)
+                name, resultSet.getObject(i)
             );
         }
 
@@ -207,7 +243,7 @@ public class MapSpare implements Spare<Map> {
     public Spoiler flat(
         @NotNull Map bean
     ) {
-        return new Spoiler0(bean);
+        return new Folder(bean);
     }
 
     @Override
@@ -224,89 +260,22 @@ public class MapSpare implements Spare<Map> {
         return true;
     }
 
-    @NotNull
-    public static Map apply(
-        @Nullable Type type
-    ) {
-        if (type == Map.class) {
-            return new LinkedHashMap<>();
-        }
-
-        if (type == HashMap.class) {
-            return new HashMap<>();
-        }
-
-        if (type == Object.class ||
-            type == LinkedHashMap.class) {
-            return new LinkedHashMap<>();
-        }
-
-        if (type == ConcurrentHashMap.class ||
-            type == ConcurrentMap.class) {
-            return new ConcurrentHashMap<>();
-        }
-
-        if (type == TreeMap.class) {
-            return new TreeMap<>();
-        }
-
-        if (type == Hashtable.class) {
-            return new Hashtable<>();
-        }
-
-        if (type == WeakHashMap.class) {
-            return new WeakHashMap<>();
-        }
-
-        if (type == SortedMap.class ||
-            type == NavigableMap.class) {
-            return new TreeMap<>();
-        }
-
-        if (type == Properties.class) {
-            return new Properties();
-        }
-
-        if (type == AbstractMap.class) {
-            return new HashMap<>();
-        }
-
-        if (type == ConcurrentSkipListMap.class ||
-            type == ConcurrentNavigableMap.class) {
-            return new ConcurrentSkipListMap<>();
-        }
-
-        throw new Collapse(
-            "Unable to create 'Map' instance of '" + type + "'"
-        );
-    }
-
-    public static Spare<Map> of(
-        @NotNull Class<?> type
-    ) {
-        if (type == Map.class ||
-            type == LinkedHashMap.class) {
-            return INSTANCE;
-        }
-
-        return new MapSpare(type);
-    }
-
     @Override
     public Builder<Map> getBuilder(
         @Nullable Type type
     ) {
         return new Builder0(
-            type, klass
+            type, klass, this
         );
     }
 
-    public static class Spoiler0 implements Spoiler {
+    public static class Folder
+        implements Spoiler {
 
         private Map.Entry entry;
         private final Iterator<Map.Entry> it;
 
-        public Spoiler0(
+        public Folder(
             @NotNull Map map
         ) {
             it = map.entrySet().iterator();
@@ -324,11 +293,9 @@ public class MapSpare implements Spare<Map> {
 
         @Override
         public String getKey() {
-            Object key = entry.getKey();
-            if (key == null) {
-                return "";
-            }
-            return key.toString();
+            return String.valueOf(
+                entry.getKey()
+            );
         }
 
         @Override
@@ -342,15 +309,18 @@ public class MapSpare implements Spare<Map> {
         protected Class<?> kind;
         protected Type key, val, raw;
 
+        protected Spare<Map> owner;
         protected Map entity;
-        protected Spare spare0, spare1;
+        protected Spare<?> spare0, spare1;
 
         public Builder0(
             Type type,
-            Class<?> clazz
+            Class<?> kind,
+            Spare<Map> spare
         ) {
+            owner = spare;
             if (type == null) {
-                raw = clazz;
+                raw = kind;
             }
 
             // class
@@ -358,7 +328,7 @@ public class MapSpare implements Spare<Map> {
                 if (type != Object.class) {
                     raw = type;
                 } else {
-                    raw = clazz;
+                    raw = kind;
                 }
             }
 
@@ -382,7 +352,7 @@ public class MapSpare implements Spare<Map> {
                     cls != Object.class) {
                     raw = cls;
                 } else {
-                    raw = clazz;
+                    raw = kind;
                 }
             }
         }
@@ -413,7 +383,7 @@ public class MapSpare implements Spare<Map> {
                     }
                 }
             }
-            entity = apply(raw);
+            entity = owner.apply(raw);
         }
 
         @Override

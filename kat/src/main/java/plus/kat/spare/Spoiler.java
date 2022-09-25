@@ -118,6 +118,6 @@ public interface Spoiler {
     static Spoiler of(
         @NotNull Map<?, ?> map
     ) {
-        return new MapSpare.Spoiler0(map);
+        return new MapSpare.Folder(map);
     }
 }

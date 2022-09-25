@@ -20,10 +20,12 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -44,6 +46,20 @@ public class ByteSpare extends Property<Byte> implements Serializer {
     }
 
     @Override
+    public Byte apply(
+        @NotNull Type type
+    ) {
+        if (type == byte.class ||
+            type == Byte.class) {
+            return (byte) 0;
+        }
+
+        throw new Collapse(
+            "Cannot create `" + type + "` instance"
+        );
+    }
+
+    @Override
     public Space getSpace() {
         return Space.$o;
     }
@@ -56,36 +72,6 @@ public class ByteSpare extends Property<Byte> implements Serializer {
             || clazz == Byte.class
             || clazz == Number.class
             || clazz == Object.class;
-    }
-
-    @Override
-    public Byte cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data instanceof Byte) {
-            return (Byte) data;
-        }
-
-        if (data instanceof Number) {
-            return ((Number) data).byteValue();
-        }
-
-        if (data instanceof Boolean) {
-            return ((boolean) data) ? (byte) 1 : (byte) 0;
-        }
-
-        int i = 0;
-        if (data instanceof Chain) {
-            i = ((Chain) data).toInt();
-        } else if (data instanceof CharSequence) {
-            CharSequence num = (CharSequence) data;
-            i = Convert.toInt(
-                num, num.length(), 10, 0
-            );
-        }
-
-        return i < Byte.MIN_VALUE || i > Byte.MAX_VALUE ? (byte) 0 : (byte) i;
     }
 
     @Override
@@ -112,5 +98,39 @@ public class ByteSpare extends Property<Byte> implements Serializer {
         flow.addInt(
             (byte) value
         );
+    }
+
+    @Override
+    public Byte cast(
+        @Nullable Object data,
+        @NotNull Supplier supplier
+    ) {
+        if (data != null) {
+            if (data instanceof Byte) {
+                return (Byte) data;
+            }
+
+            if (data instanceof Number) {
+                return ((Number) data).byteValue();
+            }
+
+            if (data instanceof Boolean) {
+                return ((boolean) data) ? (byte) 1 : (byte) 0;
+            }
+
+            int i = 0;
+            if (data instanceof Chain) {
+                i = ((Chain) data).toInt();
+            } else if (data instanceof CharSequence) {
+                CharSequence num = (CharSequence) data;
+                i = Convert.toInt(
+                    num, num.length(), 10, 0
+                );
+            }
+
+            return i < Byte.MIN_VALUE
+                || i > Byte.MAX_VALUE ? (byte) 0 : (byte) i;
+        }
+        return (byte) 0;
     }
 }
