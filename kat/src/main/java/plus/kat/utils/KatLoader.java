@@ -155,30 +155,43 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
     }
 
     /**
-     * Returns the next element
+     * Returns true if the loader has more elements
+     */
+    @Override
+    public boolean hasNext() {
+        return size != 0;
+    }
+
+    /**
+     * Returns the next element in the {@link KatLoader}
      *
      * @throws Collapse if the iteration has no more elements
      */
     @Override
     public T next() {
-        int offset = indexOf(
-            (byte) '\n', index
-        );
-
-        if (offset <= index) {
+        if (size-- < 0) {
             throw new Collapse(
-                offset + " <= " + index
+                "No more elements"
             );
         }
 
-        Class<?> clazz;
+        int start = index,
+            offset = indexOf(
+                (byte) '\n', start
+            );
+
+        if (offset <= start) {
+            throw new Collapse(
+                offset + " <= " + start
+            );
+        }
+
+        index = offset + 1;
         String name = string(
-            index, offset
+            start, offset
         );
 
-        size--;
-        index = offset + 1;
-
+        Class<?> clazz;
         try {
             clazz = Class.forName(
                 name, false, classLoader
@@ -204,14 +217,6 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                 service.getName() + ": Provider '" + name + "' could not be instantiated ", e
             );
         }
-    }
-
-    /**
-     * Returns {@code true} if the iteration has more elements
-     */
-    @Override
-    public boolean hasNext() {
-        return size != 0;
     }
 
     /**
@@ -245,17 +250,5 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
         }
 
         return true;
-    }
-
-    /**
-     * Unsupported
-     */
-    @Override
-    public KatLoader<T> subSequence(
-        int start, int end
-    ) {
-        throw new Collapse(
-            "Unsupported Operation"
-        );
     }
 }

@@ -1074,7 +1074,7 @@ public interface Supplier {
                 );
 
                 if (loader.hasNext()) {
-                    int size = loader.size();
+                    final int size = loader.size();
                     Provider[] PS = new Provider[size];
 
                     int i = 0;
@@ -1094,16 +1094,20 @@ public interface Supplier {
                     }
 
                     if (k > 0) {
-                        if (size != k) {
+                        if (k != i) {
                             Provider[] RS = new Provider[k];
                             System.arraycopy(
                                 PS, 0, RS, 0, k
                             );
                             PS = RS;
                         }
-                        Arrays.sort(
-                            PRO = PS, Collections.reverseOrder()
-                        );
+
+                        PRO = PS;
+                        if (k != 1) {
+                            Arrays.sort(
+                                PRO, Collections.reverseOrder()
+                            );
+                        }
                     }
                 }
             } catch (Exception e) {
