@@ -26,7 +26,8 @@ import java.lang.annotation.*;
     ElementType.TYPE,
     ElementType.FIELD,
     ElementType.METHOD,
-    ElementType.PARAMETER
+    ElementType.PARAMETER,
+    ElementType.ANNOTATION_TYPE
 })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Format {

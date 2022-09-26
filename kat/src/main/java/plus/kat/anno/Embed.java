@@ -27,7 +27,8 @@ import java.lang.annotation.*;
 @Documented
 @Target({
     ElementType.TYPE,
-    ElementType.PACKAGE
+    ElementType.PACKAGE,
+    ElementType.ANNOTATION_TYPE
 })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Embed {

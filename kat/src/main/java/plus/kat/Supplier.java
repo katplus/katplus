@@ -998,7 +998,7 @@ public interface Supplier {
         /**
          * default providers
          */
-        static final Provider[] PRO;
+        static Provider[] PRO;
 
         static {
             INS = new Impl(
@@ -1073,18 +1073,37 @@ public interface Supplier {
                     )
                 );
 
-                int size = loader.size();
-                PRO = new Provider[size];
+                if (loader.hasNext()) {
+                    int size = loader.size();
+                    Provider[] PS = new Provider[size];
 
-                int i = 0;
-                Provider pro;
-                while (loader.hasNext()) {
-                    pro = loader.next();
-                    PRO[i++] = pro;
-                    try {
-                        pro.init(INS);
-                    } catch (Exception e) {
-                        // Nothing
+                    int i = 0;
+                    while (loader.hasNext()) {
+                        PS[i++] = loader.next();
+                    }
+
+                    int k = 0;
+                    for (Provider P : PS) {
+                        try {
+                            if (P.accept(INS)) {
+                                PS[k++] = P;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    if (k > 0) {
+                        if (size != k) {
+                            Provider[] RS = new Provider[k];
+                            System.arraycopy(
+                                PS, 0, RS, 0, k
+                            );
+                            PS = RS;
+                        }
+                        Arrays.sort(
+                            PRO = PS, Collections.reverseOrder()
+                        );
                     }
                 }
             } catch (Exception e) {
@@ -1151,19 +1170,22 @@ public interface Supplier {
                 return (Spare<T>) spare;
             }
 
-            for (Provider p : PRO) {
-                try {
-                    spare = p.lookup(
-                        klass, this
-                    );
-                } catch (Collapse e) {
-                    return null;
-                } catch (Exception e) {
-                    continue;
-                }
+            Provider[] PS = PRO;
+            if (PS != null) {
+                for (Provider p : PS) {
+                    try {
+                        spare = p.lookup(
+                            klass, this
+                        );
+                    } catch (Collapse e) {
+                        return null;
+                    } catch (Exception e) {
+                        continue;
+                    }
 
-                if (spare != null) {
-                    return (Spare<T>) spare;
+                    if (spare != null) {
+                        return (Spare<T>) spare;
+                    }
                 }
             }
 
@@ -1406,20 +1428,24 @@ public interface Supplier {
                 return null;
             }
 
+            Provider[] PS = PRO;
             String name = klass.toString();
-            for (Provider p : PRO) {
-                try {
-                    spare = p.search(
-                        type, name, this
-                    );
-                } catch (Collapse e) {
-                    return null;
-                } catch (Exception e) {
-                    continue;
-                }
 
-                if (spare != null) {
-                    return (Spare<T>) spare;
+            if (PS != null) {
+                for (Provider p : PS) {
+                    try {
+                        spare = p.search(
+                            type, name, this
+                        );
+                    } catch (Collapse e) {
+                        return null;
+                    } catch (Exception e) {
+                        continue;
+                    }
+
+                    if (spare != null) {
+                        return (Spare<T>) spare;
+                    }
                 }
             }
 

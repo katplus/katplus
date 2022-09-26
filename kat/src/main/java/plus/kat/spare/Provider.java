@@ -25,17 +25,43 @@ import plus.kat.crash.*;
  * @author kraity
  * @since 0.0.2
  */
-public interface Provider {
+public interface Provider extends Comparable<Provider> {
     /**
-     * Loads all spare of this provider to the supplier
+     * Returns true to indicate that this
+     * provider has been used as a loader for a long time
      *
      * @param supplier the specified supplier to be loaded
+     * @see Provider#lookup(Class, Supplier)
+     * @see Provider#search(Class, String, Supplier)
      * @since 0.0.4
      */
-    default void init(
+    default boolean accept(
         @NotNull Supplier supplier
     ) {
-        // Nothing
+        return true;
+    }
+
+    /**
+     * Returns the level of this provider
+     *
+     * @see Provider#compareTo(Provider)
+     * @since 0.0.4
+     */
+    default int grade() {
+        return 0;
+    }
+
+    /**
+     * Returns the result of the comparison
+     *
+     * @see Comparable#compareTo(Object)
+     * @since 0.0.4
+     */
+    @Override
+    default int compareTo(
+        @NotNull Provider o
+    ) {
+        return grade() - o.grade();
     }
 
     /**
@@ -45,10 +71,12 @@ public interface Provider {
      * @throws NullPointerException If the specified {@code klass} is null
      */
     @Nullable
-    Spare<?> lookup(
+    default Spare<?> lookup(
         @NotNull Class<?> klass,
         @NotNull Supplier supplier
-    );
+    ) {
+        return null;
+    }
 
     /**
      * Returns {@link Spare} of the specified {@code klass}
