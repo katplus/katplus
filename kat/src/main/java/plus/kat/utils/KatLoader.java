@@ -18,11 +18,9 @@ package plus.kat.utils;
 import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.Iterator;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 /**
  * @author kraity
@@ -165,11 +163,12 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
     /**
      * Returns the next element in the {@link KatLoader}
      *
-     * @throws Collapse if the iteration has no more elements
+     * @throws Collapse                  If the iteration has no more elements
+     * @throws ServiceConfigurationError If the provider class is loaded with errors
      */
     @Override
     public T next() {
-        if (size-- < 0) {
+        if (--size < 0) {
             throw new Collapse(
                 "No more elements"
             );
@@ -197,13 +196,13 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                 name, false, classLoader
             );
         } catch (ClassNotFoundException e) {
-            throw new Collapse(
+            throw new ServiceConfigurationError(
                 service.getName() + ": Provider '" + name + "' not found", e
             );
         }
 
         if (!service.isAssignableFrom(clazz)) {
-            throw new Collapse(
+            throw new ServiceConfigurationError(
                 service.getName() + ": Provider '" + name + "' not a subtype"
             );
         }
@@ -213,7 +212,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                 clazz.newInstance()
             );
         } catch (Throwable e) {
-            throw new Collapse(
+            throw new ServiceConfigurationError(
                 service.getName() + ": Provider '" + name + "' could not be instantiated ", e
             );
         }

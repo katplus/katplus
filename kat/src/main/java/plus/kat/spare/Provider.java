@@ -61,7 +61,13 @@ public interface Provider extends Comparable<Provider> {
     default int compareTo(
         @NotNull Provider o
     ) {
-        return grade() - o.grade();
+        int m = grade();
+        int n = o.grade();
+
+        if (m == n) {
+            return 0;
+        }
+        return m > n ? 1 : -1;
     }
 
     /**
@@ -90,7 +96,7 @@ public interface Provider extends Comparable<Provider> {
     @Nullable
     default Spare<?> search(
         @Nullable Class<?> type,
-        @NotNull String klass,
+        @NotNull String name,
         @NotNull Supplier supplier
     ) {
         return null;

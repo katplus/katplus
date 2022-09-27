@@ -72,6 +72,13 @@ public abstract class Property<T> implements Spare<T> {
     }
 
     @Override
+    public void embed(
+        @NotNull Supplier supplier
+    ) {
+        supplier.embed(klass, this);
+    }
+
+    @Override
     public T apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier

@@ -989,7 +989,7 @@ public interface Supplier {
      * @since 0.0.1
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    class Impl extends ConcurrentHashMap<Class<?>, Spare<?>> implements Supplier {
+    class Impl extends ConcurrentHashMap<Class<?>, Spare<?>> implements Supplier, Provider {
         /**
          * default supplier
          */
@@ -1074,16 +1074,18 @@ public interface Supplier {
                 );
 
                 if (loader.hasNext()) {
-                    final int size = loader.size();
+                    final int size = loader.size() + 1;
                     Provider[] PS = new Provider[size];
 
                     int i = 0;
+                    PS[i++] = INS;
                     while (loader.hasNext()) {
                         PS[i++] = loader.next();
                     }
 
-                    int k = 0;
-                    for (Provider P : PS) {
+                    int k = i = 1;
+                    for (; i < size; i++) {
+                        Provider P = PS[i];
                         try {
                             if (P.accept(INS)) {
                                 PS[k++] = P;
@@ -1093,22 +1095,22 @@ public interface Supplier {
                         }
                     }
 
-                    if (k > 0) {
-                        if (k != i) {
-                            Provider[] RS = new Provider[k];
-                            System.arraycopy(
-                                PS, 0, RS, 0, k
-                            );
-                            PS = RS;
-                        }
-
-                        PRO = PS;
-                        if (k != 1) {
-                            Arrays.sort(
-                                PRO, Collections.reverseOrder()
-                            );
-                        }
+                    if (k != i) {
+                        Provider[] RS = new Provider[k];
+                        System.arraycopy(
+                            PS, 0, RS, 0, k
+                        );
+                        PS = RS;
                     }
+
+                    PRO = PS;
+                    if (k != 1) {
+                        Arrays.sort(
+                            PRO, Collections.reverseOrder()
+                        );
+                    }
+                } else {
+                    PRO = new Provider[]{INS};
                 }
             } catch (Exception e) {
                 throw new Error(
@@ -1128,6 +1130,11 @@ public interface Supplier {
         ) {
             super(capacity);
             table = new ConcurrentHashMap<>(sponsor);
+        }
+
+        @Override
+        public int grade() {
+            return 0x88888888;
         }
 
         @Override
@@ -1193,7 +1200,34 @@ public interface Supplier {
                 }
             }
 
+            return null;
+        }
+
+        @Override
+        public <T> Spare<T> lookup(
+            @NotNull CharSequence klass
+        ) {
+            return search(null, klass);
+        }
+
+        @Override
+        public <T> Spare<T> lookup(
+            @Nullable Type type,
+            @Nullable CharSequence klass
+        ) {
+            return lookup(
+                (Class<T>) Find.clazz(type), klass
+            );
+        }
+
+        @Override
+        public Spare<?> lookup(
+            @NotNull Class<?> klass,
+            @NotNull Supplier supplier
+        ) {
+            Spare<?> spare = null;
             String name = klass.getName();
+
             switch (name.charAt(0)) {
                 case 'j': {
                     if (name.startsWith("java.")) {
@@ -1230,17 +1264,15 @@ public interface Supplier {
                 }
                 case '[': {
                     if (klass.isArray()) {
-                        putIfAbsent(klass, spare =
-                            new ArraySpare(klass)
-                        );
-                        return (Spare<T>) spare;
+                        spare = new ArraySpare(klass);
+                        spare.embed(this);
+                        return spare;
                     }
                 }
             }
 
             Embed embed = klass
                 .getAnnotation(Embed.class);
-
             if (embed == null) {
                 if (klass.isInterface() ||
                     Kat.class.isAssignableFrom(klass) ||
@@ -1266,7 +1298,7 @@ public interface Supplier {
                         // check for cache
                         if (spare != null ||
                             clazz.isInterface()) {
-                            return (Spare<T>) spare;
+                            return spare;
                         }
 
                         Constructor<?>[] cs = clazz
@@ -1313,7 +1345,7 @@ public interface Supplier {
                     } catch (Exception e) {
                         // Nothing
                     }
-                    return (Spare<T>) spare;
+                    return spare;
                 }
 
                 if (klass.isInterface()) {
@@ -1321,7 +1353,7 @@ public interface Supplier {
                         embed, klass, this
                     );
                     spare.embed(this);
-                    return (Spare<T>) spare;
+                    return spare;
                 }
             }
 
@@ -1345,29 +1377,12 @@ public interface Supplier {
                 }
 
                 spare.embed(this);
-                return (Spare<T>) spare;
+                return spare;
             } catch (Exception e) {
                 // Nothing
             }
 
             return null;
-        }
-
-        @Override
-        public <T> Spare<T> lookup(
-            @NotNull CharSequence klass
-        ) {
-            return search(null, klass);
-        }
-
-        @Override
-        public <T> Spare<T> lookup(
-            @Nullable Type type,
-            @Nullable CharSequence klass
-        ) {
-            return lookup(
-                (Class<T>) Find.clazz(type), klass
-            );
         }
 
         @Override
@@ -1433,9 +1448,8 @@ public interface Supplier {
             }
 
             Provider[] PS = PRO;
-            String name = klass.toString();
-
             if (PS != null) {
+                String name = klass.toString();
                 for (Provider p : PS) {
                     try {
                         spare = p.search(
@@ -1453,6 +1467,15 @@ public interface Supplier {
                 }
             }
 
+            return null;
+        }
+
+        @Override
+        public Spare<?> search(
+            @Nullable Class<?> type,
+            @NotNull String name,
+            @NotNull Supplier supplier
+        ) {
             if (type != null) {
                 ClassLoader cl = null;
                 try {
@@ -1489,13 +1512,13 @@ public interface Supplier {
                 }
 
                 if (type.isAssignableFrom(child)) {
-                    spare = lookup(child);
+                    Spare<?> spare = lookup(child);
                     if (spare != null) {
                         table.putIfAbsent(
                             name, spare
                         );
-                        return (Spare<T>) spare;
                     }
+                    return spare;
                 }
             }
 
