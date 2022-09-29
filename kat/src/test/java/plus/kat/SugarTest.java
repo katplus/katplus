@@ -19,15 +19,17 @@ public class SugarTest {
         user.id = 1;
         user.name = "kraity";
 
-        Doc doc = Sugar.mark(
+        try (Doc doc = Sugar.mark(
             supplier, user, "Master"
-        );
-        assertEquals("<Master><id>1</id><name>kraity</name></Master>", doc.toString());
+        )) {
+            assertEquals("<Master><id>1</id><name>kraity</name></Master>", doc.toString());
+        }
 
-        Chan chan = Sugar.write(
+        try (Chan chan = Sugar.write(
             supplier, user, "Master"
-        );
-        assertEquals("plus.kat.SugarTest$User:Master{i:id(1)s:name(kraity)}", chan.toString());
+        )) {
+            assertEquals("plus.kat.SugarTest$User:Master{i:id(1)s:name(kraity)}", chan.toString());
+        }
     }
 
     static class User {

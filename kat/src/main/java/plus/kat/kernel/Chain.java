@@ -96,7 +96,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         if (chain == null) {
             value = EMPTY_BYTES;
         } else {
-            value = chain.copyBytes();
+            value = chain.toBytes();
             count = value.length;
         }
     }
@@ -1373,10 +1373,60 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Copy this UTF8 chain into a new char array
+     * Copy this chain into a new byte array
+     *
+     * @since 0.0.4
      */
     @NotNull
-    public char[] copyChars() {
+    public byte[] toBytes() {
+        int size = count;
+        if (size != 0) {
+            byte[] copy = new byte[size];
+            System.arraycopy(
+                value, 0, copy, 0, size
+            );
+            return copy;
+        }
+        return EMPTY_BYTES;
+    }
+
+    /**
+     * Copy this chain into a new byte array
+     *
+     * @param start the start index, inclusive
+     * @param end   the end index, exclusive
+     * @throws IndexOutOfBoundsException If the start is negative or the end out of range
+     * @since 0.0.4
+     */
+    @NotNull
+    public byte[] toBytes(
+        int start, int end
+    ) {
+        int length = end - start;
+        if (0 <= start && 0 <= length && end <= count) {
+            if (length != 0) {
+                byte[] copy = new byte[length];
+                System.arraycopy(
+                    value, start, copy, 0, length
+                );
+                return copy;
+            }
+            return EMPTY_BYTES;
+        } else {
+            throw new IndexOutOfBoundsException(
+                "Unexpectedly, start: " + start
+                    + " end: " + end + " size: " + count
+            );
+        }
+    }
+
+    /**
+     * Copy this UTF8 chain into a new char array
+     *
+     * @since 0.0.4
+     */
+    @NotNull
+    public char[] toChars() {
         int size = count;
         if (size == 0) {
             return EMPTY_CHARS;
@@ -1392,71 +1442,26 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
      * @throws IndexOutOfBoundsException If the start is negative or the end out of range
-     * @since 0.0.2
+     * @since 0.0.4
      */
     @NotNull
-    public char[] copyChars(
+    public char[] toChars(
         int start, int end
     ) {
         int length = end - start;
-        if (start < 0 || length < 0 || end >= count) {
+        if (0 <= start && 0 <= length && end <= count) {
+            if (length == 0) {
+                return EMPTY_CHARS;
+            }
+            return Convert.toChars(
+                value, start, end
+            );
+        } else {
             throw new IndexOutOfBoundsException(
-                "Index start " + start + " < 0 or end >= start or end " + end + " >= " + count
+                "Unexpectedly, start: " + start
+                    + " end: " + end + " size: " + count
             );
         }
-
-        if (length == 0) {
-            return EMPTY_CHARS;
-        }
-
-        return Convert.toChars(
-            value, start, end
-        );
-    }
-
-    /**
-     * Copy this UTF8 chain into a new byte array
-     */
-    @NotNull
-    public byte[] copyBytes() {
-        int size = count;
-        if (size != 0) {
-            byte[] copy = new byte[size];
-            System.arraycopy(
-                value, 0, copy, 0, size
-            );
-            return copy;
-        }
-        return EMPTY_BYTES;
-    }
-
-    /**
-     * copy the internal UTF-8 {@code byte[]}
-     *
-     * @param start the start index, inclusive
-     * @param end   the end index, exclusive
-     * @throws IndexOutOfBoundsException If the start is negative or the end out of range
-     */
-    @NotNull
-    public byte[] copyBytes(
-        int start, int end
-    ) {
-        int length = end - start;
-        if (start < 0 || length < 0 || end >= count) {
-            throw new IndexOutOfBoundsException(
-                "Index start " + start + " < 0 or end >= start or end " + end + " >= " + count
-            );
-        }
-
-        if (length != 0) {
-            byte[] copy = new byte[length];
-            System.arraycopy(
-                value, start, copy, 0, length
-            );
-            return copy;
-        }
-
-        return EMPTY_BYTES;
     }
 
     /**
@@ -2785,7 +2790,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return new byte[SCALE];
         }
 
-        @NotNull
         @Override
         public byte[] alloc(
             @NotNull byte[] it, int len, int min
@@ -2844,7 +2848,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             }
         }
 
-        @Nullable
         @Override
         public byte[] revert(
             @Nullable byte[] it

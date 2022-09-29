@@ -111,14 +111,12 @@ public class Doc extends Chan {
         @Nullable CharSequence alias,
         @Nullable Kat kat
     ) throws IOException {
-        if (alias == null) {
-            alias = kat.space();
-        }
-
         if (kat == null) {
-            flow.leftAlias(alias, null);
-            flow.rightAlias(alias, null);
+            return coding(alias);
         } else {
+            if (alias == null) {
+                alias = kat.space();
+            }
             flow.leftAlias(
                 alias, Boolean.TRUE
             );
@@ -146,7 +144,11 @@ public class Doc extends Chan {
             if (space != null) {
                 alias = space;
             } else {
-                alias = kat.space();
+                if (kat != null) {
+                    alias = kat.space();
+                } else {
+                    return false;
+                }
             }
         }
         flow.leftAlias(
@@ -254,38 +256,35 @@ public class Doc extends Chan {
     }
 
     /**
-     * Returns a copy of {@link Flow}.
-     * Automatically close this {@link Flow} when calling
+     * Returns the {@link Flow} of this
+     * {@link Doc} as a serialized {@code byte[]}
      *
      * <pre>{@code
      *   Doc doc = ...
      *   byte[] data = doc.toBytes();
      * }</pre>
      *
-     * @see Paper#close()
-     * @see Paper#closeFlow()
-     * @since 0.0.3
+     * @see Flow#toBytes()
      */
     @NotNull
     public byte[] toBytes() {
-        return flow.closeFlow();
+        return flow.toBytes();
     }
 
     /**
-     * Returns a serialized string of {@link Flow}.
-     * Automatically close this {@link Flow} when calling
+     * Returns the {@link Flow} of this
+     * {@link Doc} as a serialized {@link String}
      *
      * <pre>{@code
      *   Doc doc = ...
      *   String text = doc.toString();
      * }</pre>
      *
-     * @see Paper#close()
-     * @see Paper#closePaper()
+     * @see Flow#toString()
      */
     @Override
     public String toString() {
-        return flow.closePaper();
+        return flow.toString();
     }
 
     /**
@@ -357,15 +356,16 @@ public class Doc extends Chan {
         @Nullable CharSequence alias,
         @Nullable Object value, long flags
     ) {
-        Doc chan = new Doc(flags);
-        try {
+        try (Doc chan = new Doc(flags)) {
             chan.set(
                 alias, value
             );
+            return chan.toString();
         } catch (Exception e) {
-            // Nothing
+            throw new Collapse(
+                "Unexpectedly, error serializing to xml", e
+            );
         }
-        return chan.toString();
     }
 
     /**

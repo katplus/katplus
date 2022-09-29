@@ -2,14 +2,12 @@ package plus.kat.spare;
 
 import org.junit.jupiter.api.Test;
 
-import plus.kat.*;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 import plus.kat.anno.NotNull;
-import plus.kat.chain.Space;
-import plus.kat.chain.Value;
-import plus.kat.Flow;
-import plus.kat.spare.Coder;
+
+import plus.kat.*;
+import plus.kat.chain.*;
 
 import java.io.IOException;
 
@@ -34,15 +32,21 @@ public class CoderTest {
         assertEquals(
             "open", note.status
         );
-        assertEquals(
-            "Note{i:id(101)s:title(kat+)s:status(OPEN)}", spare.write(note).toString()
-        );
-        assertEquals(
-            "<Note><id>101</id><title>kat+</title><status>OPEN</status></Note>", spare.mark(note).toString()
-        );
-        assertEquals(
-            "{\"id\":101,\"title\":\"kat+\",\"status\":\"OPEN\"}", spare.serial(note).toString()
-        );
+        try (Chan chan = spare.write(note)) {
+            assertEquals(
+                "Note{i:id(101)s:title(kat+)s:status(OPEN)}", chan.toString()
+            );
+        }
+        try (Doc doc = spare.mark(note)) {
+            assertEquals(
+                "<Note><id>101</id><title>kat+</title><status>OPEN</status></Note>", doc.toString()
+            );
+        }
+        try (Json json = spare.serial(note)) {
+            assertEquals(
+                "{\"id\":101,\"title\":\"kat+\",\"status\":\"OPEN\"}", json.toString()
+            );
+        }
     }
 
     @Embed("Note")

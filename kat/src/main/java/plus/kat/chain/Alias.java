@@ -127,7 +127,7 @@ public final class Alias extends Chain {
         int start, int end
     ) {
         return new Alias(
-            copyBytes(start, end)
+            toBytes(start, end)
         );
     }
 

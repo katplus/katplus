@@ -53,7 +53,7 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
         @NotNull Value value
     ) {
         return ByteBuffer.wrap(
-            value.copyBytes()
+            value.toBytes()
         );
     }
 
@@ -101,7 +101,7 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
 
             if (data instanceof Chain) {
                 return ByteBuffer.wrap(
-                    ((Chain) data).copyBytes()
+                    ((Chain) data).toBytes()
                 );
             }
 

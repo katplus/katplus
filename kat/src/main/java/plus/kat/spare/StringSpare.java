@@ -53,7 +53,7 @@ public class StringSpare extends Property<String> {
         }
 
         throw new Collapse(
-            "Cannot create `" + type + "` instance"
+            "Unable to create an instance of " + type
         );
     }
 

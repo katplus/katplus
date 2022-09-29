@@ -3,6 +3,7 @@ package plus.kat.entity;
 import org.junit.jupiter.api.Test;
 
 import plus.kat.Event;
+import plus.kat.Kat;
 import plus.kat.Spare;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
@@ -31,7 +32,7 @@ public class WorkerTest {
         assertEquals(101, user.meta.sig);
         assertEquals("K", user.meta.key);
         assertEquals("RSA", user.meta.algo);
-        assertEquals("User{Meta:meta{i:sig(101)s:key(K)s:algo(RSA)}}", spare.write(user).toString());
+        assertEquals("User{Meta:meta{i:sig(101)s:key(K)s:algo(RSA)}}", Kat.encode(user));
     }
 
     @Embed(

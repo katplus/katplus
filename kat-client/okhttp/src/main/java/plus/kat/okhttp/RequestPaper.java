@@ -64,8 +64,10 @@ public class RequestPaper extends RequestBody {
         Paper paper,
         MediaType mediaType
     ) {
-        this.mediaType = mediaType;
-        this.data = paper.closeFlow();
+        try (Paper ch = paper) {
+            this.data = ch.toBytes();
+            this.mediaType = mediaType;
+        }
     }
 
     @Override

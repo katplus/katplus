@@ -130,9 +130,11 @@ public class KatTest {
         assertEquals(
             plain, spare.read(cipher)
         );
-        assertEquals(
-            cipher, spare.write(plain).toString()
-        );
+        try (Chan kat = spare.write(plain)) {
+            assertEquals(
+                cipher, kat.toString()
+            );
+        }
     }
 
     @Test
@@ -146,9 +148,11 @@ public class KatTest {
         assertEquals(
             plain, spare.read(cipher)
         );
-        assertEquals(
-            cipher, spare.write(plain).toString()
-        );
+        try (Chan kat = spare.write(plain)) {
+            assertEquals(
+                cipher, kat.toString()
+            );
+        }
     }
 
     @Test
@@ -162,9 +166,11 @@ public class KatTest {
         assertEquals(
             plain, spare.read(cipher)
         );
-        assertEquals(
-            cipher, spare.write(plain).toString()
-        );
+        try (Chan kat = spare.write(plain)) {
+            assertEquals(
+                cipher, kat.toString()
+            );
+        }
     }
 
     @Test
@@ -179,9 +185,11 @@ public class KatTest {
         );
 
         assertNotNull(user);
-        assertEquals(
-            text, spare.write(user).toString()
-        );
+        try (Chan kat = spare.write(user)) {
+            assertEquals(
+                text, kat.toString()
+            );
+        }
     }
 
     @Test
@@ -391,9 +399,11 @@ public class KatTest {
             spare.getSupplier()
         );
 
-        assertEquals(
-            text, spare.write(note).toString()
-        );
+        try (Chan chan = spare.write(note)) {
+            assertEquals(
+                text, chan.toString()
+            );
+        }
     }
 
     enum State {

@@ -25,10 +25,12 @@ class JsonKtTest {
             it["name"] = "kraity"
         }
 
-        assertSame(Json::class.java, json::class.java)
-        assertEquals(
-            """{"id":1,"name":"kraity"}""", json.toString()
-        )
+        json.use {
+            assertSame(Json::class.java, json::class.java)
+            assertEquals(
+                """{"id":1,"name":"kraity"}""", json.toString()
+            )
+        }
     }
 
     @Test

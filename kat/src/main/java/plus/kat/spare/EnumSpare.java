@@ -116,7 +116,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
         }
 
         throw new Collapse(
-            "Cannot create `" + type + "` instance"
+            "Unable to create an instance of " + type
         );
     }
 

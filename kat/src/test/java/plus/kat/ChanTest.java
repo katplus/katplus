@@ -22,6 +22,7 @@ public class ChanTest {
         String expected = "M{i:id(1)}";
         assertEquals(expected, chan.toString());
 
+        chan.close();
         // Chan has been closed
         assertEquals("", chan.toString());
     }
@@ -36,6 +37,7 @@ public class ChanTest {
         byte[] expected = "M{i:id(1)}".getBytes(UTF_8);
         assertArrayEquals(expected, chan.toBytes());
 
+        chan.close();
         // Chan has been closed
         assertArrayEquals(Chain.EMPTY_BYTES, chan.toBytes());
     }
@@ -50,6 +52,7 @@ public class ChanTest {
         String expected = "{\"id\":1}";
         assertEquals(expected, json.toString());
 
+        json.close();
         // Chan has been closed
         assertEquals("", json.toString());
     }
@@ -64,6 +67,7 @@ public class ChanTest {
         byte[] expected = "{\"id\":1}".getBytes(UTF_8);
         assertArrayEquals(expected, json.toBytes());
 
+        json.close();
         // Chan has been closed
         assertArrayEquals(Chain.EMPTY_BYTES, json.toBytes());
     }
@@ -78,6 +82,7 @@ public class ChanTest {
         String expected = "<User><id>1</id></User>";
         assertEquals(expected, doc.toString());
 
+        doc.close();
         // Chan has been closed
         assertEquals("", doc.toString());
     }
@@ -92,6 +97,7 @@ public class ChanTest {
         byte[] expected = "<User><id>1</id></User>".getBytes(UTF_8);
         assertArrayEquals(expected, doc.toBytes());
 
+        doc.close();
         // Chan has been closed
         assertArrayEquals(Chain.EMPTY_BYTES, doc.toBytes());
     }

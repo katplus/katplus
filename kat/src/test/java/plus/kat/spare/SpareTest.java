@@ -122,7 +122,9 @@ public class SpareTest {
         );
 
         assertNotNull(role);
-        assertEquals("Role{Date:now(2022-01-11 11:11:11)Date:time(2022-01-11 11:22:33)Date:date(2022-02-22T22:22:22.222Z)Date:just(03,三月 2022)Instant:instant(2022-02-22 22:33)LocalDate:localDate(2022-02-22)LocalTime:localTime(22:33)LocalDateTime:localDateTime(2022-02-22 22:33)}", spare.write(role).toString());
+        try (Chan chan = spare.write(role)) {
+            assertEquals("Role{Date:now(2022-01-11 11:11:11)Date:time(2022-01-11 11:22:33)Date:date(2022-02-22T22:22:22.222Z)Date:just(03,三月 2022)Instant:instant(2022-02-22 22:33)LocalDate:localDate(2022-02-22)LocalTime:localTime(22:33)LocalDateTime:localDateTime(2022-02-22 22:33)}", chan.toString());
+        }
     }
 
     @Test
@@ -174,7 +176,9 @@ public class SpareTest {
         assertNotNull(a1);
         assertEquals(1, a1.id);
         assertEquals("kraity", a1.name);
-        assertEquals("{\"id\":1,\"meta\":\"tag->katplus\",\"alias\":\"name->kraity\"}", spare.serial(a1).toString());
+        try (Json json = spare.serial(a1)) {
+            assertEquals("{\"id\":1,\"meta\":\"tag->katplus\",\"alias\":\"name->kraity\"}", json.toString());
+        }
 
         Map<String, Object> map = new HashMap<>();
         map.put("id", 1);

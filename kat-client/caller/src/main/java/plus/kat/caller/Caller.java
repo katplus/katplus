@@ -58,7 +58,7 @@ public abstract class Caller extends Chain {
         byte[] data;
         try {
             chain(in, 1024);
-            data = copyBytes();
+            data = toBytes();
         } catch (Exception e) {
             data = EMPTY_BYTES;
         } finally {
@@ -86,7 +86,7 @@ public abstract class Caller extends Chain {
         int start, int end
     ) {
         return new Value(
-            copyBytes(start, end)
+            toBytes(start, end)
         );
     }
 

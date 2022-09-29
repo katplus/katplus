@@ -56,7 +56,7 @@ public class ChanBuf {
 
         if (!chain.isShared()) {
             return Unpooled.wrappedBuffer(
-                chain.copyBytes()
+                chain.toBytes()
             );
         }
 

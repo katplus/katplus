@@ -448,38 +448,35 @@ public class Chan implements Flag, Closeable {
     }
 
     /**
-     * Returns a copy of {@link Flow}.
-     * Automatically close this {@link Flow} when calling
+     * Returns the {@link Flow} of this
+     * {@link Chan} as a serialized {@code byte[]}
      *
      * <pre>{@code
      *   Chan chan = ...
      *   byte[] data = chan.toBytes();
      * }</pre>
      *
-     * @see Paper#close()
-     * @see Paper#closeFlow()
-     * @since 0.0.3
+     * @see Flow#toBytes()
      */
     @NotNull
     public byte[] toBytes() {
-        return flow.closeFlow();
+        return flow.toBytes();
     }
 
     /**
-     * Returns a serialized string of {@link Flow}.
-     * Automatically close this {@link Flow} when calling
+     * Returns the {@link Flow} of this
+     * {@link Chan} as a serialized {@link String}
      *
      * <pre>{@code
      *   Chan chan = ...
      *   String text = chan.toString();
      * }</pre>
      *
-     * @see Paper#close()
-     * @see Paper#closePaper()
+     * @see Flow#toString()
      */
     @Override
     public String toString() {
-        return flow.closePaper();
+        return flow.toString();
     }
 
     /**

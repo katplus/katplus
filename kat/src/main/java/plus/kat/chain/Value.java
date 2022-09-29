@@ -135,7 +135,7 @@ public class Value extends Chain {
         int start, int end
     ) {
         return new Value(
-            copyBytes(start, end)
+            toBytes(start, end)
         );
     }
 

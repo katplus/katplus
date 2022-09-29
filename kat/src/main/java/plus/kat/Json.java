@@ -244,38 +244,35 @@ public class Json extends Chan {
     }
 
     /**
-     * Returns a copy of {@link Flow}.
-     * Automatically close this {@link Flow} when calling
+     * Returns the {@link Flow} of this
+     * {@link Json} as a serialized {@code byte[]}
      *
      * <pre>{@code
      *   Json json = ...
      *   byte[] data = json.toBytes();
      * }</pre>
      *
-     * @see Paper#close()
-     * @see Paper#closeFlow()
-     * @since 0.0.3
+     * @see Flow#toBytes()
      */
     @NotNull
     public byte[] toBytes() {
-        return flow.closeFlow();
+        return flow.toBytes();
     }
 
     /**
-     * Returns a serialized string of {@link Flow}.
-     * Automatically close this {@link Flow} when calling
+     * Returns the {@link Flow} of this
+     * {@link Json} as a serialized {@link String}
      *
      * <pre>{@code
      *   Json json = ...
      *   String text = json.toString();
      * }</pre>
      *
-     * @see Paper#close()
-     * @see Paper#closePaper()
+     * @see Flow#toString()
      */
     @Override
     public String toString() {
-        return flow.closePaper();
+        return flow.toString();
     }
 
     /**
@@ -316,15 +313,16 @@ public class Json extends Chan {
     public static String encode(
         @Nullable Object value, long flags
     ) {
-        Json chan = new Json(flags);
-        try {
+        try (Json chan = new Json(flags)) {
             chan.set(
                 null, value
             );
+            return chan.toString();
         } catch (Exception e) {
-            // Nothing
+            throw new Collapse(
+                "Unexpectedly, error serializing to json", e
+            );
         }
-        return chan.toString();
     }
 
     /**

@@ -105,9 +105,8 @@ public class Parser implements Pipe, Closeable {
         @NotNull Solver coder,
         @NotNull Event<T> event
     ) throws IOException {
-        Reader reader =
-            event.getReader();
-
+        @Nullable
+        Reader reader = event.getReader();
         if (reader == null) {
             throw new Collapse(
                 "Reader is null"
@@ -151,7 +150,7 @@ public class Parser implements Pipe, Closeable {
      * @throws IOException          Unexpected errors by {@link Pipe} or {@link Reader}
      * @throws NullPointerException If the specified {@code job} or {@code event} is null
      */
-    @Nullable
+    @NotNull
     public <T> T read(
         @NotNull Job job,
         @NotNull Event<T> event
@@ -311,8 +310,7 @@ public class Parser implements Pipe, Closeable {
             if (lock) {
                 return false;
             }
-            lock = true;
-            return true;
+            return lock = true;
         }
     }
 
@@ -322,11 +320,11 @@ public class Parser implements Pipe, Closeable {
     public boolean unlock() {
         synchronized (this) {
             if (lock) {
-                clear();
+                this.clear();
+                lock = false;
             }
-            lock = false;
-            return true;
         }
+        return true;
     }
 
     /**
@@ -374,24 +372,24 @@ public class Parser implements Pipe, Closeable {
 
         @Override
         public boolean stop(
-            Parser target
+            Parser parser
         ) {
-            target.close();
+            parser.close();
             return true;
         }
 
         @Override
         public boolean lock(
-            Parser target
+            Parser parser
         ) {
-            return target.lock();
+            return parser.lock();
         }
 
         @Override
         public boolean unlock(
-            Parser target
+            Parser parser
         ) {
-            return target.unlock();
+            return parser.unlock();
         }
     }
 }

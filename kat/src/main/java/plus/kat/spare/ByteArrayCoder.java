@@ -41,7 +41,7 @@ public class ByteArrayCoder implements Coder<byte[]> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.copyBytes();
+        return value.toBytes();
     }
 
     @Override

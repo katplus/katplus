@@ -26,10 +26,12 @@ class KatKtTest {
             it["name"] = "kraity"
         }
 
-        assertSame(Chan::class.java, kat::class.java)
-        assertEquals(
-            "User{i:id(1)s:name(kraity)}", kat.toString()
-        )
+        kat.use {
+            assertSame(Chan::class.java, kat::class.java)
+            assertEquals(
+                "User{i:id(1)s:name(kraity)}", kat.toString()
+            )
+        }
     }
 
     @Test

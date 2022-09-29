@@ -55,7 +55,7 @@ public class IntegerSpare extends Property<Integer> implements Serializer {
         }
 
         throw new Collapse(
-            "Cannot create `" + type + "` instance"
+            "Unable to create an instance of " + type
         );
     }
 

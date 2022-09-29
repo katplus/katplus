@@ -87,9 +87,11 @@ public class DocTest {
         Article article = spare.down(text);
         assertNotNull(article);
 
-        assertEquals(
-            text, spare.mark(article).toString()
-        );
+        try (Doc doc = spare.mark(article)) {
+            assertEquals(
+                text, doc.toString()
+            );
+        }
     }
 
     @Test

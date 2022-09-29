@@ -55,7 +55,7 @@ public class ByteSpare extends Property<Byte> implements Serializer {
         }
 
         throw new Collapse(
-            "Cannot create `" + type + "` instance"
+            "Unable to create an instance of " + type
         );
     }
 

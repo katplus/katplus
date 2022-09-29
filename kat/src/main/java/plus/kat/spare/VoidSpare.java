@@ -56,7 +56,7 @@ public class VoidSpare extends Property<Void> {
         }
 
         throw new Collapse(
-            "Cannot create `" + type + "` instance"
+            "Unable to create an instance of " + type
         );
     }
 

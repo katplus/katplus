@@ -21,7 +21,7 @@ import plus.kat.anno.Nullable;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
-import java.nio.file.Path;
+import java.nio.file.*;
 import javax.crypto.Cipher;
 
 import plus.kat.chain.*;
@@ -209,17 +209,19 @@ public class Event<T> implements Flag {
      *   Event<User> event = new Event<>(file);
      * }</pre>
      *
-     * @throws NullPointerException  If the specified {@code file} is null
-     * @throws FileNotFoundException If the file does not exist or is not a regular file or for some other reason cannot be opened for reading.
-     * @see FileInputStream#FileInputStream(String)
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code file} is null
+     * @see Files#newInputStream(Path, OpenOption...)
      * @see InputStreamReader#InputStreamReader(InputStream)
      */
     public Event(
         @NotNull File file
-    ) throws FileNotFoundException {
+    ) throws IOException {
         this(Event.class);
         reader = new InputStreamReader(
-            new FileInputStream(file)
+            Files.newInputStream(
+                file.toPath()
+            )
         );
     }
 
@@ -230,21 +232,17 @@ public class Event<T> implements Flag {
      *   Event<User> event = new Event<>(path);
      * }</pre>
      *
-     * @throws NullPointerException          If the specified {@code path} is null
-     * @throws FileNotFoundException         If the file does not exist or is not a regular file or for some other reason cannot be opened for reading.
-     * @throws UnsupportedOperationException If this Path is not associated with the default provider
-     * @see Path#toFile()
-     * @see FileInputStream#FileInputStream(File)
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code path} is null
+     * @see Files#newInputStream(Path, OpenOption...)
      * @see InputStreamReader#InputStreamReader(InputStream)
      */
     public Event(
         @NotNull Path path
-    ) throws FileNotFoundException {
+    ) throws IOException {
         this(Event.class);
         reader = new InputStreamReader(
-            new FileInputStream(
-                path.toFile()
-            )
+            Files.newInputStream(path)
         );
     }
 
@@ -664,18 +662,14 @@ public class Event<T> implements Flag {
      * }</pre>
      *
      * @param path the file path
-     * @throws FileNotFoundException If the file does not exist or is not a regular file or for some other reason cannot be opened for reading.
-     * @see FileInputStream#FileInputStream(String)
-     * @see InputStreamReader#InputStreamReader(InputStream)
+     * @throws IOException If an I/O error occurs
      */
     @NotNull
     public static <T> Event<T> file(
         @NotNull String path
-    ) throws FileNotFoundException {
+    ) throws IOException {
         return new Event<>(
-            new InputStreamReader(
-                new FileInputStream(path)
-            )
+            Paths.get(path)
         );
     }
 

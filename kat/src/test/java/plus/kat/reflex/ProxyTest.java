@@ -23,9 +23,11 @@ public class ProxyTest {
             supplier.lookup(Meta.class);
 
         assertNotNull(spare);
-        assertEquals(
-            "Meta{i:id(1)s:tag(kat.plus)}", spare.write(m).toString()
-        );
+        try (Chan chan = spare.write(m)) {
+            assertEquals(
+                "Meta{i:id(1)s:tag(kat.plus)}", chan.toString()
+            );
+        }
 
         Meta meta = supplier.read(
             Meta.class, new Event<>(

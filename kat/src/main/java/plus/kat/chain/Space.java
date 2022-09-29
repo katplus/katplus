@@ -168,7 +168,7 @@ public final class Space extends Chain implements Type {
         int start, int end
     ) {
         return new Space(
-            copyBytes(start, end)
+            toBytes(start, end)
         );
     }
 

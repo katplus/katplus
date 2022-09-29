@@ -2,6 +2,7 @@ package plus.kat.stream;
 
 import org.junit.jupiter.api.Test;
 
+import plus.kat.Chan;
 import plus.kat.Event;
 import plus.kat.Spare;
 import plus.kat.anno.Embed;
@@ -63,7 +64,10 @@ public class CipherReaderTest {
         assertNotNull(user);
         assertEquals(1, user.id);
         assertEquals("kraity", user.name);
-        assertEquals(text, spare.write(user).toString());
+
+        try (Chan chan = spare.write(user)) {
+            assertEquals(text, chan.toString());
+        }
     }
 
     @Test
@@ -130,7 +134,9 @@ public class CipherReaderTest {
         assertNotNull(user);
         assertEquals(1, user.id);
         assertEquals("kraity", user.name);
-        assertEquals(text, spare.write(user).toString());
+        try (Chan chan = spare.write(user)) {
+            assertEquals(text, chan.toString());
+        }
     }
 
     @Embed("User")

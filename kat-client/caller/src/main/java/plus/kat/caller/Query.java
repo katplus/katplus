@@ -89,7 +89,7 @@ public class Query extends Chain {
         int start, int end
     ) {
         return new Query(
-            copyBytes(start, end)
+            toBytes(start, end)
         );
     }
 

@@ -53,7 +53,7 @@ public class LocaleSpare extends Property<Locale> {
         }
 
         throw new Collapse(
-            "Cannot create `" + type + "` instance"
+            "Unable to create an instance of " + type
         );
     }
 

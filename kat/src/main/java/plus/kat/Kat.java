@@ -121,15 +121,16 @@ public interface Kat {
         @Nullable CharSequence alias,
         @Nullable Object value, long flags
     ) {
-        Chan chan = new Chan(flags);
-        try {
+        try (Chan chan = new Chan(flags)) {
             chan.set(
                 alias, value
             );
+            return chan.toString();
         } catch (Exception e) {
-            // Nothing
+            throw new Collapse(
+                "Unexpectedly, error serializing to kat", e
+            );
         }
-        return chan.toString();
     }
 
     /**

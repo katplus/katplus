@@ -54,7 +54,7 @@ public class DoubleSpare extends Property<Double> implements Serializer {
         }
 
         throw new Collapse(
-            "Cannot create `" + type + "` instance"
+            "Unable to create an instance of " + type
         );
     }
 

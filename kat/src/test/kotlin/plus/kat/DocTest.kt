@@ -23,10 +23,12 @@ class DocKtTest {
             it["name"] = "kraity"
         }
 
-        assertSame(Doc::class.java, doc::class.java)
-        assertEquals(
-            "<User><id>1</id><name>kraity</name></User>", doc.toString()
-        )
+        doc.use {
+            assertSame(Doc::class.java, doc::class.java)
+            assertEquals(
+                "<User><id>1</id><name>kraity</name></User>", doc.toString()
+            )
+        }
     }
 
     @Test

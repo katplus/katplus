@@ -40,7 +40,7 @@ import kotlin.jvm.Throws
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun kat(block: Kat) = Kat(null, block).toString()
+fun kat(block: Kat) = Kat(null, block).use { it.toString() }
 
 /**
  * Serialize block to Kat [String]
@@ -57,7 +57,7 @@ fun kat(block: Kat) = Kat(null, block).toString()
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun kat(space: CharSequence?, block: Kat) = Kat(space, block).toString()
+fun kat(space: CharSequence?, block: Kat) = Kat(space, block).use { it.toString() }
 
 /**
  * Serialize block to Kat
@@ -119,7 +119,7 @@ inline fun Any?.toKat(flags: Long) = Kat.encode(null, this, flags)
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun doc(name: CharSequence?, block: Kat) = Doc(name, block).toString()
+fun doc(name: CharSequence?, block: Kat) = Doc(name, block).use { it.toString() }
 
 /**
  * Serialize block to [Doc]
@@ -181,7 +181,7 @@ inline fun Any?.toDoc(flags: Long): String = Doc.encode(null, this, flags)
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun json(block: Kat) = Json(block).toString()
+fun json(block: Kat) = Json(block).use { it.toString() }
 
 /**
  * Serialize block to [Json]

@@ -120,16 +120,18 @@ public abstract class Builder<K> {
 
     /**
      * Returns the alias of this {@link Builder}
+     *
+     * @return {@link Alias} or {@code null}
      */
-    @Nullable
     public final Alias getAlias() {
         return alias;
     }
 
     /**
      * Returns the parent of this {@link Builder}
+     *
+     * @return {@link Builder} or {@code null}
      */
-    @Nullable
     public final Builder<?> getParent() {
         return parent;
     }

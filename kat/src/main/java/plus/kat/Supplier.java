@@ -44,7 +44,8 @@ import static plus.kat.chain.Space.*;
  * @author kraity
  * @since 0.0.1
  */
-public interface Supplier {
+@SuppressWarnings("unchecked")
+public interface Supplier extends Cloneable {
     /**
      * Register the {@link Spare} of {@code klass}
      * and returns the previous value associated with {@code klass}
@@ -501,7 +502,6 @@ public interface Supplier {
      * @since 0.0.3
      */
     @Nullable
-    @SuppressWarnings("unchecked")
     default <K> Spoiler flat(
         @NotNull K bean
     ) {
@@ -538,7 +538,6 @@ public interface Supplier {
      * @see Spare#flat(Object, Visitor)
      * @since 0.0.3
      */
-    @SuppressWarnings("unchecked")
     default <K> boolean flat(
         @NotNull K bean,
         @NotNull Visitor visitor
@@ -569,7 +568,6 @@ public interface Supplier {
      * @throws NullPointerException If the parameters contains null
      * @since 0.0.4
      */
-    @SuppressWarnings("unchecked")
     default <K> boolean update(
         @NotNull K bean,
         @NotNull Spoiler spoiler
@@ -601,7 +599,6 @@ public interface Supplier {
      * @throws NullPointerException If the parameters contains null
      * @since 0.0.4
      */
-    @SuppressWarnings("unchecked")
     default <K> boolean update(
         @NotNull K bean,
         @NotNull ResultSet resultSet
@@ -633,7 +630,6 @@ public interface Supplier {
      * @see Spare#update(Object, Spoiler, Supplier)
      * @since 0.0.4
      */
-    @SuppressWarnings("unchecked")
     default <S, T> boolean mutate(
         @NotNull S source,
         @NotNull T target
@@ -658,7 +654,13 @@ public interface Supplier {
     }
 
     /**
-     * Parse {@link Kat} {@link Event} and convert result to {@link T}
+     * Resolve the Kat {@code text} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Supplier supplier = ...
+     *   String text = ...
+     *   User user = supplier.read(text);
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -677,7 +679,18 @@ public interface Supplier {
     }
 
     /**
-     * Parse {@link Kat} {@link Event} and convert result to {@link T}
+     * Resolve the Kat {@link Event} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Supplier supplier = ...
+     *
+     *   User user = supplier.read(
+     *      event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -697,6 +710,16 @@ public interface Supplier {
     /**
      * Serialize to {@link Chan}
      *
+     * <pre>{@code
+     *   User user = ...
+     *   Supplier supplier = ...
+     *
+     *   try(Chan chan = supplier.write(user)) {
+     *       byte[] bs = chan.toBytes();
+     *       String st = chan.toString();
+     *   }
+     * }</pre>
+     *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
      */
@@ -711,6 +734,16 @@ public interface Supplier {
 
     /**
      * Serialize to {@link Chan}
+     *
+     * <pre>{@code
+     *   User user = ...
+     *   Supplier supplier = ...
+     *
+     *   try(Chan chan = supplier.write(user, Flag.UNICODE)) {
+     *       byte[] bs = chan.toBytes();
+     *       String st = chan.toString();
+     *   }
+     * }</pre>
      *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
@@ -727,7 +760,13 @@ public interface Supplier {
     }
 
     /**
-     * Parse {@link Doc} {@link Event} and convert result to {@link T}
+     * Resolve the Doc {@code text} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Supplier supplier = ...
+     *   String text = ...
+     *   User user = supplier.down(text);
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -745,7 +784,18 @@ public interface Supplier {
     }
 
     /**
-     * Parse {@link Doc} {@link Event} and convert result to {@link T}
+     * Resolve the Doc {@link Event} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Supplier supplier = ...
+     *
+     *   User user = supplier.down(
+     *      event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -765,6 +815,16 @@ public interface Supplier {
     /**
      * Serialize to {@link Doc}
      *
+     * <pre>{@code
+     *   User user = ...
+     *   Supplier supplier = ...
+     *
+     *   try(Doc doc = supplier.mark(user)) {
+     *       byte[] bs = doc.toBytes();
+     *       String st = doc.toString();
+     *   }
+     * }</pre>
+     *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
      */
@@ -779,6 +839,16 @@ public interface Supplier {
 
     /**
      * Serialize to {@link Doc}
+     *
+     * <pre>{@code
+     *   User user = ...
+     *   Supplier supplier = ...
+     *
+     *   try(Doc doc = supplier.mark(user, Flag.UNICODE)) {
+     *       byte[] bs = doc.toBytes();
+     *       String st = doc.toString();
+     *   }
+     * }</pre>
      *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
@@ -795,7 +865,13 @@ public interface Supplier {
     }
 
     /**
-     * Parse {@link Json} {@link Event} and convert result to {@link T}
+     * Resolve the Json {@code text} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Supplier supplier = ...
+     *   String text = ...
+     *   User user = supplier.parse(text);
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -813,7 +889,18 @@ public interface Supplier {
     }
 
     /**
-     * Parse {@link Json} {@link Event} and convert result to {@link T}
+     * Resolve the Json {@link Event} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Supplier supplier = ...
+     *
+     *   User user = supplier.parse(
+     *      event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -833,6 +920,16 @@ public interface Supplier {
     /**
      * Serialize to {@link Json}
      *
+     * <pre>{@code
+     *   User user = ...
+     *   Supplier supplier = ...
+     *
+     *   try(Json json = supplier.serial(user)) {
+     *       byte[] bs = json.toBytes();
+     *       String st = json.toString();
+     *   }
+     * }</pre>
+     *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
      */
@@ -847,6 +944,16 @@ public interface Supplier {
 
     /**
      * Serialize to {@link Json}
+     *
+     * <pre>{@code
+     *   User user = ...
+     *   Supplier supplier = ...
+     *
+     *   try(Json json = supplier.serial(user, Flag.UNICODE)) {
+     *       byte[] bs = json.toBytes();
+     *       String st = json.toString();
+     *   }
+     * }</pre>
      *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
@@ -863,7 +970,19 @@ public interface Supplier {
     }
 
     /**
-     * Parse {@link Event} and convert result to {@link T}
+     * Resolve the {@link Event} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Supplier supplier = ...
+     *
+     *   Job job = ...
+     *   User user = supplier.solve(
+     *      job, event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -872,7 +991,6 @@ public interface Supplier {
      * @since 0.0.4
      */
     @NotNull
-    @SuppressWarnings("unchecked")
     default <T> T solve(
         @NotNull Job job,
         @NotNull Event<T> event
@@ -900,7 +1018,21 @@ public interface Supplier {
     }
 
     /**
-     * Parse {@link Event} and convert result to {@link T}
+     * Resolve the {@link Event} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Supplier supplier = ...
+     *
+     *   Job job = ...
+     *   String type = "plus.kat.entity.User";
+     *
+     *   User user = supplier.solve(
+     *      type, job, event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -927,7 +1059,21 @@ public interface Supplier {
     }
 
     /**
-     * Parse {@link Event} and convert result to {@link T}
+     * Resolve the {@link Event} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Supplier supplier = ...
+     *
+     *   Job job = ...
+     *   Type type = User.class;
+     *
+     *   User user = supplier.solve(
+     *      type, job, event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -956,7 +1102,21 @@ public interface Supplier {
     }
 
     /**
-     * Parse {@link Event} and convert result to {@link T}
+     * Resolve the {@link Event} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Supplier supplier = ...
+     *
+     *   Job job = ...
+     *   Class<User> type = User.class;
+     *
+     *   User user = supplier.solve(
+     *      type, job, event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -988,7 +1148,7 @@ public interface Supplier {
      * @author kraity
      * @since 0.0.1
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("rawtypes")
     class Impl extends ConcurrentHashMap<Class<?>, Spare<?>> implements Supplier, Provider {
         /**
          * default supplier
@@ -1125,8 +1285,7 @@ public interface Supplier {
         protected final Map<CharSequence, Spare<?>> table;
 
         public Impl(
-            @NotNull int sponsor,
-            @NotNull int capacity
+            int sponsor, int capacity
         ) {
             super(capacity);
             table = new ConcurrentHashMap<>(sponsor);
@@ -1507,7 +1666,7 @@ public interface Supplier {
                         name, false, cl
                     );
                 } catch (LinkageError |
-                    ClassNotFoundException e) {
+                         ClassNotFoundException e) {
                     return null;
                 }
 

@@ -36,6 +36,7 @@ import static plus.kat.spare.Parser.Group;
  * @author kraity
  * @since 0.0.1
  */
+@SuppressWarnings("unchecked")
 public interface Spare<K> extends Coder<K> {
     /**
      * Returns the space of {@link K}.
@@ -110,7 +111,6 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.4
      */
     @NotNull
-    @SuppressWarnings("unchecked")
     default K apply(
         @NotNull Type type
     ) {
@@ -131,6 +131,11 @@ public interface Spare<K> extends Coder<K> {
 
         // Find the class of the type
         Class<?> clazz = clazz(type);
+        if (clazz == null) {
+            throw new Collapse(
+                "Can't find class of " + type
+            );
+        }
 
         // Check if subclass of the kind
         if (kind.isAssignableFrom(clazz)) {
@@ -149,7 +154,7 @@ public interface Spare<K> extends Coder<K> {
         }
 
         throw new Collapse(
-            "Cannot create `" + type + "` instance"
+            "Unable to create an instance of " + type
         );
     }
 
@@ -389,7 +394,13 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Parse {@link Kat} {@link CharSequence} and convert result to {@link K}
+     * Resolve the Kat {@code text} and convert the result to {@link K}
+     *
+     * <pre>{@code
+     *   Spare<User> spare = ...
+     *   String text = ...
+     *   User user = spare.read(text);
+     * }</pre>
      *
      * @param text the specified text to be parsed
      * @throws Collapse             If parsing fails or the result is null
@@ -405,7 +416,18 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Parse {@link Kat} {@link Event} and convert result to {@link K}
+     * Resolve the Kat {@link Event} and convert the result to {@link K}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Spare<User> spare = ...
+     *
+     *   User user = spare.read(
+     *      event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -423,6 +445,16 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Serialize to {@link Chan}
      *
+     * <pre>{@code
+     *   User user = ...
+     *   Spare<User> spare = ...
+     *
+     *   try(Chan chan = spare.write(user)) {
+     *       byte[] bs = chan.toBytes();
+     *       String st = chan.toString();
+     *   }
+     * }</pre>
+     *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
      */
@@ -438,6 +470,16 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Serialize to {@link Chan}
      *
+     * <pre>{@code
+     *   User user = ...
+     *   Spare<User> spare = ...
+     *
+     *   try(Chan chan = spare.write(user, Flag.UNICODE)) {
+     *       byte[] bs = chan.toBytes();
+     *       String st = chan.toString();
+     *   }
+     * }</pre>
+     *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
      */
@@ -451,7 +493,13 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Parse {@link Doc} {@link CharSequence} and convert result to {@link K}
+     * Resolve the Doc {@code text} and convert the result to {@link K}
+     *
+     * <pre>{@code
+     *   Spare<User> spare = ...
+     *   String text = ...
+     *   User user = spare.down(text);
+     * }</pre>
      *
      * @param text the specified text to be parsed
      * @throws Collapse             If parsing fails or the result is null
@@ -467,7 +515,18 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Parse {@link Doc} {@link Event} and convert result to {@link K}
+     * Resolve the Doc {@link Event} and convert the result to {@link K}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Spare<User> spare = ...
+     *
+     *   User user = spare.down(
+     *      event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -485,6 +544,16 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Serialize to {@link Doc}
      *
+     * <pre>{@code
+     *   User user = ...
+     *   Spare<User> spare = ...
+     *
+     *   try(Doc doc = spare.mark(user)) {
+     *       byte[] bs = doc.toBytes();
+     *       String st = doc.toString();
+     *   }
+     * }</pre>
+     *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
      */
@@ -500,6 +569,16 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Serialize to {@link Doc}
      *
+     * <pre>{@code
+     *   User user = ...
+     *   Spare<User> spare = ...
+     *
+     *   try(Doc doc = spare.mark(user, Flag.UNICODE)) {
+     *       byte[] bs = doc.toBytes();
+     *       String st = doc.toString();
+     *   }
+     * }</pre>
+     *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
      */
@@ -513,7 +592,13 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Parse {@link Json} {@link CharSequence} and convert result to {@link K}
+     * Resolve the Json {@code text} and convert the result to {@link K}
+     *
+     * <pre>{@code
+     *   Spare<User> spare = ...
+     *   String text = ...
+     *   User user = spare.parse(text);
+     * }</pre>
      *
      * @param text the specified text to be parsed
      * @throws Collapse             If parsing fails or the result is null
@@ -529,7 +614,18 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Parse {@link Json} {@link Event} and convert result to {@link K}
+     * Resolve the Json {@link Event} and convert the result to {@link K}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Spare<User> spare = ...
+     *
+     *   User user = spare.parse(
+     *      event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
@@ -547,6 +643,16 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Serialize to {@link Json}
      *
+     * <pre>{@code
+     *   User user = ...
+     *   Spare<User> spare = ...
+     *
+     *   try(Json json = spare.serial(user)) {
+     *       byte[] bs = json.toBytes();
+     *       String st = json.toString();
+     *   }
+     * }</pre>
+     *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
      */
@@ -561,6 +667,16 @@ public interface Spare<K> extends Coder<K> {
 
     /**
      * Serialize to {@link Json}
+     *
+     * <pre>{@code
+     *   User user = ...
+     *   Spare<User> spare = ...
+     *
+     *   try(Json json = spare.serial(user, Flag.UNICODE)) {
+     *       byte[] bs = json.toBytes();
+     *       String st = json.toString();
+     *   }
+     * }</pre>
      *
      * @param value specify serialized value
      * @throws IOException If an I/O error occurs
@@ -620,7 +736,6 @@ public interface Spare<K> extends Coder<K> {
      * @return {@link K} or {@code null}
      */
     @Nullable
-    @SuppressWarnings("unchecked")
     default K cast(
         @Nullable Object data,
         @NotNull Supplier supplier

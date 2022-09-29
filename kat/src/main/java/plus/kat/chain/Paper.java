@@ -26,7 +26,6 @@ import plus.kat.utils.Config;
 import java.io.Closeable;
 
 import static plus.kat.stream.Binary.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author kraity
@@ -856,47 +855,6 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             Bucket bt = bucket;
             if (bt != null) bt.push(it);
         }
-    }
-
-    /**
-     * Closes this {@link Paper} and returns the {@code byte[]} of this {@link Paper} as a copy
-     *
-     * @see Paper#closePaper()
-     * @since 0.0.3
-     */
-    @NotNull
-    public byte[] closeFlow() {
-        byte[] data;
-        if (count == 0) {
-            data = EMPTY_BYTES;
-        } else {
-            data = new byte[count];
-            System.arraycopy(
-                value, 0, data, 0, count
-            );
-        }
-        close();
-        return data;
-    }
-
-    /**
-     * Closes this {@link Paper} and returns the {@code byte[]} of this {@link Paper} as a {@link String}
-     *
-     * @see Paper#closeFlow()
-     * @since 0.0.2
-     */
-    @NotNull
-    public String closePaper() {
-        String text;
-        if (count == 0) {
-            text = "";
-        } else {
-            text = new String(
-                value, 0, count, UTF_8
-            );
-        }
-        close();
-        return text;
     }
 
     /**
