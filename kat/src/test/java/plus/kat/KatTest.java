@@ -286,21 +286,21 @@ public class KatTest {
 
     @Test
     public void test_channel() throws IOException {
-        String text = Sugar.kat("User", c -> {
-            c.set("id", 100001);
-            c.set("title", "KAT+");
-            c.set("meta", $ -> {
-                $.set("tag", "kat");
-                $.set("view", 9999);
+        String text = Sugar.kat("Story", it -> {
+            it.set("id", 100001);
+            it.set("title", "kat");
+            it.set("meta", meta -> {
+                meta.set("tag", "kat");
+                meta.set("view", 9999);
             });
-            c.set("author", "User", $ -> {
-                $.set("id", 1);
-                $.set("name", "kraity");
+            it.set("author", "User", user -> {
+                user.set("id", 1);
+                user.set("name", "kraity");
             });
         });
 
         assertEquals(
-            "User{i:id(100001)s:title(KAT+)M:meta{s:tag(kat)i:view(9999)}User:author{i:id(1)s:name(kraity)}}", text
+            "Story{i:id(100001)s:title(kat)M:meta{s:tag(kat)i:view(9999)}User:author{i:id(1)s:name(kraity)}}", text
         );
     }
 

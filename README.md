@@ -313,10 +313,10 @@ import plus.kat.*;
 
 // kat
 try (Chan chan = new Chan()) {
-    chan.set("meta", c -> {
-        c.set("id", 100001);
-        c.set("title", "kat");
-        c.set("author", "User", user -> {
+    chan.set("meta", it -> {
+        it.set("id", 100001);
+        it.set("title", "kat");
+        it.set("author", "User", user -> {
             user.set("id", 1);
             user.set("name", "kraity");
         });
@@ -329,10 +329,10 @@ try (Chan chan = new Chan()) {
 
 // json
 try (Json json = new Json()) {
-    json.set("meta", c -> {
-        c.set("id", 100001);
-        c.set("title", "kat");
-        c.set("author", "User", user -> {
+    json.set("meta", it -> {
+        it.set("id", 100001);
+        it.set("title", "kat");
+        it.set("author", "User", user -> {
             user.set("id", 1);
             user.set("name", "kraity");
         });
@@ -345,10 +345,10 @@ try (Json json = new Json()) {
 
 // xml
 try (Doc doc = new Doc()) {
-    doc.set("Story", c -> {
-        c.set("id", 100001);
-        c.set("title", "kat");
-        c.set("author", "User", user -> {
+    doit.set("Story", it -> {
+        it.set("id", 100001);
+        it.set("title", "kat");
+        it.set("author", "User", user -> {
             user.set("id", 1);
             user.set("name", "kraity");
         });

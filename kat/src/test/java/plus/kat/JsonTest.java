@@ -219,21 +219,21 @@ public class JsonTest {
 
     @Test
     public void test_json_channel() throws IOException {
-        String text = Sugar.json(c -> {
-            c.set("id", 100001);
-            c.set("title", "KAT+");
-            c.set("meta", $ -> {
-                $.set("tag", "kat");
-                $.set("view", 9999);
+        String text = Sugar.json(it -> {
+            it.set("id", 100001);
+            it.set("title", "kat");
+            it.set("meta", meta -> {
+                meta.set("tag", "kat");
+                meta.set("view", 9999);
             });
-            c.set("author", "User", $ -> {
-                $.set("id", 1);
-                $.set("name", "kraity");
+            it.set("author", "User", user -> {
+                user.set("id", 1);
+                user.set("name", "kraity");
             });
         });
 
         assertEquals(
-            "{\"id\":100001,\"title\":\"KAT+\",\"meta\":{\"tag\":\"kat\",\"view\":9999},\"author\":{\"id\":1,\"name\":\"kraity\"}}", text
+            "{\"id\":100001,\"title\":\"kat\",\"meta\":{\"tag\":\"kat\",\"view\":9999},\"author\":{\"id\":1,\"name\":\"kraity\"}}", text
         );
     }
 

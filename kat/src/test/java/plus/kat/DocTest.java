@@ -1,12 +1,12 @@
 package plus.kat;
 
 import org.junit.jupiter.api.Test;
+
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static plus.kat.Spare.lookup;
@@ -125,21 +125,21 @@ public class DocTest {
 
     @Test
     public void test_json_channel() throws IOException {
-        String text = Sugar.doc("Story", c -> {
-            c.set("id", 100001);
-            c.set("title", "KAT+");
-            c.set("meta", $ -> {
-                $.set("tag", "kat");
-                $.set("view", 9999);
+        String text = Sugar.doc("Story", it -> {
+            it.set("id", 100001);
+            it.set("title", "kat");
+            it.set("meta", meta -> {
+                meta.set("tag", "kat");
+                meta.set("view", 9999);
             });
-            c.set("author", "User", $ -> {
-                $.set("id", 1);
-                $.set("name", "kraity");
+            it.set("author", "User", user -> {
+                user.set("id", 1);
+                user.set("name", "kraity");
             });
         });
 
         assertEquals(
-            "<Story><id>100001</id><title>KAT+</title><meta><tag>kat</tag><view>9999</view></meta><author><id>1</id><name>kraity</name></author></Story>", text
+            "<Story><id>100001</id><title>kat</title><meta><tag>kat</tag><view>9999</view></meta><author><id>1</id><name>kraity</name></author></Story>", text
         );
     }
 

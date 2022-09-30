@@ -1,9 +1,9 @@
 package plus.kat;
 
 import org.junit.jupiter.api.Test;
-import plus.kat.kernel.Chain;
 
 import java.io.IOException;
+import plus.kat.kernel.Chain;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -12,11 +12,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author kraity
  */
 public class ChanTest {
+
     @Test
     public void test_chan_toString() throws IOException {
         Chan chan = new Chan();
-        chan.set(null, c ->
-            c.set("id", 1)
+        chan.set(null, it ->
+            it.set("id", 1)
         );
 
         String expected = "M{i:id(1)}";
@@ -30,8 +31,8 @@ public class ChanTest {
     @Test
     public void test_chan_toBytes() throws IOException {
         Chan chan = new Chan();
-        chan.set(null, c ->
-            c.set("id", 1)
+        chan.set(null, it ->
+            it.set("id", 1)
         );
 
         byte[] expected = "M{i:id(1)}".getBytes(UTF_8);
@@ -44,61 +45,61 @@ public class ChanTest {
 
     @Test
     public void test_json_toString() throws IOException {
-        Json json = new Json();
-        json.set(null, c ->
-            c.set("id", 1)
+        Json chan = new Json();
+        chan.set(null, it ->
+            it.set("id", 1)
         );
 
         String expected = "{\"id\":1}";
-        assertEquals(expected, json.toString());
+        assertEquals(expected, chan.toString());
 
-        json.close();
+        chan.close();
         // Chan has been closed
-        assertEquals("", json.toString());
+        assertEquals("", chan.toString());
     }
 
     @Test
     public void test_json_toBytes() throws IOException {
-        Json json = new Json();
-        json.set(null, c ->
-            c.set("id", 1)
+        Json chan = new Json();
+        chan.set(null, it ->
+            it.set("id", 1)
         );
 
         byte[] expected = "{\"id\":1}".getBytes(UTF_8);
-        assertArrayEquals(expected, json.toBytes());
+        assertArrayEquals(expected, chan.toBytes());
 
-        json.close();
+        chan.close();
         // Chan has been closed
-        assertArrayEquals(Chain.EMPTY_BYTES, json.toBytes());
+        assertArrayEquals(Chain.EMPTY_BYTES, chan.toBytes());
     }
 
     @Test
     public void test_doc_toString() throws IOException {
-        Doc doc = new Doc();
-        doc.set("User", c ->
-            c.set("id", 1)
+        Doc chan = new Doc();
+        chan.set("User", it ->
+            it.set("id", 1)
         );
 
         String expected = "<User><id>1</id></User>";
-        assertEquals(expected, doc.toString());
+        assertEquals(expected, chan.toString());
 
-        doc.close();
+        chan.close();
         // Chan has been closed
-        assertEquals("", doc.toString());
+        assertEquals("", chan.toString());
     }
 
     @Test
     public void test_doc_toBytes() throws IOException {
-        Doc doc = new Doc();
-        doc.set("User", c ->
-            c.set("id", 1)
+        Doc chan = new Doc();
+        chan.set("User", it ->
+            it.set("id", 1)
         );
 
         byte[] expected = "<User><id>1</id></User>".getBytes(UTF_8);
-        assertArrayEquals(expected, doc.toBytes());
+        assertArrayEquals(expected, chan.toBytes());
 
-        doc.close();
+        chan.close();
         // Chan has been closed
-        assertArrayEquals(Chain.EMPTY_BYTES, doc.toBytes());
+        assertArrayEquals(Chain.EMPTY_BYTES, chan.toBytes());
     }
 }
