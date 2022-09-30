@@ -449,7 +449,7 @@ public interface Spare<K> extends Coder<K> {
      *   User user = ...
      *   Spare<User> spare = ...
      *
-     *   try(Chan chan = spare.write(user)) {
+     *   try (Chan chan = spare.write(user)) {
      *       byte[] bs = chan.toBytes();
      *       String st = chan.toString();
      *   }
@@ -474,7 +474,7 @@ public interface Spare<K> extends Coder<K> {
      *   User user = ...
      *   Spare<User> spare = ...
      *
-     *   try(Chan chan = spare.write(user, Flag.UNICODE)) {
+     *   try (Chan chan = spare.write(user, Flag.UNICODE)) {
      *       byte[] bs = chan.toBytes();
      *       String st = chan.toString();
      *   }
@@ -548,7 +548,7 @@ public interface Spare<K> extends Coder<K> {
      *   User user = ...
      *   Spare<User> spare = ...
      *
-     *   try(Doc doc = spare.mark(user)) {
+     *   try (Doc doc = spare.mark(user)) {
      *       byte[] bs = doc.toBytes();
      *       String st = doc.toString();
      *   }
@@ -573,7 +573,7 @@ public interface Spare<K> extends Coder<K> {
      *   User user = ...
      *   Spare<User> spare = ...
      *
-     *   try(Doc doc = spare.mark(user, Flag.UNICODE)) {
+     *   try (Doc doc = spare.mark(user, Flag.UNICODE)) {
      *       byte[] bs = doc.toBytes();
      *       String st = doc.toString();
      *   }
@@ -647,7 +647,7 @@ public interface Spare<K> extends Coder<K> {
      *   User user = ...
      *   Spare<User> spare = ...
      *
-     *   try(Json json = spare.serial(user)) {
+     *   try (Json json = spare.serial(user)) {
      *       byte[] bs = json.toBytes();
      *       String st = json.toString();
      *   }
@@ -672,7 +672,7 @@ public interface Spare<K> extends Coder<K> {
      *   User user = ...
      *   Spare<User> spare = ...
      *
-     *   try(Json json = spare.serial(user, Flag.UNICODE)) {
+     *   try (Json json = spare.serial(user, Flag.UNICODE)) {
      *       byte[] bs = json.toBytes();
      *       String st = json.toString();
      *   }

@@ -54,6 +54,9 @@ Maven:
 Java:
 
 ```java
+import plus.kat.*;
+import plus.kat.netty.buffer.*;
+
 // ByteBuf
 Kat chan = Kat.encode(...);
 Doc chan = Doc.encode(...);
@@ -85,6 +88,9 @@ Maven:
 Java:
 
 ```java
+import plus.kat.*;
+import plus.kat.spring.http.*;
+
 @Configuration
 public class Application implements WebMvcConfigurer {
     @Override
@@ -124,6 +130,9 @@ Maven:
 Java:
 
 ```java
+import plus.kat.*;
+import plus.kat.caller.*;
+
 String url = "https://kat.plus/test/user";
 User user = new Client(url).get().to(User.class);
 
@@ -165,6 +174,8 @@ Maven:
 Java:
 
 ```java
+import plus.kat.*;
+
 // kat
 String kat = Kat.encode(obj);
 
@@ -180,6 +191,8 @@ String json = Json.encode(obj);
 Java:
 
 ```java
+import plus.kat.*;
+
 // kat
 HashMap<String, Object> data = Kat.decode(
     HashMap.class, "{:id(1):name(kraity)}"
@@ -201,6 +214,8 @@ HashMap<String, Object> data = Json.decode(
 Java:
 
 ```java
+import plus.kat.*;
+
 // kat
 ArrayList<Integer> data = Kat.decode(
     ArrayList.class, "{i(1)i(2)i(3)}"
@@ -222,6 +237,8 @@ ArrayList<Integer> data = Json.decode(
 Bean:
 
 ```java
+import plus.kat.anno.*;
+
 @Embed
 class User {
     @Expose("id")
@@ -235,6 +252,8 @@ class User {
 Java:
 
 ```java
+import plus.kat.*;
+
 // kat
 User user = Kat.decode(
     User.class, "{:id(1):name(kraity)}"
@@ -254,6 +273,8 @@ User user = Json.decode(
 Bean:
 
 ```java
+import plus.kat.anno.*;
+
 @Embed
 interface Meta {
     int getId();
@@ -265,6 +286,8 @@ interface Meta {
 Java:
 
 ```java
+import plus.kat.*;
+
 // kat
 Meta meta = Kat.decode(
     Meta.class, "{:id(1):tag(kat.plus)}"
@@ -286,55 +309,62 @@ Meta meta = Json.decode(
 Java:
 
 ```java
-// kat
-Chan chan = new Chan();
-chan.set("meta", c -> {
-    c.set("id", 100001);
-    c.set("title", "kat");
-    c.set("author", "User", user -> {
-        user.set("id", 1);
-        user.set("name", "kraity");
-    });
-});
+import plus.kat.*;
 
-// M:meta{i:id(100001)s:title(kat)User:author{i:id(1)s:name(kraity)}}
-byte[] src = chan.toBytes();
-String text = chan.toString();
+// kat
+try (Chan chan = new Chan()) {
+    chan.set("meta", c -> {
+        c.set("id", 100001);
+        c.set("title", "kat");
+        c.set("author", "User", user -> {
+            user.set("id", 1);
+            user.set("name", "kraity");
+        });
+    });
+
+    // M:meta{i:id(100001)s:title(kat)User:author{i:id(1)s:name(kraity)}}
+    byte[] src = chan.toBytes();
+    String text = chan.toString();
+}
 
 // json
-Json json = new Json();
-json.set("meta", c -> {
-    c.set("id", 100001);
-    c.set("title", "kat");
-    c.set("author", "User", user -> {
-        user.set("id", 1);
-        user.set("name", "kraity");
+try (Json json = new Json()) {
+    json.set("meta", c -> {
+        c.set("id", 100001);
+        c.set("title", "kat");
+        c.set("author", "User", user -> {
+            user.set("id", 1);
+            user.set("name", "kraity");
+        });
     });
-});
 
-// {"id":100001,"title":"kat","author":{"id":1,"name":"kraity"}}
-byte[] src = json.toBytes();
-String text = json.toString();
+    // {"id":100001,"title":"kat","author":{"id":1,"name":"kraity"}}
+    byte[] src = json.toBytes();
+    String text = json.toString();
+}
 
 // xml
-Doc doc = new Doc();
-doc.set("Story", c -> {
-    c.set("id", 100001);
-    c.set("title", "kat");
-    c.set("author", "User", user -> {
-        user.set("id", 1);
-        user.set("name", "kraity");
+try (Doc doc = new Doc()) {
+    doc.set("Story", c -> {
+        c.set("id", 100001);
+        c.set("title", "kat");
+        c.set("author", "User", user -> {
+            user.set("id", 1);
+            user.set("name", "kraity");
+        });
     });
-});
 
-// <Story><id>100001</id><title>kat</title><author><id>1</id><name>kraity</name></author></Story>
-byte[] src = doc.toBytes();
-String text = doc.toString();
+    // <Story><id>100001</id><title>kat</title><author><id>1</id><name>kraity</name></author></Story>
+    byte[] src = doc.toBytes();
+    String text = doc.toString();
+}
 ```
 
 Kotlin:
 
 ````kotlin
+import plus.kat.*
+
 // kat
 val text = kat {
     it["id"] = 100001
@@ -382,6 +412,8 @@ val text = doc("Story") {
 Bean:
 
 ```java
+import plus.kat.anno.*;
+
 @Embed
 class User {
     @Expose("id")
@@ -395,6 +427,8 @@ class User {
 Java:
 
 ```java
+import plus.kat.*;
+
 // register User
 Spare<User> spare = Spare.lookup(User.class);
 
@@ -447,6 +481,8 @@ User user = spare.cast(bean);
 FLAT:
 
 ```java
+import plus.kat.*;
+
 User user = ...
 Spare<User> spare = ...
 
@@ -478,6 +514,9 @@ while (spoiler.hasNext()) {
 JDBC:
 
 ```java
+import java.sql.*;
+import plus.kat.*;
+
 // register User
 Spare<User> spare = Spare.lookup(User.class);
 
@@ -520,6 +559,8 @@ System.out.println(
 Create event:
 
 ```java
+import plus.kat.*;
+
 // create event
 Event<?> event = new Event<>();
 
@@ -542,6 +583,9 @@ event.with(Flag.INDEX_AS_ENUM);
 Extends event:
 
 ```java
+import plus.kat.*;
+import java.util.*;
+
 // default supplier
 Supplier supplier = Supplier.ins();
 
@@ -561,6 +605,8 @@ HashMap<Long, User> data = supplier.read(
 Mutable event:
 
 ```java
+import plus.kat.*;
+
 // use file
 File file = ...;
 Event<User> event = new Event<>(file);
@@ -612,6 +658,8 @@ Event<User> event = new Event<>(stream, cipher);
 Bean:
 
 ```java
+import plus.kat.anno.*;
+
 @Embed("plus.kat.entity.User")
 class User {
     @Expose("id")
@@ -625,6 +673,8 @@ class User {
 Use class type:
 
 ```java
+import plus.kat.*;
+
 // default supplier
 Supplier supplier = Supplier.ins();
 
@@ -660,6 +710,8 @@ User user = supplier.parse(
 Use package name:
 
 ```java
+import plus.kat.*;
+
 // default Supplier
 Supplier supplier = Supplier.ins();
 
@@ -698,6 +750,8 @@ User user = supplier.parse(
 Register custom Spare:
 
 ```java
+import plus.kat.*;
+
 // your Supplier
 Supplier supplier = ...;
 
@@ -711,6 +765,8 @@ Supplier supplier = ...;
 Removes Spare of specified Class
 
 ```java
+import plus.kat.*;
+
 // your Supplier
 Supplier supplier = ...;
 
@@ -726,6 +782,9 @@ supplier.revoke("plus.kat.entity.User");
 Bean:
 
 ```java
+import plus.kat.anno.*;
+import plus.kat.spare.*;
+
 @Embed
 class User {
     @Expose("id")
@@ -742,6 +801,10 @@ class User {
 Java:
 
 ```java
+import plus.kat.*;
+import plus.kat.chan.*;
+import plus.kat.spare.*;
+
 class StatusCoder implements Coder<String> {
 
     @Override
@@ -787,6 +850,8 @@ class StatusCoder implements Coder<String> {
 Bean:
 
 ```java
+import plus.kat.anno.*;
+
 // POJO
 class User {
     private int id;
@@ -808,6 +873,10 @@ class Note {
 Java:
 
 ```java
+import plus.kat.*;
+import plus.kat.chain.*;
+import plus.kat.spare.*;
+
 class AuthorCoder implements Coder<User> {
 
     @Override
@@ -920,6 +989,8 @@ class AuthorBuilder extends Builder<User> {
 Bean:
 
 ```java
+import plus.kat.anno.*;
+
 @Embed(with = UserSpare.class)
 class User {
     private int id;
@@ -930,6 +1001,8 @@ class User {
 Java:
 
 ```java
+import plus.kat.*;
+
 class UserSpare implements Spare<User> {
 
     @Override

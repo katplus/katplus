@@ -714,7 +714,7 @@ public interface Supplier extends Cloneable {
      *   User user = ...
      *   Supplier supplier = ...
      *
-     *   try(Chan chan = supplier.write(user)) {
+     *   try (Chan chan = supplier.write(user)) {
      *       byte[] bs = chan.toBytes();
      *       String st = chan.toString();
      *   }
@@ -739,7 +739,7 @@ public interface Supplier extends Cloneable {
      *   User user = ...
      *   Supplier supplier = ...
      *
-     *   try(Chan chan = supplier.write(user, Flag.UNICODE)) {
+     *   try (Chan chan = supplier.write(user, Flag.UNICODE)) {
      *       byte[] bs = chan.toBytes();
      *       String st = chan.toString();
      *   }
@@ -819,7 +819,7 @@ public interface Supplier extends Cloneable {
      *   User user = ...
      *   Supplier supplier = ...
      *
-     *   try(Doc doc = supplier.mark(user)) {
+     *   try (Doc doc = supplier.mark(user)) {
      *       byte[] bs = doc.toBytes();
      *       String st = doc.toString();
      *   }
@@ -844,7 +844,7 @@ public interface Supplier extends Cloneable {
      *   User user = ...
      *   Supplier supplier = ...
      *
-     *   try(Doc doc = supplier.mark(user, Flag.UNICODE)) {
+     *   try (Doc doc = supplier.mark(user, Flag.UNICODE)) {
      *       byte[] bs = doc.toBytes();
      *       String st = doc.toString();
      *   }
@@ -924,7 +924,7 @@ public interface Supplier extends Cloneable {
      *   User user = ...
      *   Supplier supplier = ...
      *
-     *   try(Json json = supplier.serial(user)) {
+     *   try (Json json = supplier.serial(user)) {
      *       byte[] bs = json.toBytes();
      *       String st = json.toString();
      *   }
@@ -949,7 +949,7 @@ public interface Supplier extends Cloneable {
      *   User user = ...
      *   Supplier supplier = ...
      *
-     *   try(Json json = supplier.serial(user, Flag.UNICODE)) {
+     *   try (Json json = supplier.serial(user, Flag.UNICODE)) {
      *       byte[] bs = json.toBytes();
      *       String st = json.toString();
      *   }
