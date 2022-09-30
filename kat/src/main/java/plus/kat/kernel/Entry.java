@@ -25,9 +25,9 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public interface Pipe {
+public interface Entry {
     /**
-     * {@link Solver} commands this {@code pipe} creates
+     * {@link Solver} commands this {@code entry} creates
      * the next receiver according to the {@code space} and
      * {@code alias}, activate use it and push on receiver stack
      *
@@ -42,7 +42,7 @@ public interface Pipe {
     /**
      * {@link Solver} requests the receiver
      * at the top of the receiver stack of this
-     * {@code pipe} to update its attributes according
+     * {@code entry} to update its attributes according
      * to the {@code space}, {@code alias} and {@code value}
      *
      * @throws IOException If an I/O error occurs
@@ -54,7 +54,7 @@ public interface Pipe {
     ) throws IOException;
 
     /**
-     * {@link Solver} commands this {@code pipe}
+     * {@link Solver} commands this {@code entry}
      * to finish updating attributes on the receiver at the
      * top of the receiver stack and remove it from the receiver stack
      *

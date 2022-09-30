@@ -23,17 +23,14 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
-import javax.crypto.spec.*;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class Value extends Chain {
+public class Value extends Meta {
     /**
      * default
      */
@@ -57,7 +54,6 @@ public class Value extends Chain {
         @NotNull byte[] data
     ) {
         super(data);
-        count = data.length;
     }
 
     /**
@@ -79,15 +75,12 @@ public class Value extends Chain {
     }
 
     /**
-     * @param data specify the {@link CharSequence} to be mirrored
+     * @param sequence specify the {@link CharSequence} to be mirrored
      */
     public Value(
-        @Nullable CharSequence data
+        @Nullable CharSequence sequence
     ) {
-        super();
-        if (data != null) chain(
-            data, 0, data.length()
-        );
+        super(sequence);
     }
 
     /**
@@ -445,104 +438,6 @@ public class Value extends Chain {
     @NotNull
     public Value copy() {
         return new Value(this);
-    }
-
-    /**
-     * Parses this {@link Value} as a {@link BigDecimal}
-     */
-    @NotNull
-    public BigDecimal toBigDecimal() {
-        int size = count;
-        if (size != 0) {
-            byte[] it = value;
-            char[] ch = new char[size];
-            while (--size != -1) {
-                ch[size] = (char) (
-                    it[size] & 0xFF
-                );
-            }
-            try {
-                return new BigDecimal(ch);
-            } catch (Exception e) {
-                // Nothing
-            }
-        }
-        return BigDecimal.ZERO;
-    }
-
-    /**
-     * Parses this {@link Value} as a {@link BigInteger}
-     */
-    @NotNull
-    @SuppressWarnings("deprecation")
-    public BigInteger toBigInteger() {
-        int size = count;
-        if (size != 0) {
-            try {
-                return new BigInteger(
-                    new String(
-                        value, 0, 0, size
-                    )
-                );
-            } catch (Exception e) {
-                // Nothing
-            }
-        }
-        return BigInteger.ZERO;
-    }
-
-    /**
-     * Returns a SecretKeySpec, please check {@link #length()}
-     *
-     * @throws IllegalArgumentException If the algo is null
-     */
-    @NotNull
-    public SecretKeySpec asSecretKeySpec(
-        @NotNull String algo
-    ) {
-        return new SecretKeySpec(
-            value, 0, count, algo
-        );
-    }
-
-    /**
-     * Returns a SecretKeySpec, please check {@code offset}, {@code algo} and {@code length}
-     *
-     * @throws IllegalArgumentException       If the algo is null or the offset out of range
-     * @throws ArrayIndexOutOfBoundsException If the length is negative
-     */
-    @NotNull
-    public SecretKeySpec asSecretKeySpec(
-        int offset, int length, @NotNull String algo
-    ) {
-        return new SecretKeySpec(
-            value, offset, length, algo
-        );
-    }
-
-    /**
-     * Returns a IvParameterSpec, please check {@link #length()}
-     */
-    @NotNull
-    public IvParameterSpec asIvParameterSpec() {
-        return new IvParameterSpec(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Returns a IvParameterSpec, please check {@code offset} and {@code length}
-     *
-     * @throws IllegalArgumentException       If the offset out of range
-     * @throws ArrayIndexOutOfBoundsException If the length is negative
-     */
-    @NotNull
-    public IvParameterSpec asIvParameterSpec(
-        int offset, int length
-    ) {
-        return new IvParameterSpec(
-            value, offset, length
-        );
     }
 
     /**

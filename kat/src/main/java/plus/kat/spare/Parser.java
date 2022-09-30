@@ -32,27 +32,30 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public class Parser implements Pipe, Closeable {
+public class Parser implements Entry, Closeable {
     /**
      * state etc.
      */
     volatile boolean lock;
 
     /**
-     * snapshot etc.
+     * record etc.
      */
     protected Object bundle;
     protected int depth, range;
 
-    protected Event<?> event;
-    protected Builder<?> active;
-
     /**
      * solver etc.
      */
-    protected Docx docx;
-    protected Mage mage;
+    protected Dom dom;
+    protected Edge edge;
     protected Radar radar;
+
+    /**
+     * snapshot etc.
+     */
+    protected Event<?> event;
+    protected Builder<?> active;
 
     /**
      * default
@@ -80,7 +83,7 @@ public class Parser implements Pipe, Closeable {
      * Parses the {@link Event} by using {@link Radar}
      *
      * @param event specify the {@code event} to be handled
-     * @throws IOException          Unexpected errors by {@link Pipe} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Entry} or {@link Reader}
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -96,7 +99,7 @@ public class Parser implements Pipe, Closeable {
      * Parses the {@link Event} by using specified {@link Solver}
      *
      * @param event specify the {@code event} to be handled
-     * @throws IOException          Unexpected errors by {@link Pipe} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Entry} or {@link Reader}
      * @throws NullPointerException If the specified {@code coder} or {@code event} is null
      */
     @NotNull
@@ -147,7 +150,7 @@ public class Parser implements Pipe, Closeable {
      * Parses the {@link Event} with specified {@link Job}
      *
      * @param event specify the {@code event} to be handled
-     * @throws IOException          Unexpected errors by {@link Pipe} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Entry} or {@link Reader}
      * @throws NullPointerException If the specified {@code job} or {@code event} is null
      */
     @NotNull
@@ -162,21 +165,21 @@ public class Parser implements Pipe, Closeable {
                 );
             }
             case DOC: {
-                Docx solver = docx;
-                if (solver == null) {
-                    solver = docx = new Docx(radar);
+                Dom it = dom;
+                if (it == null) {
+                    dom = it = new Dom(radar);
                 }
                 return read(
-                    solver, event
+                    it, event
                 );
             }
             case JSON: {
-                Mage solver = mage;
-                if (solver == null) {
-                    solver = mage = new Mage(radar);
+                Edge it = edge;
+                if (it == null) {
+                    edge = it = new Edge(radar);
                 }
                 return read(
-                    solver, event
+                    it, event
                 );
             }
             default: {

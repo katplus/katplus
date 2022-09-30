@@ -34,7 +34,7 @@ import static plus.kat.kernel.Radar.uncork;
  * @author kraity
  * @since 0.0.1
  */
-public class Mage implements Solver {
+public class Edge implements Solver {
     /**
      * chain stream
      */
@@ -51,7 +51,7 @@ public class Mage implements Solver {
     /**
      * @param radar the specified {@code radar}
      */
-    public Mage(
+    public Edge(
         @NotNull Radar radar
     ) {
         alias = radar.alias;
@@ -62,7 +62,7 @@ public class Mage implements Solver {
      * @param b1 the bucket of {@code alias}
      * @param b2 the bucket of {@code value}
      */
-    public Mage(
+    public Edge(
         @NotNull Bucket b1,
         @NotNull Bucket b2
     ) {
@@ -86,13 +86,13 @@ public class Mage implements Solver {
      *  }
      * }</pre>
      *
-     * @param p specify the data transfer pipeline
+     * @param e specify the data transfer pipeline
      * @param r specify the source of decoded data
-     * @throws IOException Unexpected errors by {@link Pipe} or {@link Reader}
+     * @throws IOException Unexpected errors by {@link Entry} or {@link Reader}
      */
     @Override
     public void read(
-        @NotNull Pipe p,
+        @NotNull Entry e,
         @NotNull Reader r
     ) throws IOException {
         // local access
@@ -120,13 +120,13 @@ public class Mage implements Solver {
             switch (b) {
                 case '{': {
                     attach(
-                        p, r, a, true
+                        a, e, r, true
                     );
                     break Boot;
                 }
                 case '[': {
                     attach(
-                        p, r, a, false
+                        a, e, r, false
                     );
                     break Boot;
                 }
@@ -178,7 +178,7 @@ public class Mage implements Solver {
                         }
                         case '}': {
                             if (a.isEmpty()) {
-                                detach(p, true);
+                                detach(e, true);
                                 continue Boot;
                             } else {
                                 throw new UnexpectedCrash(
@@ -215,20 +215,20 @@ public class Mage implements Solver {
                 switch (b) {
                     case '{': {
                         attach(
-                            p, r, a, true
+                            a, e, r, true
                         );
                         continue Boot;
                     }
                     case '[': {
                         attach(
-                            p, r, a, false
+                            a, e, r, false
                         );
                         continue Boot;
                     }
                     case 'n':
                     case 'N': {
                         escape(r);
-                        p.accept(
+                        e.accept(
                             $, a, v
                         );
                         a.clean();
@@ -238,7 +238,7 @@ public class Mage implements Solver {
                     case '"':
                     case '\'': {
                         escape(v, b, r);
-                        p.accept(
+                        e.accept(
                             $s, a, v
                         );
                         a.clean();
@@ -256,7 +256,7 @@ public class Mage implements Solver {
                     }
                     case '}': {
                         if (a.isEmpty()) {
-                            detach(p, true);
+                            detach(e, true);
                             continue Boot;
                         } else {
                             throw new UnexpectedCrash(
@@ -266,7 +266,7 @@ public class Mage implements Solver {
                     }
                     case ']': {
                         if (a.isEmpty()) {
-                            detach(p, false);
+                            detach(e, false);
                             continue Boot;
                         } else {
                             throw new UnexpectedCrash(
@@ -297,7 +297,7 @@ public class Mage implements Solver {
 
                     switch (c) {
                         case ',': {
-                            p.accept(
+                            e.accept(
                                 $, a, v
                             );
                             a.clean();
@@ -305,21 +305,21 @@ public class Mage implements Solver {
                             continue Boot;
                         }
                         case '}': {
-                            p.accept(
+                            e.accept(
                                 $, a, v
                             );
                             a.clean();
                             v.clean();
-                            detach(p, true);
+                            detach(e, true);
                             continue Boot;
                         }
                         case ']': {
-                            p.accept(
+                            e.accept(
                                 $, a, v
                             );
                             a.clean();
                             v.clean();
-                            detach(p, false);
+                            detach(e, false);
                             continue Boot;
                         }
                         default: {
@@ -334,14 +334,14 @@ public class Mage implements Solver {
     /**
      * Notify to create a receiver
      *
-     * @param mark is it a map?
+     * @param b is it a map?
      * @throws IOException Unexpected errors by {@link Reader}
      */
     protected void attach(
-        Pipe p,
-        Reader r,
         Alias a,
-        boolean mark
+        Entry e,
+        Reader r,
+        boolean b
     ) throws IOException {
         if (mask == Long.MIN_VALUE) {
             throw new UnexpectedCrash(
@@ -349,8 +349,8 @@ public class Mage implements Solver {
             );
         }
 
-        if (mark) {
-            if (p.attach($M, a)) {
+        if (b) {
+            if (e.attach($M, a)) {
                 mask <<= 1;
                 data |= mask;
                 mutable = true;
@@ -360,7 +360,7 @@ public class Mage implements Solver {
                 );
             }
         } else {
-            if (p.attach($L, a)) {
+            if (e.attach($L, a)) {
                 mask <<= 1;
                 mutable = false;
             } else {
@@ -378,11 +378,11 @@ public class Mage implements Solver {
      * @throws IOException Unexpected errors by {@link Reader}
      */
     protected void detach(
-        Pipe p,
-        boolean m
+        Entry e,
+        boolean b
     ) throws IOException {
-        if (mutable == m) {
-            p.detach();
+        if (mutable == b) {
+            e.detach();
             mask >>>= 1;
             mutable = (data & mask) != 0L;
         } else {
@@ -505,7 +505,7 @@ public class Mage implements Solver {
     }
 
     /**
-     * Clear this {@link Mage}
+     * Clear this {@link Edge}
      */
     @Override
     public void clear() {
@@ -516,7 +516,7 @@ public class Mage implements Solver {
     }
 
     /**
-     * Close this {@link Mage}
+     * Close this {@link Edge}
      */
     @Override
     public void close() {

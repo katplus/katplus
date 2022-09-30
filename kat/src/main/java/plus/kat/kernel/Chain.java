@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import javax.crypto.*;
 import java.io.*;
 import java.security.*;
-import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
 import plus.kat.crash.*;
@@ -41,7 +40,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     protected byte[] value;
 
     protected int hash;
-    protected Type type;
     protected Bucket bucket;
 
     /**
@@ -1909,7 +1907,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns the value of this {@link Chain} as a {@link String}
      */
-    @NotNull
     @Override
     public String toString() {
         if (count == 0) {
@@ -1945,7 +1942,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns the value of this {@link Chain} as a {@link String}
      *
-     * @param c charset
+     * @param c the specified charset
      */
     @NotNull
     public String toString(
@@ -1963,7 +1960,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns the value of this {@link Chain} as a {@link String}
      *
-     * @param c charset
+     * @param c the specified charset
      * @param b the beginning index, inclusive
      * @param e the ending index, exclusive
      * @throws IndexOutOfBoundsException if the beginIndex is negative
@@ -2631,7 +2628,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     protected void clean() {
         hash = 0;
-        type = null;
         count = 0;
     }
 

@@ -27,13 +27,13 @@ import plus.kat.stream.*;
 public final class Unsafe {
     /**
      * @param c the specified {@link Chain}
-     * @param m the specified {@link Bucket} to be used
+     * @param b the specified {@link Bucket} to be used
      * @throws NullPointerException If the specified {@code chain} is null
      */
     public static void set(
         @NotNull Chain c,
-        @Nullable Bucket m
+        @Nullable Bucket b
     ) {
-        c.bucket = m;
+        c.bucket = b;
     }
 }

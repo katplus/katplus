@@ -30,7 +30,7 @@ import static plus.kat.chain.Space.$M;
  * @author kraity
  * @since 0.0.1
  */
-public class Docx implements Solver {
+public class Dom implements Solver {
     /**
      * chain stream
      */
@@ -45,7 +45,7 @@ public class Docx implements Solver {
     /**
      * @param radar the specified {@code radar}
      */
-    public Docx(
+    public Dom(
         @NotNull Radar radar
     ) {
         alias = radar.alias;
@@ -56,7 +56,7 @@ public class Docx implements Solver {
      * @param b1 the bucket of {@code alias}
      * @param b2 the bucket of {@code value}
      */
-    public Docx(
+    public Dom(
         @NotNull Bucket b1,
         @NotNull Bucket b2
     ) {
@@ -84,13 +84,13 @@ public class Docx implements Solver {
      *  </User>
      * }</pre>
      *
-     * @param p specify the data transfer pipeline
+     * @param e specify the data transfer pipeline
      * @param r specify the source of decoded data
-     * @throws IOException Unexpected errors by {@link Pipe} or {@link Reader}
+     * @throws IOException Unexpected errors by {@link Entry} or {@link Reader}
      */
     @Override
     public void read(
-        @NotNull Pipe p,
+        @NotNull Entry e,
         @NotNull Reader r
     ) throws IOException {
         // local
@@ -127,7 +127,7 @@ public class Docx implements Solver {
                             if (d != GT) {
                                 continue;
                             }
-                            p.detach();
+                            e.detach();
                             v.clean();
                             continue Boot;
                         }
@@ -136,7 +136,7 @@ public class Docx implements Solver {
                         while (true) {
                             byte d = r.next();
                             if (d == GT) {
-                                p.accept(
+                                e.accept(
                                     $s, a, v
                                 );
 
@@ -157,7 +157,7 @@ public class Docx implements Solver {
                 }
                 default: {
                     if (a.isNotEmpty()) {
-                        if (p.attach($M, a)) {
+                        if (e.attach($M, a)) {
                             a.clean();
                         } else {
                             a.clean();
@@ -189,10 +189,10 @@ public class Docx implements Solver {
                             continue;
                         }
 
-                        if (p.attach($M, a)) {
+                        if (e.attach($M, a)) {
                             a.clean();
                             collate(
-                                a, v, p, r
+                                a, v, e, r
                             );
                             a.clean();
                             v.clean();
@@ -217,7 +217,7 @@ public class Docx implements Solver {
     protected void collate(
         @NotNull Alias a,
         @NotNull Value v,
-        @NotNull Pipe p,
+        @NotNull Entry e,
         @NotNull Reader r
     ) throws IOException {
         Boot:
@@ -235,7 +235,7 @@ public class Docx implements Solver {
             if (b == SLASH) {
                 b = r.next();
                 if (b == GT) {
-                    p.detach();
+                    e.detach();
                     break;
                 }
                 throw new UnexpectedCrash(
@@ -257,7 +257,7 @@ public class Docx implements Solver {
                         continue;
                     }
 
-                    p.accept(
+                    e.accept(
                         $s, a, v
                     );
                     a.clean();
@@ -544,7 +544,7 @@ public class Docx implements Solver {
     }
 
     /**
-     * Clear this {@link Docx}
+     * Clear this {@link Dom}
      */
     @Override
     public void clear() {
@@ -553,7 +553,7 @@ public class Docx implements Solver {
     }
 
     /**
-     * Close this {@link Docx}
+     * Close this {@link Dom}
      */
     @Override
     public void close() {

@@ -82,13 +82,13 @@ public class Radar implements Solver {
      *  }
      * }</pre>
      *
-     * @param p specify the data transfer pipeline
+     * @param e specify the data transfer pipeline
      * @param r specify the source of decoded data
-     * @throws IOException Unexpected errors by {@link Pipe} or {@link Reader}
+     * @throws IOException Unexpected errors by {@link Entry} or {@link Reader}
      */
     @Override
     public void read(
-        @NotNull Pipe p,
+        @NotNull Entry e,
         @NotNull Reader r
     ) throws IOException {
         // event status
@@ -123,7 +123,7 @@ public class Radar implements Solver {
                     }
                     switch (b) {
                         case '{': {
-                            if (p.attach(s, a)) {
+                            if (e.attach(s, a)) {
                                 s.clean();
                             } else {
                                 s.clean();
@@ -150,7 +150,7 @@ public class Radar implements Solver {
                         }
                         case '}': {
                             if (s.isEmpty()) {
-                                if (!p.detach()) {
+                                if (!e.detach()) {
                                     break Radar;
                                 } else {
                                     continue Radar;
@@ -183,7 +183,7 @@ public class Radar implements Solver {
                     switch (b) {
                         case '{': {
                             event = 0;
-                            if (p.attach(s, a)) {
+                            if (e.attach(s, a)) {
                                 s.clean();
                                 a.clean();
                             } else {
@@ -224,7 +224,7 @@ public class Radar implements Solver {
                             continue;
                         }
                         case ')': {
-                            p.accept(
+                            e.accept(
                                 s, a, v
                             );
                             s.clean();

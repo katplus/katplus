@@ -64,8 +64,8 @@ public final class Space extends Chain implements Type {
     /**
      * actual type
      */
-    private Type actual;
-    private String cache;
+    private Type type;
+    private String name;
 
     /**
      * default
@@ -82,7 +82,7 @@ public final class Space extends Chain implements Type {
         byte[] b, Type t
     ) {
         this(b);
-        actual = t;
+        type = t;
     }
 
     /**
@@ -112,7 +112,7 @@ public final class Space extends Chain implements Type {
         @NotNull Class<?> type
     ) {
         this(type.getName());
-        this.actual = type;
+        this.type = type;
     }
 
     /**
@@ -125,7 +125,7 @@ public final class Space extends Chain implements Type {
         @Nullable Type type
     ) {
         this(space);
-        this.actual = type;
+        this.type = type;
     }
 
     /**
@@ -150,9 +150,9 @@ public final class Space extends Chain implements Type {
         }
 
         if (i == count) {
-            cache = space;
+            name = space;
         } else {
-            cache = string();
+            name = string();
         }
     }
 
@@ -399,7 +399,7 @@ public final class Space extends Chain implements Type {
      */
     @Nullable
     public Type getType() {
-        return actual;
+        return type;
     }
 
     /**
@@ -420,35 +420,13 @@ public final class Space extends Chain implements Type {
             return "$";
         }
 
-        String ca = cache;
-        if (ca != null) {
-            return ca;
+        if (hash != 0 &&
+            name != null) {
+            return name;
         }
 
-        return new String(
+        return name = new String(
             value, 0, 0, count
-        );
-    }
-
-    /**
-     * Returns the {@code byte[]} of this {@link Space} as a {@link String}
-     *
-     * @param b the beginning index, inclusive
-     * @param e the ending index, exclusive
-     * @throws IndexOutOfBoundsException if the beginIndex is negative
-     */
-    @Override
-    @SuppressWarnings("deprecation")
-    public String toString(
-        int b, int e
-    ) {
-        int l = e - b;
-        if (l <= 0 || e > count) {
-            return "$";
-        }
-
-        return new String(
-            value, 0, b, l
         );
     }
 
