@@ -30,7 +30,7 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.1
  */
-public class Value extends Meta {
+public class Value extends Dram {
     /**
      * default
      */

@@ -23,6 +23,9 @@ import plus.kat.stream.*;
 
 import java.io.IOException;
 
+import plus.kat.stream.Reader;
+
+import static plus.kat.chain.Space.*;
 import static plus.kat.stream.Binary.digit;
 
 /**
@@ -82,13 +85,13 @@ public class Radar implements Solver {
      *  }
      * }</pre>
      *
-     * @param e specify the data transfer pipeline
-     * @param r specify the source of decoded data
-     * @throws IOException Unexpected errors by {@link Entry} or {@link Reader}
+     * @param e the specified data transfer pipeline
+     * @param r the specified data source to be parsed
+     * @throws IOException Unexpected errors by {@link Share} or {@link Reader}
      */
     @Override
     public void read(
-        @NotNull Entry e,
+        @NotNull Share e,
         @NotNull Reader r
     ) throws IOException {
         // event status
@@ -283,7 +286,7 @@ public class Radar implements Solver {
                 break;
             }
             case 'u': {
-                uncork(c, r);
+                rotate(c, r);
                 return;
             }
         }
@@ -377,11 +380,1011 @@ public class Radar implements Solver {
     }
 
     /**
+     * Clear this {@link Radar}
+     */
+    @Override
+    public void clear() {
+        space.clean();
+        alias.clean();
+        value.clear();
+    }
+
+    /**
+     * Close this {@link Radar}
+     */
+    @Override
+    public void close() {
+        space.close();
+        alias.close();
+        value.close();
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.1
+     */
+    public class DOC implements Solver {
+        /**
+         * codec analyze
+         */
+        private static final byte
+            LT = '<', GT = '>',
+            AMP = '&', APOS = '\'',
+            QUOT = '"', SLASH = '/';
+
+        /**
+         * Reads xml stream
+         *
+         * <pre>{@code
+         *  <User>
+         *     <uid>1</uid>
+         *     <name>kraity</name>
+         *     <role>developer</role>
+         *
+         *     <!-- status -->
+         *     <blocked>0</blocked>
+         *
+         *     <!-- extra data -->
+         *     <resource>
+         *         <age>6</age>
+         *         <devote>1024</devote>
+         *     </resource>
+         *  </User>
+         * }</pre>
+         *
+         * @param e the specified data transfer pipeline
+         * @param r the specified data source to be parsed
+         * @throws IOException Unexpected errors by {@link Share} or {@link Reader}
+         */
+        @Override
+        public void read(
+            @NotNull Share e,
+            @NotNull Reader r
+        ) throws IOException {
+            // local
+            Alias a = alias;
+            Value v = value;
+
+            Boot:
+            // decode doc stream
+            while (r.also()) {
+                byte b = r.read();
+                if (b != LT) {
+                    if (b != AMP) {
+                        v.chain(b);
+                    } else {
+                        escape(v, r);
+                    }
+                    continue;
+                }
+
+                byte c = r.next();
+                switch (c) {
+                    case '?': {
+                        decide(r);
+                        continue;
+                    }
+                    case '!': {
+                        explain(v, r);
+                        continue;
+                    }
+                    case SLASH: {
+                        if (a.isEmpty()) {
+                            while (true) {
+                                byte d = r.next();
+                                if (d != GT) {
+                                    continue;
+                                }
+                                e.detach();
+                                v.clean();
+                                continue Boot;
+                            }
+                        } else {
+                            int i = 0;
+                            while (true) {
+                                byte d = r.next();
+                                if (d == GT) {
+                                    e.accept(
+                                        $s, a, v
+                                    );
+
+                                    a.clean();
+                                    v.clean();
+                                    continue Boot;
+                                }
+
+                                if (a.is(i++, d)) {
+                                    continue;
+                                }
+
+                                throw new UnexpectedCrash(
+                                    "Unexpectedly, byte '" + d + "' in end space"
+                                );
+                            }
+                        }
+                    }
+                    default: {
+                        if (a.isNotEmpty()) {
+                            if (e.attach($M, a)) {
+                                a.clean();
+                            } else {
+                                a.clean();
+                                v.clean();
+                                dropdown(2, r);
+                                continue;
+                            }
+                        }
+
+                        v.clean();
+                        a.chain(c);
+
+                        while (true) {
+                            b = r.next();
+                            if (b == AMP) {
+                                escape(a, r);
+                                continue;
+                            }
+
+                            if (b == GT) {
+                                if (a.tail(SLASH)) {
+                                    a.clean();
+                                }
+                                continue Boot;
+                            }
+
+                            if (b != ' ') {
+                                a.chain(b);
+                                continue;
+                            }
+
+                            if (e.attach($M, a)) {
+                                a.clean();
+                                collate(
+                                    a, v, e, r
+                                );
+                                a.clean();
+                                v.clean();
+                                continue Boot;
+                            } else {
+                                a.clean();
+                                v.clean();
+                                dropdown(1, r);
+                                continue Boot;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Collect attribute values
+         *
+         * @throws IOException Unexpected errors by {@link Reader}
+         */
+        protected void collate(
+            @NotNull Alias a,
+            @NotNull Value v,
+            @NotNull Share e,
+            @NotNull Reader r
+        ) throws IOException {
+            Boot:
+            while (true) {
+                byte b = r.next();
+
+                if (b == GT) {
+                    break;
+                }
+
+                if (b <= 0x20) {
+                    continue;
+                }
+
+                if (b == SLASH) {
+                    b = r.next();
+                    if (b == GT) {
+                        e.detach();
+                        break;
+                    }
+                    throw new UnexpectedCrash(
+                        "Unexpectedly, byte '" + b + "'"
+                    );
+                }
+
+                if (b != '=') {
+                    a.chain(b);
+                    continue;
+                }
+
+                b = r.next();
+                if (b == QUOT) {
+                    while (true) {
+                        b = r.next();
+                        if (b != QUOT) {
+                            v.chain(b);
+                            continue;
+                        }
+
+                        e.accept(
+                            $s, a, v
+                        );
+                        a.clean();
+                        v.clean();
+                        continue Boot;
+                    }
+                }
+
+                throw new UnexpectedCrash(
+                    "Unexpectedly, byte '" + b + "'"
+                );
+            }
+        }
+
+        /**
+         * Filter comments
+         *
+         * @throws IOException Unexpected errors by {@link Reader}
+         */
+        protected void decide(
+            @NotNull Reader r
+        ) throws IOException {
+            byte b;
+            while (true) {
+                b = r.next();
+                if (b != '?') {
+                    continue;
+                }
+
+                b = r.next();
+                if (b == GT) {
+                    break;
+                }
+
+                throw new UnexpectedCrash(
+                    "Unexpectedly, byte '" + b + "'"
+                );
+            }
+        }
+
+        /**
+         * Escape special character
+         *
+         * @throws IOException Unexpected errors by {@link Reader}
+         */
+        protected void escape(
+            @NotNull Chain c,
+            @NotNull Reader r
+        ) throws IOException {
+            byte b = r.next();
+            switch (b) {
+                case 'l': {
+                    b = r.next();
+                    if (b != 't') {
+                        break;
+                    }
+                    b = r.next();
+                    if (b != ';') {
+                        break;
+                    }
+                    c.chain(LT);
+                    return;
+                }
+                case 'g': {
+                    b = r.next();
+                    if (b != 't') {
+                        break;
+                    }
+                    b = r.next();
+                    if (b != ';') {
+                        break;
+                    }
+                    c.chain(GT);
+                    return;
+                }
+                case 'q': {
+                    b = r.next();
+                    if (b != 'u') {
+                        break;
+                    }
+                    b = r.next();
+                    if (b != 'o') {
+                        break;
+                    }
+                    b = r.next();
+                    if (b != 't') {
+                        break;
+                    }
+                    b = r.next();
+                    if (b != ';') {
+                        break;
+                    }
+                    c.chain(QUOT);
+                    return;
+                }
+                case 'a': {
+                    b = r.next();
+                    if (b == 'm') {
+                        b = r.next();
+                        if (b != 'p') {
+                            break;
+                        }
+                        b = r.next();
+                        if (b != ';') {
+                            break;
+                        }
+                        c.chain(AMP);
+                        return;
+                    } else if (b == 'p') {
+                        b = r.next();
+                        if (b != 'o') {
+                            break;
+                        }
+                        b = r.next();
+                        if (b != 's') {
+                            break;
+                        }
+                        b = r.next();
+                        if (b != ';') {
+                            break;
+                        }
+                        c.chain(APOS);
+                        return;
+                    }
+                }
+            }
+
+            throw new UnexpectedCrash(
+                "Unexpectedly, byte '" + b + "'"
+            );
+        }
+
+        /**
+         * Filter comments
+         *
+         * @throws IOException Unexpected errors by {@link Reader}
+         */
+        protected void explain(
+            @NotNull Value v,
+            @NotNull Reader r
+        ) throws IOException {
+            byte b;
+            Boot:
+            switch (r.next()) {
+                case '-': {
+                    b = r.next();
+                    if (b != '-') {
+                        throw new UnexpectedCrash(
+                            "Unexpectedly, byte '" + b + "'"
+                        );
+                    }
+
+                    while (true) {
+                        b = r.next();
+                        if (b != '-') {
+                            continue;
+                        }
+
+                        b = r.next();
+                        if (b != '-') {
+                            continue;
+                        }
+
+                        b = r.next();
+                        if (b == GT) {
+                            break Boot;
+                        }
+                    }
+                }
+                case '[': {
+                    byte[] m = {
+                        'C', 'D', 'A', 'T', 'A', '['
+                    };
+                    for (byte n : m) {
+                        b = r.next();
+                        if (b == n) {
+                            continue;
+                        }
+
+                        throw new UnexpectedCrash(
+                            "Unexpectedly, byte '" + b + "'"
+                        );
+                    }
+
+                    while (true) {
+                        byte c = r.next();
+                        if (c != ']') {
+                            v.chain(c);
+                            continue;
+                        }
+
+                        byte d = r.next();
+                        if (d != ']') {
+                            v.chain(c);
+                            v.chain(d);
+                            continue;
+                        }
+
+                        byte e = r.next();
+                        if (e != GT) {
+                            v.chain(c);
+                            v.chain(d);
+                            v.chain(e);
+                        } else {
+                            break Boot;
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Filter out the useless
+         *
+         * @throws IOException Unexpected errors by {@link Reader}
+         */
+        protected void dropdown(
+            int i,
+            Reader r
+        ) throws IOException {
+            boolean in = true;
+            Boot:
+            while (r.also()) {
+                byte b = r.read();
+                switch (b) {
+                    case '>': {
+                        in = false;
+                        if (i == 0) {
+                            return;
+                        } else {
+                            continue;
+                        }
+                    }
+                    case '<': {
+                        switch (r.next()) {
+                            case '?': {
+                                decide(r);
+                                continue;
+                            }
+                            case '/': {
+                                i--;
+                                in = true;
+                                continue;
+                            }
+                            case '!': {
+                                byte c = r.next();
+                                if (c != '[') {
+                                    c = '-';
+                                } else {
+                                    c = ']';
+                                }
+                                while (true) {
+                                    if (r.next() != c) {
+                                        continue;
+                                    }
+                                    if (r.next() != c) {
+                                        continue;
+                                    }
+                                    if (r.next() == '>') {
+                                        continue Boot;
+                                    }
+                                }
+                            }
+                            default: {
+                                i++;
+                                in = false;
+                                continue;
+                            }
+                        }
+                    }
+                    case '/': {
+                        if (in && r.next() == '>') i--;
+                        continue;
+                    }
+                    case '"': {
+                        if (in) while (true) {
+                            if (r.next() == '"') {
+                                continue Boot;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Clear this {@link DOC}
+         */
+        @Override
+        public void clear() {
+            alias.clean();
+            value.clear();
+        }
+
+        /**
+         * Close this {@link DOC}
+         */
+        @Override
+        public void close() {
+            alias.close();
+            value.close();
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.1
+     */
+    public class JSON implements Solver {
+        /**
+         * codec analyze
+         */
+        private long data = 0L;
+        private long mask = 1L;
+        private boolean mutable;
+
+        /**
+         * Reads json stream
+         *
+         * <pre>{@code
+         *  {
+         *     "uid": 1,
+         *     "name": "kraity",
+         *     "role": "developer",
+         *     "blocked": 0,
+         *     "resource": {
+         *         "age": 6,
+         *         "devote": 1024
+         *     }
+         *  }
+         * }</pre>
+         *
+         * @param e the specified data transfer pipeline
+         * @param r the specified data source to be parsed
+         * @throws IOException Unexpected errors by {@link Share} or {@link Reader}
+         */
+        @Override
+        public void read(
+            @NotNull Share e,
+            @NotNull Reader r
+        ) throws IOException {
+            // local access
+            Alias a = alias;
+            Value v = value;
+
+            Boot:
+            // decode json stream
+            while (r.also()) {
+                byte b = r.read();
+                if (b <= 0x20) {
+                    switch (b) {
+                        case 0x09:
+                        case 0x0A:
+                        case 0x0D:
+                        case 0x20: {
+                            continue;
+                        }
+                    }
+                    throw new UnexpectedCrash(
+                        "Unexpectedly, byte '" + b + "' <= 32"
+                    );
+                }
+
+                switch (b) {
+                    case '{': {
+                        attach(
+                            e, a, r, true
+                        );
+                        break Boot;
+                    }
+                    case '[': {
+                        attach(
+                            e, a, r, false
+                        );
+                        break Boot;
+                    }
+                    default: {
+                        throw new UnexpectedCrash(
+                            "Unexpectedly, byte '" + b + "'"
+                        );
+                    }
+                }
+            }
+
+            Boot:
+            // codec
+            while (r.also()) {
+                if (mutable) Alias:
+                    while (true) {
+                        byte b = r.next();
+                        if (b <= 0x20) {
+                            switch (b) {
+                                case 0x09:
+                                case 0x0A:
+                                case 0x0D:
+                                case 0x20: {
+                                    continue;
+                                }
+                            }
+                            throw new UnexpectedCrash(
+                                "Unexpectedly, byte '" + b + "' <= 32"
+                            );
+                        }
+
+                        switch (b) {
+                            case ':': {
+                                break Alias;
+                            }
+                            case '"':
+                            case '\'': {
+                                escape(a, b, r);
+                                continue;
+                            }
+                            case ',': {
+                                if (a.isEmpty()) {
+                                    continue;
+                                } else {
+                                    throw new UnexpectedCrash(
+                                        "Unexpectedly, ',' is not ':'"
+                                    );
+                                }
+                            }
+                            case '}': {
+                                if (a.isEmpty()) {
+                                    detach(e, true);
+                                    continue Boot;
+                                } else {
+                                    throw new UnexpectedCrash(
+                                        "Unexpectedly, '}' is not ':'"
+                                    );
+                                }
+                            }
+                            default: {
+                                throw new UnexpectedCrash(
+                                    "Unexpectedly, byte '" + b + "' in alias"
+                                );
+                            }
+                        }
+                    }
+
+                while (true) {
+                    byte b = r.next();
+                    if (b <= 0x20) {
+                        switch (b) {
+                            case 0x09:
+                            case 0x0A:
+                            case 0x0D:
+                            case 0x20: {
+                                if (mask != 1) {
+                                    continue;
+                                } else break Boot;
+                            }
+                        }
+                        throw new UnexpectedCrash(
+                            "Unexpectedly, byte '" + b + "' <= 32"
+                        );
+                    }
+
+                    switch (b) {
+                        case '{': {
+                            attach(
+                                e, a, r, true
+                            );
+                            continue Boot;
+                        }
+                        case '[': {
+                            attach(
+                                e, a, r, false
+                            );
+                            continue Boot;
+                        }
+                        case 'n':
+                        case 'N': {
+                            escape(r);
+                            e.accept(
+                                $, a, v
+                            );
+                            a.clean();
+                            v.clean();
+                            continue;
+                        }
+                        case '"':
+                        case '\'': {
+                            escape(v, b, r);
+                            e.accept(
+                                $s, a, v
+                            );
+                            a.clean();
+                            v.clean();
+                            continue Boot;
+                        }
+                        case ',': {
+                            if (a.isEmpty()) {
+                                continue;
+                            } else {
+                                throw new UnexpectedCrash(
+                                    "Unexpectedly, ',' is not a value"
+                                );
+                            }
+                        }
+                        case '}': {
+                            if (a.isEmpty()) {
+                                detach(e, true);
+                                continue Boot;
+                            } else {
+                                throw new UnexpectedCrash(
+                                    "Unexpectedly, '}' is not a value"
+                                );
+                            }
+                        }
+                        case ']': {
+                            if (a.isEmpty()) {
+                                detach(e, false);
+                                continue Boot;
+                            } else {
+                                throw new UnexpectedCrash(
+                                    "Unexpectedly, ']' is not a value"
+                                );
+                            }
+                        }
+                        default: {
+                            v.chain(b);
+                        }
+                    }
+
+                    while (true) {
+                        byte c = r.next();
+                        if (c <= 0x20) {
+                            switch (c) {
+                                case 0x09:
+                                case 0x0A:
+                                case 0x0D:
+                                case 0x20: {
+                                    continue;
+                                }
+                            }
+                            throw new UnexpectedCrash(
+                                "Unexpectedly, byte '" + b + "' <= 32"
+                            );
+                        }
+
+                        switch (c) {
+                            case ',': {
+                                e.accept(
+                                    $, a, v
+                                );
+                                a.clean();
+                                v.clean();
+                                continue Boot;
+                            }
+                            case '}': {
+                                e.accept(
+                                    $, a, v
+                                );
+                                a.clean();
+                                v.clean();
+                                detach(e, true);
+                                continue Boot;
+                            }
+                            case ']': {
+                                e.accept(
+                                    $, a, v
+                                );
+                                a.clean();
+                                v.clean();
+                                detach(e, false);
+                                continue Boot;
+                            }
+                            default: {
+                                v.chain(c);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Notify to create a receiver
+         *
+         * @param b is it a map?
+         * @throws IOException Unexpected errors by {@link Reader}
+         */
+        protected void attach(
+            Share e,
+            Alias a,
+            Reader r,
+            boolean b
+        ) throws IOException {
+            if (mask == Long.MIN_VALUE) {
+                throw new UnexpectedCrash(
+                    "Unexpectedly, out of range"
+                );
+            }
+
+            if (b) {
+                if (e.attach($M, a)) {
+                    mask <<= 1;
+                    data |= mask;
+                    mutable = true;
+                } else {
+                    dropdown(
+                        (byte) '}', r
+                    );
+                }
+            } else {
+                if (e.attach($L, a)) {
+                    mask <<= 1;
+                    mutable = false;
+                } else {
+                    dropdown(
+                        (byte) ']', r
+                    );
+                }
+            }
+            a.clean();
+        }
+
+        /**
+         * Notify the current receiver to end the transmission
+         *
+         * @throws IOException Unexpected errors by {@link Reader}
+         */
+        protected void detach(
+            Share e,
+            boolean b
+        ) throws IOException {
+            if (mutable == b) {
+                e.detach();
+                mask >>>= 1;
+                mutable = (data & mask) != 0L;
+            } else {
+                throw new UnexpectedCrash(
+                    "Unexpectedly, mismatched terminator"
+                );
+            }
+        }
+
+        /**
+         * Escape special character
+         *
+         * @throws IOException Unexpected errors by {@link Reader}
+         */
+        protected void escape(
+            Reader r
+        ) throws IOException {
+            byte b2 = r.next();
+            byte b3 = r.next();
+            byte b4 = r.next();
+
+            if ((b2 != 'u' && b2 != 'U') ||
+                (b3 != 'l' && b3 != 'L') ||
+                (b4 != 'l' && b4 != 'L')) {
+                throw new UnexpectedCrash(
+                    "Unexpectedly, N" +
+                        (char) (b2 & 0xFF) +
+                        (char) (b3 & 0xFF) +
+                        (char) (b3 & 0xFF) + " is not null"
+                );
+            }
+        }
+
+        /**
+         * Escape special character
+         *
+         * @throws IOException Unexpected errors by {@link Reader}
+         */
+        protected void escape(
+            Chain c,
+            byte e,
+            Reader r
+        ) throws IOException {
+            while (true) {
+                byte b = r.next();
+                if (b == e) {
+                    break;
+                }
+
+                if (b != '\\') {
+                    c.chain(b);
+                    continue;
+                }
+
+                b = r.next();
+                switch (b) {
+                    case 'r': {
+                        b = '\r';
+                        break;
+                    }
+                    case 'n': {
+                        b = '\n';
+                        break;
+                    }
+                    case 't': {
+                        b = '\t';
+                        break;
+                    }
+                    case 'u': {
+                        rotate(c, r);
+                        continue;
+                    }
+                }
+                c.chain(b);
+            }
+        }
+
+        /**
+         * Filter out the useless
+         *
+         * @throws IOException Unexpected errors by {@link Reader}
+         */
+        protected void dropdown(
+            byte a,
+            Reader r
+        ) throws IOException {
+            while (true) {
+                byte b = r.next();
+                if (a == b) {
+                    break;
+                }
+                switch (b) {
+                    case '{': {
+                        dropdown(
+                            (byte) '}', r
+                        );
+                        continue;
+                    }
+                    case '[': {
+                        dropdown(
+                            (byte) ']', r
+                        );
+                        continue;
+                    }
+                    case '"': {
+                        Drop:
+                        while (true) {
+                            switch (r.next()) {
+                                case '"': {
+                                    break Drop;
+                                }
+                                case '\\': {
+                                    r.next();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Clear this {@link JSON}
+         */
+        @Override
+        public void clear() {
+            data = 0L;
+            mask = 1L;
+            alias.clean();
+            value.clear();
+        }
+
+        /**
+         * Close this {@link JSON}
+         */
+        @Override
+        public void close() {
+            data = 0L;
+            mask = 1L;
+            alias.close();
+            value.close();
+        }
+    }
+
+    /**
      * Escape unicode character
      *
      * @throws IOException Unexpected errors by {@link Reader}
      */
-    static void uncork(
+    static void rotate(
         @NotNull Chain c,
         @NotNull Reader r
     ) throws IOException {
@@ -475,25 +1478,5 @@ public class Radar implements Solver {
                 ((c3 & 0x03) << 4) | c4 | 0x80
             ));
         }
-    }
-
-    /**
-     * Clear this {@link Radar}
-     */
-    @Override
-    public void clear() {
-        space.clean();
-        alias.clean();
-        value.clear();
-    }
-
-    /**
-     * Close this {@link Radar}
-     */
-    @Override
-    public void close() {
-        space.close();
-        alias.close();
-        value.close();
     }
 }

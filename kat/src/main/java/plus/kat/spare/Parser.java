@@ -32,7 +32,7 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public class Parser implements Entry, Closeable {
+public class Parser implements Share, Closeable {
     /**
      * state etc.
      */
@@ -47,9 +47,8 @@ public class Parser implements Entry, Closeable {
     /**
      * solver etc.
      */
-    protected Dom dom;
-    protected Edge edge;
     protected Radar radar;
+    protected Solver doc, json;
 
     /**
      * snapshot etc.
@@ -83,7 +82,7 @@ public class Parser implements Entry, Closeable {
      * Parses the {@link Event} by using {@link Radar}
      *
      * @param event specify the {@code event} to be handled
-     * @throws IOException          Unexpected errors by {@link Entry} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Share} or {@link Reader}
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -99,7 +98,7 @@ public class Parser implements Entry, Closeable {
      * Parses the {@link Event} by using specified {@link Solver}
      *
      * @param event specify the {@code event} to be handled
-     * @throws IOException          Unexpected errors by {@link Entry} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Share} or {@link Reader}
      * @throws NullPointerException If the specified {@code coder} or {@code event} is null
      */
     @NotNull
@@ -150,7 +149,7 @@ public class Parser implements Entry, Closeable {
      * Parses the {@link Event} with specified {@link Job}
      *
      * @param event specify the {@code event} to be handled
-     * @throws IOException          Unexpected errors by {@link Entry} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Share} or {@link Reader}
      * @throws NullPointerException If the specified {@code job} or {@code event} is null
      */
     @NotNull
@@ -165,18 +164,18 @@ public class Parser implements Entry, Closeable {
                 );
             }
             case DOC: {
-                Dom it = dom;
+                Solver it = doc;
                 if (it == null) {
-                    dom = it = new Dom(radar);
+                    doc = it = radar.new DOC();
                 }
                 return read(
                     it, event
                 );
             }
             case JSON: {
-                Edge it = edge;
+                Solver it = json;
                 if (it == null) {
-                    edge = it = new Edge(radar);
+                    json = it = radar.new JSON();
                 }
                 return read(
                     it, event

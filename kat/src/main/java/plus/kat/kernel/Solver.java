@@ -28,15 +28,15 @@ import java.io.IOException;
  */
 public interface Solver extends Closeable {
     /**
-     * {@link Reader} as the data source and {@link Entry} as the data consumer.
-     * This {@link Solver} uses reader to read the source, translate it and then stream it to entry.
+     * {@link Reader} as the data source and {@link Share} as the data consumer.
+     * This {@link Solver} uses reader to read the source, translate it and then stream it to share.
      *
-     * @param entry   specify the data transfer pipeline
-     * @param reader specify the source of decoded data
-     * @throws IOException Unexpected errors by {@link Entry} or {@link Reader}
+     * @param share  the specified data transfer pipeline
+     * @param reader the specified data source to be parsed
+     * @throws IOException Unexpected errors by {@link Share} or {@link Reader}
      */
     void read(
-        @NotNull Entry entry,
+        @NotNull Share share,
         @NotNull Reader reader
     ) throws IOException;
 

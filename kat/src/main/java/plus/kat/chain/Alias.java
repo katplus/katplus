@@ -27,7 +27,7 @@ import plus.kat.utils.*;
  * @author kraity
  * @since 0.0.1
  */
-public final class Alias extends Meta {
+public final class Alias extends Dram {
     /**
      * empty alias
      */

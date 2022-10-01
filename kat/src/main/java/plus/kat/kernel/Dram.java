@@ -33,7 +33,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author kraity
  * @since 0.0.4
  */
-public class Meta extends Chain {
+public class Dram extends Chain {
 
     protected Type type;
     protected String temp;
@@ -41,14 +41,14 @@ public class Meta extends Chain {
     /**
      * default
      */
-    public Meta() {
+    public Dram() {
         super();
     }
 
     /**
      * @param size the initial capacity
      */
-    public Meta(
+    public Dram(
         int size
     ) {
         super(size);
@@ -57,7 +57,7 @@ public class Meta extends Chain {
     /**
      * @param data the initial byte array
      */
-    public Meta(
+    public Dram(
         @NotNull byte[] data
     ) {
         super(data);
@@ -67,7 +67,7 @@ public class Meta extends Chain {
     /**
      * @param chain specify the {@link Chain} to be mirrored
      */
-    public Meta(
+    public Dram(
         @NotNull Chain chain
     ) {
         super(chain);
@@ -76,7 +76,7 @@ public class Meta extends Chain {
     /**
      * @param bucket the specified {@link Bucket} to be used
      */
-    public Meta(
+    public Dram(
         @Nullable Bucket bucket
     ) {
         super(bucket);
@@ -85,7 +85,7 @@ public class Meta extends Chain {
     /**
      * @param sequence specify the {@link CharSequence} to be mirrored
      */
-    public Meta(
+    public Dram(
         @Nullable CharSequence sequence
     ) {
         super();
@@ -107,7 +107,7 @@ public class Meta extends Chain {
     }
 
     /**
-     * Sets the modifier type of {@link Meta}
+     * Sets the modifier type of {@link Dram}
      *
      * @param type the specified type
      * @since 0.0.4
@@ -119,23 +119,23 @@ public class Meta extends Chain {
     }
 
     /**
-     * Returns a {@link Meta} of this {@link Meta}
+     * Returns a {@link Dram} of this {@link Dram}
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
      */
     @NotNull
     @Override
-    public Meta subSequence(
+    public Dram subSequence(
         int start, int end
     ) {
-        return new Meta(
+        return new Dram(
             toBytes(start, end)
         );
     }
 
     /**
-     * Parses this {@link Meta} as a {@link BigDecimal}
+     * Parses this {@link Dram} as a {@link BigDecimal}
      */
     @NotNull
     public BigDecimal toBigDecimal() {
@@ -158,7 +158,7 @@ public class Meta extends Chain {
     }
 
     /**
-     * Parses this {@link Meta} as a {@link BigInteger}
+     * Parses this {@link Dram} as a {@link BigInteger}
      */
     @NotNull
     @SuppressWarnings("deprecation")
@@ -233,7 +233,7 @@ public class Meta extends Chain {
     }
 
     /**
-     * Clean this {@link Meta}
+     * Clean this {@link Dram}
      */
     protected void clean() {
         type = null;
@@ -243,7 +243,7 @@ public class Meta extends Chain {
     }
 
     /**
-     * Returns the value of this {@link Meta} as a {@link String}
+     * Returns the value of this {@link Dram} as a {@link String}
      */
     @Override
     public String toString() {
@@ -262,7 +262,7 @@ public class Meta extends Chain {
     }
 
     /**
-     * Returns the value of this {@link Meta} as a {@link String}
+     * Returns the value of this {@link Dram} as a {@link String}
      *
      * @param charset the specified charset
      */
