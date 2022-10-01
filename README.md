@@ -17,7 +17,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 </dependency>
 ```
 
@@ -25,7 +25,7 @@ Gradle:
 
 ```groovy
 dependencies {
-    implementation 'plus.kat:kat:0.0.3'
+    implementation 'plus.kat:kat:0.0.4'
 }
 ```
 
@@ -33,7 +33,7 @@ Kotlin Gradle:
 
 ```kotlin
 dependencies {
-    implementation("plus.kat:kat:0.0.3")
+    implementation("plus.kat:kat:0.0.4")
 }
 ```
 
@@ -47,7 +47,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-netty</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 </dependency>
 ```
 
@@ -81,7 +81,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-spring</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 </dependency>
 ```
 
@@ -123,7 +123,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-caller</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 </dependency>
 ```
 
@@ -151,7 +151,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-okhttp</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 </dependency>
 ```
 
@@ -163,7 +163,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-retrofit</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 </dependency>
 ```
 
