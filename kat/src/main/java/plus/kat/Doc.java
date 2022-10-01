@@ -208,6 +208,14 @@ public class Doc extends Chan {
     }
 
     /**
+     * Returns the name of {@link Chan}
+     */
+    @Override
+    public String name() {
+        return "XML";
+    }
+
+    /**
      * Check if this {@link Flow} use the {@code flag}
      *
      * @param flag the specified {@code flag}
@@ -217,15 +225,6 @@ public class Doc extends Chan {
         long flag
     ) {
         return flow.isFlag(flag);
-    }
-
-    /**
-     * Returns the job of {@link Doc}
-     */
-    @NotNull
-    @Override
-    public Job getJob() {
-        return Job.DOC;
     }
 
     /**
@@ -502,11 +501,11 @@ public class Doc extends Chan {
         }
 
         /**
-         * Returns the job
+         * Returns the uppercase name
          */
         @Override
-        public Job getJob() {
-            return Job.DOC;
+        public String name() {
+            return "XML";
         }
 
         /**

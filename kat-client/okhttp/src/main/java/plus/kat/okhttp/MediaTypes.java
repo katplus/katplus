@@ -15,8 +15,8 @@
  */
 package plus.kat.okhttp;
 
-import plus.kat.Job;
-import plus.kat.crash.Collapse;
+import plus.kat.*;
+import plus.kat.crash.*;
 
 import okhttp3.MediaType;
 
@@ -35,22 +35,22 @@ public class MediaTypes {
         APPLICATION_JSON = MediaType.parse("application/json; charset=UTF-8");
 
     public static MediaType of(
-        Job job
+        Firm firm
     ) {
-        switch (job) {
-            case KAT: {
+        switch (firm.name()) {
+            case "KAT": {
                 return APPLICATION_KAT;
             }
-            case DOC: {
+            case "DOC": {
                 return APPLICATION_DOC;
             }
-            case JSON: {
+            case "JSON": {
                 return APPLICATION_JSON;
             }
         }
 
         throw new Collapse(
-            "Unexpectedly, Converter did not find " + job + "'s MediaType"
+            "Unexpectedly, Converter did not find " + firm.name() + "'s MediaType"
         );
     }
 }

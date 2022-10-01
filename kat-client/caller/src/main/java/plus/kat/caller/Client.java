@@ -339,28 +339,7 @@ public class Client extends Caller {
         @NotNull Job job
     ) {
         this.job = job;
-        switch (job) {
-            case JSON: {
-                return accept(
-                    "application/json"
-                );
-            }
-            case KAT: {
-                return accept(
-                    "text/kat,application/kat"
-                );
-            }
-            case DOC: {
-                return accept(
-                    "text/xml,application/xml"
-                );
-            }
-            default: {
-                throw new Collapse(
-                    "Unexpectedly, Client does not support " + job
-                );
-            }
-        }
+        return contentType(job);
     }
 
     /**
@@ -396,27 +375,27 @@ public class Client extends Caller {
      * @see Client#contentType(String)
      */
     public Client contentType(
-        @NotNull Job job
+        @NotNull Firm firm
     ) {
-        switch (job) {
-            case JSON: {
-                return contentType(
-                    "application/json; charset=utf-8"
-                );
-            }
-            case KAT: {
+        switch (firm.name()) {
+            case "KAT": {
                 return contentType(
                     "application/kat; charset=utf-8"
                 );
             }
-            case DOC: {
+            case "XML": {
                 return contentType(
                     "application/xml; charset=utf-8"
                 );
             }
+            case "JSON": {
+                return contentType(
+                    "application/json; charset=utf-8"
+                );
+            }
             default: {
                 throw new Collapse(
-                    "Unexpectedly, Client does not support " + job
+                    "Unexpectedly, Client does not support " + firm.name()
                 );
             }
         }
@@ -649,9 +628,7 @@ public class Client extends Caller {
         Paper flow
     ) throws IOException {
         try {
-            contentType(
-                flow.getJob()
-            );
+            contentType(flow);
             return request(
                 "PUT", flow
             );
@@ -724,9 +701,7 @@ public class Client extends Caller {
         Paper flow
     ) throws IOException {
         try {
-            contentType(
-                flow.getJob()
-            );
+            contentType(flow);
             return request(
                 "POST", flow
             );

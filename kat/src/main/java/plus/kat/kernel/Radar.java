@@ -65,6 +65,14 @@ public class Radar implements Solver {
     }
 
     /**
+     * Returns the name of {@link Solver}
+     */
+    @Override
+    public String name() {
+        return "KAT";
+    }
+
+    /**
      * Reads kat stream
      *
      * <pre>{@code
@@ -411,6 +419,14 @@ public class Radar implements Solver {
             LT = '<', GT = '>',
             AMP = '&', APOS = '\'',
             QUOT = '"', SLASH = '/';
+
+        /**
+         * Returns the name of {@link Solver}
+         */
+        @Override
+        public String name() {
+            return "XML";
+        }
 
         /**
          * Reads xml stream
@@ -921,6 +937,14 @@ public class Radar implements Solver {
         private long data = 0L;
         private long mask = 1L;
         private boolean mutable;
+
+        /**
+         * Returns the name of {@link Solver}
+         */
+        @Override
+        public String name() {
+            return "JSON";
+        }
 
         /**
          * Reads json stream

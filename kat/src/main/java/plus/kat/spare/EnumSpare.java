@@ -35,9 +35,7 @@ import java.lang.reflect.Type;
 @SuppressWarnings("unchecked")
 public class EnumSpare<K extends Enum<K>> extends Property<K> implements Serializer {
 
-    private boolean expose;
     protected String[] spaces;
-
     private K[] enums;
     private final String space;
 
@@ -200,12 +198,13 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
                 e.ordinal()
             );
         } else {
-            if (flow.getJob() != Job.JSON) {
+            String name = flow.name();
+            if (name.equals("JSON")) {
+                flow.addByte((byte) '"');
                 flow.emit(e.name());
+                flow.addByte((byte) '"');
             } else {
-                flow.addByte((byte) '"');
                 flow.emit(e.name());
-                flow.addByte((byte) '"');
             }
         }
     }

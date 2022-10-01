@@ -196,6 +196,14 @@ public class Json extends Chan {
     }
 
     /**
+     * Returns the name of {@link Chan}
+     */
+    @Override
+    public String name() {
+        return "JSON";
+    }
+
+    /**
      * Check if this {@link Flow} use the {@code flag}
      *
      * @param flag the specified {@code flag}
@@ -205,15 +213,6 @@ public class Json extends Chan {
         long flag
     ) {
         return flow.isFlag(flag);
-    }
-
-    /**
-     * Returns the job of {@link Json}
-     */
-    @NotNull
-    @Override
-    public Job getJob() {
-        return Job.JSON;
     }
 
     /**
@@ -462,11 +461,11 @@ public class Json extends Chan {
         }
 
         /**
-         * Returns the job
+         * Returns the uppercase name
          */
         @Override
-        public Job getJob() {
-            return Job.JSON;
+        public String name() {
+            return "JSON";
         }
 
         /**

@@ -192,16 +192,17 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
                 date.getTime()
             );
         } else {
-            String s;
+            String time;
             synchronized (this) {
-                s = format(date);
+                time = format(date);
             }
-            if (flow.getJob() != Job.JSON) {
-                flow.emit(s);
+            String name = flow.name();
+            if (name.equals("JSON")) {
+                flow.addByte((byte) '"');
+                flow.emit(time);
+                flow.addByte((byte) '"');
             } else {
-                flow.addByte((byte) '"');
-                flow.emit(s);
-                flow.addByte((byte) '"');
+                flow.emit(time);
             }
         }
     }

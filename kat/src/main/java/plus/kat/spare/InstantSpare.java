@@ -25,7 +25,6 @@ import plus.kat.chain.*;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -89,16 +88,17 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializer {
                 ((Instant) value).toEpochMilli()
             );
         } else {
-            if (flow.getJob() != Job.JSON) {
+            String name = flow.name();
+            if (name.equals("JSON")) {
+                flow.addByte((byte) '"');
                 formatter.formatTo(
                     (TemporalAccessor) value, flow
                 );
+                flow.addByte((byte) '"');
             } else {
-                flow.addByte((byte) '"');
                 formatter.formatTo(
                     (TemporalAccessor) value, flow
                 );
-                flow.addByte((byte) '"');
             }
         }
     }

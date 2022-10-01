@@ -25,15 +25,15 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public interface Flow extends Flag, Appendable {
+public interface Flow extends Flag, Firm, Appendable {
     /**
-     * Returns to the {@link Job} of this flow
+     * Returns the uppercase name
      *
      * @see Job
-     * @since 0.0.2
+     * @since 0.0.4
      */
-    @NotNull
-    Job getJob();
+    @Override
+    String name();
 
     /**
      * add a byte value to this {@link Flow}

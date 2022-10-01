@@ -15,10 +15,17 @@
  */
 package plus.kat;
 
+import plus.kat.anno.NotNull;
+
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.4
  */
-public enum Job implements Firm {
-    KAT, DOC, JSON
+@FunctionalInterface
+public interface Firm {
+    /**
+     * Returns the uppercase name
+     */
+    @NotNull
+    String name();
 }
