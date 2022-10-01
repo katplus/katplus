@@ -211,10 +211,10 @@ public class Parser implements Share, Closeable {
                 space, name
             );
         } else {
-            Spare<?> spare = event
-                .assign(
-                    space, name
-                );
+            Spare<?> spare;
+            spare = event.assign(
+                space, name
+            );
 
             child = spare.getBuilder(
                 event.getType()
@@ -251,10 +251,10 @@ public class Parser implements Share, Closeable {
                 space, alias, value
             );
         } else {
-            Spare<?> spare = event
-                .assign(
-                    space, alias.copy()
-                );
+            Spare<?> spare;
+            spare = event.accept(
+                space, alias
+            );
 
             value.setType(
                 event.getType()

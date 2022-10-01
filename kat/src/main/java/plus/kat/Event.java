@@ -505,6 +505,22 @@ public class Event<T> implements Flag {
      * @since 0.0.4
      */
     @NotNull
+    public Spare<?> accept(
+        @NotNull Space space,
+        @NotNull Alias alias
+    ) throws IOException {
+        return assign(
+            space, alias.copy()
+        );
+    }
+
+    /**
+     * Returns the specified {@link Spare} being used
+     *
+     * @throws IOException If the specified coder was not found
+     * @since 0.0.4
+     */
+    @NotNull
     public Spare<?> assign(
         @NotNull Space space,
         @NotNull Alias alias
