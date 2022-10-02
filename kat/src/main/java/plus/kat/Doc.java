@@ -533,7 +533,7 @@ public class Doc extends Chan {
                 l = c.length();
             grow(count + l + 2);
 
-            hash = 0;
+            star = 0;
             value[count++] = '<';
 
             while (i < l) {
@@ -574,7 +574,7 @@ public class Doc extends Chan {
                 l = c.length();
             grow(count + l + 3);
 
-            hash = 0;
+            star = 0;
             value[count++] = '<';
             value[count++] = '/';
 
@@ -597,7 +597,7 @@ public class Doc extends Chan {
             switch (data) {
                 case '<': {
                     grow(count + 4);
-                    hash = 0;
+                    star = 0;
                     value[count++] = '&';
                     value[count++] = 'l';
                     value[count++] = 't';
@@ -606,7 +606,7 @@ public class Doc extends Chan {
                 }
                 case '>': {
                     grow(count + 4);
-                    hash = 0;
+                    star = 0;
                     value[count++] = '&';
                     value[count++] = 'g';
                     value[count++] = 't';
@@ -615,7 +615,7 @@ public class Doc extends Chan {
                 }
                 case '&': {
                     grow(count + 5);
-                    hash = 0;
+                    star = 0;
                     value[count++] = '&';
                     value[count++] = 'a';
                     value[count++] = 'm';

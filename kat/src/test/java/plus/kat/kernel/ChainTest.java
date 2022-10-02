@@ -40,7 +40,23 @@ public class ChainTest {
     }
 
     @Test
-    public void test_digest() throws NoSuchAlgorithmException {
+    public void test_toString() {
+        Value v = new Value("kat");
+        assertEquals(105950, v.hashCode());
+        assertSame(v.toString(), v.toString());
+
+        v.add(".plus");
+        assertSame(v.toString(), v.toString());
+        assertEquals(1057563562, v.hashCode());
+
+        v.set(3, (byte) '+');
+        assertSame(v.toString(), v.toString());
+        assertEquals("kat+plus", v.toString());
+        assertEquals(1054792999, v.hashCode());
+    }
+
+    @Test
+    public void test_digest() {
         String text = "User{i:id(1)s:name(kraity)}";
         Value value = new Value(text);
         assertEquals("d41d8cd98f00b204e9800998ecf8427e", new Value(0).digest());

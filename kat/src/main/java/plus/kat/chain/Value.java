@@ -24,7 +24,6 @@ import plus.kat.stream.*;
 import plus.kat.utils.*;
 
 import java.io.InputStream;
-import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -84,28 +83,6 @@ public class Value extends Dram {
     }
 
     /**
-     * Returns the modifier type
-     *
-     * @since 0.0.4
-     */
-    @Nullable
-    public Type getType() {
-        return type;
-    }
-
-    /**
-     * Sets the modifier type of {@link Value}
-     *
-     * @param type the specified type
-     * @since 0.0.4
-     */
-    public void setType(
-        @Nullable Type type
-    ) {
-        this.type = type;
-    }
-
-    /**
      * Returns {@code true} if, and only if, internal {@code byte[]} can be shared
      *
      * @see Chain#getSource()
@@ -150,7 +127,7 @@ public class Value extends Dram {
     ) {
         byte[] it = value;
         if (i < it.length) {
-            hash = 0;
+            star = 0;
             it[i] = b;
         }
     }
@@ -372,8 +349,8 @@ public class Value extends Dram {
     ) {
         if (data != null) {
             grow(count * data.length * 2);
+            star = 0;
             int i = 0;
-            hash = 0;
             byte[] it = value;
             while (i < data.length) {
                 int o = data[i++] & 0xFF;
@@ -400,8 +377,8 @@ public class Value extends Dram {
     ) {
         if (data != null) {
             grow(count * data.length * 2);
+            star = 0;
             int i = 0;
-            hash = 0;
             byte[] it = value;
             while (i < data.length) {
                 int o = data[i++] & 0xFF;
@@ -419,13 +396,13 @@ public class Value extends Dram {
         int length
     ) {
         if (length == 0) {
-            hash = 0;
+            star = 0;
             count = 0;
         } else {
             if (length < 0 || length > value.length) {
                 throw new ArrayIndexOutOfBoundsException();
             }
-            hash = 0;
+            star = 0;
             count = length;
         }
     }

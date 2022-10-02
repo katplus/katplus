@@ -543,7 +543,7 @@ public class Json extends Chan {
          */
         public void addNull() {
             grow(count + 4);
-            hash = 0;
+            star = 0;
             value[count++] = 'n';
             value[count++] = 'u';
             value[count++] = 'l';
@@ -594,7 +594,7 @@ public class Json extends Chan {
                 l = c.length();
             grow(count + l + 3);
 
-            hash = 0;
+            star = 0;
             value[count++] = '"';
 
             while (i < l) {

@@ -23,11 +23,8 @@ import plus.kat.stream.*;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author kraity
@@ -36,7 +33,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class Dram extends Chain {
 
     protected Type type;
-    protected String temp;
 
     /**
      * default
@@ -90,7 +86,7 @@ public class Dram extends Chain {
     ) {
         super();
         if (sequence != null) {
-            this.chain(
+            chain(
                 sequence, 0, sequence.length()
             );
         }
@@ -98,8 +94,6 @@ public class Dram extends Chain {
 
     /**
      * Returns the modifier type
-     *
-     * @since 0.0.4
      */
     @Nullable
     public Type getType() {
@@ -110,7 +104,6 @@ public class Dram extends Chain {
      * Sets the modifier type of {@link Dram}
      *
      * @param type the specified type
-     * @since 0.0.4
      */
     public void setType(
         @Nullable Type type
@@ -236,50 +229,10 @@ public class Dram extends Chain {
      * Clean this {@link Dram}
      */
     protected void clean() {
-        type = null;
-        temp = null;
         hash = 0;
+        star = 0;
         count = 0;
-    }
-
-    /**
-     * Returns the value of this {@link Dram} as a {@link String}
-     */
-    @Override
-    public String toString() {
-        if (count == 0) {
-            return "";
-        }
-
-        if (hash != 0 &&
-            temp != null) {
-            return temp;
-        }
-
-        return temp = new String(
-            value, 0, count, UTF_8
-        );
-    }
-
-    /**
-     * Returns the value of this {@link Dram} as a {@link String}
-     *
-     * @param charset the specified charset
-     */
-    @Override
-    public String toString(
-        @NotNull Charset charset
-    ) {
-        if (count == 0) {
-            return "";
-        }
-
-        if (charset == UTF_8) {
-            return toString();
-        } else {
-            return new String(
-                value, 0, count, charset
-            );
-        }
+        type = null;
+        backup = null;
     }
 }

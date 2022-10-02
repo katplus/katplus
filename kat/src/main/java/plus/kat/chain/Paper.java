@@ -111,11 +111,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     ) {
         byte[] it = value;
         if (count != it.length) {
-            hash = 0;
+            star = 0;
             it[count++] = b;
         } else {
             grow(count + 1);
-            hash = 0;
+            star = 0;
             value[count++] = b;
         }
     }
@@ -257,7 +257,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
 
         int i = 0, l =
             data.length();
-        hash = 0;
+        star = 0;
         grow(count + l);
 
         while (i < l) {
@@ -272,7 +272,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     public void addFloat(
         float num, boolean hint
     ) {
-        hash = 0;
+        star = 0;
         if (hint) {
             grow(count + 10);
             value[count++] = '0';
@@ -303,7 +303,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
 
         int i = 0, l =
             data.length();
-        hash = 0;
+        star = 0;
         grow(count + l);
 
         while (i < l) {
@@ -318,7 +318,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     public void addDouble(
         double num, boolean hint
     ) {
-        hash = 0;
+        star = 0;
         if (hint) {
             grow(count + 18);
             value[count++] = '0';
@@ -346,13 +346,13 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     ) {
         if (bool) {
             grow(count + 4);
-            hash = 0;
+            star = 0;
             value[count++] = 't';
             value[count++] = 'r';
             value[count++] = 'u';
         } else {
             grow(count + 5);
-            hash = 0;
+            star = 0;
             value[count++] = 'f';
             value[count++] = 'a';
             value[count++] = 'l';
@@ -436,11 +436,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
         if (record(b)) {
             byte[] it = value;
             if (count != it.length) {
-                hash = 0;
+                star = 0;
                 it[count++] = b;
             } else {
                 grow(count + 1);
-                hash = 0;
+                star = 0;
                 value[count++] = b;
             }
         }
@@ -455,11 +455,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             if (record(b)) {
                 byte[] it = value;
                 if (count != it.length) {
-                    hash = 0;
+                    star = 0;
                     it[count++] = b;
                 } else {
                     grow(count + 1);
-                    hash = 0;
+                    star = 0;
                     value[count++] = b;
                 }
             }
@@ -477,11 +477,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             if (record(b)) {
                 byte[] it = value;
                 if (count != it.length) {
-                    hash = 0;
+                    star = 0;
                     it[count++] = b;
                 } else {
                     grow(count + 1);
-                    hash = 0;
+                    star = 0;
                     value[count++] = b;
                 }
             }
@@ -500,11 +500,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             if (record(b)) {
                 byte[] it = value;
                 if (count != it.length) {
-                    hash = 0;
+                    star = 0;
                     it[count++] = b;
                 } else {
                     grow(count + 1);
-                    hash = 0;
+                    star = 0;
                     value[count++] = b;
                 }
             }
@@ -538,11 +538,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
                 if (record(b)) {
                     byte[] it = value;
                     if (count != it.length) {
-                        hash = 0;
+                        star = 0;
                         it[count++] = b;
                     } else {
                         grow(count + 1);
-                        hash = 0;
+                        star = 0;
                         value[count++] = b;
                     }
                 }
@@ -551,7 +551,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             // U+0080 ~ U+07FF
             else if (c < 0x800) {
                 grow(count + 2);
-                hash = 0;
+                star = 0;
                 value[count++] = (byte) ((c >> 6) | 0xC0);
                 value[count++] = (byte) ((c & 0x3F) | 0x80);
             }
@@ -561,7 +561,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             else if (c >= 0xD800 && c <= 0xDFFF) {
                 if (i >= k) {
                     grow(count + 1);
-                    hash = 0;
+                    star = 0;
                     value[count++] = '?';
                     break;
                 }
@@ -569,13 +569,13 @@ public abstract class Paper extends Chain implements Flow, Closeable {
                 char d = data.charAt(i++);
                 if (d < 0xDC00 || d > 0xDFFF) {
                     grow(count + 1);
-                    hash = 0;
+                    star = 0;
                     value[count++] = '?';
                     continue;
                 }
 
                 grow(count + 4);
-                hash = 0;
+                star = 0;
                 int u = (c << 10) + d - 0x35F_DC00;
                 value[count++] = (byte) ((u >> 18) | 0xF0);
                 value[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
@@ -586,7 +586,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             // U+0800 ~ U+FFFF
             else {
                 grow(count + 3);
-                hash = 0;
+                star = 0;
                 value[count++] = (byte) ((c >> 12) | 0xE0);
                 value[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
                 value[count++] = (byte) ((c & 0x3F) | 0x80);
@@ -604,11 +604,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             if (record(b)) {
                 byte[] it = value;
                 if (count != it.length) {
-                    hash = 0;
+                    star = 0;
                     it[count++] = b;
                 } else {
                     grow(count + 1);
-                    hash = 0;
+                    star = 0;
                     value[count++] = b;
                 }
             }
@@ -651,11 +651,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
                 if (record(b1)) {
                     byte[] it = value;
                     if (count != it.length) {
-                        hash = 0;
+                        star = 0;
                         it[count++] = b1;
                     } else {
                         grow(count + 1);
-                        hash = 0;
+                        star = 0;
                         value[count++] = b1;
                     }
                 }
@@ -752,11 +752,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
                 if (record(b)) {
                     byte[] it = value;
                     if (count != it.length) {
-                        hash = 0;
+                        star = 0;
                         it[count++] = b;
                     } else {
                         grow(count + 1);
-                        hash = 0;
+                        star = 0;
                         value[count++] = b;
                     }
                 }
@@ -865,11 +865,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     ) {
         byte[] it = value;
         if (min < it.length) {
-            hash = 0;
+            star = 0;
             it[count++] = '\\';
         } else {
             grow(min + 1);
-            hash = 0;
+            star = 0;
             value[count++] = '\\';
         }
     }
@@ -903,7 +903,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
         }
 
         grow(count + 2);
-        hash = 0;
+        star = 0;
         value[count++] = '\\';
         value[count++] = data;
         return false;

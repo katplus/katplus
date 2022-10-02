@@ -18,19 +18,23 @@ package plus.kat.chain;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import java.lang.reflect.*;
 import java.math.*;
 import java.util.*;
+import java.lang.reflect.*;
+import java.nio.charset.Charset;
 
 import plus.kat.crash.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
+@SuppressWarnings("deprecation")
 public final class Space extends Chain implements Type {
     /**
      * empty space
@@ -149,10 +153,14 @@ public final class Space extends Chain implements Type {
             value[count++] = b;
         }
 
+        star |= 2;
         if (i == count) {
             name = space;
         } else {
-            name = string();
+            //noinspection deprecation
+            name = new String(
+                value, 0, 0, count
+            );
         }
     }
 
@@ -411,21 +419,44 @@ public final class Space extends Chain implements Type {
     }
 
     /**
-     * Returns the {@code byte[]} of this {@link Space} as a {@link String} cache
+     * Returns the charset of this {@link Space}
+     *
+     * @since 0.0.5
      */
     @Override
-    @SuppressWarnings("deprecation")
+    public Charset charset() {
+        return US_ASCII;
+    }
+
+    /**
+     * Returns the ASCII {@link String} for this {@link Space}
+     */
+    @Override
+    public String string() {
+        return toString();
+    }
+
+    /**
+     * Returns the value of this {@link Space} as a {@link String}
+     */
+    @Override
     public String toString() {
         if (count == 0) {
-            return "$";
+            return "";
         }
 
-        if (hash != 0 &&
-            name != null) {
-            return name;
+        if ((star & 2) == 0) {
+            star |= 2;
+        } else {
+            if (name != null) {
+                return name;
+            }
+            if (backup != null) {
+                return backup;
+            }
         }
 
-        return name = new String(
+        return backup = new String(
             value, 0, 0, count
         );
     }

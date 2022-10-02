@@ -122,11 +122,11 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
 
                     if (i > 0x20) {
                         grow(count + 1);
-                        hash = 0;
+                        star = 0;
                         value[count++] = (byte) i;
                     } else if (tail() != '\n') {
                         grow(count + 1);
-                        hash = 0;
+                        star = 0;
                         value[count++] = '\n';
                         if (permit(mark)) {
                             size++;
@@ -140,7 +140,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                 int i = count - 1;
                 if (i > 0 && value[i] != '\n') {
                     grow(count + 1);
-                    hash = 0;
+                    star = 0;
                     value[count++] = '\n';
                     if (permit(mark)) {
                         size++;

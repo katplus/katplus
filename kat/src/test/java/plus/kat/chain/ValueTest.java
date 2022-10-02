@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ValueTest {
+
     @Test
     public void test_toInt() {
         Value v1 = new Value("1400");
@@ -45,7 +46,6 @@ public class ValueTest {
         Value v4 = new Value("123.456");
         assertEquals(123.456F, v4.toFloat());
     }
-
 
     @Test
     public void test_toDouble() {

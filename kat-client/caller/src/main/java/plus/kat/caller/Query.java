@@ -164,7 +164,7 @@ public class Query extends Chain {
         byte b
     ) {
         grow(count + 3);
-        hash = 0;
+        star = 0;
         value[count++] = '%';
         value[count++] = upper((b & 0xF0) >> 4);
         value[count++] = upper(b & 0x0F);
@@ -194,11 +194,11 @@ public class Query extends Chain {
         byte[] it = value;
 
         if (count != it.length) {
-            hash = 0;
+            star = 0;
             it[count++] = '=';
         } else {
             grow(count + 1);
-            hash = 0;
+            star = 0;
             value[count++] = '=';
         }
         return this;

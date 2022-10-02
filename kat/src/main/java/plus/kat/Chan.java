@@ -566,7 +566,7 @@ public class Chan implements Flag, Firm, Closeable {
                     grow(count + 2);
                     value[count++] = '\n';
                 }
-                hash = 0;
+                star = 0;
                 value[count++] = '}';
             }
         }
@@ -612,7 +612,7 @@ public class Chan implements Flag, Firm, Closeable {
                         } else {
                             grow(count + 1);
                         }
-                        hash = 0;
+                        star = 0;
                         value[count++] = b;
                     }
                 }
@@ -630,7 +630,7 @@ public class Chan implements Flag, Firm, Closeable {
             int i = 0,
                 l = c.length();
             grow(count + l + 1);
-            hash = 0;
+            star = 0;
             value[count++] = ':';
 
             while (i < l) {
@@ -695,7 +695,7 @@ public class Chan implements Flag, Firm, Closeable {
             }
 
             grow(count + 2);
-            hash = 0;
+            star = 0;
             value[count++] = '^';
             value[count++] = b;
         }
@@ -706,11 +706,11 @@ public class Chan implements Flag, Firm, Closeable {
         ) {
             byte[] it = value;
             if (min < it.length) {
-                hash = 0;
+                star = 0;
                 it[count++] = '^';
             } else {
                 grow(min + 1);
-                hash = 0;
+                star = 0;
                 value[count++] = '^';
             }
         }
@@ -724,7 +724,7 @@ public class Chan implements Flag, Firm, Closeable {
                 case '(':
                 case ')': {
                     grow(count + 2);
-                    hash = 0;
+                    star = 0;
                     value[count++] = '^';
                     value[count++] = data;
                     return false;
