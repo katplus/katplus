@@ -2343,16 +2343,15 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         char c
     ) {
         // U+0000 ~ U+007F
+        star = 0;
         if (c < 0x80) {
             grow(count + 1);
-            star = 0;
             value[count++] = (byte) c;
         }
 
         // U+0080 ~ U+07FF
         else if (c < 0x800) {
             grow(count + 2);
-            star = 0;
             value[count++] = (byte) ((c >> 6) | 0xC0);
             value[count++] = (byte) ((c & 0x3F) | 0x80);
         }
@@ -2362,14 +2361,12 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         else if (c >= 0xD800 && c <= 0xDFFF) {
             // crippled surrogate pair
             grow(count + 1);
-            star = 0;
             value[count++] = '?';
         }
 
         // U+0800 ~ U+FFFF
         else {
             grow(count + 3);
-            star = 0;
             value[count++] = (byte) ((c >> 12) | 0xE0);
             value[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
             value[count++] = (byte) ((c & 0x3F) | 0x80);
@@ -2387,6 +2384,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         int k = i + l;
         grow(count + l);
 
+        star = 0;
         while (i < k) {
             // get char
             char d = c[i++];
@@ -2394,14 +2392,12 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             // U+0000 ~ U+007F
             if (d < 0x80) {
                 grow(count + 1);
-                star = 0;
                 value[count++] = (byte) d;
             }
 
             // U+0080 ~ U+07FF
             else if (d < 0x800) {
                 grow(count + 2);
-                star = 0;
                 value[count++] = (byte) ((d >> 6) | 0xC0);
                 value[count++] = (byte) ((d & 0x3F) | 0x80);
             }
@@ -2411,7 +2407,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             else if (d >= 0xD800 && d <= 0xDFFF) {
                 if (i >= k) {
                     grow(count + 1);
-                    star = 0;
                     value[count++] = '?';
                     break;
                 }
@@ -2419,13 +2414,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 char f = c[i++];
                 if (f < 0xDC00 || f > 0xDFFF) {
                     grow(count + 1);
-                    star = 0;
                     value[count++] = '?';
                     continue;
                 }
 
                 grow(count + 4);
-                star = 0;
                 int u = (d << 10) + f - 0x35F_DC00;
                 value[count++] = (byte) ((u >> 18) | 0xF0);
                 value[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
@@ -2436,7 +2429,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             // U+0800 ~ U+FFFF
             else {
                 grow(count + 3);
-                star = 0;
                 value[count++] = (byte) ((d >> 12) | 0xE0);
                 value[count++] = (byte) (((d >> 6) & 0x3F) | 0x80);
                 value[count++] = (byte) ((d & 0x3F) | 0x80);
@@ -2455,6 +2447,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         int k = i + l;
         grow(count + l);
 
+        star = 0;
         while (i < k) {
             // get char
             char d = c.charAt(i++);
@@ -2462,14 +2455,12 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             // U+0000 ~ U+007F
             if (d < 0x80) {
                 grow(count + 1);
-                star = 0;
                 value[count++] = (byte) d;
             }
 
             // U+0080 ~ U+07FF
             else if (d < 0x800) {
                 grow(count + 2);
-                star = 0;
                 value[count++] = (byte) ((d >> 6) | 0xC0);
                 value[count++] = (byte) ((d & 0x3F) | 0x80);
             }
@@ -2479,7 +2470,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             else if (d >= 0xD800 && d <= 0xDFFF) {
                 if (i >= k) {
                     grow(count + 1);
-                    star = 0;
                     value[count++] = '?';
                     break;
                 }
@@ -2487,13 +2477,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 char f = c.charAt(i++);
                 if (f < 0xDC00 || f > 0xDFFF) {
                     grow(count + 1);
-                    star = 0;
                     value[count++] = '?';
                     continue;
                 }
 
                 grow(count + 4);
-                star = 0;
                 int u = (d << 10) + f - 0x35F_DC00;
                 value[count++] = (byte) ((u >> 18) | 0xF0);
                 value[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
@@ -2504,7 +2492,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             // U+0800 ~ U+FFFF
             else {
                 grow(count + 3);
-                star = 0;
                 value[count++] = (byte) ((d >> 12) | 0xE0);
                 value[count++] = (byte) (((d >> 6) & 0x3F) | 0x80);
                 value[count++] = (byte) ((d & 0x3F) | 0x80);
