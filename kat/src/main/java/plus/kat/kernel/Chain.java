@@ -2284,7 +2284,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 value[count++] = lower(-(num % 10));
                 num /= 10;
             } while (num < 0);
-            swop(mark, count - 1);
+            swop(mark, count);
         }
     }
 
@@ -2313,7 +2313,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 value[count++] = lower((int) -(num % 10L));
                 num /= 10L;
             } while (num < 0L);
-            swop(mark, count - 1);
+            swop(mark, count);
         }
     }
 
@@ -2502,42 +2502,46 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Unsafe method
      *
-     * @param b the beginning index
-     * @param e the ending index
+     * @param s the start index, inclusive
+     * @param e the end index, exclusive
      */
     protected void swop(
-        int b, int e
+        int s, int e
     ) {
-        byte v;
+        byte cat;
         star = 0;
 
-        while (b < e) {
-            v = value[e];
-            value[e--] = value[b];
-            value[b++] = v;
+        byte[] it = value;
+        while (s < --e) {
+            cat = it[e];
+            it[e] = it[s];
+            it[s++] = cat;
         }
     }
 
     /**
+     * Unsafe method
+     *
      * @param min the specified minimum size
      */
     protected void grow(
         int min
     ) {
-        if (min > value.length) {
+        byte[] it = value;
+        if (min > it.length) {
             if (bucket == null) {
-                int cap = value.length +
-                    (value.length >> 1);
+                int cap = it.length +
+                    (it.length >> 1);
                 if (cap < min) cap = min;
 
                 byte[] result = new byte[cap];
                 System.arraycopy(
-                    value, 0, result, 0, count
+                    it, 0, result, 0, count
                 );
                 value = result;
             } else {
                 value = bucket.alloc(
-                    value, count, min
+                    it, count, min
                 );
             }
         }

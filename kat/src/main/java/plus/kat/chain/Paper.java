@@ -166,7 +166,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
                 value[count++] = lower(num & mask);
                 num >>>= shift;
             } while (num != 0);
-            swop(mark, count - 1);
+            swop(mark, count);
         }
     }
 
@@ -188,7 +188,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
                 value[count++] = lower((num & mask));
                 num >>>= shift;
             }
-            swop(mark, count - 1);
+            swop(mark, count);
         }
     }
 
@@ -218,7 +218,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
                 value[count++] = lower((int) (num & mask));
                 num >>>= shift;
             } while (num != 0L);
-            swop(mark, count - 1);
+            swop(mark, count);
         }
     }
 
@@ -240,7 +240,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
                 value[count++] = lower((int) (num & mask));
                 num >>>= shift;
             }
-            swop(mark, count - 1);
+            swop(mark, count);
         }
     }
 
@@ -287,7 +287,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             value[count++] = upper(data & 0xF);
             data >>>= 4;
         }
-        swop(mark, count - 1);
+        swop(mark, count);
     }
 
     /**
@@ -333,7 +333,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             value[count++] = upper((int) (data & 0xF));
             data >>>= 4;
         }
-        swop(mark, count - 1);
+        swop(mark, count);
     }
 
     /**
