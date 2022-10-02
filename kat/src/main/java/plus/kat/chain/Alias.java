@@ -93,7 +93,6 @@ public final class Alias extends Dram {
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
      */
-    @NotNull
     @Override
     public Alias subSequence(
         int start, int end

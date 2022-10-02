@@ -99,7 +99,6 @@ public class Value extends Dram {
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
      */
-    @NotNull
     @Override
     public Value subSequence(
         int start, int end

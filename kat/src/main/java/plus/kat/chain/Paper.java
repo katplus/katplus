@@ -92,7 +92,6 @@ public abstract class Paper extends Chain implements Flow, Closeable {
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
      */
-    @NotNull
     @Override
     public String subSequence(
         int start, int end

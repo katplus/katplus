@@ -170,7 +170,6 @@ public final class Space extends Chain implements Type {
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
      */
-    @NotNull
     @Override
     public Space subSequence(
         int start, int end

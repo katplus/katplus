@@ -62,7 +62,7 @@ public class ByteArraySpare extends Property<byte[]> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.fromBaseMime();
+        return value.byBaseMime();
     }
 
     @Override

@@ -119,7 +119,6 @@ public class Dram extends Chain {
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
      */
-    @NotNull
     @Override
     public Dram subSequence(
         int start, int end
@@ -153,7 +152,7 @@ public class Dram extends Chain {
      * Returns a {@code REC4648|Basic} decoded byte array of {@link Dram}
      */
     @NotNull
-    public byte[] fromBase64() {
+    public byte[] byBase64() {
         return REC4648.INS.decode(
             value, 0, count
         );
@@ -183,7 +182,7 @@ public class Dram extends Chain {
      * Returns a {@code RFC4648_SAFE|URL/Filename Safe} decoded byte array of {@link Dram}
      */
     @NotNull
-    public byte[] fromBaseSafe() {
+    public byte[] byBaseSafe() {
         return RFC4648_SAFE.INS.decode(
             value, 0, count
         );
@@ -213,7 +212,7 @@ public class Dram extends Chain {
      * Returns a {@code RFC2045|Mime} decoded byte array of {@link Dram}
      */
     @NotNull
-    public byte[] fromBaseMime() {
+    public byte[] byBaseMime() {
         return RFC2045.INS.decode(
             value, 0, count
         );
@@ -221,6 +220,8 @@ public class Dram extends Chain {
 
     /**
      * Parses this {@link Dram} as a {@link BigDecimal}
+     *
+     * @return the specified {@link BigDecimal}, {@code 'ZERO'} on error
      */
     @NotNull
     public BigDecimal toBigDecimal() {
@@ -244,12 +245,18 @@ public class Dram extends Chain {
 
     /**
      * Parses this {@link Dram} as a {@link BigInteger}
+     *
+     * @return the specified {@link BigInteger}, {@code 'ZERO'} on error
      */
     @NotNull
     @SuppressWarnings("deprecation")
     public BigInteger toBigInteger() {
         int size = count;
         if (size != 0) {
+            long num = toLong();
+            if (num != 0) {
+                return BigInteger.valueOf(num);
+            }
             try {
                 return new BigInteger(
                     new String(
