@@ -338,14 +338,14 @@ public class Value extends Dram {
     }
 
     /**
-     * Adds this data to uppercase hexadecimal
+     * Adds the data to uppercase hexadecimal
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.upper(new byte[]{1, 11, 111}); // 1B6F
+     *   value.upper(new byte[]{1, 11, 111}); // 010B6F
      * }</pre>
      *
-     * @param data specify the {@code byte[]} to be encoded
+     * @param data the specified data to be encoded
      * @see Value#lower(byte[])
      * @since 0.0.4
      */
@@ -369,14 +369,14 @@ public class Value extends Dram {
     }
 
     /**
-     * Adds this data to lowercase hexadecimal
+     * Adds the data to lowercase hexadecimal
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.lower(new byte[]{1, 11, 111}); // 1b6f
+     *   value.lower(new byte[]{1, 11, 111}); // 010b6f
      * }</pre>
      *
-     * @param data specify the {@code byte[]} to be encoded
+     * @param data the specified data to be encoded
      * @see Value#upper(byte[])
      * @since 0.0.4
      */
