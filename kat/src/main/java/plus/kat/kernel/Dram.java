@@ -88,9 +88,12 @@ public class Dram extends Chain {
     ) {
         super();
         if (sequence != null) {
-            chain(
-                sequence, 0, sequence.length()
-            );
+            int len = sequence.length();
+            if (len != 0) {
+                chain(
+                    sequence, 0, len
+                );
+            }
         }
     }
 

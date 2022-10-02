@@ -224,7 +224,7 @@ public class Value extends Dram {
     public void add(
         byte[] b, int i, int l
     ) {
-        if (b != null) {
+        if (b != null && l != 0) {
             if (i >= 0 && i + l <= b.length) {
                 chain(
                     b, i, l
@@ -246,9 +246,12 @@ public class Value extends Dram {
         char[] c
     ) {
         if (c != null) {
-            chain(
-                c, 0, c.length
-            );
+            int len = c.length;
+            if (len != 0) {
+                chain(
+                    c, 0, len
+                );
+            }
         }
     }
 
@@ -264,7 +267,7 @@ public class Value extends Dram {
     public void add(
         char[] c, int i, int l
     ) {
-        if (c != null) {
+        if (c != null && l != 0) {
             if (i >= 0 && i + l <= c.length) {
                 chain(
                     c, i, l
@@ -300,9 +303,12 @@ public class Value extends Dram {
         CharSequence c
     ) {
         if (c != null) {
-            chain(
-                c, 0, c.length()
-            );
+            int len = c.length();
+            if (len != 0) {
+                chain(
+                    c, 0, len
+                );
+            }
         }
     }
 
@@ -318,7 +324,7 @@ public class Value extends Dram {
     public void add(
         CharSequence c, int i, int l
     ) {
-        if (c != null) {
+        if (c != null && l != 0) {
             if (i >= 0 && i + l <= c.length()) {
                 chain(
                     c, i, l
@@ -347,14 +353,17 @@ public class Value extends Dram {
         byte[] data
     ) {
         if (data != null) {
-            grow(count * data.length * 2);
-            star = 0;
-            int i = 0;
-            byte[] it = value;
-            while (i < data.length) {
-                int o = data[i++] & 0xFF;
-                it[count++] = Binary.upper(o >> 4);
-                it[count++] = Binary.upper(o & 0xF);
+            int size = data.length;
+            if (size != 0) {
+                grow(count * size * 2);
+                star = 0;
+                int i = 0;
+                byte[] it = value;
+                while (i < size) {
+                    int o = data[i++] & 0xFF;
+                    it[count++] = Binary.upper(o >> 4);
+                    it[count++] = Binary.upper(o & 0xF);
+                }
             }
         }
     }
@@ -375,14 +384,17 @@ public class Value extends Dram {
         byte[] data
     ) {
         if (data != null) {
-            grow(count * data.length * 2);
-            star = 0;
-            int i = 0;
-            byte[] it = value;
-            while (i < data.length) {
-                int o = data[i++] & 0xFF;
-                it[count++] = Binary.lower(o >> 4);
-                it[count++] = Binary.lower(o & 0xF);
+            int size = data.length;
+            if (size != 0) {
+                grow(count * size * 2);
+                star = 0;
+                int i = 0;
+                byte[] it = value;
+                while (i < size) {
+                    int o = data[i++] & 0xFF;
+                    it[count++] = Binary.lower(o >> 4);
+                    it[count++] = Binary.lower(o & 0xF);
+                }
             }
         }
     }

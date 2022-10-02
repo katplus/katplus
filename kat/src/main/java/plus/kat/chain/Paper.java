@@ -367,7 +367,12 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     public void addBytes(
         @NotNull byte[] data
     ) {
-        chain(data, 0, data.length);
+        int len = data.length;
+        if (len != 0) {
+            chain(
+                data, 0, len
+            );
+        }
     }
 
     /**
@@ -377,7 +382,11 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     public void addBytes(
         @NotNull byte[] data, int i, int l
     ) {
-        chain(data, i, l);
+        if (l != 0) {
+            chain(
+                data, i, l
+            );
+        }
     }
 
     /**
@@ -389,7 +398,9 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     ) {
         int l = data.length;
         if (l != 0) {
-            chain(data, 0, l);
+            chain(
+                data, 0, l
+            );
         }
     }
 
@@ -401,7 +412,9 @@ public abstract class Paper extends Chain implements Flow, Closeable {
         @NotNull char[] data, int i, int l
     ) {
         if (l != 0) {
-            chain(data, i, l);
+            chain(
+                data, i, l
+            );
         }
     }
 
@@ -414,7 +427,9 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     ) {
         int l = data.length();
         if (l != 0) {
-            chain(data, 0, l);
+            chain(
+                data, 0, l
+            );
         }
     }
 
@@ -426,7 +441,9 @@ public abstract class Paper extends Chain implements Flow, Closeable {
         @NotNull CharSequence data, int i, int l
     ) {
         if (l != 0) {
-            chain(data, i, l);
+            chain(
+                data, i, l
+            );
         }
     }
 

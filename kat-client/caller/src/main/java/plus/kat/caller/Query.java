@@ -45,10 +45,13 @@ public class Query extends Chain {
         @NotNull CharSequence url
     ) {
         super();
-        super.chain(
-            url, 0, url.length()
-        );
-        if (offset() == 0) offset = -1;
+        int len = url.length();
+        if (len != 0) {
+            chain(url, 0, len);
+            if (offset() == 0) {
+                offset = -1;
+            }
+        }
     }
 
     /**
