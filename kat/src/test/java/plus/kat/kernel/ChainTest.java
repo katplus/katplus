@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import plus.kat.chain.Value;
 
 import java.io.ByteArrayInputStream;
-import java.security.NoSuchAlgorithmException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;

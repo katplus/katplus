@@ -32,7 +32,7 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public class Parser implements Share, Closeable {
+public class Parser implements Proxy, Closeable {
     /**
      * state etc.
      */
@@ -82,7 +82,7 @@ public class Parser implements Share, Closeable {
      * Parses the {@link Event} by using {@link Radar}
      *
      * @param event specify the {@code event} to be handled
-     * @throws IOException          Unexpected errors by {@link Share} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -98,7 +98,7 @@ public class Parser implements Share, Closeable {
      * Parses the {@link Event} by using specified {@link Solver}
      *
      * @param event specify the {@code event} to be handled
-     * @throws IOException          Unexpected errors by {@link Share} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
      * @throws NullPointerException If the specified {@code coder} or {@code event} is null
      */
     @NotNull
@@ -149,7 +149,7 @@ public class Parser implements Share, Closeable {
      * Parses the {@link Event} with specified {@link Job}
      *
      * @param event specify the {@code event} to be handled
-     * @throws IOException          Unexpected errors by {@link Share} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
      * @throws NullPointerException If the specified {@code job} or {@code event} is null
      */
     @NotNull

@@ -25,9 +25,9 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public interface Share {
+public interface Proxy {
     /**
-     * {@link Solver} commands this {@code share} creates
+     * {@link Solver} commands this {@code proxy} creates
      * the next receiver according to the {@code space} and
      * {@code alias}, activate use it and push on receiver stack
      *
@@ -42,7 +42,7 @@ public interface Share {
     /**
      * {@link Solver} requests the receiver
      * at the top of the receiver stack of this
-     * {@code share} to update its attributes according
+     * {@code proxy} to update its attributes according
      * to the {@code space}, {@code alias} and {@code value}
      *
      * @throws IOException If an I/O error occurs
@@ -54,7 +54,7 @@ public interface Share {
     ) throws IOException;
 
     /**
-     * {@link Solver} commands this {@code share}
+     * {@link Solver} commands this {@code proxy}
      * to finish updating attributes on the receiver at the
      * top of the receiver stack and remove it from the receiver stack
      *

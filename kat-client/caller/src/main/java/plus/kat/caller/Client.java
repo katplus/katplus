@@ -21,7 +21,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
+import plus.kat.kernel.Chain;
 
 import java.io.*;
 import java.net.*;

@@ -93,13 +93,13 @@ public class Radar implements Solver {
      *  }
      * }</pre>
      *
-     * @param e the specified data transfer pipeline
+     * @param p the specified data transfer pipeline
      * @param r the specified data source to be parsed
-     * @throws IOException Unexpected errors by {@link Share} or {@link Reader}
+     * @throws IOException Unexpected errors by {@link Proxy} or {@link Reader}
      */
     @Override
     public void read(
-        @NotNull Share e,
+        @NotNull Proxy p,
         @NotNull Reader r
     ) throws IOException {
         // event status
@@ -134,7 +134,7 @@ public class Radar implements Solver {
                     }
                     switch (b) {
                         case '{': {
-                            if (e.attach(s, a)) {
+                            if (p.attach(s, a)) {
                                 s.clean();
                             } else {
                                 s.clean();
@@ -161,7 +161,7 @@ public class Radar implements Solver {
                         }
                         case '}': {
                             if (s.isEmpty()) {
-                                if (!e.detach()) {
+                                if (!p.detach()) {
                                     break Radar;
                                 } else {
                                     continue Radar;
@@ -194,7 +194,7 @@ public class Radar implements Solver {
                     switch (b) {
                         case '{': {
                             event = 0;
-                            if (e.attach(s, a)) {
+                            if (p.attach(s, a)) {
                                 s.clean();
                                 a.clean();
                             } else {
@@ -235,7 +235,7 @@ public class Radar implements Solver {
                             continue;
                         }
                         case ')': {
-                            e.accept(
+                            p.accept(
                                 s, a, v
                             );
                             s.clean();
@@ -448,13 +448,13 @@ public class Radar implements Solver {
          *  </User>
          * }</pre>
          *
-         * @param e the specified data transfer pipeline
+         * @param p the specified data transfer pipeline
          * @param r the specified data source to be parsed
-         * @throws IOException Unexpected errors by {@link Share} or {@link Reader}
+         * @throws IOException Unexpected errors by {@link Proxy} or {@link Reader}
          */
         @Override
         public void read(
-            @NotNull Share e,
+            @NotNull Proxy p,
             @NotNull Reader r
         ) throws IOException {
             // local
@@ -491,7 +491,7 @@ public class Radar implements Solver {
                                 if (d != GT) {
                                     continue;
                                 }
-                                e.detach();
+                                p.detach();
                                 v.clean();
                                 continue Boot;
                             }
@@ -500,7 +500,7 @@ public class Radar implements Solver {
                             while (true) {
                                 byte d = r.next();
                                 if (d == GT) {
-                                    e.accept(
+                                    p.accept(
                                         $s, a, v
                                     );
 
@@ -521,7 +521,7 @@ public class Radar implements Solver {
                     }
                     default: {
                         if (a.isNotEmpty()) {
-                            if (e.attach($M, a)) {
+                            if (p.attach($M, a)) {
                                 a.clean();
                             } else {
                                 a.clean();
@@ -553,10 +553,10 @@ public class Radar implements Solver {
                                 continue;
                             }
 
-                            if (e.attach($M, a)) {
+                            if (p.attach($M, a)) {
                                 a.clean();
                                 collate(
-                                    a, v, e, r
+                                    a, v, p, r
                                 );
                                 a.clean();
                                 v.clean();
@@ -581,7 +581,7 @@ public class Radar implements Solver {
         protected void collate(
             @NotNull Alias a,
             @NotNull Value v,
-            @NotNull Share e,
+            @NotNull Proxy p,
             @NotNull Reader r
         ) throws IOException {
             Boot:
@@ -599,7 +599,7 @@ public class Radar implements Solver {
                 if (b == SLASH) {
                     b = r.next();
                     if (b == GT) {
-                        e.detach();
+                        p.detach();
                         break;
                     }
                     throw new UnexpectedCrash(
@@ -621,7 +621,7 @@ public class Radar implements Solver {
                             continue;
                         }
 
-                        e.accept(
+                        p.accept(
                             $s, a, v
                         );
                         a.clean();
@@ -962,13 +962,13 @@ public class Radar implements Solver {
          *  }
          * }</pre>
          *
-         * @param e the specified data transfer pipeline
+         * @param p the specified data transfer pipeline
          * @param r the specified data source to be parsed
-         * @throws IOException Unexpected errors by {@link Share} or {@link Reader}
+         * @throws IOException Unexpected errors by {@link Proxy} or {@link Reader}
          */
         @Override
         public void read(
-            @NotNull Share e,
+            @NotNull Proxy p,
             @NotNull Reader r
         ) throws IOException {
             // local access
@@ -996,13 +996,13 @@ public class Radar implements Solver {
                 switch (b) {
                     case '{': {
                         attach(
-                            e, a, r, true
+                            a, p, r, true
                         );
                         break Boot;
                     }
                     case '[': {
                         attach(
-                            e, a, r, false
+                            a, p, r, false
                         );
                         break Boot;
                     }
@@ -1054,7 +1054,7 @@ public class Radar implements Solver {
                             }
                             case '}': {
                                 if (a.isEmpty()) {
-                                    detach(e, true);
+                                    detach(p, true);
                                     continue Boot;
                                 } else {
                                     throw new UnexpectedCrash(
@@ -1091,20 +1091,20 @@ public class Radar implements Solver {
                     switch (b) {
                         case '{': {
                             attach(
-                                e, a, r, true
+                                a, p, r, true
                             );
                             continue Boot;
                         }
                         case '[': {
                             attach(
-                                e, a, r, false
+                                a, p, r, false
                             );
                             continue Boot;
                         }
                         case 'n':
                         case 'N': {
                             escape(r);
-                            e.accept(
+                            p.accept(
                                 $, a, v
                             );
                             a.clean();
@@ -1114,7 +1114,7 @@ public class Radar implements Solver {
                         case '"':
                         case '\'': {
                             escape(v, b, r);
-                            e.accept(
+                            p.accept(
                                 $s, a, v
                             );
                             a.clean();
@@ -1132,7 +1132,7 @@ public class Radar implements Solver {
                         }
                         case '}': {
                             if (a.isEmpty()) {
-                                detach(e, true);
+                                detach(p, true);
                                 continue Boot;
                             } else {
                                 throw new UnexpectedCrash(
@@ -1142,7 +1142,7 @@ public class Radar implements Solver {
                         }
                         case ']': {
                             if (a.isEmpty()) {
-                                detach(e, false);
+                                detach(p, false);
                                 continue Boot;
                             } else {
                                 throw new UnexpectedCrash(
@@ -1173,7 +1173,7 @@ public class Radar implements Solver {
 
                         switch (c) {
                             case ',': {
-                                e.accept(
+                                p.accept(
                                     $, a, v
                                 );
                                 a.clean();
@@ -1181,21 +1181,21 @@ public class Radar implements Solver {
                                 continue Boot;
                             }
                             case '}': {
-                                e.accept(
+                                p.accept(
                                     $, a, v
                                 );
                                 a.clean();
                                 v.clean();
-                                detach(e, true);
+                                detach(p, true);
                                 continue Boot;
                             }
                             case ']': {
-                                e.accept(
+                                p.accept(
                                     $, a, v
                                 );
                                 a.clean();
                                 v.clean();
-                                detach(e, false);
+                                detach(p, false);
                                 continue Boot;
                             }
                             default: {
@@ -1214,8 +1214,8 @@ public class Radar implements Solver {
          * @throws IOException Unexpected errors by {@link Reader}
          */
         protected void attach(
-            Share e,
             Alias a,
+            Proxy p,
             Reader r,
             boolean b
         ) throws IOException {
@@ -1226,7 +1226,7 @@ public class Radar implements Solver {
             }
 
             if (b) {
-                if (e.attach($M, a)) {
+                if (p.attach($M, a)) {
                     mask <<= 1;
                     data |= mask;
                     mutable = true;
@@ -1236,7 +1236,7 @@ public class Radar implements Solver {
                     );
                 }
             } else {
-                if (e.attach($L, a)) {
+                if (p.attach($L, a)) {
                     mask <<= 1;
                     mutable = false;
                 } else {
@@ -1254,11 +1254,11 @@ public class Radar implements Solver {
          * @throws IOException Unexpected errors by {@link Reader}
          */
         protected void detach(
-            Share e,
+            Proxy p,
             boolean b
         ) throws IOException {
             if (mutable == b) {
-                e.detach();
+                p.detach();
                 mask >>>= 1;
                 mutable = (data & mask) != 0L;
             } else {

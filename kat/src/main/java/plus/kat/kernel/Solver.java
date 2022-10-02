@@ -29,15 +29,15 @@ import java.io.IOException;
  */
 public interface Solver extends Firm, Closeable {
     /**
-     * {@link Reader} as the data source and {@link Share} as the data consumer.
+     * {@link Reader} as the data source and {@link Proxy} as the data consumer.
      * This {@link Solver} uses reader to read the source, translate it and then stream it to share.
      *
-     * @param share  the specified data transfer pipeline
+     * @param proxy  the specified data transfer pipeline
      * @param reader the specified data source to be parsed
-     * @throws IOException Unexpected errors by {@link Share} or {@link Reader}
+     * @throws IOException Unexpected errors by {@link Proxy} or {@link Reader}
      */
     void read(
-        @NotNull Share share,
+        @NotNull Proxy proxy,
         @NotNull Reader reader
     ) throws IOException;
 

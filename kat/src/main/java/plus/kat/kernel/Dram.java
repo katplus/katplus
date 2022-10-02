@@ -26,6 +26,8 @@ import java.math.BigInteger;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import static plus.kat.stream.Base64.*;
+
 /**
  * @author kraity
  * @since 0.0.4
@@ -128,6 +130,96 @@ public class Dram extends Chain {
     }
 
     /**
+     * Returns a {@code REC4648|Basic} encoded String of {@link Dram}
+     */
+    @NotNull
+    public String asBase64() {
+        return Binary.latin(
+            toBase64()
+        );
+    }
+
+    /**
+     * Returns a {@code REC4648|Basic} encoded byte array of {@link Dram}
+     */
+    @NotNull
+    public byte[] toBase64() {
+        return REC4648.INS.encode(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Returns a {@code REC4648|Basic} decoded byte array of {@link Dram}
+     */
+    @NotNull
+    public byte[] fromBase64() {
+        return REC4648.INS.decode(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Returns a {@code RFC4648_SAFE|URL/Filename Safe} encoded String of {@link Dram}
+     */
+    @NotNull
+    public String asBaseSafe() {
+        return Binary.latin(
+            toBaseSafe()
+        );
+    }
+
+    /**
+     * Returns a {@code RFC4648_SAFE|URL/Filename Safe} encoded byte array of {@link Dram}
+     */
+    @NotNull
+    public byte[] toBaseSafe() {
+        return RFC4648_SAFE.INS.encode(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Returns a {@code RFC4648_SAFE|URL/Filename Safe} decoded byte array of {@link Dram}
+     */
+    @NotNull
+    public byte[] fromBaseSafe() {
+        return RFC4648_SAFE.INS.decode(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Returns a {@code RFC2045|Mime} encoded String of {@link Dram}
+     */
+    @NotNull
+    public String asBaseMime() {
+        return Binary.latin(
+            toBaseMime()
+        );
+    }
+
+    /**
+     * Returns a {@code RFC2045|Mime} encoded byte array of {@link Dram}
+     */
+    @NotNull
+    public byte[] toBaseMime() {
+        return RFC2045.INS.encode(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Returns a {@code RFC2045|Mime} decoded byte array of {@link Dram}
+     */
+    @NotNull
+    public byte[] fromBaseMime() {
+        return RFC2045.INS.decode(
+            value, 0, count
+        );
+    }
+
+    /**
      * Parses this {@link Dram} as a {@link BigDecimal}
      */
     @NotNull
@@ -193,7 +285,7 @@ public class Dram extends Chain {
      */
     @NotNull
     public SecretKeySpec asSecretKeySpec(
-        int offset, int length, @NotNull String algo
+        @NotNull String algo, int offset, int length
     ) {
         return new SecretKeySpec(
             value, offset, length, algo
