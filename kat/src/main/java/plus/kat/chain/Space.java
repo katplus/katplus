@@ -196,59 +196,41 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * Check if it is the correct Class name
+     * Returns true if this space is a
+     * standard class name. If space contains an element
+     * that is not in {@code [A-Za-z0-9.$]}, it must return false
+     *
+     * <pre>{@code
+     *  isClass() -> true
+     *  // kat.User
+     *  // plus.kat.User
+     *  // plus.kat.v2.User
+     *
+     *  isClass() -> false
+     *  // $
+     *  // .
+     *  // plus.$a
+     *  // plus.kat.1v
+     *  // plus.kat.$User
+     *  // plus.kat.User$
+     *  // plus.kat_v2.User
+     *  // plus.kat.I_O
+     *  // plus.kat.User-Name
+     * }</pre>
+     *
+     * @see Space#isPackage()
      */
     public boolean isClass() {
-        if (count == 0) {
-            return false;
-        }
-
-        for (int i = 0; i < count; i++) {
-            byte b = value[i];
-            if (b > 0x60) {   // a-z
-                if (b < 0x7B) {
-                    continue;
-                }
-                return false;
-            }
-
-            if (b > 0x40) {   // A-Z
-                if (b < 0x5B
-                    || b == 0x5F) {  // _
-                    continue;
-                }
-                return false;
-            }
-
-            if (b > 0x2F) {   // 0-9
-                if (b < 0x3A
-                    && i != 0) {
-                    continue;
-                }
-                return false;
-            }
-
-            if (b != 0x24) {  // $
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Check if it is the correct Class package
-     */
-    public boolean isPackage() {
-        if (count == 0) {
+        int size = count;
+        if (size == 0) {
             return false;
         }
 
         int i = 0, m = 0;
-        boolean c = false;
+        byte[] it = value;
 
-        for (; i < count; i++) {
-            byte b = value[i];
+        for (; i < size; i++) {
+            byte b = it[i];
             if (b > 0x60) {   // a-z
                 if (b < 0x7B) {
                     continue;
@@ -257,26 +239,97 @@ public final class Space extends Dram implements Type {
             }
 
             if (b == 0x2E) {   // .
-                if (c) {
-                    return false;
-                }
-
                 if (m != i) {
                     m = i + 1;
-                    if (m != count) {
+                    if (m != size) {
                         continue;
                     }
                 }
                 return false;
             }
 
-            if (b > 0x40) {   // A-Z
-                if (b < 0x5B) {
+            if (b < 0x3A) {   // 0-9
+                if (b > 0x2F
+                    && i != m) {
                     continue;
                 }
+                return false;
+            }
 
-                if (b == 0x5F) {  // _
-                    c = true;
+            if (size - i > 255 ||  // max-len
+                b < 0x41 || b > 0x5A) {   // A-Z
+                return false;
+            }
+
+            for (++i; i < size; i++) {
+                byte c = it[i];
+                if (c > 0x60) {   // a-z
+                    if (c < 0x7B) {
+                        continue;
+                    }
+                    return false;
+                }
+
+                if (c > 0x40) {   // A-Z
+                    if (c < 0x5B) {
+                        continue;
+                    }
+                    return false;
+                }
+
+                if (c < 0x3A) {   // 0-9
+                    if (c > 0x2F ||
+                        (c == 0x24 &&
+                            i + 1 != size)) { // $
+                        continue;
+                    }
+                    return false;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if this space is a
+     * standard class package. If space contains an element
+     * that is not in {@code [A-Za-z0-9.]}, it must return false
+     *
+     * <pre>{@code
+     *  isPackage() -> true
+     *  // kat
+     *  // plus.kat
+     *  // plus.kat.v2
+     *
+     *  isPackage() -> false
+     *  // $
+     *  // .
+     *  // plus.$a
+     *  // plus.kat.1v
+     *  // plus.kat_v2
+     *  // plus.kat.User
+     * }</pre>
+     *
+     * @see Space#isClass()
+     */
+    public boolean isPackage() {
+        int size = count;
+        if (size == 0) {
+            return false;
+        }
+
+        int i = 0, m = 0;
+        byte[] it = value;
+
+        for (; i < size; i++) {
+            byte b = it[i];
+            if (b > 0x60) {   // a-z
+                if (b < 0x7B) {
                     continue;
                 }
                 return false;
@@ -290,11 +343,14 @@ public final class Space extends Dram implements Type {
                 return false;
             }
 
-            if (b == 0x24) {  // $
-                c = true;
-            } else {
-                return false;
+            if (b == 0x2E && m != i) {   // .
+                m = i + 1;
+                if (m != size) {
+                    continue;
+                }
             }
+
+            return false;
         }
 
         return true;
