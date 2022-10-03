@@ -2255,25 +2255,45 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     protected void chain(
         @NotNull InputStream in, int range
     ) throws IOException {
-        int cap, length;
-        byte[] it = value;
-
+        int m, n, size;
         while (true) {
-            cap = it.length - count;
-            if (cap < range) {
-                grow(count + range);
-                it = value;
-                cap = it.length - count;
-            }
+            m = in.available();
+            if (m != 0) {
+                m = Math.min(m, range);
+                n = value.length - count;
 
-            length = in.read(
-                it, count, cap
-            );
+                if (n < m) {
+                    n = m;
+                    grow(
+                        count + m
+                    );
+                }
 
-            if (length == -1) {
-                break;
+                size = in.read(
+                    value, count, n
+                );
+                if (size == -1) {
+                    break;
+                } else {
+                    star = 0;
+                    count += size;
+                }
+            } else {
+                m = in.read();
+                if (m == -1) {
+                    break;
+                } else {
+                    byte[] it = value;
+                    if (count != it.length) {
+                        star = 0;
+                        it[count++] = (byte) m;
+                    } else {
+                        grow(count + 1);
+                        star = 0;
+                        value[count++] = (byte) m;
+                    }
+                }
             }
-            count += length;
         }
     }
 

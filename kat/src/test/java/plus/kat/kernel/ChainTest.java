@@ -1,9 +1,12 @@
 package plus.kat.kernel;
 
 import org.junit.jupiter.api.Test;
+import plus.kat.chain.Alias;
 import plus.kat.chain.Value;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -202,5 +205,18 @@ public class ChainTest {
         String s2 = v2.toString();
         assertEquals(s1.length(), s2.length());
         assertEquals(s1, s2);
+    }
+
+    @Test
+    public void test_chain_InputStream() throws IOException {
+        Value value = new Value();
+        Alias alias = new Alias("kraity");
+
+        try (InputStream in = alias.toInputStream()) {
+            value.add(in, 128);
+        }
+
+        assertEquals(6, value.length());
+        assertEquals(6, value.capacity());
     }
 }

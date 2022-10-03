@@ -23,6 +23,7 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
@@ -312,7 +313,13 @@ public class Value extends Dram {
     /**
      * Appends the {@link InputStream} to this {@link Value}
      *
-     * @param in the specified {@link InputStream}
+     * <pre>{@code
+     *  Value value = ...
+     *  InputStream in = ...
+     *  value.add(in); // auto close
+     * }</pre>
+     *
+     * @param in the specified {@link InputStream} will be used and closed
      * @since 0.0.3
      */
     public void add(
@@ -320,6 +327,42 @@ public class Value extends Dram {
     ) {
         if (in != null) {
             chain(in);
+        }
+    }
+
+    /**
+     * Appends the {@link InputStream} to this {@link Value}
+     *
+     * <pre>{@code
+     *  Value value = ...
+     *  InputStream in = ...
+     *  value.add(in, 512);
+     *  in.close(); // close it
+     *
+     *  // or
+     *  try (InputStream in = ...) {
+     *      value.add(in, 512);
+     *  }
+     * }</pre>
+     *
+     * @param range the specified range
+     * @param in    the specified {@link InputStream} will be used but will not be closed
+     * @throws IOException If an I/O error occurs
+     * @since 0.0.5
+     */
+    public void add(
+        InputStream in, int range
+    ) throws IOException {
+        if (in != null) {
+            if (range > 0) {
+                chain(
+                    in, range
+                );
+            } else {
+                throw new UnexpectedCrash(
+                    "Unexpectedly, the range is not a positive number"
+                );
+            }
         }
     }
 
