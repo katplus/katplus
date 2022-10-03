@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import javax.crypto.*;
 import java.io.*;
+import java.math.*;
 import java.security.*;
 import java.nio.charset.Charset;
 
@@ -1332,6 +1333,45 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns a {@code REC4648|BASE} encoded String of {@link Chain}
+     *
+     * @see Base64.REC4648
+     * @since 0.0.5
+     */
+    @NotNull
+    public String asBase64() {
+        return Binary.latin(
+            toBase64()
+        );
+    }
+
+    /**
+     * Returns a {@code REC4648|BASE} encoded byte array of {@link Chain}
+     *
+     * @see Base64.REC4648
+     * @since 0.0.5
+     */
+    @NotNull
+    public byte[] toBase64() {
+        return Base64.REC4648.INS.encode(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Returns a {@code RFC2045|MIME} decoded byte array of {@link Chain}
+     *
+     * @see Base64.RFC2045
+     * @since 0.0.5
+     */
+    @NotNull
+    public byte[] ofBase64() {
+        return Base64.RFC2045.INS.decode(
+            value, 0, count
+        );
+    }
+
+    /**
      * Copy bytes from this {@link Chain} into the destination byte array
      *
      * @param index the start index
@@ -2157,6 +2197,89 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         return Convert.toBoolean(
             value, count, def
         );
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@link BigInteger}
+     *
+     * @return the specified {@link BigInteger}, {@code 'ZERO'} on error
+     * @since 0.0.5
+     */
+    @NotNull
+    public BigInteger toBigInteger() {
+        return toBigInteger(
+            BigInteger.ZERO
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@link BigInteger}
+     *
+     * @return the specified {@link BigInteger}, {@code def} value on error
+     * @since 0.0.5
+     */
+    @Nullable
+    public BigInteger toBigInteger(
+        @Nullable BigInteger def
+    ) {
+        int size = count;
+        if (size != 0) {
+            long num = toLong();
+            if (num != 0) {
+                return BigInteger.valueOf(num);
+            }
+            try {
+                return new BigInteger(
+                    new String(
+                        value, 0, 0, size
+                    )
+                );
+            } catch (Exception e) {
+                // Nothing
+            }
+        }
+        return def;
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@link BigDecimal}
+     *
+     * @return the specified {@link BigDecimal}, {@code 'ZERO'} on error
+     * @since 0.0.5
+     */
+    @NotNull
+    public BigDecimal toBigDecimal() {
+        return toBigDecimal(
+            BigDecimal.ZERO
+        );
+    }
+
+    /**
+     * Parses this {@link Chain} as a {@link BigDecimal}
+     *
+     * @return the specified {@link BigDecimal}, {@code def} value on error
+     * @since 0.0.5
+     */
+    @NotNull
+    public BigDecimal toBigDecimal(
+        @NotNull BigDecimal def
+    ) {
+        int size = count;
+        if (size != 0) {
+            byte[] it = value;
+            char[] ch = new char[size];
+            while (--size != -1) {
+                ch[size] = (char) (
+                    it[size] & 0xFF
+                );
+            }
+            try {
+                return new BigDecimal(ch);
+            } catch (Exception e) {
+                // Nothing
+            }
+        }
+        return def;
     }
 
     /**
