@@ -788,6 +788,16 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns true if and only
+     * if the chain is read-only
+     *
+     * @since 0.0.5
+     */
+    public boolean readonly() {
+        return backup == null;
+    }
+
+    /**
      * Returns true if, and only if,
      * the length of chain is {@code 0}
      */

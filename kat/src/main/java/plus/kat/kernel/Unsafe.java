@@ -18,6 +18,7 @@ package plus.kat.kernel;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.crash.*;
 import plus.kat.stream.*;
 
 /**
@@ -26,14 +27,19 @@ import plus.kat.stream.*;
  */
 public final class Unsafe {
     /**
-     * @param c the specified {@link Chain}
-     * @param b the specified {@link Bucket} to be used
-     * @throws NullPointerException If the specified {@code chain} is null
+     * @throws Collapse             If the chain is immutable
+     * @throws NullPointerException If the specified chain is null
      */
     public static void set(
         @NotNull Chain c,
         @Nullable Bucket b
     ) {
-        c.bucket = b;
+        if (!c.readonly()) {
+            c.bucket = b;
+        } else {
+            throw new Collapse(
+                "Unexpectedly, the chain is read-only"
+            );
+        }
     }
 }
