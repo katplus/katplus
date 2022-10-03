@@ -7,6 +7,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SpaceTest {
 
     @Test
+    public void test() {
+        String name = "Space";
+        Space space = new Space(name);
+        assertSame(name, space.toString());
+        assertSame(space.toString(), space.toString());
+    }
+
+    @Test
     public void test_type() {
         assertEquals("B", new Space(byte[].class, "B").getTypeName());
         assertEquals("byte[]", new Space(byte[].class).getTypeName());

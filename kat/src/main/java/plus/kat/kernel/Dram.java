@@ -107,6 +107,8 @@ public class Dram extends Chain {
                 chain(
                     sequence, 0, len
                 );
+                star |= 2;
+                backup = sequence.toString();
             }
         }
     }

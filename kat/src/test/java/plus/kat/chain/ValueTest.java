@@ -7,6 +7,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ValueTest {
 
     @Test
+    public void test() {
+        String name = "Value";
+        Value value = new Value(name);
+        assertSame(name, value.toString());
+        assertSame(value.toString(), value.toString());
+    }
+
+    @Test
     public void test_toInt() {
         Value v1 = new Value("1400");
         assertEquals(1400, v1.toInt());
