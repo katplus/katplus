@@ -63,7 +63,18 @@ public abstract class Caller extends Chain {
             data = EMPTY_BYTES;
         } finally {
             try {
-                close();
+                hash = 0;
+                star = 0;
+                count = 0;
+                backup = null;
+                byte[] it = value;
+                value = EMPTY_BYTES;
+                Bucket bt = bucket;
+                if (bt != null) {
+                    if (it.length != 0) {
+                        bt.share(it);
+                    }
+                }
                 in.close();
             } catch (Exception e) {
                 // Nothing

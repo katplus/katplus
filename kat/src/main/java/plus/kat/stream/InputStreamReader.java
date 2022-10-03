@@ -20,7 +20,7 @@ import plus.kat.anno.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static plus.kat.kernel.Chain.Buffer.INS;
+import static plus.kat.kernel.Dram.Memory.INS;
 
 /**
  * @author kraity
@@ -56,7 +56,7 @@ public class InputStreamReader extends AbstractReader {
     @Override
     public void close() {
         try {
-            INS.push(
+            INS.share(
                 cache
             );
             value.close();

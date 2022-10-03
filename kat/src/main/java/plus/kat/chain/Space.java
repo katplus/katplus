@@ -35,7 +35,7 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
  * @since 0.0.1
  */
 @SuppressWarnings("deprecation")
-public final class Space extends Chain implements Type {
+public final class Space extends Dram implements Type {
     /**
      * empty space
      */
@@ -66,37 +66,31 @@ public final class Space extends Chain implements Type {
     public static final Space $D = new Space(new byte[]{'D'}, BigDecimal.class);
 
     /**
-     * actual type
-     */
-    private Type type;
-    private String name;
-
-    /**
-     * default
+     * For internal use
      */
     private Space() {
         super();
     }
 
     /**
-     * @param b specify the {@code byte[]} to be mirrored
-     * @param t specify the {@link Type} associated with this {@link Space}
+     * For internal use
+     */
+    private Space(
+        byte[] b
+    ) {
+        super(b);
+        count = b.length;
+    }
+
+    /**
+     * For internal use
      */
     private Space(
         byte[] b, Type t
     ) {
-        this(b);
+        super(b);
         type = t;
-    }
-
-    /**
-     * @param data the initial byte array
-     */
-    private Space(
-        byte[] data
-    ) {
-        super(data);
-        count = data.length;
+        count = b.length;
     }
 
     /**
@@ -155,11 +149,38 @@ public final class Space extends Chain implements Type {
 
         star |= 2;
         if (i == count) {
-            name = space;
+            backup = space;
         } else {
             //noinspection deprecation
-            name = new String(
+            backup = new String(
                 value, 0, 0, count
+            );
+        }
+    }
+
+    /**
+     * Returns the modifier type
+     */
+    @Override
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * Sets the modifier type of {@link Space}
+     *
+     * @param type the specified type
+     * @throws Collapse If the dram is read-only
+     */
+    @Override
+    public void setType(
+        @Nullable Type type
+    ) {
+        if (bucket != null) {
+            this.type = type;
+        } else {
+            throw new Collapse(
+                "Unexpectedly, the dram is read-only"
             );
         }
     }
@@ -177,6 +198,14 @@ public final class Space extends Chain implements Type {
         return new Space(
             toBytes(start, end)
         );
+    }
+
+    /**
+     * Returns a string describing this {@link Space}
+     */
+    @Override
+    public String getTypeName() {
+        return toString();
     }
 
     /**
@@ -384,6 +413,33 @@ public final class Space extends Chain implements Type {
     }
 
     /**
+     * Returns the ASCII {@link String} for this {@link Space}
+     */
+    @Override
+    public String string() {
+        return toString();
+    }
+
+    /**
+     * Returns the charset of this {@link Space}
+     *
+     * @since 0.0.5
+     */
+    @Override
+    public Charset charset() {
+        return US_ASCII;
+    }
+
+    /**
+     * @see Space#Space(Bucket)
+     */
+    public static Space apply() {
+        return new Space(
+            Buffer.INS
+        );
+    }
+
+    /**
      * @param b the {@code byte} to be compared
      */
     public static boolean esc(byte b) {
@@ -402,78 +458,10 @@ public final class Space extends Chain implements Type {
     }
 
     /**
-     * Returns the modifier type of {@link Space}
-     */
-    @Nullable
-    public Type getType() {
-        return type;
-    }
-
-    /**
-     * Returns a string describing this {@link Space}
-     */
-    @Override
-    public String getTypeName() {
-        return toString();
-    }
-
-    /**
-     * Returns the charset of this {@link Space}
-     *
+     * @author kraity
      * @since 0.0.5
      */
-    @Override
-    public Charset charset() {
-        return US_ASCII;
-    }
-
-    /**
-     * Returns the ASCII {@link String} for this {@link Space}
-     */
-    @Override
-    public String string() {
-        return toString();
-    }
-
-    /**
-     * Returns the value of this {@link Space} as a {@link String}
-     */
-    @Override
-    public String toString() {
-        if (count == 0) {
-            return "";
-        }
-
-        if ((star & 2) == 0) {
-            star |= 2;
-        } else {
-            if (name != null) {
-                return name;
-            }
-            if (backup != null) {
-                return backup;
-            }
-        }
-
-        return backup = new String(
-            value, 0, 0, count
-        );
-    }
-
-    /**
-     * @see Space#Space(Bucket)
-     */
-    public static Space apply() {
-        return new Space(
-            $Bucket.INS
-        );
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.1
-     */
-    private static class $Bucket implements Bucket {
+    public static class Buffer implements Bucket {
 
         private static final int RANGE;
 
@@ -483,21 +471,34 @@ public final class Space extends Chain implements Type {
             );
         }
 
-        private static final $Bucket
-            INS = new $Bucket();
+        public static final Buffer
+            INS = new Buffer();
 
-        @NotNull
         @Override
-        public byte[] alloc(
-            @NotNull byte[] it, int len, int min
+        public boolean share(
+            @NotNull byte[] it
         ) {
-            if (min <= RANGE) {
+            return false;
+        }
+
+        @Override
+        public byte[] swop(
+            @NotNull byte[] it
+        ) {
+            return it;
+        }
+
+        @Override
+        public byte[] apply(
+            @NotNull byte[] it, int len, int size
+        ) {
+            if (size <= RANGE) {
                 int cap = it.length;
                 if (cap == 0) {
                     return new byte[0x80];
                 } else do {
                     cap <<= 1;
-                } while (cap < min);
+                } while (cap < size);
 
                 byte[] result = new byte[cap];
                 System.arraycopy(
@@ -510,21 +511,6 @@ public final class Space extends Chain implements Type {
             throw new Collapse(
                 "Unexpectedly, Exceeding range '" + RANGE + "' in space"
             );
-        }
-
-        @Override
-        public void push(
-            @NotNull byte[] it
-        ) {
-            // Nothing
-        }
-
-        @NotNull
-        @Override
-        public byte[] revert(
-            @NotNull byte[] it
-        ) {
-            return it;
         }
     }
 }

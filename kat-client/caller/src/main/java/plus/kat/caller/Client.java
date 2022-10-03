@@ -26,6 +26,7 @@ import plus.kat.kernel.Chain;
 import java.io.*;
 import java.net.*;
 
+import static plus.kat.kernel.Dram.Memory;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -43,7 +44,7 @@ public class Client extends Caller {
      * @since 0.0.4
      */
     protected Client() {
-        super(Buffer.INS);
+        super(Memory.INS);
     }
 
     /**
@@ -118,7 +119,7 @@ public class Client extends Caller {
     public Client(
         @NotNull URLConnection conn
     ) throws IOException {
-        super(Buffer.INS);
+        super(Memory.INS);
         if (conn instanceof HttpURLConnection) {
             this.conn = (HttpURLConnection) conn;
         } else {
@@ -136,7 +137,7 @@ public class Client extends Caller {
     public Client(
         @NotNull HttpURLConnection conn
     ) throws IOException {
-        super(Buffer.INS);
+        super(Memory.INS);
         if (conn != null) {
             this.conn = conn;
             this.supplier = Supplier.ins();

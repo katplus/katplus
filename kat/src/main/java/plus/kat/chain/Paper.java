@@ -840,12 +840,15 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     public void clear() {
         byte[] it = value;
         if (it.length != 0) {
-            this.clean();
+            hash = 0;
+            star = 0;
+            count = 0;
+            backup = null;
             Bucket bt = bucket;
-            if (bt == null) {
-                value = EMPTY_BYTES;
+            if (bt != null) {
+                value = bt.swop(it);
             } else {
-                value = bt.revert(it);
+                value = EMPTY_BYTES;
             }
         }
     }
@@ -859,10 +862,13 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     public void close() {
         byte[] it = value;
         if (it.length != 0) {
-            this.clean();
+            hash = 0;
+            star = 0;
+            count = 0;
+            backup = null;
             value = EMPTY_BYTES;
             Bucket bt = bucket;
-            if (bt != null) bt.push(it);
+            if (bt != null) bt.share(it);
         }
     }
 
@@ -944,13 +950,40 @@ public abstract class Paper extends Chain implements Flow, Closeable {
         private final byte[][]
             bucket = new byte[SIZE * GROUP][];
 
-        @NotNull
         @Override
-        public byte[] alloc(
-            @NotNull byte[] it, int len, int min
+        public boolean share(
+            @NotNull byte[] it
+        ) {
+            int i = it.length / SCALE;
+            if (i < GROUP) {
+                Thread th = Thread.currentThread();
+                int tr = th.hashCode() & 0xFFFFFF;
+
+                int ix = i * GROUP + tr % SIZE;
+                synchronized (this) {
+                    bucket[ix] = it;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public byte[] swop(
+            @NotNull byte[] it
+        ) {
+            if (it.length != 0) {
+                this.share(it);
+            }
+            return EMPTY_BYTES;
+        }
+
+        @Override
+        public byte[] apply(
+            @NotNull byte[] it, int len, int size
         ) {
             byte[] data;
-            int i = min / SCALE;
+            int i = size / SCALE;
 
             Thread th = Thread.currentThread();
             int tr = th.hashCode() & 0xFFFFFF;
@@ -964,7 +997,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
                     bucket[ix] = null;
                 }
                 if (data == null ||
-                    data.length < min) {
+                    data.length < size) {
                     data = new byte[(i + 1) * SCALE - 1];
                 }
             }
@@ -984,33 +1017,6 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             }
 
             return data;
-        }
-
-        @Override
-        public void push(
-            @NotNull byte[] it
-        ) {
-            int i = it.length / SCALE;
-            if (i < GROUP) {
-                Thread th = Thread.currentThread();
-                int tr = th.hashCode() & 0xFFFFFF;
-
-                int ix = i * GROUP + tr % SIZE;
-                synchronized (this) {
-                    bucket[ix] = it;
-                }
-            }
-        }
-
-        @Nullable
-        @Override
-        public byte[] revert(
-            @NotNull byte[] it
-        ) {
-            if (it.length != 0) {
-                this.push(it);
-            }
-            return EMPTY_BYTES;
         }
     }
 }

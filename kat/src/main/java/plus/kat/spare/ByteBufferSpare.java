@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-import static plus.kat.kernel.Chain.Buffer.INS;
+import static plus.kat.kernel.Dram.Memory.INS;
 
 /**
  * @author kraity
@@ -80,7 +80,7 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
             buf.get(cache, 0, len);
             flow.emit(cache, 0, len);
         }
-        INS.push(cache);
+        INS.share(cache);
     }
 
     @Override

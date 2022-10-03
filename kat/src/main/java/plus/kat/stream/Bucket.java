@@ -24,27 +24,35 @@ import plus.kat.anno.Nullable;
  */
 public interface Bucket {
     /**
-     * @param it  the specified array that will be released
-     * @param len the specified length of array
-     * @param min the specified minimum size
+     * Share the specified old buffer array with buket
+     *
+     * @param old the specified array that will be shared
+     * @return {@code true} if successful
      */
-    @NotNull
-    byte[] alloc(
-        @NotNull byte[] it, int len, int min
+    boolean share(
+        @NotNull byte[] old
     );
 
     /**
-     * @param it the specified array that will be recycled
-     */
-    void push(
-        @NotNull byte[] it
-    );
-
-    /**
-     * @param it the specified array that will be released
+     * Return old buffer array and return small buffer array
+     *
+     * @param old the specified array that will be released
      */
     @Nullable
-    byte[] revert(
-        @NotNull byte[] it
+    byte[] swop(
+        @NotNull byte[] old
+    );
+
+    /**
+     * Apply for a buffer array of the minimum size and copy
+     * it from old buffer array, and then recycle the old buffer array
+     *
+     * @param old  the specified array that will be released
+     * @param len  the specified length of buffer array
+     * @param size the specified minimum size of buffer array
+     */
+    @NotNull
+    byte[] apply(
+        @NotNull byte[] old, int len, int size
     );
 }

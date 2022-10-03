@@ -152,6 +152,15 @@ public final class Alias extends Dram {
     }
 
     /**
+     * @see Alias#Alias(Bucket)
+     */
+    public static Alias apply() {
+        return new Alias(
+            Buffer.INS
+        );
+    }
+
+    /**
      * @param b the {@code byte} to be compared
      */
     public static boolean esc(byte b) {
@@ -170,19 +179,10 @@ public final class Alias extends Dram {
     }
 
     /**
-     * @see Alias#Alias(Bucket)
-     */
-    public static Alias apply() {
-        return new Alias(
-            $Bucket.INS
-        );
-    }
-
-    /**
      * @author kraity
      * @since 0.0.1
      */
-    private static class $Bucket implements Bucket {
+    public static class Buffer implements Bucket {
 
         private static final int RANGE;
 
@@ -192,21 +192,34 @@ public final class Alias extends Dram {
             );
         }
 
-        private static final $Bucket
-            INS = new $Bucket();
+        public static final Buffer
+            INS = new Buffer();
 
-        @NotNull
         @Override
-        public byte[] alloc(
-            @NotNull byte[] it, int len, int min
+        public boolean share(
+            @NotNull byte[] it
         ) {
-            if (min <= RANGE) {
+            return false;
+        }
+
+        @Override
+        public byte[] swop(
+            @NotNull byte[] it
+        ) {
+            return it;
+        }
+
+        @Override
+        public byte[] apply(
+            @NotNull byte[] it, int len, int size
+        ) {
+            if (size <= RANGE) {
                 int cap = it.length;
                 if (cap == 0) {
                     return new byte[0x80];
                 } else do {
                     cap <<= 1;
-                } while (cap < min);
+                } while (cap < size);
 
                 byte[] result = new byte[cap];
                 System.arraycopy(
@@ -219,21 +232,6 @@ public final class Alias extends Dram {
             throw new Collapse(
                 "Unexpectedly, Exceeding range '" + RANGE + "' in alias"
             );
-        }
-
-        @Override
-        public void push(
-            @NotNull byte[] it
-        ) {
-            // Nothing
-        }
-
-        @NotNull
-        @Override
-        public byte[] revert(
-            @NotNull byte[] it
-        ) {
-            return it;
         }
     }
 }

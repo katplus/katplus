@@ -83,7 +83,8 @@ public class Value extends Dram {
     }
 
     /**
-     * Returns {@code true} if, and only if, internal {@code byte[]} can be shared
+     * Returns {@code true} if, and only if,
+     * internal {@code byte[]} can be shared
      *
      * @see Chain#getSource()
      * @since 0.0.2
@@ -94,18 +95,20 @@ public class Value extends Dram {
     }
 
     /**
-     * Returns a {@link Value} of this {@link Value}
+     * Appends the byte value to this {@link Value}
      *
-     * @param start the start index, inclusive
-     * @param end   the end index, exclusive
+     * <pre>{@code
+     *   Value value = ...
+     *   value.add((byte) 'k');
+     * }</pre>
+     *
+     * @param b the specified byte value
      */
     @Override
-    public Value subSequence(
-        int start, int end
+    public void add(
+        byte b
     ) {
-        return new Value(
-            toBytes(start, end)
-        );
+        chain(b);
     }
 
     /**
@@ -121,6 +124,7 @@ public class Value extends Dram {
      * @param b the specified value
      * @throws ArrayIndexOutOfBoundsException if the index argument is negative
      */
+    @Override
     public void set(
         int i, byte b
     ) {
@@ -132,19 +136,18 @@ public class Value extends Dram {
     }
 
     /**
-     * Appends the byte value to this {@link Value}
+     * Returns a {@link Value} of this {@link Value}
      *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.add((byte) 'k');
-     * }</pre>
-     *
-     * @param b the specified byte value
+     * @param start the start index, inclusive
+     * @param end   the end index, exclusive
      */
-    public void add(
-        byte b
+    @Override
+    public Value subSequence(
+        int start, int end
     ) {
-        chain(b);
+        return new Value(
+            toBytes(start, end)
+        );
     }
 
     /**
@@ -429,6 +432,15 @@ public class Value extends Dram {
     }
 
     /**
+     * @see Value#Value(Bucket)
+     */
+    public static Value apply() {
+        return new Value(
+            Buffer.INS
+        );
+    }
+
+    /**
      * @param b the {@code byte} to be compared
      */
     public static boolean esc(byte b) {
@@ -440,15 +452,6 @@ public class Value extends Dram {
             }
         }
         return false;
-    }
-
-    /**
-     * @see Value#Value(Bucket)
-     */
-    public static Value apply() {
-        return new Value(
-            Buffer.INS
-        );
     }
 
     /**
@@ -484,13 +487,46 @@ public class Value extends Dram {
         private final byte[][]
             bucket = new byte[SIZE][];
 
-        @NotNull
         @Override
-        public byte[] alloc(
-            @NotNull byte[] it, int len, int min
+        public boolean share(
+            @NotNull byte[] it
+        ) {
+            int i = it.length / SCALE;
+            if (i < SIZE) {
+                synchronized (this) {
+                    bucket[i] = it;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public byte[] swop(
+            @NotNull byte[] it
+        ) {
+            int i = it.length / SCALE;
+            if (i == 0) {
+                return it;
+            }
+
+            byte[] data;
+            synchronized (this) {
+                if (i < SIZE) {
+                    bucket[i] = it;
+                }
+                data = bucket[i];
+                bucket[i] = null;
+            }
+            return data;
+        }
+
+        @Override
+        public byte[] apply(
+            @NotNull byte[] it, int len, int size
         ) {
             byte[] data;
-            int i = min / SCALE;
+            int i = size / SCALE;
 
             if (i < SIZE) {
                 synchronized (this) {
@@ -498,7 +534,7 @@ public class Value extends Dram {
                     bucket[i] = null;
                 }
                 if (data == null ||
-                    data.length < min) {
+                    data.length < size) {
                     data = new byte[(i + 1) * SCALE - 1];
                 }
             } else {
@@ -524,39 +560,6 @@ public class Value extends Dram {
                 }
             }
 
-            return data;
-        }
-
-        @Override
-        public void push(
-            @NotNull byte[] it
-        ) {
-            int i = it.length / SCALE;
-            if (i < SIZE) {
-                synchronized (this) {
-                    bucket[i] = it;
-                }
-            }
-        }
-
-        @Nullable
-        @Override
-        public byte[] revert(
-            @NotNull byte[] it
-        ) {
-            int i = it.length / SCALE;
-            if (i == 0) {
-                return it;
-            }
-
-            byte[] data;
-            synchronized (this) {
-                if (i < SIZE) {
-                    bucket[i] = it;
-                }
-                data = bucket[i];
-                bucket[i] = null;
-            }
             return data;
         }
     }

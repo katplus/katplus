@@ -18,7 +18,9 @@ package plus.kat.kernel;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.crash.*;
 import plus.kat.stream.*;
+import plus.kat.utils.Config;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -94,6 +96,62 @@ public class Dram extends Chain {
                     sequence, 0, len
                 );
             }
+        }
+    }
+
+    /**
+     * Appends the byte value
+     *
+     * @param b the specified byte value
+     * @throws Collapse If the dram is read-only
+     * @since 0.0.5
+     */
+    public void add(
+        byte b
+    ) {
+        Bucket bt = bucket;
+        if (bt != null) {
+            int size = count;
+            byte[] it = value;
+
+            star = 0;
+            if (size != it.length) {
+                it[count++] = b;
+            } else {
+                value = bt.apply(
+                    it, size, size + 1
+                );
+                value[count++] = b;
+            }
+        } else {
+            throw new Collapse(
+                "Unexpectedly, the dram is read-only"
+            );
+        }
+    }
+
+    /**
+     * Sets the value of the specified location
+     *
+     * @param i the specified index
+     * @param b the specified value
+     * @throws Collapse                       If the dram is read-only
+     * @throws ArrayIndexOutOfBoundsException if the index argument is negative
+     * @since 0.0.5
+     */
+    public void set(
+        int i, byte b
+    ) {
+        if (bucket != null) {
+            byte[] it = value;
+            if (i < it.length) {
+                star = 0;
+                it[i] = b;
+            }
+        } else {
+            throw new Collapse(
+                "Unexpectedly, the dram is read-only"
+            );
         }
     }
 
@@ -329,12 +387,181 @@ public class Dram extends Chain {
 
     /**
      * Clean this {@link Dram}
+     *
+     * @throws Collapse If the dram is read-only
+     * @since 0.0.5
      */
-    protected void clean() {
-        hash = 0;
-        star = 0;
-        count = 0;
-        type = null;
-        backup = null;
+    public void clean() {
+        if (bucket != null) {
+            hash = 0;
+            star = 0;
+            count = 0;
+            type = null;
+            backup = null;
+        } else {
+            throw new Collapse(
+                "Unexpectedly, the dram is read-only"
+            );
+        }
+    }
+
+    /**
+     * Clear this {@link Dram}
+     *
+     * @throws Collapse If the dram is read-only
+     * @since 0.0.5
+     */
+    public void clear() {
+        Bucket bt = bucket;
+        if (bt != null) {
+            hash = 0;
+            star = 0;
+            count = 0;
+            type = null;
+            backup = null;
+            byte[] it = bt.swop(value);
+            value = it != null ? it : EMPTY_BYTES;
+        } else {
+            throw new Collapse(
+                "Unexpectedly, the dram is read-only"
+            );
+        }
+    }
+
+    /**
+     * Close this {@link Dram}
+     *
+     * @throws Collapse If the dram is read-only
+     * @since 0.0.5
+     */
+    public void close() {
+        Bucket bt = bucket;
+        if (bt != null) {
+            hash = 0;
+            star = 0;
+            count = 0;
+            type = null;
+            backup = null;
+            byte[] it = value;
+            value = EMPTY_BYTES;
+            if (it.length != 0) bt.share(it);
+        } else {
+            throw new Collapse(
+                "Unexpectedly, the dram is read-only"
+            );
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.5
+     */
+    public static class Memory implements Bucket {
+
+        public static final int SIZE, SCALE;
+
+        static {
+            SIZE = Config.get(
+                "kat.memory.size", 4
+            );
+            SCALE = Config.get(
+                "kat.memory.scale", 1024 * 4
+            );
+        }
+
+        public static final Memory
+            INS = new Memory();
+
+        private final byte[][]
+            bucket = new byte[SIZE][];
+
+        @NotNull
+        public byte[] alloc() {
+            Thread th = Thread.currentThread();
+            int tr = th.hashCode() & 0xFFFFFF;
+
+            byte[] it;
+            int ix = tr % SIZE;
+
+            synchronized (this) {
+                it = bucket[ix];
+                bucket[ix] = null;
+            }
+
+            if (it != null &&
+                SCALE <= it.length) {
+                return it;
+            }
+
+            return new byte[SCALE];
+        }
+
+        @Override
+        public boolean share(
+            @Nullable byte[] it
+        ) {
+            if (it != null && SCALE == it.length) {
+                Thread th = Thread.currentThread();
+                int ix = (th.hashCode() & 0xFFFFFF) % SIZE;
+                synchronized (this) {
+                    bucket[ix] = it;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public byte[] swop(
+            @Nullable byte[] it
+        ) {
+            this.share(it);
+            return EMPTY_BYTES;
+        }
+
+        @Override
+        public byte[] apply(
+            @NotNull byte[] it, int len, int size
+        ) {
+            Thread th = Thread.currentThread();
+            int ix = (th.hashCode() & 0xFFFFFF) % SIZE;
+
+            byte[] data;
+            if (size <= SCALE) {
+                synchronized (this) {
+                    data = bucket[ix];
+                    bucket[ix] = null;
+                }
+                if (data == null ||
+                    SCALE > it.length) {
+                    data = new byte[SCALE];
+                }
+                if (it.length != 0) {
+                    System.arraycopy(
+                        it, 0, data, 0, len
+                    );
+                }
+            } else {
+                int cap = it.length +
+                    (it.length >> 1);
+                if (cap < size) {
+                    cap = size;
+                }
+                data = new byte[cap];
+                if (it.length != 0) {
+                    System.arraycopy(
+                        it, 0, data, 0, len
+                    );
+
+                    if (SCALE == it.length) {
+                        synchronized (this) {
+                            bucket[ix] = it;
+                        }
+                    }
+                }
+            }
+
+            return data;
+        }
     }
 }

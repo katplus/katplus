@@ -25,7 +25,6 @@ import java.nio.charset.Charset;
 
 import plus.kat.crash.*;
 import plus.kat.stream.*;
-import plus.kat.utils.Config;
 
 import static plus.kat.stream.Binary.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -2540,51 +2539,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 );
                 value = result;
             } else {
-                value = bucket.alloc(
+                value = bucket.apply(
                     it, count, min
                 );
             }
         }
-    }
-
-    /**
-     * Clean this {@link Chain}
-     */
-    protected void clean() {
-        hash = 0;
-        star = 0;
-        count = 0;
-        backup = null;
-    }
-
-    /**
-     * Clear this {@link Chain}
-     */
-    protected void clear() {
-        this.clean();
-        Bucket bt = bucket;
-        if (bt == null) {
-            value = EMPTY_BYTES;
-        } else {
-            byte[] it = bt.revert(value);
-            value = it != null ? it : EMPTY_BYTES;
-        }
-    }
-
-    /**
-     * Close this {@link Chain}
-     */
-    protected void close() {
-        this.clean();
-        Bucket bt = bucket;
-        if (bt != null) {
-            bucket = null;
-            byte[] it = value;
-            if (it.length != 0) {
-                bt.push(it);
-            }
-        }
-        value = EMPTY_BYTES;
     }
 
     /**
@@ -2665,117 +2624,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         public void close() {
             l = 0;
             b = null;
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.4
-     */
-    public static class Buffer implements Bucket {
-
-        public static final int SIZE, SCALE;
-
-        static {
-            SIZE = Config.get(
-                "kat.buffer.size", 4
-            );
-            SCALE = Config.get(
-                "kat.buffer.scale", 1024 * 4
-            );
-        }
-
-        public static final Buffer
-            INS = new Buffer();
-
-        private final byte[][]
-            bucket = new byte[SIZE][];
-
-        @NotNull
-        public byte[] alloc() {
-            Thread th = Thread.currentThread();
-            int tr = th.hashCode() & 0xFFFFFF;
-
-            byte[] it;
-            int ix = tr % SIZE;
-
-            synchronized (this) {
-                it = bucket[ix];
-                bucket[ix] = null;
-            }
-
-            if (it != null &&
-                SCALE <= it.length) {
-                return it;
-            }
-
-            return new byte[SCALE];
-        }
-
-        @Override
-        public byte[] alloc(
-            @NotNull byte[] it, int len, int min
-        ) {
-            Thread th = Thread.currentThread();
-            int ix = (th.hashCode() & 0xFFFFFF) % SIZE;
-
-            byte[] data;
-            if (min <= SCALE) {
-                synchronized (this) {
-                    data = bucket[ix];
-                    bucket[ix] = null;
-                }
-                if (data == null ||
-                    SCALE > it.length) {
-                    data = new byte[SCALE];
-                }
-                if (it.length != 0) {
-                    System.arraycopy(
-                        it, 0, data, 0, len
-                    );
-                }
-            } else {
-                int cap = it.length +
-                    (it.length >> 1);
-                if (cap < min) {
-                    cap = min;
-                }
-                data = new byte[cap];
-                if (it.length != 0) {
-                    System.arraycopy(
-                        it, 0, data, 0, len
-                    );
-
-                    if (SCALE == it.length) {
-                        synchronized (this) {
-                            bucket[ix] = it;
-                        }
-                    }
-                }
-            }
-
-            return data;
-        }
-
-        @Override
-        public void push(
-            @Nullable byte[] it
-        ) {
-            if (it != null && SCALE == it.length) {
-                Thread th = Thread.currentThread();
-                int ix = (th.hashCode() & 0xFFFFFF) % SIZE;
-                synchronized (this) {
-                    bucket[ix] = it;
-                }
-            }
-        }
-
-        @Override
-        public byte[] revert(
-            @Nullable byte[] it
-        ) {
-            this.push(it);
-            return EMPTY_BYTES;
         }
     }
 }

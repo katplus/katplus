@@ -21,7 +21,8 @@ import plus.kat.stream.*;
 
 import io.netty.buffer.ByteBuf;
 
-import static plus.kat.kernel.Chain.Buffer;
+import static plus.kat.kernel.Dram.Memory;
+import static plus.kat.kernel.Dram.Memory.INS;
 
 /**
  * @author kraity
@@ -58,16 +59,16 @@ public class ByteBufReader extends AbstractReader {
             int r = range;
             if (r == 0) {
                 if (cap > 512) {
-                    tmp = Buffer.INS.alloc();
+                    tmp = INS.alloc();
                 } else {
                     tmp = new byte[Math.min(cap, 256)];
                 }
             } else {
-                int s = Buffer.SCALE;
+                int s = Memory.SCALE;
                 if (r > s) {
                     tmp = new byte[r];
                 } else {
-                    tmp = Buffer.INS.alloc();
+                    tmp = INS.alloc();
                 }
             }
             cache = tmp;
@@ -85,7 +86,7 @@ public class ByteBufReader extends AbstractReader {
 
     @Override
     public void close() {
-        Buffer.INS.push(cache);
+        INS.share(cache);
         value = null;
         cache = null;
         offset = -1;

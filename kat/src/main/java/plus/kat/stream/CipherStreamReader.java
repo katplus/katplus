@@ -21,7 +21,7 @@ import javax.crypto.Cipher;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static plus.kat.kernel.Chain.Buffer.INS;
+import static plus.kat.kernel.Dram.Memory.INS;
 
 /**
  * @author kraity
@@ -105,7 +105,7 @@ public class CipherStreamReader extends AbstractReader {
     @Override
     public void close() {
         try {
-            INS.push(
+            INS.share(
                 buffer
             );
             value.close();
