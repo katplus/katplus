@@ -65,7 +65,7 @@ public class Dram extends Chain {
     }
 
     /**
-     * @param data the specified chain to be used
+     * @param chain the specified chain to be used
      */
     public Dram(
         @NotNull Chain chain
@@ -179,11 +179,19 @@ public class Dram extends Chain {
      * Sets the modifier type of {@link Dram}
      *
      * @param type the specified type
+     * @throws Collapse If the dram is read-only
+     * @see Chain#readonly()
      */
     public void setType(
         @Nullable Type type
     ) {
-        this.type = type;
+        if (bucket != null) {
+            this.type = type;
+        } else {
+            throw new Collapse(
+                "Unexpectedly, the dram is read-only"
+            );
+        }
     }
 
     /**
@@ -401,6 +409,7 @@ public class Dram extends Chain {
      * Clean this {@link Dram}
      *
      * @throws Collapse If the dram is read-only
+     * @see Chain#readonly()
      * @since 0.0.5
      */
     public void clean() {
@@ -421,6 +430,7 @@ public class Dram extends Chain {
      * Clear this {@link Dram}
      *
      * @throws Collapse If the dram is read-only
+     * @see Chain#readonly()
      * @since 0.0.5
      */
     public void clear() {
@@ -444,6 +454,7 @@ public class Dram extends Chain {
      * Close this {@link Dram}
      *
      * @throws Collapse If the dram is read-only
+     * @see Chain#readonly()
      * @since 0.0.5
      */
     public void close() {

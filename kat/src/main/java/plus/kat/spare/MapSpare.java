@@ -437,7 +437,6 @@ public class MapSpare extends Property<Map> {
                     child.getResult()
                 );
             } else {
-                alias.setType(key);
                 entity.put(
                     s0.read(
                         event, alias

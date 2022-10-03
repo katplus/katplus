@@ -146,33 +146,6 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * Returns the modifier type
-     */
-    @Override
-    public Type getType() {
-        return type;
-    }
-
-    /**
-     * Sets the modifier type of {@link Space}
-     *
-     * @param type the specified type
-     * @throws Collapse If the dram is read-only
-     */
-    @Override
-    public void setType(
-        @Nullable Type type
-    ) {
-        if (bucket != null) {
-            this.type = type;
-        } else {
-            throw new Collapse(
-                "Unexpectedly, the dram is read-only"
-            );
-        }
-    }
-
-    /**
      * Returns a {@link Space} of this {@link Space}
      *
      * @param start the start index, inclusive

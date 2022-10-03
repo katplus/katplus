@@ -24,6 +24,7 @@ import plus.kat.stream.*;
 import plus.kat.utils.*;
 
 import java.io.InputStream;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -146,6 +147,18 @@ public class Value extends Dram {
             star = 0;
             it[i] = b;
         }
+    }
+
+    /**
+     * Sets the modifier type of {@link Value}
+     *
+     * @param type the specified type
+     */
+    @Override
+    public void setType(
+        @NotNull Type type
+    ) {
+        this.type = type;
     }
 
     /**
