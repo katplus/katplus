@@ -429,8 +429,18 @@ public class Value extends Dram {
     }
 
     /**
+     * Sets the length of this value
+     *
+     * <pre>{@code
+     *  Value value = ..
+     *  value.add("plus.kat");
+     *  value.slip(3);
+     *  int length = value.length(); // 3
+     * }</pre>
+     *
      * @param length the specified length
      * @throws ArrayIndexOutOfBoundsException if the index argument is negative or out of range
+     * @see Value#length()
      */
     public void slip(
         int length

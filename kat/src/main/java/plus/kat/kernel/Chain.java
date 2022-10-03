@@ -2160,6 +2160,32 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns this {@link Chain} as an {@link InputStream}
+     *
+     * @since 0.0.5
+     */
+    @NotNull
+    public InputStream toInputStream() {
+        return new ByteArrayInputStream(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Returns this {@link Chain} as an {@link InputStream}
+     *
+     * @since 0.0.5
+     */
+    @NotNull
+    public InputStream toInputStream(
+        int offset, int length
+    ) {
+        return new ByteArrayInputStream(
+            value, offset, length
+        );
+    }
+
+    /**
      * @param c the specified {@link Chain}
      */
     protected void chain(
@@ -2614,17 +2640,20 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         }
 
         /**
-         * @throws IllegalStateException if the {@code offset} argument is negative
+         * Sets the index of this reader
+         *
+         * @throws IllegalStateException if the index argument is negative
          */
         public void slip(
             int index
         ) {
-            if (index < 0) {
+            if (index >= 0) {
+                i = index;
+            } else {
                 throw new IllegalStateException(
-                    "The 'offset' argument is negative"
+                    "Unexpectedly, the index is negative"
                 );
             }
-            this.i = index;
         }
 
         /**
