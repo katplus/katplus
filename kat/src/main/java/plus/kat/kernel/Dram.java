@@ -65,7 +65,7 @@ public class Dram extends Chain {
     }
 
     /**
-     * @param chain specify the {@link Chain} to be mirrored
+     * @param data the specified chain to be used
      */
     public Dram(
         @NotNull Chain chain
@@ -74,7 +74,7 @@ public class Dram extends Chain {
     }
 
     /**
-     * @param bucket the specified {@link Bucket} to be used
+     * @param bucket the specified bucket to be used
      */
     public Dram(
         @Nullable Bucket bucket
@@ -83,7 +83,19 @@ public class Dram extends Chain {
     }
 
     /**
-     * @param sequence specify the {@link CharSequence} to be mirrored
+     * @param chain  the specified chain to be used
+     * @param bucket the specified bucket to be used
+     */
+    public Dram(
+        @NotNull Chain chain,
+        @Nullable Bucket bucket
+    ) {
+        super(chain);
+        this.bucket = bucket;
+    }
+
+    /**
+     * @param sequence the specified sequence to be used
      */
     public Dram(
         @Nullable CharSequence sequence

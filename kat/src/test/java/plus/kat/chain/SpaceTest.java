@@ -8,7 +8,8 @@ public class SpaceTest {
 
     @Test
     public void test_type() {
-        assertEquals("[B", new Space(byte[].class).getTypeName());
+        assertEquals("B", new Space(byte[].class, "B").getTypeName());
+        assertEquals("byte[]", new Space(byte[].class).getTypeName());
         assertEquals("java.lang.String", new Space(String.class).getTypeName());
         assertEquals("java.lang.Object", new Space(Object.class).getTypeName());
     }

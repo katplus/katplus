@@ -89,7 +89,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Initialize the internal specified byte[] to copy from {@link Chain}
      *
-     * @param chain specify the {@link Chain} to be mirrored
+     * @param chain the specified {@link Chain} to be used
      */
     public Chain(
         @Nullable Chain chain

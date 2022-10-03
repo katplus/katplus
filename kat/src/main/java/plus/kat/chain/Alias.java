@@ -35,19 +35,10 @@ public final class Alias extends Dram {
         EMPTY = new Alias();
 
     /**
-     * default
+     * For internal use
      */
     private Alias() {
         super();
-    }
-
-    /**
-     * @param size the initial capacity
-     */
-    public Alias(
-        int size
-    ) {
-        super(size);
     }
 
     /**
@@ -60,16 +51,16 @@ public final class Alias extends Dram {
     }
 
     /**
-     * @param data specify the {@link Alias} to be mirrored
+     * @param chain the specified chain to be used
      */
     public Alias(
-        @NotNull Alias data
+        @NotNull Chain chain
     ) {
-        super(data);
+        super(chain);
     }
 
     /**
-     * @param bucket the specified {@link Bucket} to be used
+     * @param bucket the specified bucket to be used
      */
     public Alias(
         @Nullable Bucket bucket
@@ -78,8 +69,20 @@ public final class Alias extends Dram {
     }
 
     /**
-     * @param sequence specify the {@link CharSequence} to be mirrored
-     * @see String#getBytes()
+     * @param chain  the specified chain to be used
+     * @param bucket the specified bucket to be used
+     */
+    public Alias(
+        @NotNull Chain chain,
+        @Nullable Bucket bucket
+    ) {
+        super(
+            chain, bucket
+        );
+    }
+
+    /**
+     * @param sequence the specified sequence to be used
      */
     public Alias(
         @Nullable CharSequence sequence

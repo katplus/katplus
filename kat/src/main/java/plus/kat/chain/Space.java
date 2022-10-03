@@ -34,7 +34,6 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
  * @author kraity
  * @since 0.0.1
  */
-@SuppressWarnings("deprecation")
 public final class Space extends Dram implements Type {
     /**
      * empty space
@@ -42,28 +41,25 @@ public final class Space extends Dram implements Type {
     public static final Space
         EMPTY = new Space();
 
-    /**
-     * cached spaces
-     */
-    public static final Space $ = new Space(new byte[]{'$'}, Object.class);
-    public static final Space $M = new Space(new byte[]{'M'}, Map.class);
-    public static final Space $L = new Space(new byte[]{'L'}, List.class);
-    public static final Space $A = new Space(new byte[]{'A'}, Object[].class);
-    public static final Space $S = new Space(new byte[]{'S'}, Set.class);
-    public static final Space $E = new Space(new byte[]{'E'}, Crash.class);
-    public static final Space $s = new Space(new byte[]{'s'}, String.class);
-    public static final Space $n = new Space(new byte[]{'n'}, Number.class);
-    public static final Space $i = new Space(new byte[]{'i'}, int.class);
-    public static final Space $l = new Space(new byte[]{'l'}, long.class);
-    public static final Space $f = new Space(new byte[]{'f'}, float.class);
-    public static final Space $d = new Space(new byte[]{'d'}, double.class);
-    public static final Space $b = new Space(new byte[]{'b'}, boolean.class);
-    public static final Space $c = new Space(new byte[]{'c'}, char.class);
-    public static final Space $o = new Space(new byte[]{'o'}, byte.class);
-    public static final Space $u = new Space(new byte[]{'u'}, short.class);
-    public static final Space $B = new Space(new byte[]{'B'}, byte[].class);
-    public static final Space $I = new Space(new byte[]{'I'}, BigInteger.class);
-    public static final Space $D = new Space(new byte[]{'D'}, BigDecimal.class);
+    public static final Space $ = new Space(Object.class, "$");
+    public static final Space $M = new Space(Map.class, "M");
+    public static final Space $L = new Space(List.class, "L");
+    public static final Space $A = new Space(Object[].class, "A");
+    public static final Space $S = new Space(Set.class, "S");
+    public static final Space $E = new Space(Crash.class, "E");
+    public static final Space $s = new Space(String.class, "s");
+    public static final Space $n = new Space(Number.class, "n");
+    public static final Space $i = new Space(int.class, "i");
+    public static final Space $l = new Space(long.class, "l");
+    public static final Space $f = new Space(float.class, "f");
+    public static final Space $d = new Space(double.class, "d");
+    public static final Space $b = new Space(boolean.class, "b");
+    public static final Space $c = new Space(char.class, "c");
+    public static final Space $o = new Space(byte.class, "o");
+    public static final Space $u = new Space(short.class, "u");
+    public static final Space $B = new Space(byte[].class, "B");
+    public static final Space $I = new Space(BigInteger.class, "I");
+    public static final Space $D = new Space(BigDecimal.class, "D");
 
     /**
      * For internal use
@@ -73,28 +69,53 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * For internal use
+     * @param type the specified type
      */
-    private Space(
-        byte[] b
+    public Space(
+        @NotNull Type type
     ) {
-        super(b);
-        count = b.length;
+        this(
+            type, type.getTypeName()
+        );
     }
 
     /**
-     * For internal use
+     * @param type the specified type
+     * @param name the specified name of type
      */
-    private Space(
-        byte[] b, Type t
+    public Space(
+        @NotNull Type type,
+        @NotNull String name
     ) {
-        super(b);
-        type = t;
-        count = b.length;
+        super(
+            Binary.latin(name)
+        );
+        backup = name;
+        this.star |= 2;
+        this.type = type;
+        this.count = value.length;
     }
 
     /**
-     * @param bucket the specified {@link Bucket} to be used
+     * @param data the initial byte array
+     */
+    public Space(
+        @NotNull byte[] data
+    ) {
+        super(data);
+    }
+
+    /**
+     * @param chain the specified chain to be used
+     */
+    public Space(
+        @NotNull Chain chain
+    ) {
+        super(chain);
+    }
+
+    /**
+     * @param bucket the specified bucket to be used
      */
     public Space(
         @Nullable Bucket bucket
@@ -103,59 +124,25 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * @param type specify the {@link Class} associated with this {@link Space}
-     * @throws NullPointerException If the {@code type} is null
+     * @param chain  the specified chain to be used
+     * @param bucket the specified bucket to be used
      */
     public Space(
-        @NotNull Class<?> type
+        @NotNull Chain chain,
+        @Nullable Bucket bucket
     ) {
-        this(type.getName());
-        this.type = type;
+        super(
+            chain, bucket
+        );
     }
 
     /**
-     * @param space specify the {@link String} to be mirrored
-     * @param type  specify the {@link Type} associated with this {@link Space}
-     * @throws NullPointerException If the {@code space} is null
+     * @param sequence the specified sequence to be used
      */
     public Space(
-        @NotNull String space,
-        @Nullable Type type
+        @Nullable CharSequence sequence
     ) {
-        this(space);
-        this.type = type;
-    }
-
-    /**
-     * @param space specify the {@link String} to be mirrored
-     * @throws NullPointerException If the {@code space} is null
-     */
-    public Space(
-        @NotNull String space
-    ) {
-        super(space.length());
-        int i = 0;
-        while (i < value.length) {
-            char c = space.charAt(i++);
-            if (c <= 0x20) {
-                continue;
-            }
-            byte b = (byte) c;
-            if (esc(b)) {
-                continue;
-            }
-            value[count++] = b;
-        }
-
-        star |= 2;
-        if (i == count) {
-            backup = space;
-        } else {
-            //noinspection deprecation
-            backup = new String(
-                value, 0, 0, count
-            );
-        }
+        super(sequence);
     }
 
     /**
@@ -314,30 +301,36 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * @param space the space to be compared
+     * Returns a true only
+     * if this chain is the name
+     *
+     * @param name the name to be compared
      */
     @Override
     public boolean is(
-        byte space
+        byte name
     ) {
         return count == 1 &&
-            value[0] == space;
+            value[0] == name;
     }
 
     /**
-     * @param space the space to be compared
+     * Returns a true only
+     * if this chain is the name
+     *
+     * @param name the name to be compared
      */
     @Override
     public boolean is(
-        char space
+        char name
     ) {
         return count == 1 &&
-            value[0] == (byte) space;
+            value[0] == name;
     }
 
     /**
-     * Returns a {@code boolean}
-     * {@code true} only if {@link Space} is {@code $}
+     * Returns a true only
+     * if this chain is {@code '$'}
      */
     public boolean isAny() {
         return count == 1 &&
@@ -345,8 +338,8 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * Returns a {@code boolean}
-     * {@code true} only if {@link Space} is {@code M}
+     * Returns a true only
+     * if this chain is {@code 'M'}
      */
     public boolean isMap() {
         return count == 1 &&
@@ -354,8 +347,8 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * Returns a {@code boolean}
-     * {@code true} only if {@link Space} is {@code S}
+     * Returns a true only
+     * if this chain is {@code 'S'}
      */
     public boolean isSet() {
         return count == 1 &&
@@ -363,8 +356,8 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * Returns a {@code boolean}
-     * {@code true} only if {@link Space} is {@code L}
+     * Returns a true only
+     * if this chain is {@code 'L'}
      */
     public boolean isList() {
         return count == 1 &&
@@ -372,44 +365,12 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * Returns a {@code boolean}
-     * {@code true} only if {@link Space} is {@code A}
+     * Returns a true only
+     * if this chain is {@code 'A'}
      */
     public boolean isArray() {
         return count == 1 &&
             value[0] == 'A';
-    }
-
-    /**
-     * @param c the specified space
-     */
-    @NotNull
-    public static Space of(char c) {
-        if (c >= 0x80 || c <= 0x20) {
-            return EMPTY;
-        }
-
-        byte b = (byte) c;
-        if (esc(b)) {
-            return EMPTY;
-        }
-
-        return new Space(
-            new byte[]{b}
-        );
-    }
-
-    /**
-     * @param b the specified space
-     */
-    @NotNull
-    public static Space of(byte b) {
-        if (b <= 0x20 || esc(b)) {
-            return EMPTY;
-        }
-        return new Space(
-            new byte[]{b}
-        );
     }
 
     /**

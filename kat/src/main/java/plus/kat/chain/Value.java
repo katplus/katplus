@@ -56,7 +56,7 @@ public class Value extends Dram {
     }
 
     /**
-     * @param data specify the {@link Chain} to be mirrored
+     * @param data the specified chain to be used
      */
     public Value(
         @NotNull Chain data
@@ -65,7 +65,7 @@ public class Value extends Dram {
     }
 
     /**
-     * @param bucket the specified {@link Bucket} to be used
+     * @param bucket the specified bucket to be used
      */
     public Value(
         @Nullable Bucket bucket
@@ -74,7 +74,20 @@ public class Value extends Dram {
     }
 
     /**
-     * @param sequence specify the {@link CharSequence} to be mirrored
+     * @param chain  the specified chain to be used
+     * @param bucket the specified bucket to be used
+     */
+    public Value(
+        @NotNull Chain chain,
+        @Nullable Bucket bucket
+    ) {
+        super(
+            chain, bucket
+        );
+    }
+
+    /**
+     * @param sequence the specified sequence to be used
      */
     public Value(
         @Nullable CharSequence sequence
