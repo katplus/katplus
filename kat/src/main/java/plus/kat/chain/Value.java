@@ -25,7 +25,6 @@ import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -110,68 +109,8 @@ public class Value extends Dram {
     }
 
     /**
-     * Appends the byte value to this {@link Value}
-     *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.add((byte) 'k');
-     * }</pre>
-     *
-     * @param b the specified byte value
-     */
-    @Override
-    public void add(
-        byte b
-    ) {
-        byte[] it = value;
-        if (count != it.length) {
-            star = 0;
-            it[count++] = b;
-        } else {
-            grow(count + 1);
-            star = 0;
-            value[count++] = b;
-        }
-    }
-
-    /**
-     * Sets the value of the specified location.
-     * Only if the index is within the internal value range
-     *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.set(0, (byte) 'k');
-     * }</pre>
-     *
-     * @param i the specified index
-     * @param b the specified value
-     * @throws ArrayIndexOutOfBoundsException if the index argument is negative
-     */
-    @Override
-    public void set(
-        int i, byte b
-    ) {
-        byte[] it = value;
-        if (i < it.length) {
-            star = 0;
-            it[i] = b;
-        }
-    }
-
-    /**
-     * Sets the modifier type of {@link Value}
-     *
-     * @param type the specified type
-     */
-    @Override
-    public void setType(
-        @NotNull Type type
-    ) {
-        this.type = type;
-    }
-
-    /**
-     * Returns a {@link Value} of this {@link Value}
+     * Returns a {@link Value} that
+     * is a subsequence of this {@link Value}
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive

@@ -175,7 +175,8 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * Returns a {@link Space} of this {@link Space}
+     * Returns a {@link Space} that
+     * is a subsequence of this {@link Space}
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive

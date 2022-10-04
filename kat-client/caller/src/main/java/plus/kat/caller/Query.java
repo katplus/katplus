@@ -82,7 +82,8 @@ public class Query extends Chain {
     }
 
     /**
-     * Returns a {@link Query} of this {@link Query}
+     * Returns a {@link Query} that
+     * is a subsequence of this {@link Query}
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive

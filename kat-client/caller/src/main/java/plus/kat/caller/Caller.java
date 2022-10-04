@@ -86,7 +86,8 @@ public abstract class Caller extends Chain {
     }
 
     /**
-     * Returns a {@link Value} of this {@link Client}
+     * Returns a {@link Value} that
+     * is a subsequence of this {@link Caller}
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive

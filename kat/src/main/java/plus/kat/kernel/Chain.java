@@ -204,7 +204,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns a {@link CharSequence} of this {@link Chain}
+     * Returns a {@link CharSequence} that
+     * is a subsequence of this {@link Chain}
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive

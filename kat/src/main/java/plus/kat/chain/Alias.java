@@ -104,7 +104,8 @@ public final class Alias extends Dram {
     }
 
     /**
-     * Returns a {@link Alias} of this {@link Alias}
+     * Returns a {@link Alias} that
+     * is a subsequence of this {@link Alias}
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive

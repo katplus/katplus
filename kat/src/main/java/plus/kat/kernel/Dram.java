@@ -20,11 +20,9 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.crash.*;
 import plus.kat.stream.*;
-import plus.kat.utils.Config;
+import plus.kat.utils.*;
 
 import java.lang.reflect.Type;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  * @author kraity
@@ -133,6 +131,22 @@ public class Dram extends Chain {
     }
 
     /**
+     * Returns a {@link Dram} that
+     * is a subsequence of this {@link Dram}
+     *
+     * @param start the start index, inclusive
+     * @param end   the end index, exclusive
+     */
+    @Override
+    public Dram subSequence(
+        int start, int end
+    ) {
+        return new Dram(
+            toBytes(start, end)
+        );
+    }
+
+    /**
      * Appends the byte value
      *
      * @param b the specified byte value
@@ -211,75 +225,6 @@ public class Dram extends Chain {
                 "Unexpectedly, the chain is finally fixed"
             );
         }
-    }
-
-    /**
-     * Returns a {@link Dram} of this {@link Dram}
-     *
-     * @param start the start index, inclusive
-     * @param end   the end index, exclusive
-     */
-    @Override
-    public Dram subSequence(
-        int start, int end
-    ) {
-        return new Dram(
-            toBytes(start, end)
-        );
-    }
-
-    /**
-     * Returns a SecretKeySpec, please check {@link #length()}
-     *
-     * @throws IllegalArgumentException If the algo is null
-     */
-    @NotNull
-    public SecretKeySpec asSecretKeySpec(
-        @NotNull String algo
-    ) {
-        return new SecretKeySpec(
-            value, 0, count, algo
-        );
-    }
-
-    /**
-     * Returns a SecretKeySpec, please check {@code offset}, {@code algo} and {@code length}
-     *
-     * @throws IllegalArgumentException       If the algo is null or the offset out of range
-     * @throws ArrayIndexOutOfBoundsException If the length is negative
-     */
-    @NotNull
-    public SecretKeySpec asSecretKeySpec(
-        @NotNull String algo, int offset, int length
-    ) {
-        return new SecretKeySpec(
-            value, offset, length, algo
-        );
-    }
-
-    /**
-     * Returns a IvParameterSpec, please check {@link #length()}
-     */
-    @NotNull
-    public IvParameterSpec asIvParameterSpec() {
-        return new IvParameterSpec(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Returns a IvParameterSpec, please check {@code offset} and {@code length}
-     *
-     * @throws IllegalArgumentException       If the offset out of range
-     * @throws ArrayIndexOutOfBoundsException If the length is negative
-     */
-    @NotNull
-    public IvParameterSpec asIvParameterSpec(
-        int offset, int length
-    ) {
-        return new IvParameterSpec(
-            value, offset, length
-        );
     }
 
     /**
