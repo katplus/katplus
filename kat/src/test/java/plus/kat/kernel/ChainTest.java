@@ -197,7 +197,7 @@ public class ChainTest {
         Value v2 = new Value();
         v2.add(
             new ByteArrayInputStream(
-                v1.getSource(), 0, v1.length()
+                v1.value, 0, v1.count
             )
         );
 

@@ -38,28 +38,36 @@ public final class Alias extends Dram {
      * For internal use
      */
     private Alias() {
-        super();
+        super(true);
     }
 
     /**
+     * Constructs a final fixed alias
+     *
      * @param data the initial byte array
      */
     public Alias(
         @NotNull byte[] data
     ) {
         super(data);
+        star |= Integer.MIN_VALUE;
     }
 
     /**
+     * Constructs a final fixed alias
+     *
      * @param chain the specified chain to be used
      */
     public Alias(
         @NotNull Chain chain
     ) {
         super(chain);
+        star |= Integer.MIN_VALUE;
     }
 
     /**
+     * Constructs a mutable alias
+     *
      * @param bucket the specified bucket to be used
      */
     public Alias(
@@ -69,6 +77,8 @@ public final class Alias extends Dram {
     }
 
     /**
+     * Constructs a mutable alias
+     *
      * @param chain  the specified chain to be used
      * @param bucket the specified bucket to be used
      */
@@ -82,12 +92,15 @@ public final class Alias extends Dram {
     }
 
     /**
+     * Constructs a final fixed alias
+     *
      * @param sequence the specified sequence to be used
      */
     public Alias(
         @Nullable CharSequence sequence
     ) {
         super(sequence);
+        star |= Integer.MIN_VALUE;
     }
 
     /**

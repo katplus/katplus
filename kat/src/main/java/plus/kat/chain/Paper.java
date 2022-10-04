@@ -76,32 +76,6 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     }
 
     /**
-     * Returns {@code true} if, and only if, internal {@code byte[]} can be shared
-     *
-     * @see Chain#getSource()
-     * @since 0.0.2
-     */
-    @Override
-    public boolean isShared() {
-        return bucket == null;
-    }
-
-    /**
-     * Returns a {@link String} of this {@link Paper}
-     *
-     * @param start the start index, inclusive
-     * @param end   the end index, exclusive
-     */
-    @Override
-    public String subSequence(
-        int start, int end
-    ) {
-        return toString(
-            start, end
-        );
-    }
-
-    /**
      * @param b the specified byte value
      */
     @Override
@@ -833,46 +807,6 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     }
 
     /**
-     * Clear this {@link Paper}
-     *
-     * @since 0.0.2
-     */
-    public void clear() {
-        byte[] it = value;
-        if (it.length != 0) {
-            hash = 0;
-            star = 0;
-            count = 0;
-            backup = null;
-            Bucket bt = bucket;
-            if (bt != null) {
-                value = bt.swop(it);
-            } else {
-                value = EMPTY_BYTES;
-            }
-        }
-    }
-
-    /**
-     * Close this {@link Paper}
-     *
-     * @since 0.0.2
-     */
-    @Override
-    public void close() {
-        byte[] it = value;
-        if (it.length != 0) {
-            hash = 0;
-            star = 0;
-            count = 0;
-            backup = null;
-            value = EMPTY_BYTES;
-            Bucket bt = bucket;
-            if (bt != null) bt.share(it);
-        }
-    }
-
-    /**
      * @since 0.0.2
      */
     protected void escape(
@@ -925,6 +859,25 @@ public abstract class Paper extends Chain implements Flow, Closeable {
     }
 
     /**
+     * Close this {@link Paper}
+     *
+     * @since 0.0.2
+     */
+    @Override
+    public void close() {
+        byte[] it = value;
+        if (it.length != 0) {
+            hash = 0;
+            star = 0;
+            count = 0;
+            backup = null;
+            value = EMPTY_BYTES;
+            Bucket bt = bucket;
+            if (bt != null) bt.share(it);
+        }
+    }
+
+    /**
      * @author kraity
      * @since 0.0.4
      */
@@ -958,7 +911,6 @@ public abstract class Paper extends Chain implements Flow, Closeable {
             if (i < GROUP) {
                 Thread th = Thread.currentThread();
                 int tr = th.hashCode() & 0xFFFFFF;
-
                 int ix = i * GROUP + tr % SIZE;
                 synchronized (this) {
                     bucket[ix] = it;
@@ -972,9 +924,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
         public byte[] swop(
             @NotNull byte[] it
         ) {
-            if (it.length != 0) {
-                this.share(it);
-            }
+            this.share(it);
             return EMPTY_BYTES;
         }
 

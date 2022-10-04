@@ -16,7 +16,6 @@
 package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
-import plus.kat.anno.Nullable;
 
 /**
  * @author kraity
@@ -38,7 +37,7 @@ public interface Bucket {
      *
      * @param old the specified array that will be released
      */
-    @Nullable
+    @NotNull
     byte[] swop(
         @NotNull byte[] old
     );

@@ -33,13 +33,15 @@ import java.lang.reflect.Type;
  */
 public class Value extends Dram {
     /**
-     * default
+     * Constructs a mutable value
      */
     public Value() {
         super();
     }
 
     /**
+     * Constructs a mutable value
+     *
      * @param size the initial capacity
      */
     public Value(
@@ -49,6 +51,8 @@ public class Value extends Dram {
     }
 
     /**
+     * Constructs a mutable value
+     *
      * @param data the initial byte array
      */
     public Value(
@@ -58,6 +62,8 @@ public class Value extends Dram {
     }
 
     /**
+     * Constructs a mutable value
+     *
      * @param data the specified chain to be used
      */
     public Value(
@@ -67,6 +73,8 @@ public class Value extends Dram {
     }
 
     /**
+     * Constructs a mutable value
+     *
      * @param bucket the specified bucket to be used
      */
     public Value(
@@ -76,6 +84,8 @@ public class Value extends Dram {
     }
 
     /**
+     * Constructs a mutable value
+     *
      * @param chain  the specified chain to be used
      * @param bucket the specified bucket to be used
      */
@@ -89,24 +99,14 @@ public class Value extends Dram {
     }
 
     /**
+     * Constructs a mutable value
+     *
      * @param sequence the specified sequence to be used
      */
     public Value(
         @Nullable CharSequence sequence
     ) {
         super(sequence);
-    }
-
-    /**
-     * Returns {@code true} if, and only if,
-     * internal {@code byte[]} can be shared
-     *
-     * @see Chain#getSource()
-     * @since 0.0.2
-     */
-    @Override
-    public boolean isShared() {
-        return bucket == null;
     }
 
     /**
@@ -597,7 +597,7 @@ public class Value extends Dram {
                 data = bucket[i];
                 bucket[i] = null;
             }
-            return data;
+            return data == null ? EMPTY_BYTES : data;
         }
 
         @Override

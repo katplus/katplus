@@ -59,14 +59,14 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         EMPTY_CHARS = {};
 
     /**
-     * default
+     * Constructs an empty chain
      */
     public Chain() {
         value = EMPTY_BYTES;
     }
 
     /**
-     * Initialize a {@code byte[]} of the specified size internally
+     * Constructs a chain with the specified size
      *
      * @param size the initial capacity
      */
@@ -77,7 +77,21 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Initialize the specified byte[] internally
+     * Constructs an empty chain
+     *
+     * @param fixed the specified state
+     */
+    public Chain(
+        boolean fixed
+    ) {
+        value = EMPTY_BYTES;
+        if (fixed) {
+            star |= Integer.MIN_VALUE;
+        }
+    }
+
+    /**
+     * Constructs a chain with the specified data
      *
      * @param data the initial byte array
      */
@@ -88,7 +102,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Initialize the internal specified byte[] to copy from {@link Chain}
+     * Constructs a chain with the specified chain
      *
      * @param chain the specified {@link Chain} to be used
      */
@@ -104,7 +118,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Initialize the internal specified {@code bucket}
+     * Constructs an empty chain with the specified bucket
      *
      * @param bucket the specified {@link Bucket} to be used
      */
@@ -789,16 +803,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns true if and only
-     * if the chain is read-only
-     *
-     * @since 0.0.5
-     */
-    public boolean readonly() {
-        return backup == null;
-    }
-
-    /**
      * Returns true if, and only if,
      * the length of chain is {@code 0}
      */
@@ -857,32 +861,14 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns true if, and only if, this chain can be shared
+     * Returns true if, and only if,
+     * the chain is finally unchanged
      *
-     * @see Chain#getSource()
-     * @since 0.0.2
+     * @since 0.0.5
      */
-    public boolean isShared() {
-        return false;
-    }
-
-    /**
-     * Returns the internal value of this {@link Chain}
-     * and only if, {@link #isShared()} is true, otherwise throw collapse
-     *
-     * @throws Collapse If the internal value cannot be shared
-     * @see Chain#isShared()
-     * @since 0.0.4
-     */
-    @NotNull
-    public byte[] getSource() {
-        if (isShared()) {
-            return value;
-        }
-
-        throw new Collapse(
-            "Unexpectedly, the internal value cannot be shared"
-        );
+    public final boolean isFixed() {
+        // star & Integer.MIN_VALUE
+        return star < 0;
     }
 
     /**

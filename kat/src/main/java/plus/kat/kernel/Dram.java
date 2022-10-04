@@ -35,13 +35,15 @@ public class Dram extends Chain {
     protected Type type;
 
     /**
-     * default
+     * Constructs an empty dram
      */
     public Dram() {
         super();
     }
 
     /**
+     * Constructs a dram with the specified size
+     *
      * @param size the initial capacity
      */
     public Dram(
@@ -51,6 +53,19 @@ public class Dram extends Chain {
     }
 
     /**
+     * Constructs an empty dram
+     *
+     * @param fixed the specified state
+     */
+    public Dram(
+        boolean fixed
+    ) {
+        super(fixed);
+    }
+
+    /**
+     * Constructs a dram with the specified data
+     *
      * @param data the initial byte array
      */
     public Dram(
@@ -61,6 +76,8 @@ public class Dram extends Chain {
     }
 
     /**
+     * Constructs a dram with the specified chain
+     *
      * @param chain the specified chain to be used
      */
     public Dram(
@@ -70,6 +87,8 @@ public class Dram extends Chain {
     }
 
     /**
+     * Constructs an empty dram with the specified chain
+     *
      * @param bucket the specified bucket to be used
      */
     public Dram(
@@ -79,6 +98,8 @@ public class Dram extends Chain {
     }
 
     /**
+     * Constructs a dram with the specified chain and bucket
+     *
      * @param chain  the specified chain to be used
      * @param bucket the specified bucket to be used
      */
@@ -91,6 +112,8 @@ public class Dram extends Chain {
     }
 
     /**
+     * Constructs a chain with the specified sequence
+     *
      * @param sequence the specified sequence to be used
      */
     public Dram(
@@ -113,29 +136,26 @@ public class Dram extends Chain {
      * Appends the byte value
      *
      * @param b the specified byte value
-     * @throws Collapse If the dram is read-only
+     * @throws Collapse If the dram is finally fixed
+     * @see Chain#isFixed()
      * @since 0.0.5
      */
     public void add(
         byte b
     ) {
-        Bucket bt = bucket;
-        if (bt != null) {
-            int size = count;
+        if (0 <= star) {
             byte[] it = value;
-
-            star = 0;
-            if (size != it.length) {
+            if (count != it.length) {
+                star = 0;
                 it[count++] = b;
             } else {
-                value = bt.apply(
-                    it, size, size + 1
-                );
+                grow(count + 1);
+                star = 0;
                 value[count++] = b;
             }
         } else {
             throw new Collapse(
-                "Unexpectedly, the dram is read-only"
+                "Unexpectedly, the dram is finally fixed"
             );
         }
     }
@@ -145,14 +165,15 @@ public class Dram extends Chain {
      *
      * @param i the specified index
      * @param b the specified value
-     * @throws Collapse                       If the dram is read-only
+     * @throws Collapse                       If the dram is finally fixed
      * @throws ArrayIndexOutOfBoundsException if the index argument is negative
+     * @see Chain#isFixed()
      * @since 0.0.5
      */
     public void set(
         int i, byte b
     ) {
-        if (bucket != null) {
+        if (0 <= star) {
             byte[] it = value;
             if (i < it.length) {
                 star = 0;
@@ -160,7 +181,7 @@ public class Dram extends Chain {
             }
         } else {
             throw new Collapse(
-                "Unexpectedly, the dram is read-only"
+                "Unexpectedly, the dram is finally fixed"
             );
         }
     }
@@ -178,12 +199,12 @@ public class Dram extends Chain {
      *
      * @param type the specified type
      * @throws Collapse If the dram is read-only
-     * @see Chain#readonly()
+     * @see Chain#isFixed()
      */
     public void setType(
         @Nullable Type type
     ) {
-        if (bucket != null) {
+        if (0 <= star) {
             this.type = type;
         } else {
             throw new Collapse(
@@ -264,8 +285,7 @@ public class Dram extends Chain {
     /**
      * Clean this {@link Dram}
      *
-     * @throws Collapse If the dram is read-only
-     * @see Chain#readonly()
+     * @throws Collapse If the dram doesn't own bucket
      * @since 0.0.5
      */
     public void clean() {
@@ -277,7 +297,7 @@ public class Dram extends Chain {
             backup = null;
         } else {
             throw new Collapse(
-                "Unexpectedly, the dram is read-only"
+                "Unexpectedly, the dram doesn't own bucket"
             );
         }
     }
@@ -285,8 +305,7 @@ public class Dram extends Chain {
     /**
      * Clear this {@link Dram}
      *
-     * @throws Collapse If the dram is read-only
-     * @see Chain#readonly()
+     * @throws Collapse If the dram doesn't own bucket
      * @since 0.0.5
      */
     public void clear() {
@@ -297,11 +316,13 @@ public class Dram extends Chain {
             count = 0;
             type = null;
             backup = null;
-            byte[] it = bt.swop(value);
-            value = it != null ? it : EMPTY_BYTES;
+            byte[] it = value;
+            if (it.length != 0) {
+                value = bt.swop(it);
+            }
         } else {
             throw new Collapse(
-                "Unexpectedly, the dram is read-only"
+                "Unexpectedly, the dram doesn't own bucket"
             );
         }
     }
@@ -309,8 +330,7 @@ public class Dram extends Chain {
     /**
      * Close this {@link Dram}
      *
-     * @throws Collapse If the dram is read-only
-     * @see Chain#readonly()
+     * @throws Collapse If the dram doesn't own bucket
      * @since 0.0.5
      */
     public void close() {
@@ -322,11 +342,13 @@ public class Dram extends Chain {
             type = null;
             backup = null;
             byte[] it = value;
-            value = EMPTY_BYTES;
-            if (it.length != 0) bt.share(it);
+            if (it.length != 0) {
+                bt.share(it);
+                value = EMPTY_BYTES;
+            }
         } else {
             throw new Collapse(
-                "Unexpectedly, the dram is read-only"
+                "Unexpectedly, the dram doesn't own bucket"
             );
         }
     }

@@ -65,10 +65,12 @@ public final class Space extends Dram implements Type {
      * For internal use
      */
     private Space() {
-        super();
+        super(true);
     }
 
     /**
+     * Constructs a final fixed space
+     *
      * @param type the specified type
      */
     public Space(
@@ -80,6 +82,8 @@ public final class Space extends Dram implements Type {
     }
 
     /**
+     * Constructs a final fixed space
+     *
      * @param type the specified type
      * @param name the specified name of type
      */
@@ -91,30 +95,38 @@ public final class Space extends Dram implements Type {
             Binary.latin(name)
         );
         backup = name;
-        this.star |= 2;
+        star |= 0x80000002;
         this.type = type;
         this.count = value.length;
     }
 
     /**
+     * Constructs a final fixed space
+     *
      * @param data the initial byte array
      */
     public Space(
         @NotNull byte[] data
     ) {
         super(data);
+        star |= Integer.MIN_VALUE;
     }
 
     /**
+     * Constructs a final fixed space
+     *
      * @param chain the specified chain to be used
      */
     public Space(
         @NotNull Chain chain
     ) {
         super(chain);
+        star |= Integer.MIN_VALUE;
     }
 
     /**
+     * Constructs a mutable space
+     *
      * @param bucket the specified bucket to be used
      */
     public Space(
@@ -124,6 +136,8 @@ public final class Space extends Dram implements Type {
     }
 
     /**
+     * Constructs a mutable space
+     *
      * @param chain  the specified chain to be used
      * @param bucket the specified bucket to be used
      */
@@ -137,12 +151,15 @@ public final class Space extends Dram implements Type {
     }
 
     /**
+     * Constructs a final fixed space
+     *
      * @param sequence the specified sequence to be used
      */
     public Space(
         @Nullable CharSequence sequence
     ) {
         super(sequence);
+        star |= Integer.MIN_VALUE;
     }
 
     /**

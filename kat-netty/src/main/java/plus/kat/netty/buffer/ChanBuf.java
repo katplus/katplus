@@ -19,6 +19,7 @@ import plus.kat.anno.NotNull;
 
 import plus.kat.Chan;
 import plus.kat.kernel.Chain;
+import plus.kat.kernel.Unsafe;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -54,13 +55,13 @@ public class ChanBuf {
             return Unpooled.EMPTY_BUFFER;
         }
 
-        if (!chain.isShared()) {
+        byte[] value = Unsafe.value(chain);
+        if (value == null) {
             return Unpooled.wrappedBuffer(
                 chain.toBytes()
             );
         }
 
-        byte[] value = chain.getSource();
         if (length == value.length) {
             return Unpooled.wrappedBuffer(value);
         }

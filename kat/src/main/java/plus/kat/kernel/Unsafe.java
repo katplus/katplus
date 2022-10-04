@@ -27,18 +27,32 @@ import plus.kat.stream.*;
  */
 public final class Unsafe {
     /**
-     * @throws Collapse             If the chain is immutable
+     * Unsafe method, and may be removed
+     *
      * @throws NullPointerException If the specified chain is null
      */
-    public static void set(
+    @Nullable
+    public static byte[] value(
+        @NotNull Chain c
+    ) {
+        return c.isFixed() ? null : c.value;
+    }
+
+    /**
+     * Unsafe method, and may be removed
+     *
+     * @throws Collapse             If the chain is finally fixed
+     * @throws NullPointerException If the specified chain is null
+     */
+    public static void bucket(
         @NotNull Chain c,
         @Nullable Bucket b
     ) {
-        if (!c.readonly()) {
+        if (!c.isFixed()) {
             c.bucket = b;
         } else {
             throw new Collapse(
-                "Unexpectedly, the chain is read-only"
+                "Unexpectedly, the chain is finally fixed"
             );
         }
     }
