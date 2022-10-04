@@ -147,25 +147,25 @@ public class Dram extends Chain {
     }
 
     /**
-     * Appends the byte value
+     * Adds the specified byte value
      *
-     * @param b the specified byte value
+     * @param data the specified byte value
      * @throws Collapse If the chain is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */
     public void add(
-        byte b
+        byte data
     ) {
         if (0 <= star) {
             byte[] it = value;
             if (count != it.length) {
                 star = 0;
-                it[count++] = b;
+                it[count++] = data;
             } else {
                 grow(count + 1);
                 star = 0;
-                value[count++] = b;
+                value[count++] = data;
             }
         } else {
             throw new Collapse(
@@ -177,21 +177,58 @@ public class Dram extends Chain {
     /**
      * Sets the value of the specified location
      *
-     * @param i the specified index
-     * @param b the specified value
+     * @param i    the specified index
+     * @param data the specified value
      * @throws Collapse                       If the chain is finally fixed
      * @throws ArrayIndexOutOfBoundsException if the index argument is negative
      * @see Chain#isFixed()
      * @since 0.0.5
      */
     public void set(
-        int i, byte b
+        int i, byte data
     ) {
         if (0 <= star) {
             byte[] it = value;
             if (i < it.length) {
                 star = 0;
-                it[i] = b;
+                it[i] = data;
+            }
+        } else {
+            throw new Collapse(
+                "Unexpectedly, the chain is finally fixed"
+            );
+        }
+    }
+
+    /**
+     * Sets the specified length of this chain
+     *
+     * <pre>{@code
+     *  Dram dram = ..
+     *  dram.add("plus.kat");
+     *  dram.slip(3);
+     *  int length = value.length(); // 3
+     * }</pre>
+     *
+     * @param length the specified length
+     * @throws Collapse                       If the chain is finally fixed
+     * @throws ArrayIndexOutOfBoundsException if the index argument is negative or out of range
+     * @see Chain#isFixed()
+     * @since 0.0.5
+     */
+    public void slip(
+        int length
+    ) {
+        if (0 <= star) {
+            if (length == 0) {
+                star = 0;
+                count = 0;
+            } else {
+                if (length < 0 || length > value.length) {
+                    throw new ArrayIndexOutOfBoundsException();
+                }
+                star = 0;
+                count = length;
             }
         } else {
             throw new Collapse(

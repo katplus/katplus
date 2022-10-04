@@ -25,6 +25,8 @@ import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.spec.IvParameterSpec;
 
 /**
  * @author kraity
@@ -419,32 +421,62 @@ public class Value extends Dram {
     }
 
     /**
-     * Sets the length of this value
+     * Returns this {@link Chain} as a {@link SecretKeySpec}
      *
-     * <pre>{@code
-     *  Value value = ..
-     *  value.add("plus.kat");
-     *  value.slip(3);
-     *  int length = value.length(); // 3
-     * }</pre>
-     *
-     * @param length the specified length
-     * @throws ArrayIndexOutOfBoundsException if the index argument is negative or out of range
-     * @see Value#length()
+     * @throws IllegalArgumentException If the algo is null
+     * @since 0.0.5
      */
-    public void slip(
-        int length
+    @NotNull
+    public SecretKeySpec asSecretKeySpec(
+        @NotNull String algo
     ) {
-        if (length == 0) {
-            star = 0;
-            count = 0;
-        } else {
-            if (length < 0 || length > value.length) {
-                throw new ArrayIndexOutOfBoundsException();
-            }
-            star = 0;
-            count = length;
-        }
+        return new SecretKeySpec(
+            value, 0, count, algo
+        );
+    }
+
+    /**
+     * Returns this {@link Chain} as a {@link SecretKeySpec}
+     *
+     * @throws IllegalArgumentException       If the algo is null or the offset out of range
+     * @throws ArrayIndexOutOfBoundsException If the length is negative
+     * @since 0.0.5
+     */
+    @NotNull
+    public SecretKeySpec asSecretKeySpec(
+        @NotNull String algo, int offset, int length
+    ) {
+        return new SecretKeySpec(
+            value, offset, length, algo
+        );
+    }
+
+    /**
+     * Returns this {@link Chain} as a {@link IvParameterSpec}
+     *
+     * @since 0.0.5
+     */
+    @NotNull
+    public IvParameterSpec asIvParameterSpec() {
+        return new IvParameterSpec(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Returns this {@link Chain} as a {@link IvParameterSpec}
+     *
+     * @throws IllegalArgumentException       If the offset out of range
+     * @throws ArrayIndexOutOfBoundsException If the length is negative
+     * @since 0.0.5
+     */
+    @NotNull
+    public IvParameterSpec asIvParameterSpec(
+        int offset, int length
+    ) {
+        return new IvParameterSpec(
+            value, offset, length
+        );
     }
 
     /**
