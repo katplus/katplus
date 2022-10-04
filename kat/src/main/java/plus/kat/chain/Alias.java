@@ -160,7 +160,7 @@ public final class Alias extends Dram {
     }
 
     /**
-     * Creates and returns a copy of this {@link Alias}
+     * Returns a fixed alias of clone this {@link Alias}
      */
     @NotNull
     public Alias copy() {

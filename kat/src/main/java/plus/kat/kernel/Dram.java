@@ -136,7 +136,7 @@ public class Dram extends Chain {
      * Appends the byte value
      *
      * @param b the specified byte value
-     * @throws Collapse If the dram is finally fixed
+     * @throws Collapse If the chain is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */
@@ -155,7 +155,7 @@ public class Dram extends Chain {
             }
         } else {
             throw new Collapse(
-                "Unexpectedly, the dram is finally fixed"
+                "Unexpectedly, the chain is finally fixed"
             );
         }
     }
@@ -165,7 +165,7 @@ public class Dram extends Chain {
      *
      * @param i the specified index
      * @param b the specified value
-     * @throws Collapse                       If the dram is finally fixed
+     * @throws Collapse                       If the chain is finally fixed
      * @throws ArrayIndexOutOfBoundsException if the index argument is negative
      * @see Chain#isFixed()
      * @since 0.0.5
@@ -181,7 +181,7 @@ public class Dram extends Chain {
             }
         } else {
             throw new Collapse(
-                "Unexpectedly, the dram is finally fixed"
+                "Unexpectedly, the chain is finally fixed"
             );
         }
     }
@@ -198,7 +198,7 @@ public class Dram extends Chain {
      * Sets the modifier type of {@link Dram}
      *
      * @param type the specified type
-     * @throws Collapse If the dram is read-only
+     * @throws Collapse If the chain is finally fixed
      * @see Chain#isFixed()
      */
     public void setType(
@@ -208,7 +208,7 @@ public class Dram extends Chain {
             this.type = type;
         } else {
             throw new Collapse(
-                "Unexpectedly, the dram is read-only"
+                "Unexpectedly, the chain is finally fixed"
             );
         }
     }
@@ -285,11 +285,12 @@ public class Dram extends Chain {
     /**
      * Clean this {@link Dram}
      *
-     * @throws Collapse If the dram doesn't own bucket
+     * @throws Collapse If the chain is finally fixed
+     * @see Chain#isFixed()
      * @since 0.0.5
      */
     public void clean() {
-        if (bucket != null) {
+        if (0 <= star) {
             hash = 0;
             star = 0;
             count = 0;
@@ -297,7 +298,7 @@ public class Dram extends Chain {
             backup = null;
         } else {
             throw new Collapse(
-                "Unexpectedly, the dram doesn't own bucket"
+                "Unexpectedly, the chain is finally fixed"
             );
         }
     }
@@ -305,51 +306,37 @@ public class Dram extends Chain {
     /**
      * Clear this {@link Dram}
      *
-     * @throws Collapse If the dram doesn't own bucket
+     * @throws Collapse If the chain is finally fixed
+     * @see Chain#isFixed()
      * @since 0.0.5
      */
     public void clear() {
-        Bucket bt = bucket;
-        if (bt != null) {
-            hash = 0;
-            star = 0;
-            count = 0;
-            type = null;
-            backup = null;
-            byte[] it = value;
-            if (it.length != 0) {
+        this.clean();
+        byte[] it = value;
+        if (it.length != 0) {
+            Bucket bt = bucket;
+            if (bt != null) {
                 value = bt.swop(it);
             }
-        } else {
-            throw new Collapse(
-                "Unexpectedly, the dram doesn't own bucket"
-            );
         }
     }
 
     /**
      * Close this {@link Dram}
      *
-     * @throws Collapse If the dram doesn't own bucket
+     * @throws Collapse If the chain is finally fixed
+     * @see Chain#isFixed()
      * @since 0.0.5
      */
     public void close() {
-        Bucket bt = bucket;
-        if (bt != null) {
-            hash = 0;
-            star = 0;
-            count = 0;
-            type = null;
-            backup = null;
-            byte[] it = value;
-            if (it.length != 0) {
+        this.clean();
+        byte[] it = value;
+        if (it.length != 0) {
+            Bucket bt = bucket;
+            if (bt != null) {
                 bt.share(it);
                 value = EMPTY_BYTES;
             }
-        } else {
-            throw new Collapse(
-                "Unexpectedly, the dram doesn't own bucket"
-            );
         }
     }
 

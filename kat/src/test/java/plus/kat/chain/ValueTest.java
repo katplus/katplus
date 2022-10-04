@@ -1,6 +1,7 @@
 package plus.kat.chain;
 
 import org.junit.jupiter.api.Test;
+import plus.kat.stream.Bucket;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,6 +13,23 @@ public class ValueTest {
         Value value = new Value(name);
         assertSame(name, value.toString());
         assertSame(value.toString(), value.toString());
+    }
+
+    @Test
+    public void test_isFixed() {
+        Value v0 = new Value("陆之岇");
+        assertFalse(v0.isFixed());
+        assertEquals(9, v0.length());
+
+        Value v1 = v0.copy();
+        assertFalse(v1.isFixed());
+
+        assertFalse(new Value(v0).isFixed());
+        assertFalse(new Value(new Value()).isFixed());
+        assertFalse(new Value(v1.toBytes()).isFixed());
+
+        assertFalse(new Value(v0, null).isFixed());
+        assertFalse(new Value((Bucket) null).isFixed());
     }
 
     @Test

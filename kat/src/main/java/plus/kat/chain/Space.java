@@ -125,6 +125,18 @@ public final class Space extends Dram implements Type {
     }
 
     /**
+     * Constructs a final fixed space
+     *
+     * @param space the specified space to be used
+     */
+    public Space(
+        @NotNull Space space
+    ) {
+        super(space);
+        star |= Integer.MIN_VALUE;
+    }
+
+    /**
      * Constructs a mutable space
      *
      * @param bucket the specified bucket to be used
@@ -435,6 +447,14 @@ public final class Space extends Dram implements Type {
     @Override
     public Charset charset() {
         return US_ASCII;
+    }
+
+    /**
+     * Returns a fixed space of clone this {@link Space}
+     */
+    @NotNull
+    public Space copy() {
+        return count == 0 ? EMPTY : new Space(this);
     }
 
     /**

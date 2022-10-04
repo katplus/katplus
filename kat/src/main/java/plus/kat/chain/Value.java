@@ -123,7 +123,15 @@ public class Value extends Dram {
     public void add(
         byte b
     ) {
-        chain(b);
+        byte[] it = value;
+        if (count != it.length) {
+            star = 0;
+            it[count++] = b;
+        } else {
+            grow(count + 1);
+            star = 0;
+            value[count++] = b;
+        }
     }
 
     /**
@@ -501,9 +509,7 @@ public class Value extends Dram {
     }
 
     /**
-     * Creates and returns a copy of this {@link Value}
-     *
-     * @since 0.0.3
+     * Returns a mutable value of clone this {@link Value}
      */
     @NotNull
     public Value copy() {
