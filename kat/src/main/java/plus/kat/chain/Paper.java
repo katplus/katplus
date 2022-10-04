@@ -520,7 +520,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
 
         star = 0;
         while (i < k) {
-            // get char
+            // next char
             char c = data.charAt(i++);
 
             // U+0000 ~ U+007F
@@ -625,7 +625,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
 
         byte b1, b2, b3, b4;
         while (i < k) {
-            // get byte
+            // next byte
             b1 = data[i++];
 
             // U+0000 ~ U+007F
@@ -726,7 +726,7 @@ public abstract class Paper extends Chain implements Flow, Closeable {
         grow(count + l);
 
         while (i < k) {
-            // get char
+            // next char
             char c = data.charAt(i++);
 
             // U+0000 ~ U+007F

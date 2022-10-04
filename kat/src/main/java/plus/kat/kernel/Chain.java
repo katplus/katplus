@@ -385,15 +385,15 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         int i, char c
     ) {
         int l = count;
-        if (i >= l) {
+        if (l <= i) {
             return false;
         }
 
-        int o = 0;
+        int m = 0;
         byte[] it = value;
 
-        for (int k = 0; k < l; o++) {
-            if (i == o) {
+        for (int k = 0; k < l; m++) {
+            if (i == m) {
                 // U+0000 ~ U+007F
                 if (c < 0x80) {
                     return it[k] == (byte) c;
@@ -438,7 +438,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 }
             }
 
-            // get byte
+            // next byte
             byte b = it[k];
 
             // U+0000 ~ U+007F
@@ -463,7 +463,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
             // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
             else if ((b >> 3) == -2) {
-                if (i != ++o) {
+                if (i != ++m) {
                     k += 4;
                     continue;
                 }
@@ -515,11 +515,16 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         int l = count;
         int r = ch.length();
 
+        // ensure: r <= l <= 3r
+        if (r > l || l > 3 * r) {
+            return false;
+        }
+
         int i = 0, j = 0;
         byte[] it = value;
 
         for (; i < l && j < r; j++) {
-            // get char
+            // next char
             char c = ch.charAt(j);
 
             // U+0000 ~ U+007F
@@ -2614,7 +2619,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
         star = 0;
         while (i < k) {
-            // get char
+            // next char
             char d = c[i++];
 
             // U+0000 ~ U+007F
@@ -2677,7 +2682,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
         star = 0;
         while (i < k) {
-            // get char
+            // next char
             char d = c.charAt(i++);
 
             // U+0000 ~ U+007F

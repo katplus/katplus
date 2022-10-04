@@ -90,7 +90,7 @@ public final class Convert {
         }
 
         for (int m = 0, n = i; n < e; ) {
-            // get byte
+            // next byte
             byte b = it[n++];
 
             // U+0000 ~ U+007F

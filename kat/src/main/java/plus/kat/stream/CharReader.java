@@ -86,7 +86,7 @@ public class CharReader extends AbstractReader {
 
         int i = 0, l = tmp.length;
         for (; i < l && begin < end; begin++) {
-            // get char
+            // next char
             char c = value.charAt(begin);
 
             // U+0000 ~ U+007F

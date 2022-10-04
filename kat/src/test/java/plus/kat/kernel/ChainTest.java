@@ -34,11 +34,13 @@ public class ChainTest {
         assertTrue(new Value("😀陆之岇😀").is(5, '\uD83D'));
         assertTrue(new Value("😀陆之岇😀").is(6, '\uDE00'));
 
+        assertFalse(new Value("陆之岇").is(null));
         assertFalse(new Value("陆之岇").is("陆之岇+"));
         assertFalse(new Value("陆之岇+").is("陆之岇"));
         assertFalse(new Value("+陆之岇+").is("陆之岇+"));
         assertFalse(new Value("$$").is('$'));
         assertFalse(new Value("//kat.plus").is("kat.plus"));
+        assertFalse(new Value("😀陆之岇😀").is("😀陆之岇😀😀陆之岇😀"));
     }
 
     @Test

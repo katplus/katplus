@@ -289,7 +289,7 @@ public final class Binary {
         int size = 0;
 
         for (; k < e; size++) {
-            // get byte
+            // next byte
             byte b = it[k++];
 
             // U+0000 ~ U+007F

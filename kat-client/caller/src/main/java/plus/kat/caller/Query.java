@@ -310,7 +310,7 @@ public class Query extends Chain {
         grow(count + l);
 
         while (i < k) {
-            // get char
+            // next char
             char d = c.charAt(i++);
 
             // U+0000 ~ U+007F
