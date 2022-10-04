@@ -1333,106 +1333,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns a {@code REC4648|BASE} encoded String of {@link Chain}
-     *
-     * @see Base64.REC4648
-     * @since 0.0.5
-     */
-    @NotNull
-    public String asBase64() {
-        return Binary.latin(
-            toBase64()
-        );
-    }
-
-    /**
-     * Returns a {@code REC4648|BASE} encoded byte array of {@link Chain}
-     *
-     * @see Base64.REC4648
-     * @since 0.0.5
-     */
-    @NotNull
-    public byte[] toBase64() {
-        return Base64.REC4648.INS.encode(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Returns a {@code RFC2045|MIME} decoded byte array of {@link Chain}
-     *
-     * @see Base64.RFC2045
-     * @since 0.0.5
-     */
-    @NotNull
-    public byte[] ofBase64() {
-        return Base64.RFC2045.INS.decode(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Copy bytes from this {@link Chain} into the destination byte array
-     *
-     * @param index the start index
-     * @param dst   the specified {@code dst}
-     * @throws NullPointerException If the specified {@code dst} is null
-     * @since 0.0.3
-     */
-    public int getBytes(
-        int index, byte[] dst
-    ) {
-        int length = count - index;
-        if (length <= 0) {
-            return -1;
-        }
-
-        if (length > dst.length) {
-            length = dst.length;
-        }
-
-        System.arraycopy(
-            value, index, dst, 0, length
-        );
-        return length;
-    }
-
-    /**
-     * Copy bytes from this {@link Chain} into the destination byte array
-     *
-     * @param index the start index
-     * @param dst   the specified {@code dst}
-     * @throws NullPointerException If the specified {@code dst} is null
-     * @since 0.0.3
-     */
-    public int getBytes(
-        int index, byte[] dst, int dstIndex, int length
-    ) {
-        int len = count - index;
-        if (len <= 0) {
-            return -1;
-        }
-
-        int cap = dst.length - dstIndex;
-        if (cap <= 0) {
-            return 0;
-        }
-
-        if (cap < length) {
-            length = cap;
-        }
-
-        if (len < length) {
-            length = len;
-        }
-
-        System.arraycopy(
-            value, index, dst, dstIndex, length
-        );
-        return length;
-    }
-
-    /**
      * Copy this chain into a new byte array
      *
      * @since 0.0.4
@@ -1712,6 +1612,78 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         @NotNull Cipher c, int o, int l
     ) throws IllegalBlockSizeException, BadPaddingException {
         return c.doFinal(
+            value, o, l
+        );
+    }
+
+    /**
+     * Completes the {@link Base64} using the internal value of this {@link Chain}
+     *
+     * @throws NullPointerException     If the specified {@code base64} is null
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @see Base64#encode(byte[], int, int)
+     * @since 0.0.5
+     */
+    @NotNull
+    public byte[] encode(
+        @NotNull Base64 base64
+    ) {
+        return base64.encode(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Completes the {@link Base64} using the internal value of this {@link Chain}
+     *
+     * @param o the specified offset
+     * @param l the specified length
+     * @throws NullPointerException     If the specified {@code base64} is null
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @see Base64#encode(byte[], int, int)
+     * @since 0.0.5
+     */
+    @NotNull
+    public byte[] encode(
+        @NotNull Base64 base64, int o, int l
+    ) {
+        return base64.encode(
+            value, o, l
+        );
+    }
+
+    /**
+     * Completes the {@link Base64} using the internal value of this {@link Chain}
+     *
+     * @throws NullPointerException     If the specified {@code base64} is null
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @see Base64#decode(byte[], int, int)
+     * @since 0.0.5
+     */
+    @NotNull
+    public byte[] decode(
+        @NotNull Base64 base64
+    ) {
+        return base64.decode(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Completes the {@link Base64} using the internal value of this {@link Chain}
+     *
+     * @param o the specified offset
+     * @param l the specified length
+     * @throws NullPointerException     If the specified {@code base64} is null
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @see Base64#decode(byte[], int, int)
+     * @since 0.0.5
+     */
+    @NotNull
+    public byte[] decode(
+        @NotNull Base64 base64, int o, int l
+    ) {
+        return base64.decode(
             value, o, l
         );
     }
@@ -2200,6 +2172,36 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns a {@code REC4648|BASE} encoded byte array of {@link Chain}
+     *
+     * @see Base64.REC4648
+     * @since 0.0.5
+     */
+    @NotNull
+    public String toBase64() {
+        return toBase64(
+            Base64.REC4648.INS
+        );
+    }
+
+    /**
+     * Returns a specified {@code base64} encoded byte array of {@link Chain}
+     *
+     * @see Base64#encode(byte[], int, int)
+     * @since 0.0.5
+     */
+    @NotNull
+    public String toBase64(
+        @NotNull Base64 base64
+    ) {
+        return Binary.latin(
+            base64.encode(
+                value, 0, count
+            )
+        );
+    }
+
+    /**
      * Parses this {@link Chain} as a {@link BigInteger}
      *
      * @return the specified {@link BigInteger}, {@code 'ZERO'} on error
@@ -2306,6 +2308,67 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         return new ByteArrayInputStream(
             value, offset, length
         );
+    }
+
+    /**
+     * Copy bytes from this {@link Chain} into the destination byte array
+     *
+     * @param index the start index
+     * @param dst   the specified {@code dst}
+     * @throws NullPointerException If the specified {@code dst} is null
+     * @since 0.0.3
+     */
+    public int getBytes(
+        int index, byte[] dst
+    ) {
+        int length = count - index;
+        if (length <= 0) {
+            return -1;
+        }
+
+        if (length > dst.length) {
+            length = dst.length;
+        }
+
+        System.arraycopy(
+            value, index, dst, 0, length
+        );
+        return length;
+    }
+
+    /**
+     * Copy bytes from this {@link Chain} into the destination byte array
+     *
+     * @param index the start index
+     * @param dst   the specified {@code dst}
+     * @throws NullPointerException If the specified {@code dst} is null
+     * @since 0.0.3
+     */
+    public int getBytes(
+        int index, byte[] dst, int dstIndex, int length
+    ) {
+        int len = count - index;
+        if (len <= 0) {
+            return -1;
+        }
+
+        int cap = dst.length - dstIndex;
+        if (cap <= 0) {
+            return 0;
+        }
+
+        if (cap < length) {
+            length = cap;
+        }
+
+        if (len < length) {
+            length = len;
+        }
+
+        System.arraycopy(
+            value, index, dst, dstIndex, length
+        );
+        return length;
     }
 
     /**

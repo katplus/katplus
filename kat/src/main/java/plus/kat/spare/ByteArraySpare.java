@@ -62,7 +62,9 @@ public class ByteArraySpare extends Property<byte[]> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.ofBase64();
+        return value.decode(
+            Base64.RFC2045.INS
+        );
     }
 
     @Override
