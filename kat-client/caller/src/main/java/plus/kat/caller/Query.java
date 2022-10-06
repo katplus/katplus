@@ -10,15 +10,16 @@ import plus.kat.kernel.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.nio.charset.Charset;
 
 import static plus.kat.stream.Binary.digit;
 import static plus.kat.stream.Binary.upper;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 
 /**
  * @author kraity
  * @since 0.0.4
  */
-@SuppressWarnings("deprecation")
 public class Query extends Chain {
 
     protected int offset;
@@ -79,6 +80,14 @@ public class Query extends Chain {
                 set(key.toString(), val.toString());
             }
         }
+    }
+
+    /**
+     * Returns the charset of this {@link Query}
+     */
+    @Override
+    public Charset charset() {
+        return US_ASCII;
     }
 
     /**
@@ -471,8 +480,8 @@ public class Query extends Chain {
     /**
      * Returns the {@code byte[]} of this {@link Query} as a {@link String}
      */
-    @NotNull
     @Override
+    @SuppressWarnings("deprecation")
     public String toString() {
         if (count == 0) {
             return "";
@@ -490,8 +499,8 @@ public class Query extends Chain {
      * @param e the ending index, exclusive
      * @throws IndexOutOfBoundsException if the beginIndex is negative
      */
-    @NotNull
     @Override
+    @SuppressWarnings("deprecation")
     public String toString(
         int b, int e
     ) {

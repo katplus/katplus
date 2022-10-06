@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Currency;
 
 import static java.util.Currency.getInstance;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 
 /**
  * @author kraity
@@ -62,7 +63,7 @@ public class CurrencySpare extends Property<Currency> {
         }
 
         return getInstance(
-            alias.string()
+            alias.toString(US_ASCII)
         );
     }
 
@@ -76,7 +77,7 @@ public class CurrencySpare extends Property<Currency> {
         }
 
         return getInstance(
-            value.string()
+            value.toString(US_ASCII)
         );
     }
 

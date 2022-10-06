@@ -166,7 +166,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
      * @throws Collapse                  If the iteration has no more elements
      * @throws ServiceConfigurationError If the provider class is loaded with errors
      */
-    @Override
+    @SuppressWarnings("deprecation")
     public T next() {
         if (--size < 0) {
             throw new Collapse(
@@ -179,15 +179,16 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                 (byte) '\n', start
             );
 
-        if (offset <= start) {
+        int length = offset - start;
+        if (length <= 0) {
             throw new Collapse(
                 offset + " <= " + start
             );
         }
 
         index = offset + 1;
-        String name = string(
-            start, offset
+        String name = new String(
+            value, 0, start, length
         );
 
         Class<?> clazz;

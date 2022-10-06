@@ -175,6 +175,14 @@ public final class Space extends Dram implements Type {
     }
 
     /**
+     * Returns the charset of this {@link Space}
+     */
+    @Override
+    public Charset charset() {
+        return US_ASCII;
+    }
+
+    /**
      * Returns a {@link Space} that
      * is a subsequence of this {@link Space}
      *
@@ -430,24 +438,6 @@ public final class Space extends Dram implements Type {
     public boolean isArray() {
         return count == 1 &&
             value[0] == 'A';
-    }
-
-    /**
-     * Returns the ASCII {@link String} for this {@link Space}
-     */
-    @Override
-    public String string() {
-        return toString();
-    }
-
-    /**
-     * Returns the charset of this {@link Space}
-     *
-     * @since 0.0.5
-     */
-    @Override
-    public Charset charset() {
-        return US_ASCII;
     }
 
     /**

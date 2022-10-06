@@ -28,13 +28,12 @@ import plus.kat.crash.*;
 import plus.kat.stream.*;
 
 import static plus.kat.stream.Binary.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-@SuppressWarnings("deprecation")
 public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     protected int count;
@@ -1786,57 +1785,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the ASCII {@link String} for this {@link Chain}
-     */
-    @NotNull
-    public String string() {
-        if (count == 0) {
-            return "";
-        }
-
-        return new String(
-            value, 0, 0, count
-        );
-    }
-
-    /**
-     * Returns the ASCII {@link String} for this {@link Chain}
-     *
-     * @param b the beginning index, inclusive
-     * @throws IndexOutOfBoundsException if the beginIndex is negative
-     */
-    @NotNull
-    public String string(int b) {
-        int l = count - b;
-        if (l <= 0) {
-            return "";
-        }
-
-        return new String(
-            value, 0, b, l
-        );
-    }
-
-    /**
-     * Returns the ASCII {@link String} for this {@link Chain}
-     *
-     * @param b the beginning index, inclusive
-     * @param e the ending index, exclusive
-     * @throws IndexOutOfBoundsException if the beginIndex is negative
-     */
-    @NotNull
-    public String string(int b, int e) {
-        int l = e - b;
-        if (l <= 0 || e > count) {
-            return "";
-        }
-
-        return new String(
-            value, 0, b, l
-        );
-    }
-
-    /**
      * Returns the value of this {@link Chain} as a {@link String}
      */
     @Override
@@ -1885,20 +1833,27 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @param c the specified charset
      */
     @NotNull
+    @SuppressWarnings("deprecation")
     public String toString(
         @NotNull Charset c
     ) {
-        if (c == charset()) {
-            return toString();
-        }
+        if (c != charset()) {
+            if (count == 0) {
+                return "";
+            }
 
-        if (count == 0) {
-            return "";
+            if (c == US_ASCII ||
+                c == ISO_8859_1) {
+                return new String(
+                    value, 0, 0, count
+                );
+            } else {
+                return new String(
+                    value, 0, count, c
+                );
+            }
         }
-
-        return new String(
-            value, 0, count, c
-        );
+        return toString();
     }
 
     /**
@@ -1910,21 +1865,28 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @throws IndexOutOfBoundsException if the beginIndex is negative
      */
     @NotNull
+    @SuppressWarnings("deprecation")
     public String toString(
         @NotNull Charset c, int b, int e
     ) {
-        if (c == charset()) {
-            return toString(b, e);
-        }
+        if (c != charset()) {
+            int l = e - b;
+            if (l <= 0 || e > count) {
+                return "";
+            }
 
-        int l = e - b;
-        if (l <= 0 || e > count) {
-            return "";
+            if (c == US_ASCII ||
+                c == ISO_8859_1) {
+                return new String(
+                    value, 0, b, l
+                );
+            } else {
+                return new String(
+                    value, b, l, c
+                );
+            }
         }
-
-        return new String(
-            value, b, l, c
-        );
+        return toString(b, e);
     }
 
     /**
@@ -2215,6 +2177,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @since 0.0.5
      */
     @Nullable
+    @SuppressWarnings("deprecation")
     public BigInteger toBigInteger(
         @Nullable BigInteger def
     ) {
