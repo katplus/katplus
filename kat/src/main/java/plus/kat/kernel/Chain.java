@@ -1827,8 +1827,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     public String toString(
         int b, int e
     ) {
-        if (0 <= b && e <= count) {
-            int l = e - b;
+        int l = e - b;
+        if (0 <= b && 0 <= l &&
+            e <= count) {
             if (l == count) {
                 return toString();
             }
@@ -1893,8 +1894,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         @NotNull Charset c, int b, int e
     ) {
         if (c != charset()) {
-            if (0 <= b && e <= count) {
-                int l = e - b;
+            int l = e - b;
+            if (0 <= b &&
+                0 <= l && e <= count) {
                 if (l == 0) {
                     return "";
                 }
@@ -2355,6 +2357,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Connects the chain to the end of this {@link Chain}
+     *
      * @param c the specified {@link Chain}
      */
     protected void chain(
@@ -2377,6 +2381,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Connects the chain to the end of this {@link Chain}
+     *
      * @param c the specified chain
      * @param i the specified index
      * @param l the specified length
@@ -2397,6 +2403,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Connects the inputStream to the end of this {@link Chain}
+     *
      * @param in the specified {@link InputStream}
      * @since 0.0.3
      */
@@ -2417,6 +2425,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Connects the inputStream to the end of this {@link Chain}
+     *
      * @param in the specified {@link InputStream}
      * @throws IOException If an I/O error occurs
      * @since 0.0.3
@@ -2467,6 +2477,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Connects the byte value to the end of this {@link Chain}
+     *
      * @param b the specified byte value
      */
     protected void chain(
@@ -2484,6 +2496,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Connects the number to the end of this {@link Chain}
+     *
      * @param num the specified int value
      * @since 0.0.4
      */
@@ -2513,6 +2527,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Connects the number to the end of this {@link Chain}
+     *
      * @param num the specified long value
      * @since 0.0.4
      */
@@ -2542,7 +2558,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param b the specified byte array
+     * Connects the byte array to the end of this {@link Chain}
+     *
+     * @param b the specified array
      * @param i the specified index
      * @param l the specified length
      */
@@ -2561,6 +2579,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Connects the char value to the end of this {@link Chain}
+     *
      * @param c the specified char value
      */
     protected void chain(
@@ -2598,7 +2618,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param c the specified char array
+     * Connects the char array to the end of this {@link Chain}
+     *
+     * @param c the specified array
      * @param i the specified index
      * @param l the specified length
      */
@@ -2661,7 +2683,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @param c the specified char array
+     * Connects the charSequence to the end of this {@link Chain}
+     *
+     * @param c the specified array
      * @param i the specified index
      * @param l the specified length
      */

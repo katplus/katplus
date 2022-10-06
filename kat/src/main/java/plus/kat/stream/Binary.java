@@ -285,12 +285,10 @@ public final class Binary {
             return 0;
         }
 
-        int k = i;
         int size = 0;
-
-        for (; k < e; size++) {
+        for (; i < e; size++) {
             // next byte
-            byte b = it[k++];
+            byte b = it[i++];
 
             // U+0000 ~ U+007F
             // 0xxxxxxx
@@ -302,12 +300,12 @@ public final class Binary {
             // 110xxxxx 10xxxxxx
             if ((b >> 5) == -2) {
                 // overflow
-                if (k >= e) {
+                if (i >= e) {
                     return 0;
                 }
 
                 // check code
-                if ((it[k++] & 0xC0) != 0x80) {
+                if ((it[i++] & 0xC0) != 0x80) {
                     return 0;
                 }
             }
@@ -316,13 +314,13 @@ public final class Binary {
             // 1110xxxx 10xxxxxx 10xxxxxx
             else if ((b >> 4) == -2) {
                 // overflow
-                if (k + 1 >= e) {
+                if (i + 1 >= e) {
                     return 0;
                 }
 
                 // check code
-                if ((it[k++] & 0xC0) != 0x80 ||
-                    (it[k++] & 0xC0) != 0x80) {
+                if ((it[i++] & 0xC0) != 0x80 ||
+                    (it[i++] & 0xC0) != 0x80) {
                     return 0;
                 }
             }
@@ -332,14 +330,14 @@ public final class Binary {
             // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
             else if ((b >> 3) == -2) {
                 // overflow
-                if (k + 2 >= e) {
+                if (i + 2 >= e) {
                     return 0;
                 }
 
                 // check code
-                if ((it[k++] & 0xC0) != 0x80 ||
-                    (it[k++] & 0xC0) != 0x80 ||
-                    (it[k++] & 0xC0) != 0x80) {
+                if ((it[i++] & 0xC0) != 0x80 ||
+                    (it[i++] & 0xC0) != 0x80 ||
+                    (it[i++] & 0xC0) != 0x80) {
                     return 0;
                 }
 
