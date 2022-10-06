@@ -697,36 +697,30 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *
      * <pre>{@code
      *   Chain c = new Value("kat");
-     *   byte b0 = c.at(0); // 'k'
-     *   byte b1 = c.at(1); // 'a'
-     *   byte b2 = c.at(2); // 't'
-     *   byte b3 = c.at(3); // may be '\0' or NPE
-     * }</pre>
-     *
-     * @param i the index of the byte value
-     * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative or not less than the length of this
-     */
-    public byte at(int i) {
-        return value[i];
-    }
-
-    /**
-     * Returns the byte value at the specified index
-     *
-     * <pre>{@code
-     *   Chain c = new Value("kat");
      *   byte b0 = c.get(0); // 'k'
      *   byte b1 = c.get(1); // 'a'
      *   byte b2 = c.get(2); // 't'
      *   byte b3 = c.get(3); // -1
      * }</pre>
      *
-     * @param i the index of the byte value
-     * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
+     * @param i the specified index
+     * @throws ArrayIndexOutOfBoundsException If the specified index is out of range
      */
     public byte get(int i) {
-        byte[] it = value;
-        return i < it.length ? it[i] : -1;
+        if (i < 0) {
+            i += count;
+            if (0 <= i) {
+                return value[i];
+            }
+        } else {
+            if (i < count) {
+                return value[i];
+            }
+        }
+
+        throw new ArrayIndexOutOfBoundsException(
+            "Index " + i + " out of bounds for length " + count
+        );
     }
 
     /**
@@ -734,27 +728,33 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *
      * <pre>{@code
      *   Chain c = new Value("kat");
-     *   byte def = 'K'
+     *   byte def = '$';
      *   byte b0 = c.get(0, def); // 'k'
      *   byte b1 = c.get(1, def); // 'a'
      *   byte b2 = c.get(2, def); // 't'
-     *   byte b3 = c.get(3, def); // 'K'
+     *   byte b3 = c.get(3, def); // '$'
+     *   byte b4 = c.get(-1, def); // 't'
+     *   byte b4 = c.get(-3, def); // 'k'
+     *   byte b4 = c.get(-4, def); // '$'
      * }</pre>
      *
-     * @param i   index
-     * @param def default
-     * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
+     * @param i   the specified index
+     * @param def the specified default value
      */
     public byte get(int i, byte def) {
-        byte[] it = value;
-        return i < it.length ? it[i] : def;
+        if (i < 0) {
+            i += count;
+            return i < 0 ? def : value[i];
+        } else {
+            return i < count ? value[i] : def;
+        }
     }
 
     /**
      * Returns the byte value at the specified index
      *
-     * @param i the index of the byte value
-     * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative or out of range {@code count}
+     * @param i the specified index
+     * @throws ArrayIndexOutOfBoundsException If the specified index is negative or out of range
      */
     public byte byteAt(int i) {
         if (i < count) {
@@ -769,13 +769,15 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns the char value at the specified index
      *
-     * @param i the index of the char value
-     * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative or out of range {@code count}
+     * @param i the specified index
+     * @throws ArrayIndexOutOfBoundsException If the specified index is negative or out of range
      */
     @Override
     public char charAt(int i) {
         if (i < count) {
-            return (char) (value[i] & 0xFF);
+            return (char) (
+                value[i] & 0xFF
+            );
         }
 
         throw new ArrayIndexOutOfBoundsException(

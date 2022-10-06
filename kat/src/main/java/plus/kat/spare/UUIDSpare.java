@@ -151,12 +151,12 @@ public class UUIDSpare extends Property<UUID> {
         Chain c, int i, int o
     ) throws IOException {
         long d = Binary.digit(
-            c.at(i++)
+            c.byteAt(i++)
         );
         while (i < o) {
             d <<= 4;
             d |= Binary.digit(
-                c.at(i++)
+                c.byteAt(i++)
             );
         }
         return d;

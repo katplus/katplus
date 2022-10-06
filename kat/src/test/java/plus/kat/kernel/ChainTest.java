@@ -44,6 +44,49 @@ public class ChainTest {
     }
 
     @Test
+    public void test_get() {
+        Alias c = new Alias("kat");
+        byte def = '$';
+        assertEquals((byte) 'k', c.get(0, def));
+        assertEquals((byte) 'a', c.get(1, def));
+        assertEquals((byte) 't', c.get(2, def));
+        assertEquals((byte) '$', c.get(3, def));
+        assertEquals((byte) 't', c.get(-1, def));
+        assertEquals((byte) 'a', c.get(-2, def));
+        assertEquals((byte) 'k', c.get(-3, def));
+        assertEquals((byte) '$', c.get(-4, def));
+
+        assertEquals((byte) 'k', c.get(0));
+        assertEquals((byte) 'a', c.get(1));
+        assertEquals((byte) 't', c.get(2));
+        assertEquals((byte) 't', c.get(-1));
+        assertEquals((byte) 'a', c.get(-2));
+        assertEquals((byte) 'k', c.get(-3));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.get(3));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.get(-4));
+    }
+
+    @Test
+    public void test_byteAt() {
+        Alias c = new Alias("kat");
+        assertEquals((byte) 'k', c.byteAt(0));
+        assertEquals((byte) 'a', c.byteAt(1));
+        assertEquals((byte) 't', c.byteAt(2));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.byteAt(3));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.byteAt(-1));
+    }
+
+    @Test
+    public void test_charAt() {
+        Alias c = new Alias("kat");
+        assertEquals('k', c.charAt(0));
+        assertEquals('a', c.charAt(1));
+        assertEquals('t', c.charAt(2));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.charAt(3));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.charAt(-1));
+    }
+
+    @Test
     public void test_toString() {
         Value v = new Value("kat");
         assertEquals(105950, v.hashCode());

@@ -724,16 +724,28 @@ public final class Convert {
             }
             case 4: {
                 byte b = it[0];
+                // true
                 if (b == 't') {
                     return it[1] == 'r'
                         && it[2] == 'u'
                         && it[3] == 'e';
                 }
 
+                // TRUE/True
                 if (b == 'T') {
-                    return it[1] == 'R'
-                        && it[2] == 'U'
-                        && it[3] == 'E';
+                    byte c = it[1];
+                    if (c == 'R') {
+                        return it[2] == 'U'
+                            && it[3] == 'E';
+                    }
+
+                    // True
+                    else if (c == 'r') {
+                        return it[2] == 'u'
+                            && it[3] == 'e';
+                    }
+
+                    return false;
                 }
 
                 return toInt(it, len, 10, 0) != 0;
@@ -767,16 +779,28 @@ public final class Convert {
             }
             case 4: {
                 char c = it.charAt(0);
+                // true
                 if (c == 't') {
                     return it.charAt(1) == 'r'
                         && it.charAt(2) == 'u'
                         && it.charAt(3) == 'e';
                 }
 
+                // TRUE/True
                 if (c == 'T') {
-                    return it.charAt(1) == 'R'
-                        && it.charAt(2) == 'U'
-                        && it.charAt(3) == 'E';
+                    char d = it.charAt(1);
+                    if (d == 'R') {
+                        return it.charAt(2) == 'U'
+                            && it.charAt(3) == 'E';
+                    }
+
+                    // True
+                    else if (d == 'r') {
+                        return it.charAt(2) == 'u'
+                            && it.charAt(3) == 'e';
+                    }
+
+                    return false;
                 }
 
                 return toInt(it, len, 10, 0) != 0;
