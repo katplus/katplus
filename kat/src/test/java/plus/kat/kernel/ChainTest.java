@@ -7,11 +7,16 @@ import plus.kat.chain.Value;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.*;
 
 public class ChainTest {
+
+    static class Chalk
+        extends Chain {
+    }
 
     @Test
     public void test_is() {
@@ -282,5 +287,53 @@ public class ChainTest {
 
         assertEquals(6, value.length());
         assertEquals(6, value.capacity());
+    }
+
+    @Test
+    public void test_grow() {
+        Chalk c = new Chalk();
+        byte[] b = "kat.plus".getBytes(ISO_8859_1);
+
+        c.value = b;
+        c.count = b.length;
+
+        c.grow(b.length + 2);
+        assertEquals(b.length, c.count);
+        assertTrue(b.length + 2 <= c.value.length);
+    }
+
+    @Test
+    public void test_swop() {
+        Chalk c = new Chalk();
+        byte[] b = "kat.plus".getBytes(ISO_8859_1);
+
+        c.value = b;
+        c.count = b.length;
+
+        c.swop(1, 6);
+        assertEquals("klp.taus", c.toString(ISO_8859_1));
+    }
+
+    @Test
+    public void test_move() {
+        Chalk c = new Chalk();
+        c.count = 6;
+        c.value = "kat.plus".getBytes(ISO_8859_1);
+
+        c.move(2, 2);
+        assertEquals("kat.t.", c.toString(ISO_8859_1));
+
+        c.move(2, -2);
+        assertEquals("t.t.t.", c.toString(ISO_8859_1));
+
+        c.grow(32);
+        c.chain("kat.plus", 0, 8);
+        assertEquals("t.t.t.kat.plus", c.toString(ISO_8859_1));
+
+        c.move(6, -4);
+        assertEquals("t.kat.plusplus", c.toString(ISO_8859_1));
+
+        c.move(0, 4);
+        assertEquals("t.kat.kat.plus", c.toString(ISO_8859_1));
     }
 }

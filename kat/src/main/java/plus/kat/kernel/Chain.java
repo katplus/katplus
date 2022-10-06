@@ -2726,6 +2726,12 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Unsafe method
      *
+     * <pre>{@code
+     *  value // kat.plus
+     *  swop(1, 6);
+     *  value // klp.taus
+     * }</pre>
+     *
      * @param s the start index, inclusive
      * @param e the end index, exclusive
      */
@@ -2745,6 +2751,34 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     /**
      * Unsafe method
+     *
+     * <pre>{@code
+     *  move(1, 1);
+     *  value[1] = 'k';
+     *  move(1, -1);
+     *  value[0] // is 'k'
+     * }</pre>
+     *
+     * @param o the specified offset
+     * @param s the specified shift length
+     */
+    protected void move(
+        int o, int s
+    ) {
+        System.arraycopy(
+            value, o, value, o + s, count - o
+        );
+    }
+
+    /**
+     * Unsafe method
+     *
+     * <pre>{@code
+     *  grow(count + 3);
+     *  value[count++] = 'k';
+     *  value[count++] = 'a';
+     *  value[count++] = 't';
+     * }</pre>
      *
      * @param min the specified minimum size
      */
