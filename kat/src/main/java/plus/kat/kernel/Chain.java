@@ -21,6 +21,7 @@ import plus.kat.anno.Nullable;
 import javax.crypto.*;
 import java.io.*;
 import java.math.*;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.nio.charset.Charset;
 
@@ -1788,6 +1789,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Returns the value of this {@link Chain} as a {@link String}
      */
     @Override
+    @SuppressWarnings("deprecation")
     public String toString() {
         if (count == 0) {
             return "";
@@ -1801,30 +1803,52 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             }
         }
 
-        return backup = new String(
-            value, 0, count, charset()
-        );
+        Charset c = charset();
+        if (c != ISO_8859_1) {
+            return backup = new String(
+                value, 0, count, c
+            );
+        } else {
+            return backup = new String(
+                value, 0, 0, count
+            );
+        }
     }
 
     /**
      * Returns the value of this {@link Chain} as a {@link String}
      *
-     * @param b the beginning index, inclusive
-     * @param e the ending index, exclusive
-     * @throws IndexOutOfBoundsException if the beginIndex is negative
+     * @param b the specified begin index, inclusive
+     * @param e the specified end index, exclusive
+     * @throws ArrayIndexOutOfBoundsException If the specified begin/end index is out of range
      */
     @NotNull
+    @SuppressWarnings("deprecation")
     public String toString(
         int b, int e
     ) {
-        int l = e - b;
-        if (l <= 0 || e > count) {
-            return "";
-        }
+        if (0 <= b && e <= count) {
+            int l = e - b;
+            if (l == count) {
+                return toString();
+            }
 
-        return new String(
-            value, b, l, charset()
-        );
+            Charset c = charset();
+            if (c != ISO_8859_1) {
+                return new String(
+                    value, b, l, c
+                );
+            } else {
+                return new String(
+                    value, 0, 0, l
+                );
+            }
+        } else {
+            throw new ArrayIndexOutOfBoundsException(
+                "Specified begin(" + b + ")/end(" + e +
+                    ") index is out of range: " + count
+            );
+        }
     }
 
     /**
@@ -1842,14 +1866,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 return "";
             }
 
-            if (c == US_ASCII ||
-                c == ISO_8859_1) {
+            if (c != ISO_8859_1) {
                 return new String(
-                    value, 0, 0, count
+                    value, 0, count, c
                 );
             } else {
                 return new String(
-                    value, 0, count, c
+                    value, 0, 0, count
                 );
             }
         }
@@ -1860,9 +1883,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Returns the value of this {@link Chain} as a {@link String}
      *
      * @param c the specified charset
-     * @param b the beginning index, inclusive
-     * @param e the ending index, exclusive
-     * @throws IndexOutOfBoundsException if the beginIndex is negative
+     * @param b the specified begin index, inclusive
+     * @param e the specified end index, exclusive
+     * @throws ArrayIndexOutOfBoundsException If the specified begin/end index is out of range
      */
     @NotNull
     @SuppressWarnings("deprecation")
@@ -1870,19 +1893,25 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         @NotNull Charset c, int b, int e
     ) {
         if (c != charset()) {
-            int l = e - b;
-            if (l <= 0 || e > count) {
-                return "";
-            }
+            if (0 <= b && e <= count) {
+                int l = e - b;
+                if (l == 0) {
+                    return "";
+                }
 
-            if (c == US_ASCII ||
-                c == ISO_8859_1) {
-                return new String(
-                    value, 0, b, l
-                );
+                if (c != ISO_8859_1) {
+                    return new String(
+                        value, b, l, c
+                    );
+                } else {
+                    return new String(
+                        value, 0, b, l
+                    );
+                }
             } else {
-                return new String(
-                    value, b, l, c
+                throw new ArrayIndexOutOfBoundsException(
+                    "Specified begin(" + b + ")/end(" + e +
+                        ") index is out of range: " + count
                 );
             }
         }
@@ -2177,7 +2206,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @since 0.0.5
      */
     @Nullable
-    @SuppressWarnings("deprecation")
     public BigInteger toBigInteger(
         @Nullable BigInteger def
     ) {
@@ -2189,9 +2217,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             }
             try {
                 return new BigInteger(
-                    new String(
-                        value, 0, 0, size
-                    )
+                    toString(ISO_8859_1)
                 );
             } catch (Exception e) {
                 // Nothing

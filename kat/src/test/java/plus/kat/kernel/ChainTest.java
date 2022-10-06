@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.*;
 
 public class ChainTest {
 
@@ -100,6 +100,25 @@ public class ChainTest {
         assertSame(v.toString(), v.toString());
         assertEquals("kat+plus", v.toString());
         assertEquals(1054792999, v.hashCode());
+        assertSame(v.toString(), v.toString(0, 8));
+
+        assertEquals("t+p", v.toString(2, 5));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> v.toString(-1, 1));
+
+        v.clear();
+        assertSame("", v.toString());
+        assertSame("", v.toString(0, 0));
+        assertSame(v.toString(), v.toString());
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> v.toString(-1, 1));
+
+        String name = "陆之岇";
+        byte[] temp = name.getBytes(UTF_8);
+
+        v.add(temp);
+        assertEquals(name, v.toString());
+        assertEquals(new String(temp, UTF_8), v.toString(UTF_8));
+        assertEquals(new String(temp, US_ASCII), v.toString(US_ASCII));
+        assertEquals(new String(temp, ISO_8859_1), v.toString(ISO_8859_1));
     }
 
     @Test

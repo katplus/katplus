@@ -28,7 +28,7 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
-import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author kraity
@@ -179,7 +179,7 @@ public final class Space extends Dram implements Type {
      */
     @Override
     public Charset charset() {
-        return US_ASCII;
+        return ISO_8859_1;
     }
 
     /**

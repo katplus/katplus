@@ -14,7 +14,7 @@ import java.nio.charset.Charset;
 
 import static plus.kat.stream.Binary.digit;
 import static plus.kat.stream.Binary.upper;
-import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * @author kraity
@@ -87,7 +87,7 @@ public class Query extends Chain {
      */
     @Override
     public Charset charset() {
-        return US_ASCII;
+        return ISO_8859_1;
     }
 
     /**
