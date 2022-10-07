@@ -63,7 +63,7 @@ public class ByteArraySpare extends Property<byte[]> {
         @NotNull Value value
     ) {
         return value.decode(
-            Base64.RFC2045.INS
+            Base64.mime()
         );
     }
 
@@ -73,7 +73,7 @@ public class ByteArraySpare extends Property<byte[]> {
         @NotNull Object value
     ) throws IOException {
         flow.addBytes(
-            Base64.REC4648.INS.encode(
+            Base64.base().encode(
                 (byte[]) value
             )
         );
@@ -94,7 +94,7 @@ public class ByteArraySpare extends Property<byte[]> {
             }
 
             if (data instanceof String) {
-                return Base64.RFC2045.INS.decode(
+                return Base64.mime().decode(
                     ((String) data).getBytes(
                         StandardCharsets.US_ASCII
                     )

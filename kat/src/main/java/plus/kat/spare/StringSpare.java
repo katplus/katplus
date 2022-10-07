@@ -124,7 +124,7 @@ public class StringSpare extends Property<String> {
 
         if (data instanceof byte[]) {
             return Binary.latin(
-                Base64.REC4648.INS.encode(
+                Base64.base().encode(
                     (byte[]) data
                 )
             );

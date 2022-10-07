@@ -1422,33 +1422,54 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Writes to the {@link OutputStream} using the internal value of this {@link Chain}
      *
      * @throws NullPointerException If the specified {@code stream} is null
-     * @see OutputStream#write(byte[], int, int)
+     * @see Chain#update(OutputStream, int, int)
      * @since 0.0.2
      */
     public void update(
         @NotNull OutputStream s
     ) throws IOException {
-        s.write(
-            value, 0, count
+        update(
+            s, 0, count
         );
     }
 
     /**
      * Writes to the {@link OutputStream} using the internal value of this {@link Chain}
      *
-     * @param o the specified offset
+     * @param i the specified offset
      * @param l the specified length
      * @throws NullPointerException      If the specified {@code stream} is null
      * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
+     * @see OutputStream#write(int)
      * @see OutputStream#write(byte[], int, int)
      * @since 0.0.2
      */
     public void update(
-        @NotNull OutputStream s, int o, int l
+        @NotNull OutputStream s, int i, int l
     ) throws IOException {
-        s.write(
-            value, o, l
-        );
+        if (i <= count - l) {
+            if (0 <= star) {
+                s.write(
+                    value, i, l
+                );
+            } else {
+                if (0 <= i && 0 <= l) {
+                    byte[] it = value;
+                    while (i < l) {
+                        s.write(it[i++]);
+                    }
+                } else {
+                    throw new IndexOutOfBoundsException(
+                        "offset:" + i + ", length:" + l
+                    );
+                }
+            }
+        } else {
+            throw new IndexOutOfBoundsException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
     }
 
     /**
@@ -1468,18 +1489,25 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Updates the {@link Mac} using the internal value of this {@link Chain}
      *
-     * @param o the specified offset
+     * @param i the specified offset
      * @param l the specified length
      * @throws NullPointerException     If the specified {@code mac} is null
      * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see Mac#update(byte[], int, int)
      */
     public void update(
-        @NotNull Mac m, int o, int l
+        @NotNull Mac m, int i, int l
     ) {
-        m.update(
-            value, o, l
-        );
+        if (i <= count - l) {
+            m.update(
+                value, i, l
+            );
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
     }
 
     /**
@@ -1499,18 +1527,25 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Updates the {@link Signature} using the internal value of this {@link Chain}
      *
-     * @param o the specified offset
+     * @param i the specified offset
      * @param l the specified length
      * @throws NullPointerException     If the specified {@code signature} is null
      * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see Signature#update(byte[], int, int)
      */
     public void update(
-        @NotNull Signature s, int o, int l
+        @NotNull Signature s, int i, int l
     ) throws SignatureException {
-        s.update(
-            value, o, l
-        );
+        if (i <= count - l) {
+            s.update(
+                value, i, l
+            );
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
     }
 
     /**
@@ -1530,18 +1565,25 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Updates the {@link MessageDigest} using the internal value of this {@link Chain}
      *
-     * @param o the specified offset
+     * @param i the specified offset
      * @param l the specified length
      * @throws NullPointerException     If the specified {@code digest} is null
      * @throws IllegalArgumentException If the offset is negative or the length out of range
      * @see MessageDigest#update(byte[], int, int)
      */
     public void update(
-        @NotNull MessageDigest m, int o, int l
+        @NotNull MessageDigest m, int i, int l
     ) {
-        m.update(
-            value, o, l
-        );
+        if (i <= count - l) {
+            m.update(
+                value, i, l
+            );
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
     }
 
     /**
@@ -1562,7 +1604,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Updates the {@link Cipher} using the internal value of this {@link Chain}
      *
-     * @param o the specified offset
+     * @param i the specified offset
      * @param l the specified length
      * @throws NullPointerException     If the specified {@code cipher} is null
      * @throws IllegalArgumentException If the offset is negative or the length out of range
@@ -1570,11 +1612,18 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @Nullable
     public byte[] update(
-        @NotNull Cipher c, int o, int l
+        @NotNull Cipher c, int i, int l
     ) {
-        return c.update(
-            value, o, l
-        );
+        if (i <= count - l) {
+            return c.update(
+                value, i, l
+            );
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
     }
 
     /**
@@ -1595,7 +1644,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Completes the {@link Cipher} using the internal value of this {@link Chain}
      *
-     * @param o the specified offset
+     * @param i the specified offset
      * @param l the specified length
      * @throws NullPointerException     If the specified {@code cipher} is null
      * @throws IllegalArgumentException If the offset is negative or the length out of range
@@ -1603,11 +1652,18 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @Nullable
     public byte[] doFinal(
-        @NotNull Cipher c, int o, int l
+        @NotNull Cipher c, int i, int l
     ) throws IllegalBlockSizeException, BadPaddingException {
-        return c.doFinal(
-            value, o, l
-        );
+        if (i <= count - l) {
+            return c.doFinal(
+                value, i, l
+            );
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
     }
 
     /**
@@ -1630,27 +1686,33 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Completes the {@link Base64} using the internal value of this {@link Chain}
      *
-     * @param o the specified offset
+     * @param i the specified offset
      * @param l the specified length
-     * @throws NullPointerException     If the specified {@code base64} is null
-     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @throws NullPointerException      If the specified {@code base64} is null
+     * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
      * @see Base64#encode(byte[], int, int)
      * @since 0.0.5
      */
     @NotNull
     public byte[] encode(
-        @NotNull Base64 base64, int o, int l
+        @NotNull Base64 base64, int i, int l
     ) {
-        return base64.encode(
-            value, o, l
-        );
+        if (i <= count - l && 0 <= i && 0 <= l) {
+            return base64.encode(
+                value, i, l
+            );
+        } else {
+            throw new IndexOutOfBoundsException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
     }
 
     /**
      * Completes the {@link Base64} using the internal value of this {@link Chain}
      *
-     * @throws NullPointerException     If the specified {@code base64} is null
-     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @throws NullPointerException If the specified {@code base64} is null
      * @see Base64#decode(byte[], int, int)
      * @since 0.0.5
      */
@@ -1666,20 +1728,27 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Completes the {@link Base64} using the internal value of this {@link Chain}
      *
-     * @param o the specified offset
+     * @param i the specified offset
      * @param l the specified length
-     * @throws NullPointerException     If the specified {@code base64} is null
-     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @throws NullPointerException      If the specified {@code base64} is null
+     * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
      * @see Base64#decode(byte[], int, int)
      * @since 0.0.5
      */
     @NotNull
     public byte[] decode(
-        @NotNull Base64 base64, int o, int l
+        @NotNull Base64 base64, int i, int l
     ) {
-        return base64.decode(
-            value, o, l
-        );
+        if (i <= count - l && 0 <= i && 0 <= l) {
+            return base64.decode(
+                value, i, l
+            );
+        } else {
+            throw new IndexOutOfBoundsException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
     }
 
     /**
@@ -1716,7 +1785,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Returns a lowercase message digest of this {@link Chain}
      *
      * @param algo the name of the algorithm requested
-     * @param o    the specified offset
+     * @param i    the specified offset
      * @param l    the specified length
      * @throws UnsupportedCrash         If not supports the algo
      * @throws IllegalArgumentException If the length out of range
@@ -1725,22 +1794,30 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     @NotNull
     public String digest(
-        @NotNull String algo, int o, int l
+        @NotNull String algo, int i, int l
     ) {
-        try {
-            MessageDigest md = MessageDigest
-                .getInstance(algo);
+        if (i <= count - l && 0 <= i && 0 <= l) {
+            try {
+                MessageDigest md =
+                    MessageDigest
+                        .getInstance(algo);
 
-            md.update(
-                value, o, l
-            );
+                md.update(
+                    value, i, l
+                );
 
-            return toLower(
-                md.digest()
-            );
-        } catch (NoSuchAlgorithmException e) {
-            throw new UnsupportedCrash(
-                "Unexpectedly, " + algo + " unsupported", e
+                return toLower(
+                    md.digest()
+                );
+            } catch (NoSuchAlgorithmException e) {
+                throw new UnsupportedCrash(
+                    "Unexpectedly, " + algo + " unsupported", e
+                );
+            }
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
             );
         }
     }
@@ -1830,20 +1907,22 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         int l = e - b;
         if (0 <= b && 0 <= l &&
             e <= count) {
-            if (l == count) {
-                return toString();
+            if (l == 0) {
+                return "";
             }
-
-            Charset c = charset();
-            if (c != ISO_8859_1) {
-                return new String(
-                    value, b, l, c
-                );
-            } else {
-                return new String(
-                    value, 0, 0, l
-                );
+            if (l != count) {
+                Charset c = charset();
+                if (c != ISO_8859_1) {
+                    return new String(
+                        value, b, l, c
+                    );
+                } else {
+                    return new String(
+                        value, 0, 0, l
+                    );
+                }
             }
+            return toString();
         } else {
             throw new ArrayIndexOutOfBoundsException(
                 "Specified begin(" + b + ")/end(" + e +
@@ -1866,7 +1945,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             if (count == 0) {
                 return "";
             }
-
             if (c != ISO_8859_1) {
                 return new String(
                     value, 0, count, c
@@ -1900,7 +1978,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 if (l == 0) {
                     return "";
                 }
-
                 if (c != ISO_8859_1) {
                     return new String(
                         value, b, l, c
@@ -2161,13 +2238,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns a {@code REC4648|BASE} encoded byte array of {@link Chain}
      *
-     * @see Base64.REC4648
+     * @see Base64
      * @since 0.0.5
      */
     @NotNull
     public String toBase64() {
         return toBase64(
-            Base64.REC4648.INS
+            Base64.base()
         );
     }
 

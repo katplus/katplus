@@ -107,7 +107,7 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
 
             if (data instanceof String) {
                 return ByteBuffer.wrap(
-                    Base64.RFC2045.INS.decode(
+                    Base64.mime().decode(
                         ((String) data).getBytes(
                             StandardCharsets.US_ASCII
                         )
