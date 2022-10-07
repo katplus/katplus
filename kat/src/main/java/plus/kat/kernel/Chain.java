@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import javax.crypto.*;
 import java.io.*;
 import java.math.*;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.nio.charset.Charset;
 
@@ -1837,29 +1836,31 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns a {@link Reader} of this {@link Chain}
      *
-     * @throws IllegalStateException if the {@code index} argument is negative or the length out of range
+     * @param i the specified index
+     * @param l the specified length
+     * @throws IndexOutOfBoundsException If the index is negative or the length out of range
      * @see Reader
      */
     @NotNull
     public Reader reader(
-        int index, int length
+        int i, int l
     ) {
-        if (index < 0) {
-            throw new IllegalStateException(
+        if (i < 0) {
+            throw new IndexOutOfBoundsException(
                 "The 'index' argument is negative"
             );
         }
 
-        int offset = index + length;
-        if (offset > count) {
-            throw new IllegalStateException(
+        int o = i + l;
+        if (o <= count) {
+            return new Reader(
+                this, i, o
+            );
+        } else {
+            throw new IndexOutOfBoundsException(
                 "The 'length' argument is ouf of range"
             );
         }
-
-        return new Reader(
-            this, index, offset
-        );
     }
 
     /**
@@ -1875,8 +1876,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         if ((star & 2) == 0) {
             star |= 2;
         } else {
-            if (backup != null) {
-                return backup;
+            String data = backup;
+            if (data != null) {
+                return data;
             }
         }
 
@@ -2375,62 +2377,74 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Copy bytes from this {@link Chain} into the destination byte array
      *
-     * @param index the start index
-     * @param dst   the specified {@code dst}
-     * @throws NullPointerException If the specified {@code dst} is null
+     * @param index the specified start index
+     * @param dest  the specified destination array
+     * @return the length of bytes read to the buffer, or {@code -1} if no more
+     * @throws NullPointerException      If the specified {@code dest} array is null
+     * @throws IndexOutOfBoundsException If access to buffer array exceeds array bounds
+     * @see Chain#getBytes(int, byte[], int, int)
      * @since 0.0.3
      */
     public int getBytes(
-        int index, byte[] dst
+        int index, byte[] dest
     ) {
-        int length = count - index;
-        if (length <= 0) {
-            return -1;
-        }
-
-        if (length > dst.length) {
-            length = dst.length;
-        }
-
-        System.arraycopy(
-            value, index, dst, 0, length
+        return getBytes(
+            index, dest, 0, count - index
         );
-        return length;
     }
 
     /**
      * Copy bytes from this {@link Chain} into the destination byte array
      *
-     * @param index the start index
-     * @param dst   the specified {@code dst}
-     * @throws NullPointerException If the specified {@code dst} is null
+     * @param index  the specified start index
+     * @param dest   the specified destination array
+     * @param from   the specified start index in dest
+     * @param length the specified number of array elms to copy
+     * @return the length of bytes read to the buffer, or {@code -1} if no more
+     * @throws NullPointerException      If the specified {@code dest} array is null
+     * @throws IndexOutOfBoundsException If access to buffer array exceeds array bounds
      * @since 0.0.3
      */
     public int getBytes(
-        int index, byte[] dst, int dstIndex, int length
+        int index, byte[] dest, int from, int length
     ) {
-        int len = count - index;
-        if (len <= 0) {
-            return -1;
-        }
-
-        int cap = dst.length - dstIndex;
-        if (cap <= 0) {
+        if (length == 0) {
             return 0;
         }
 
-        if (cap < length) {
-            length = cap;
+        if ((index | from | length) > 0) {
+            int more = count - index;
+            if (more == 0) {
+                return -1;
+            }
+
+            if (more > 0) {
+                int size = dest.length - from;
+                if (size == 0) {
+                    return 0;
+                }
+
+                if (size > 0) {
+                    if (more < length) {
+                        length = more;
+                    }
+
+                    if (size < length) {
+                        length = size;
+                    }
+
+                    System.arraycopy(
+                        value, index, dest, from, length
+                    );
+                    return length;
+                }
+            }
         }
 
-        if (len < length) {
-            length = len;
-        }
-
-        System.arraycopy(
-            value, index, dst, dstIndex, length
+        throw new IndexOutOfBoundsException(
+            "Index: " + index + ", from: " + from
+                + ", length: " + length + ", count: " + count
         );
-        return length;
     }
 
     /**
@@ -2912,18 +2926,19 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      */
     public static class Reader implements plus.kat.stream.Reader {
 
-        private int i, l;
+        private int i, e;
         private byte[] b;
 
         /**
-         * @param c the specified {@link Chain}
-         * @param i the start index of the {@link Chain}
+         * @param c the specified chain
+         * @param i the specified start index
+         * @param e the specified end index, exclude
          */
         private Reader(
-            @NotNull Chain c, int i, int l
+            @NotNull Chain c, int i, int e
         ) {
             this.i = i;
-            this.l = l;
+            this.e = e;
             this.b = c.value;
         }
 
@@ -2934,7 +2949,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
          */
         @Override
         public boolean also() {
-            return i < l;
+            return i < e;
         }
 
         /**
@@ -2954,7 +2969,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
          */
         @Override
         public byte next() throws IOException {
-            if (i < l) {
+            if (i < e) {
                 return b[i++];
             }
 
@@ -2985,7 +3000,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
          */
         @Override
         public void close() {
-            l = 0;
+            e = 0;
             b = null;
         }
     }

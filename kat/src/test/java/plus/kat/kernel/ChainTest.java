@@ -7,7 +7,6 @@ import plus.kat.chain.Value;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.*;
@@ -228,7 +227,7 @@ public class ChainTest {
         byte[] b2 = new byte[s2.length()];
         assertEquals(s2.length(), value.getBytes(8, b2));
         assertEquals(s2, new String(b2));
-        assertEquals(-1, value.getBytes(128, b2));
+        assertThrows(IndexOutOfBoundsException.class, () -> value.getBytes(128, b2));
 
         // specific language governing permissions
         int length = 16;
@@ -245,9 +244,18 @@ public class ChainTest {
         assertEquals("language gover", new String(b3, 2, 14));
         assertEquals("splanguage gover", new String(b3, 0, 16));
 
-        assertEquals(-1, value.getBytes(128, b3, 0, 8));
         assertEquals(0, value.getBytes(12, b3, 0, 0));
         assertEquals(length, value.getBytes(12, b3, 0, 128));
+
+        assertEquals(98, value.length());
+        assertEquals(98, value.capacity());
+        assertEquals(0, value.getBytes(98, b3));
+        assertEquals(0, value.getBytes(97, b3, length, length));
+        assertEquals(-1, value.getBytes(98, b3, length, length));
+
+        assertThrows(IndexOutOfBoundsException.class, () -> value.getBytes(12, b3, -1, 6));
+        assertThrows(IndexOutOfBoundsException.class, () -> value.getBytes(128, b3, 0, 8));
+        assertThrows(IndexOutOfBoundsException.class, () -> value.getBytes(1024, b3, 1, 6));
     }
 
     @Test
