@@ -20,7 +20,6 @@ public class ChainTest {
     @Test
     public void test_is() {
         assertTrue(new Value("$").is('$'));
-        assertTrue(new Value("$").is((byte) '$'));
         assertTrue(new Value("kat.plus").is("kat.plus"));
         assertTrue(new Value("😀").is("😀"));
         assertTrue(new Value("陆").is('陆'));
@@ -38,7 +37,8 @@ public class ChainTest {
         assertTrue(new Value("😀陆之岇😀").is(5, '\uD83D'));
         assertTrue(new Value("😀陆之岇😀").is(6, '\uDE00'));
 
-        assertFalse(new Value("陆之岇").is(null));
+        assertFalse(new Value("陆之岇").is((byte[]) null));
+        assertFalse(new Value("陆之岇").is((CharSequence) null));
         assertFalse(new Value("陆之岇").is("陆之岇+"));
         assertFalse(new Value("陆之岇+").is("陆之岇"));
         assertFalse(new Value("+陆之岇+").is("陆之岇+"));
@@ -73,11 +73,11 @@ public class ChainTest {
     @Test
     public void test_byteAt() {
         Alias c = new Alias("kat");
-        assertEquals((byte) 'k', c.byteAt(0));
-        assertEquals((byte) 'a', c.byteAt(1));
-        assertEquals((byte) 't', c.byteAt(2));
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.byteAt(3));
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.byteAt(-1));
+        assertEquals((byte) 'k', c.at(0));
+        assertEquals((byte) 'a', c.at(1));
+        assertEquals((byte) 't', c.at(2));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.at(3));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.at(-1));
     }
 
     @Test
@@ -88,6 +88,22 @@ public class ChainTest {
         assertEquals('t', c.charAt(2));
         assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.charAt(3));
         assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.charAt(-1));
+    }
+
+    @Test
+    public void test_blank() {
+        Chalk c = new Chalk();
+        c.grow(12);
+        for (char i = 0; i < 256; i++) {
+            if (Character.isWhitespace(i)) {
+                if (c.isNotEmpty()) {
+                    c.chain((byte) ',');
+                }
+                c.chain((int) i);
+            }
+        }
+
+        assertEquals("9,10,11,12,13,28,29,30,31,32", c.toString(ISO_8859_1));
     }
 
     @Test
@@ -161,41 +177,51 @@ public class ChainTest {
 
     @Test
     public void test_indexOf() {
-        Value value = new Value("plus.kat.plus");
+        String string = "plus.kat.plus";
+        Value value = new Value(string);
 
-        assertEquals("plus.kat.plus".indexOf('.'), value.indexOf('.'));
-        assertEquals("plus.kat.plus".indexOf('k'), value.indexOf('k'));
-        assertEquals("plus.kat.plus".indexOf("p"), value.indexOf("p"));
-        assertEquals("plus.kat.plus".indexOf("k"), value.indexOf("k"));
-        assertEquals("plus.kat.plus".indexOf("kat"), value.indexOf("kat"));
+        assertEquals(0, value.indexOf("p"));
+        assertEquals(0, value.indexOf("plus"));
+        assertEquals(string.indexOf('.'), value.indexOf((byte) '.'));
+        assertEquals(string.indexOf('k'), value.indexOf((byte) 'k'));
+        assertEquals(string.indexOf("k"), value.indexOf("k"));
+        assertEquals(string.indexOf("kat"), value.indexOf("kat"));
 
-        assertEquals("plus.kat.plus".indexOf('.', 10), value.indexOf('.', 10));
-        assertEquals("plus.kat.plus".indexOf("kat", 10), value.indexOf("kat", 10));
-
+        assertEquals(string.indexOf('.', 10), value.indexOf((byte) '.', 10));
+        assertEquals(string.indexOf("kat", 10), value.indexOf("kat", 10));
     }
 
     @Test
     public void test_lastIndexOf() {
-        Value value = new Value("plus.kat.plus");
+        String string = "plus.kat.plus";
+        Value value = new Value(string);
 
-        assertEquals("plus.kat.plus".lastIndexOf('.'), value.lastIndexOf('.'));
-        assertEquals("plus.kat.plus".lastIndexOf('k'), value.lastIndexOf('k'));
-        assertEquals("plus.kat.plus".lastIndexOf("p"), value.lastIndexOf("p"));
-        assertEquals("plus.kat.plus".lastIndexOf("k"), value.lastIndexOf("k"));
-        assertEquals("plus.kat.plus".lastIndexOf("kat"), value.lastIndexOf("kat"));
+        assertEquals(0, value.lastIndexOf(string));
+        assertEquals(string.lastIndexOf('.'), value.lastIndexOf((byte) '.'));
+        assertEquals(string.lastIndexOf('k'), value.lastIndexOf((byte) 'k'));
+        assertEquals(string.lastIndexOf("p"), value.lastIndexOf("p"));
+        assertEquals(string.lastIndexOf("k"), value.lastIndexOf("k"));
+        assertEquals(string.lastIndexOf("kat"), value.lastIndexOf("kat"));
+        assertEquals(string.lastIndexOf("plus"), value.lastIndexOf("plus"));
 
-        assertEquals("plus.kat.plus".lastIndexOf('.', 1), value.lastIndexOf('.', 1));
-        assertEquals("plus.kat.plus".lastIndexOf("kat", 1), value.lastIndexOf("kat", 1));
-
+        assertEquals(0, value.lastIndexOf("plus.kat"));
+        assertEquals(-1, value.lastIndexOf(".plus.kat.plus."));
+        assertEquals(string.lastIndexOf('.', 1), value.lastIndexOf((byte) '.', 1));
+        assertEquals(string.lastIndexOf("kat", 1), value.lastIndexOf("kat", 1));
     }
 
     @Test
     public void test_contains() {
         Value value = new Value("plus.kat.plus");
 
-        assertTrue(value.contains('.'));
+        assertTrue(value.contains((byte) '.'));
         assertTrue(value.contains("kat"));
+        assertTrue(value.contains(value));
         assertTrue(value.contains("plus.kat.plus"));
+
+        assertFalse(value.contains(null));
+        assertFalse(value.contains((byte) '+'));
+        assertFalse(value.contains("kat+"));
         assertFalse(value.contains("plus.kat.plus$"));
         assertFalse(value.contains("$plus.kat.plus"));
     }

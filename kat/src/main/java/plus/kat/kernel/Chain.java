@@ -129,9 +129,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns a hash code for this {@link Chain}
+     * Returns the hash code of this {@link Chain}
      * <p>
-     * {@link Chain} is similar to {@link String#hashCode()} when {@code byte[]} is ascii codes
+     * Similar to {@link String#hashCode()} when the chain is the {@code Latin1}
      *
      * @return a hash code value for this {@link Chain}
      * @see String#hashCode()
@@ -156,7 +156,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     /**
      * Compares a {@link Chain} or {@link CharSequence} to this chain
-     * to determine if their contents are equal, only supports ASCII code comparison
+     * as the {@code Latin1} to determine if their contents are the same
      *
      * @param o the {@link Object} to compare this {@link Chain} against
      */
@@ -223,10 +223,10 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares this {@link Chain} with the specified
-     * {@link CharSequence} for order, only supports ASCII code comparison
+     * Compares this chain as the {@code Latin1}
+     * with the specified {@link CharSequence} for order
      *
-     * @param o the {@link CharSequence} to be compared
+     * @param o the specified chars to be compared
      * @throws NullPointerException If the specified {@code chars} is null
      * @see String#compareTo(String)
      */
@@ -258,7 +258,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares this chain and specified {@code byte} value
+     * Compares this chain as the {@code Latin1} with the specified {@code byte} value
      *
      * <pre>{@code
      *   byte b = 'k';
@@ -266,7 +266,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *   new Value("kat").is(b); // false
      * }</pre>
      *
-     * @param b the byte value to be compared
+     * @param b the specified value to be compared
      */
     public boolean is(
         byte b
@@ -275,7 +275,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares this UTF-8 chain and specified {@code char} value
+     * Compares this chain as the {@code UTF8} with the specified {@code char} value
      *
      * <pre>{@code
      *   char c = 'k';
@@ -283,7 +283,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *   new Value("kat").is(c); // false
      * }</pre>
      *
-     * @param c the char value to be compared
+     * @param c the specified value to be compared
      */
     public boolean is(
         char c
@@ -329,7 +329,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares the specified index value of chain and specified {@code byte} value
+     * Compares the specified index value of this chain
+     * as the {@code Latin1} with the specified {@code byte} value
      *
      * <pre>{@code
      *   byte b = 'k';
@@ -348,17 +349,17 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * }</pre>
      *
      * @param i the specified index
-     * @param b the byte value to be compared
-     * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
+     * @param b the specified value to be compared
      */
     public boolean is(
         int i, byte b
     ) {
-        return i < count && value[i] == b;
+        return 0 <= i && i < count && value[i] == b;
     }
 
     /**
-     * Compares the specified index value of UTF8 chain and specified {@code char} value
+     * Compares the specified index value of the chain
+     * as the {@code UTF8} with the specified {@code char} value
      *
      * <pre>{@code
      *   char b = 'k';
@@ -377,14 +378,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * }</pre>
      *
      * @param i the specified index
-     * @param c the byte value to be compared
-     * @throws ArrayIndexOutOfBoundsException if the {@code index} argument is negative
+     * @param c the specified value to be compared
      */
     public boolean is(
         int i, char c
     ) {
         int l = count;
-        if (l <= i) {
+        if (l <= i || i < 0) {
             return false;
         }
 
@@ -491,7 +491,40 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares this UTF8 chain and specified {@link CharSequence}
+     * Compares this chain as the {@code Latin1} with the specified {@code byte} array
+     *
+     * <pre>{@code
+     *   byte[] b = new byte[]{'k'};
+     *   new Value("k").is(b); // true
+     *   new Value("kat").is(b); // false
+     *
+     *   byte[] c = new byte[]{'k', 'a', 't'};
+     *   new Value("k").is(c); // false
+     *   new Value("kat").is(c); // true
+     * }</pre>
+     *
+     * @param bs the specified bytes to compared
+     */
+    public boolean is(
+        @Nullable byte[] bs
+    ) {
+        if (bs != null) {
+            int range = bs.length;
+            if (count == range) {
+                byte[] it = value;
+                for (int i = 0; i < range; i++) {
+                    if (it[i] != bs[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Compares this chain as the {@code UTF8} with the specified {@link CharSequence}
      *
      * <pre>{@code
      *   new Value("k").is("k"); // true
@@ -501,8 +534,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *   new Value("kat").is("kat"); // true
      * }</pre>
      *
-     * @param ch the {@link CharSequence} to compare this {@link Chain} against
-     * @throws NullPointerException If the specified {@code chars} is null
+     * @param ch the specified chars to be compared
      */
     public boolean is(
         @Nullable CharSequence ch
@@ -588,118 +620,17 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Compares this chain and specified {@code byte[]}
-     *
-     * <pre>{@code
-     *   byte[] b = new byte[]{'k'};
-     *   new Value("k").same(b); // true
-     *   new Value("kat").same(b); // false
-     *
-     *   byte[] c = new byte[]{'k', 'a', 't'};
-     *   new Value("k").same(c); // false
-     *   new Value("kat").same(c); // true
-     * }</pre>
-     *
-     * @param b the {@code byte[]} to compare this {@link Chain} against
-     * @throws NullPointerException If the specified {@code bytes} is null
-     * @since 0.0.4
-     */
-    public boolean same(
-        @Nullable byte[] b
-    ) {
-        if (b != null) {
-            int range = b.length;
-            if (count == range) {
-                byte[] it = value;
-                for (int i = 0; i < range; i++) {
-                    if (it[i] != b[i]) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Compares this chain and specified {@code byte[]}
-     *
-     * <pre>{@code
-     *   char[] c = new char[]{'k'};
-     *   new Value("k").same(c); // true
-     *   new Value("kat").same(c); // false
-     *
-     *   char[] d = new char[]{'k', 'a', 't'};
-     *   new Value("k").same(d); // false
-     *   new Value("kat").same(d); // true
-     * }</pre>
-     *
-     * @param c the {@code byte[]} to compare this {@link Chain} against
-     * @throws NullPointerException If the specified {@code bytes} is null
-     * @since 0.0.4
-     */
-    public boolean same(
-        @Nullable char[] c
-    ) {
-        if (c != null) {
-            int range = c.length;
-            if (count == range) {
-                byte[] it = value;
-                for (int i = 0; i < range; i++) {
-                    if (c[i] != (char) (it[i] & 0xFF)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Compares this chain and specified {@link CharSequence}
-     *
-     * <pre>{@code
-     *   new Value("k").same("k"); // true
-     *   new Value("kat").same("k"); // false
-     *
-     *   new Value("k").same("kat"); // false
-     *   new Value("kat").same("kat"); // true
-     * }</pre>
-     *
-     * @param c the {@link CharSequence} to compare this {@link Chain} against
-     * @throws NullPointerException If the specified {@code chars} is null
-     * @since 0.0.4
-     */
-    public boolean same(
-        @Nullable CharSequence c
-    ) {
-        if (c != null) {
-            int range = c.length();
-            if (count == range) {
-                byte[] it = value;
-                for (int i = 0; i < range; i++) {
-                    if (c.charAt(i) !=
-                        (char) (it[i] & 0xFF)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns the byte value at the specified index
+     * Returns the specified index value of the {@code Latin1} chain
      *
      * <pre>{@code
      *   Chain c = new Value("kat");
      *   byte b0 = c.get(0); // 'k'
      *   byte b1 = c.get(1); // 'a'
      *   byte b2 = c.get(2); // 't'
-     *   byte b3 = c.get(3); // -1
+     *   byte b3 = c.get(3); // ERROR
+     *   byte b4 = c.get(-1); // 't'
+     *   byte b5 = c.get(-3); // 'k'
+     *   byte b6 = c.get(-4); // ERROR
      * }</pre>
      *
      * @param i the specified index
@@ -723,7 +654,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the byte value at the specified index
+     * Returns the specified index value of the {@code Latin1} chain
      *
      * <pre>{@code
      *   Chain c = new Value("kat");
@@ -733,8 +664,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *   byte b2 = c.get(2, def); // 't'
      *   byte b3 = c.get(3, def); // '$'
      *   byte b4 = c.get(-1, def); // 't'
-     *   byte b4 = c.get(-3, def); // 'k'
-     *   byte b4 = c.get(-4, def); // '$'
+     *   byte b5 = c.get(-3, def); // 'k'
+     *   byte b6 = c.get(-4, def); // '$'
      * }</pre>
      *
      * @param i   the specified index
@@ -750,12 +681,23 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the byte value at the specified index
+     * Returns the specified index value of the {@code Latin1} chain
+     *
+     * <pre>{@code
+     *   Chain c = new Value("kat");
+     *   byte b0 = c.at(0); // 'k'
+     *   byte b1 = c.at(1); // 'a'
+     *   byte b2 = c.at(2); // 't'
+     *   byte b3 = c.at(3); // ERROR
+     *   byte b4 = c.at(-1); // ERROR
+     *   byte b5 = c.at(-3); // ERROR
+     *   byte b6 = c.at(-4); // ERROR
+     * }</pre>
      *
      * @param i the specified index
      * @throws ArrayIndexOutOfBoundsException If the specified index is negative or out of range
      */
-    public byte byteAt(int i) {
+    public byte at(int i) {
         if (i < count) {
             return value[i];
         }
@@ -766,7 +708,18 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the char value at the specified index
+     * Returns the specified index value of the {@code Latin1} chain
+     *
+     * <pre>{@code
+     *   Chain c = new Value("kat");
+     *   char c0 = c.charAt(0); // 'k'
+     *   char c1 = c.charAt(1); // 'a'
+     *   char c2 = c.charAt(2); // 't'
+     *   char c3 = c.charAt(3); // ERROR
+     *   char c4 = c.charAt(-1); // ERROR
+     *   char c5 = c.charAt(-3); // ERROR
+     *   char c6 = c.charAt(-4); // ERROR
+     * }</pre>
      *
      * @param i the specified index
      * @throws ArrayIndexOutOfBoundsException If the specified index is negative or out of range
@@ -787,6 +740,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns the charset of this {@link Chain}
      *
+     * @see Charset
      * @since 0.0.5
      */
     @NotNull
@@ -795,7 +749,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the length of this {@link Chain}
+     * Returns the length of this {@code Latin1} chain
      */
     @Override
     public int length() {
@@ -803,7 +757,9 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the length of internal byte array
+     * Returns the length of internal {@code byte} array
+     *
+     * @see Chain#length()
      */
     public int capacity() {
         return value.length;
@@ -811,24 +767,35 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     /**
      * Returns true if, and only if,
-     * the length of chain is {@code 0}
+     * the count of this chain is {@code 0}
+     *
+     * @see Chain#isNotEmpty()
      */
     public boolean isEmpty() {
         return count == 0;
     }
 
     /**
-     * Returns false if and only if this chain
-     * has an element {@code byte > 32 or byte< 0}
+     * Returns true if this chain is empty
+     * or contains only white space codepoints
+     * <p>
+     * White space: {@code 9,10,11,12,13,28,29,30,31,32}
+     *
+     * @see Chain#isNotBlank()
+     * @see Character#isWhitespace(char)
      */
     public boolean isBlank() {
-        int i = 0, l = count;
-        byte[] it = value;
-        while (i < l) {
-            byte b = it[i++];
-            // Ascii code > 32, other code < 0
-            if (b > 32 || b < 0) {
-                return false;
+        int l = count;
+        if (l != 0) {
+            byte[] it = value;
+            for (int i = 0; i < l; i++) {
+                byte b = it[i];
+                if (b > 32 || b < 9) {
+                    return false;
+                }
+                if (13 < b && b < 28) {
+                    return false;
+                }
             }
         }
         return true;
@@ -836,24 +803,35 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     /**
      * Returns true if, and only if,
-     * the length of chain is not {@code 0}
+     * the count of this chain is not {@code 0}
+     *
+     * @see Chain#isEmpty()
      */
     public boolean isNotEmpty() {
         return count != 0;
     }
 
     /**
-     * Returns true if and only if this chain
-     * has an element {@code byte > 32 or byte< 0}
+     * Returns false if this chain is empty
+     * or contains only white space codepoints
+     * <p>
+     * White space: {@code 9,10,11,12,13,28,29,30,31,32}
+     *
+     * @see Chain#isBlank()
+     * @see Character#isWhitespace(char)
      */
     public boolean isNotBlank() {
-        int i = 0, l = count;
-        byte[] it = value;
-        while (i < l) {
-            byte b = it[i++];
-            // Ascii code > 32, other code < 0
-            if (b > 32 || b < 0) {
-                return true;
+        int l = count;
+        if (l != 0) {
+            byte[] it = value;
+            for (int i = 0; i < l; i++) {
+                byte b = it[i];
+                if (b > 32 || b < 9) {
+                    return true;
+                }
+                if (13 < b && b < 28) {
+                    return true;
+                }
             }
         }
         return false;
@@ -861,15 +839,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
 
     /**
      * Returns true if, and only if,
-     * the length of chain is {@code 1}
-     */
-    public boolean isSole() {
-        return count == 1;
-    }
-
-    /**
-     * Returns true if, and only if,
-     * the chain is finally unchanged
+     * this chain is finally unchanged
      *
      * @since 0.0.5
      */
@@ -879,8 +849,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Tests if this {@link Chain} starts with the
-     * specified prefix, only supports ASCII code comparison.
+     * Tests if this {@code Latin1} chain starts with the specified {@code prefix}
      *
      * <pre>{@code
      *   Chain c = new Value("kat");
@@ -888,13 +857,16 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *   boolean b = c.startWith("kat.plus"); // false
      * }</pre>
      *
-     * @param c the prefix
-     * @throws NullPointerException If the specified {@code prefix} is null
+     * @param c the specified prefix to search for
      * @see String#startsWith(String)
      */
     public boolean startWith(
-        @NotNull CharSequence c
+        @Nullable CharSequence c
     ) {
+        if (c == null) {
+            return false;
+        }
+
         int l = c.length();
         if (count < l) {
             return false;
@@ -916,8 +888,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Tests if this {@link Chain} ends with the
-     * specified suffix, only supports ASCII code comparison
+     * Tests if this {@code Latin1} chain ends with the specified {@code suffix}
      *
      * <pre>{@code
      *   Chain c = new Value("kat");
@@ -925,13 +896,16 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      *   boolean b = c.endsWith("plus.kat"); // false
      * }</pre>
      *
-     * @param c the suffix
-     * @throws NullPointerException If the specified {@code suffix} is null
+     * @param c the specified suffix to search for
      * @see String#endsWith(String)
      */
     public boolean endsWith(
-        @NotNull CharSequence c
+        @Nullable CharSequence c
     ) {
+        if (c == null) {
+            return false;
+        }
+
         int l = c.length();
         int k = count - l;
         if (k < 0) {
@@ -954,176 +928,100 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the first element only if the length of
-     * chain is not {@code 0}, otherwise returns {@code -1}
-     */
-    public byte head() {
-        if (count == 0) {
-            return -1;
-        }
-        return value[0];
-    }
-
-    /**
-     * Check the specified value comparison with the first element
+     * Returns the index within this {@code Latin1} chain
+     * of the first occurrence of the specified {@code byte} value
      *
-     * @param b data
-     */
-    public boolean head(
-        byte b
-    ) {
-        if (count == 0) {
-            return false;
-        }
-        return value[0] == b;
-    }
-
-    /**
-     * Returns the last element only if the length of
-     * chain is not {@code 0}, otherwise returns {@code -1}
-     */
-    public byte tail() {
-        int i = count - 1;
-        if (i < 0) {
-            return -1;
-        }
-        return value[i];
-    }
-
-    /**
-     * Check the specified value comparison with the last element
-     *
-     * @param b data
-     */
-    public boolean tail(
-        byte b
-    ) {
-        int i = count - 1;
-        if (i < 0) {
-            return false;
-        }
-        return value[i] == b;
-    }
-
-    /**
-     * Returns the last element only if the length of
-     * chain is {@code 1}, otherwise returns {@code -1}
-     */
-    public byte sole() {
-        if (count != 1) {
-            return -1;
-        }
-        return value[0];
-    }
-
-    /**
-     * Returns the index within this chain of
-     * the first occurrence of the specified byte value
-     *
-     * @param b the byte value to search for
+     * @param b the specified value to search for
      * @see String#indexOf(int)
      */
     public int indexOf(byte b) {
-        int max = count;
-        byte[] it = value;
-        for (int o = 0; o < max; o++) {
-            if (it[o] == b) {
-                return o;
-            }
+        int l = count;
+        if (l != 0) {
+            int i = 0;
+            byte[] it = value;
+            do {
+                if (it[i] == b) {
+                    return i;
+                }
+            } while (++i < l);
         }
         return -1;
     }
 
     /**
-     * Returns the index within this chain of
-     * the first occurrence of the specified character
+     * Returns the index within this {@code Latin1} chain of the first occurrence
+     * of the specified {@code byte} value, starting the search at the specified index
      *
-     * @param b the character to search for
-     * @see Chain#indexOf(byte)
-     */
-    public int indexOf(int b) {
-        return indexOf((byte) b);
-    }
-
-    /**
-     * Returns the index within this chain of the first occurrence of
-     * the specified byte value, starting the search at the specified index
-     *
-     * @param b the character to search for
-     * @param o the index to start the search from
+     * @param b the specified value to search for
+     * @param i the index to start the search from
      * @see String#indexOf(int, int)
      */
     public int indexOf(
-        byte b, int o
+        byte b, int i
     ) {
-        int max = count;
-        if (o < 0) {
-            o = 0;
-        } else if (o >= max) {
-            return -1;
-        }
-
-        byte[] it = value;
-        for (; o < max; o++) {
-            if (it[o] == b) {
-                return o;
+        int l = count;
+        if (l != 0) {
+            if (i < 0) {
+                i = 0;
+            } else if (l <= i) {
+                return -1;
             }
+
+            byte[] it = value;
+            do {
+                if (it[i] == b) {
+                    return i;
+                }
+            } while (++i < l);
         }
         return -1;
     }
 
     /**
-     * Returns the index within this chain of the first occurrence of
-     * the specified character, starting the search at the specified index
+     * Returns the index within this {@code Latin1} chain of
+     * the first occurrence of the specified {@code Latin1} subsequence
      *
-     * @param b the character to search for
-     * @param o the index to start the search from
-     * @see Chain#indexOf(byte, int)
-     */
-    public int indexOf(
-        int b, int o
-    ) {
-        return indexOf((byte) b, o);
-    }
-
-    /**
-     * Returns the index within this chain of the first
-     * occurrence of the specified chars, only supports ASCII code comparison
-     *
-     * @param c the specified chars to search for
-     * @throws NullPointerException If the specified {@code chars} is null
+     * @param c the specified {@code Latin1} sequence
      * @see String#indexOf(String)
      */
     public int indexOf(
-        @NotNull CharSequence c
+        @Nullable CharSequence c
     ) {
         return indexOf(c, 0);
     }
 
     /**
-     * Returns the index within this chain of the first occurrence of
-     * the specified chars, starting at the specified index, only supports ASCII code comparison
+     * Returns the index within this {@code Latin1} chain of the first occurrence
+     * of the specified {@code Latin1} subsequence, starting at the specified index
      *
-     * @param c the specified chars to search for
-     * @param o the index from which to start the search
-     * @throws NullPointerException           If the specified {@code chars} is null
-     * @throws ArrayIndexOutOfBoundsException if the offset argument is negative
+     * @param c the specified {@code Latin1} sequence
+     * @param i the index from which to start the search
      * @see String#indexOf(String, int)
      */
     public int indexOf(
-        @NotNull CharSequence c, int o
+        @Nullable CharSequence c, int i
     ) {
-        int len = c.length();
-        if (len == 0) {
-            return 0;
-        }
-        if (count == 0 ||
-            o >= count) {
+        if (c == null) {
             return -1;
         }
 
-        int lim = count - len;
-        if (lim < 0) {
+        int m = count;
+        int l = c.length();
+
+        if (m <= i) {
+            return l == 0 ? m : -1;
+        }
+
+        if (i < 0) {
+            i = 0;
+        }
+
+        if (l == 0) {
+            return i;
+        }
+
+        int k = m - l;
+        if (k < 0) {
             return -1;
         }
 
@@ -1132,22 +1030,21 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return -1;
         }
 
-        byte fir = (byte) ch;
+        byte h = (byte) ch;
         byte[] it = value;
 
-        for (; o <= lim; o++) {
-            if (it[o] != fir) {
+        for (; i <= k; i++) {
+            if (it[i] != h) {
                 continue;
             }
 
-            char ot;
-            int o1 = o, o2 = 0;
-            while (++o2 < len) {
-                ot = (char) (it[++o1] & 0xFF);
-                if (ot != c.charAt(o2)) break;
+            int i1 = i, i2 = 0;
+            while (++i2 < l) {
+                ch = (char) (it[++i1] & 0xFF);
+                if (ch != c.charAt(i2)) break;
             }
-            if (o2 == len) {
-                return o;
+            if (i2 == l) {
+                return i;
             }
         }
 
@@ -1155,108 +1052,92 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns the index within this chain of
-     * the last occurrence of the specified byte value
+     * Returns the index within this {@code Latin1} chain
+     * of the last occurrence of the specified {@code byte} value
      *
-     * @param b the byte value to search for
+     * @param b the specified value to search for
      * @see String#lastIndexOf(int)
      */
     public int lastIndexOf(byte b) {
-        int o = count - 1;
-        byte[] it = value;
-        for (; o >= 0; o--) {
-            if (it[o] == b) {
-                return o;
-            }
+        int i = count - 1;
+        if (0 <= i) {
+            byte[] it = value;
+            do {
+                if (it[i] == b) {
+                    return i;
+                }
+            } while (0 <= --i);
         }
         return -1;
     }
 
     /**
-     * Returns the index within this chain of
-     * the last occurrence of the specified character
+     * Returns the index within this {@code Latin1} chain of the last occurrence of
+     * the specified {@code byte} value, searching backward starting at the specified index
      *
-     * @param b the character to search for
-     * @see Chain#lastIndexOf(byte)
-     */
-    public int lastIndexOf(int b) {
-        return lastIndexOf((byte) b);
-    }
-
-    /**
-     * Returns the index within this chain of the last occurrence of
-     * the specified byte value, searching backward starting at the specified index
-     *
-     * @param b the byte value to search for
-     * @param o the index from which to start the search
+     * @param b the specified value to search for
+     * @param i the index from which to start the search
      * @see String#lastIndexOf(int, int)
      */
     public int lastIndexOf(
-        byte b, int o
+        byte b, int i
     ) {
-        if (o >= count) {
-            o = count - 1;
+        int l = count;
+        if (l <= i) {
+            i = l - 1;
         }
-        byte[] it = value;
-        for (; o >= 0; o--) {
-            if (it[o] == b) {
-                return o;
-            }
+        if (0 <= i) {
+            byte[] it = value;
+            do {
+                if (it[i] == b) {
+                    return i;
+                }
+            } while (0 <= --i);
         }
         return -1;
     }
 
     /**
-     * Returns the index within this chain of the last occurrence of
-     * the specified character, searching backward starting at the specified index
+     * Returns the index within this {@code Latin1} chain of
+     * the last occurrence of the specified {@code Latin1} subsequence
      *
-     * @param b the character to search for
-     * @param o the index from which to start the search
-     * @see Chain#lastIndexOf(byte, int)
-     */
-    public int lastIndexOf(
-        int b, int o
-    ) {
-        return lastIndexOf((byte) b, o);
-    }
-
-    /**
-     * Returns the index within this chain of the last
-     * occurrence of the specified chars, only supports ASCII code comparison
-     *
-     * @param c the specified chars to search for
-     * @throws NullPointerException If the specified {@code chars} is null
+     * @param c the specified {@code Latin1} sequence
      * @see String#lastIndexOf(String)
      */
     public int lastIndexOf(
-        @NotNull CharSequence c
+        @Nullable CharSequence c
     ) {
         return lastIndexOf(c, count);
     }
 
     /**
-     * Returns the index within this chain of the last occurrence of the specified chars,
-     * searching backward starting at the specified index, only supports ASCII code comparison
+     * Returns the index within this {@code Latin1} chain of the last occurrence of
+     * the specified {@code Latin1} {@code sequence}, searching backward starting at the specified index
      *
-     * @param c the specified chars to search for
-     * @param f the index from which to start the search
-     * @throws NullPointerException If the specified {@code chars} is null
+     * @param c the specified {@code Latin1} sequence
+     * @param i the index from which to start the search
      * @see String#lastIndexOf(String, int)
      */
     public int lastIndexOf(
-        @NotNull CharSequence c, int f
+        @Nullable CharSequence c, int i
     ) {
-        int len = c.length(),
-            r = count - len;
-        if (f > r) {
-            f = r;
-        }
-
-        if (f < 0) {
+        if (c == null) {
             return -1;
         }
-        if (len == 0) {
-            return f;
+
+        int l = c.length();
+        int r = count - l;
+
+        if (i > r) {
+            i = r;
+        }
+
+        if (i < 0) {
+            return -1;
+        }
+
+        if (l == 0) {
+            return i;
         }
 
         char ch = c.charAt(0);
@@ -1264,24 +1145,23 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return -1;
         }
 
-        byte fir = (byte) ch;
+        byte h = (byte) ch;
         byte[] it = value;
 
-        char ot;
-        for (; f >= 0; --f) {
-            if (it[f] != fir) {
+        for (; 0 <= i; --i) {
+            if (it[i] != h) {
                 continue;
             }
 
-            int o1 = f, o2 = 0;
-            while (++o2 < len) {
-                ot = (char) (
-                    it[++o1] & 0xFF
+            int i1 = i, i2 = 0;
+            while (++i2 < l) {
+                ch = (char) (
+                    it[++i1] & 0xFF
                 );
-                if (ot != c.charAt(o2)) break;
+                if (ch != c.charAt(i2)) break;
             }
-            if (o2 == len) {
-                return f;
+            if (i2 == l) {
+                return i;
             }
         }
 
@@ -1289,8 +1169,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns true if and only if this
-     * chain contains the specified byte value
+     * Returns true if and only if this {@code Latin1}
+     * chain contains the specified {@code byte} value
      *
      * @param b the byte value to search for
      * @see Chain#indexOf(byte)
@@ -1300,33 +1180,21 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns true if and only if this
-     * chain contains the specified character
-     *
-     * @param b the int value to search for
-     * @see Chain#indexOf(byte)
-     */
-    public boolean contains(int b) {
-        return indexOf((byte) b) != -1;
-    }
-
-    /**
-     * Returns true if and only if this chain contains
-     * the specified chars. only supports ASCII code comparison
+     * Returns true if and only if this {@code Latin1}
+     * chain contains the specified {@code Latin1} sequence
      *
      * @param c the {@link CharSequence} to search for
-     * @throws NullPointerException If the specified {@code chars} is null
      * @see Chain#indexOf(CharSequence)
      * @see String#contains(CharSequence)
      */
     public boolean contains(
-        @NotNull CharSequence c
+        @Nullable CharSequence c
     ) {
-        return indexOf(c, 0) != -1;
+        return indexOf(c) != -1;
     }
 
     /**
-     * Copy this chain into a new byte array
+     * Copy this {@code Latin1} chain into a new {@code byte} array
      *
      * @since 0.0.4
      */
@@ -1344,7 +1212,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Copy this chain into a new byte array
+     * Copy this {@code Latin1} chain into a new {@code byte} array
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
@@ -1374,7 +1242,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Copy this UTF8 chain into a new char array
+     * Copy this {@code UTF8} chain into a new {@code char} array
      *
      * @since 0.0.4
      */
@@ -1390,7 +1258,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Copy this UTF8 chain into a new char array
+     * Copy this {@code UTF8} chain into a new {@code char} array
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive

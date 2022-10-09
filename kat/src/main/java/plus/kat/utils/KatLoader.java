@@ -30,6 +30,7 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
 
     private static final String
         PREFIX = "META-INF/services/";
+    private static final byte n = '\n';
 
     protected int size;
     protected int index;
@@ -102,50 +103,62 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
         String name
     ) throws IOException {
         Enumeration<URL> configs = classLoader
-            .getResources(
-                PREFIX + name
-            );
+            .getResources(PREFIX + name);
 
         while (configs.hasMoreElements()) {
             URL url = configs.nextElement();
             try (InputStream in = url.openStream()) {
-                int mark = 0;
-                while (true) {
+                Stream:
+                for (int block = 0; ; ) {
                     int i = in.read();
-                    if (i == -1) {
-                        break;
+                    if (i > 0x20) {
+                        chain(
+                            (byte) i
+                        );
+                        continue;
                     }
 
                     if (i == 0x20) {
                         continue;
                     }
 
-                    if (i > 0x20) {
-                        grow(count + 1);
-                        star = 0;
-                        value[count++] = (byte) i;
-                    } else if (tail() != '\n') {
-                        grow(count + 1);
-                        star = 0;
-                        value[count++] = '\n';
-                        if (permit(mark)) {
-                            size++;
-                            mark = count;
-                        } else {
-                            count = mark;
-                        }
-                    }
-                }
-
-                int i = count - 1;
-                if (i > 0 && value[i] != '\n') {
-                    grow(count + 1);
-                    star = 0;
-                    value[count++] = '\n';
-                    if (permit(mark)) {
-                        size++;
+                    if (get(-1, n) == n) {
+                        if (i == -1) break;
                     } else {
-                        count = mark;
+                        chain(n);
+                        if (block != 0) {
+                            byte[] it = value;
+                            byte data = it[block];
+
+                            int l = count;
+                            int len = l - block,
+                                lim = block - len;
+
+                            for (int k = 0; k <= lim; k++) {
+                                if (it[k] != data) {
+                                    continue;
+                                }
+
+                                int i1 = k, i2 = block;
+                                while (++i2 < l) {
+                                    if (it[++i1] != it[i2]) break;
+                                }
+                                if (i2 == l) {
+                                    count = block;
+                                    if (i == -1) {
+                                        break Stream;
+                                    } else {
+                                        continue Stream;
+                                    }
+                                }
+                            }
+                        }
+                        size++;
+                        if (i == -1) {
+                            break;
+                        } else {
+                            block = count;
+                        }
                     }
                 }
             }
@@ -217,38 +230,5 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                 service.getName() + ": Provider '" + name + "' could not be instantiated ", e
             );
         }
-    }
-
-    /**
-     * Returns the status of collect permit
-     */
-    protected boolean permit(
-        int mark
-    ) {
-        if (mark == 0) {
-            return true;
-        }
-
-        byte[] it = value;
-        byte fir = it[mark];
-
-        int len = count - mark;
-        int lim = mark - len;
-
-        for (int o = 0; o <= lim; o++) {
-            if (it[o] != fir) {
-                continue;
-            }
-
-            int o1 = o, o2 = mark;
-            while (++o2 < count) {
-                if (it[++o1] != it[o2]) break;
-            }
-            if (o2 == count) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

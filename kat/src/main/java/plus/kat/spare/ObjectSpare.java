@@ -130,7 +130,7 @@ public class ObjectSpare extends Property<Object> {
             return null;
         }
 
-        byte b = chain.byteAt(0);
+        byte b = chain.at(0);
 
         if (b < 0x3A) {
             Number num = chain.toNumber();
@@ -144,27 +144,27 @@ public class ObjectSpare extends Property<Object> {
             case 4: {
                 // true
                 if (b == 't') {
-                    if (chain.byteAt(1) == 'r' &&
-                        chain.byteAt(2) == 'u' &&
-                        chain.byteAt(3) == 'e') {
+                    if (chain.at(1) == 'r' &&
+                        chain.at(2) == 'u' &&
+                        chain.at(3) == 'e') {
                         return Boolean.TRUE;
                     }
                 }
 
                 // TRUE/True
                 else if (b == 'T') {
-                    byte c = chain.byteAt(1);
+                    byte c = chain.at(1);
                     if (c == 'R') {
-                        if (chain.byteAt(2) == 'U' &&
-                            chain.byteAt(3) == 'E') {
+                        if (chain.at(2) == 'U' &&
+                            chain.at(3) == 'E') {
                             return Boolean.TRUE;
                         }
                     }
 
                     // True
                     else if (c == 'r') {
-                        if (chain.byteAt(2) == 'u' &&
-                            chain.byteAt(3) == 'e') {
+                        if (chain.at(2) == 'u' &&
+                            chain.at(3) == 'e') {
                             return Boolean.TRUE;
                         }
                     }
@@ -174,30 +174,30 @@ public class ObjectSpare extends Property<Object> {
             case 5: {
                 // false
                 if (b == 'f') {
-                    if (chain.byteAt(1) == 'a' &&
-                        chain.byteAt(2) == 'l' &&
-                        chain.byteAt(3) == 's' &&
-                        chain.byteAt(4) == 'e') {
+                    if (chain.at(1) == 'a' &&
+                        chain.at(2) == 'l' &&
+                        chain.at(3) == 's' &&
+                        chain.at(4) == 'e') {
                         return Boolean.FALSE;
                     }
                 }
 
                 // FALSE/False
                 else if (b == 'F') {
-                    byte c = chain.byteAt(1);
+                    byte c = chain.at(1);
                     if (c == 'A') {
-                        if (chain.byteAt(2) == 'L' &&
-                            chain.byteAt(3) == 'S' &&
-                            chain.byteAt(4) == 'E') {
+                        if (chain.at(2) == 'L' &&
+                            chain.at(3) == 'S' &&
+                            chain.at(4) == 'E') {
                             return Boolean.FALSE;
                         }
                     }
 
                     // False
                     else if (c == 'a') {
-                        if (chain.byteAt(2) == 'l' &&
-                            chain.byteAt(3) == 's' &&
-                            chain.byteAt(4) == 'e') {
+                        if (chain.at(2) == 'l' &&
+                            chain.at(3) == 's' &&
+                            chain.at(4) == 'e') {
                             return Boolean.FALSE;
                         }
                     }

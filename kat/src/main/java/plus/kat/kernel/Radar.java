@@ -542,7 +542,7 @@ public class Radar implements Solver {
                             }
 
                             if (b == GT) {
-                                if (a.tail(SLASH)) {
+                                if (a.get(-1) == SLASH) {
                                     a.clean();
                                 }
                                 continue Boot;

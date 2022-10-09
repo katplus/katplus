@@ -112,7 +112,7 @@ public class ErrorSpare extends Property<Exception> {
             @NotNull Alias alias,
             @NotNull Value value
         ) {
-            switch (alias.head()) {
+            switch (alias.get(0)) {
                 case 'c': {
                     code = value.toInt();
                     break;

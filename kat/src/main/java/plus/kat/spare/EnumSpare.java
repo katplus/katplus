@@ -153,7 +153,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
 
             if (alias.isNotBlank()) {
                 for (K em : e) {
-                    if (alias.same(em.name())) {
+                    if (alias.equals(em.name())) {
                         return em;
                     }
                 }
@@ -178,7 +178,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
 
             if (value.isNotBlank()) {
                 for (K em : e) {
-                    if (value.same(em.name())) {
+                    if (value.equals(em.name())) {
                         return em;
                     }
                 }
@@ -240,7 +240,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
                     Chain c = (Chain) data;
                     if (c.isNotBlank()) {
                         for (K em : e) {
-                            if (c.same(em.name())) {
+                            if (c.equals(em.name())) {
                                 return em;
                             }
                         }
