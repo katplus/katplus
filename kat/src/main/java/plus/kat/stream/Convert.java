@@ -43,17 +43,37 @@ public final class Convert {
 
         // 0xxxxxxx
         if (len == 1) {
-            return (char) (it[0] & 0xFF);
+            int b1 = it[0];
+            if (b1 < 0) {
+                return def;
+            }
+            return (char) (b1 & 0xFF);
         }
 
         // 110xxxxx 10xxxxxx
         if (len == 2) {
-            return (char) (((it[0] & 0x1F) << 6) | (it[1] & 0x3F));
+            int b1 = it[0],
+                b2 = it[1];
+            if ((b1 >> 5) != -2 ||
+                (b2 >> 6) != -2) {
+                return def;
+            }
+
+            return (char) (((b1 & 0x1F) << 6) | (b2 & 0x3F));
         }
 
         // 1110xxxx 10xxxxxx 10xxxxxx
         if (len == 3) {
-            return (char) (((it[0] & 0xF) << 12) | ((it[1] & 0x3F) << 6) | (it[2] & 0x3F));
+            int b1 = it[0],
+                b2 = it[1],
+                b3 = it[2];
+            if ((b1 >> 4) != -2 ||
+                (b2 >> 6) != -2 ||
+                (b3 >> 6) != -2) {
+                return def;
+            }
+
+            return (char) (((b1 & 0xF) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F));
         }
 
         return def;

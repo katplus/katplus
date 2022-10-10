@@ -14,16 +14,22 @@ public class ConvertTest {
     @Test
     public void test_byte_array_to_char() {
         byte[] d0 = "k".getBytes(UTF_8);
-        assertEquals('k', Convert.toChar(d0, d0.length, '?'));
+        assertEquals('k', Convert.toChar(d0, d0.length, '\0'));
 
         byte[] d1 = "\n".getBytes(UTF_8);
-        assertEquals('\n', Convert.toChar(d1, d1.length, '?'));
+        assertEquals('\n', Convert.toChar(d1, d1.length, '\0'));
 
-        byte[] d2 = "陆".getBytes(UTF_8);
-        assertEquals('陆', Convert.toChar(d2, d2.length, '?'));
+        byte[] d2 = "Σ".getBytes(UTF_8);
+        assertEquals(2, d2.length);
+        assertEquals('\0', Convert.toChar(d2, 1, '\0'));
+        assertEquals('Σ', Convert.toChar(d2, d2.length, '\0'));
 
-        byte[] d3 = "Σ".getBytes(UTF_8);
-        assertEquals('Σ', Convert.toChar(d3, d3.length, '?'));
+        byte[] d3 = "陆".getBytes(UTF_8);
+        assertEquals(3, d3.length);
+        assertEquals('\0', Convert.toChar(d3, 1, '\0'));
+        assertEquals('\0', Convert.toChar(d3, 2, '\0'));
+        assertEquals('陆', Convert.toChar(d3, d3.length, '\0'));
+        assertEquals('\0', Convert.toChar(new byte[]{d3[1], d3[2]}, 2, '\0'));
     }
 
     static class User {
