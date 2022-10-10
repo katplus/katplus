@@ -150,6 +150,56 @@ public class ChainTest {
         assertEquals("21707be3777f237901b7edcdd73dc8288a81a4d2", value.digest("SHA1"));
     }
 
+    public void empty(Chain c, boolean b) {
+        assertEquals(b, c.isEmpty());
+        assertEquals(!b, c.isNotEmpty());
+    }
+
+    @Test
+    public void test_isEmpty() {
+        empty(new Value(), true);
+        empty(new Value(""), true);
+        empty(new Value(" "), false);
+        empty(new Value("kat"), false);
+        empty(new Value("  kat  "), false);
+    }
+
+    public void blank(Chain c, boolean b) {
+        assertEquals(b, c.isBlank());
+        assertEquals(!b, c.isNotBlank());
+    }
+
+    @Test
+    public void test_isBlank() {
+        blank(new Value(), true);
+        blank(new Value(""), true);
+        blank(new Value(" "), true);
+        blank(new Value("  "), true);
+        blank(new Value("kat"), false);
+        blank(new Value("  kat  "), false);
+    }
+
+    public void digit(Chain c, boolean b) {
+        assertEquals(b, c.isDigit());
+        assertEquals(!b, c.isNotDigit());
+    }
+
+    @Test
+    public void test_isDigit() {
+        digit(new Value("0"), true);
+        digit(new Value("1"), true);
+        digit(new Value("01"), true);
+        digit(new Value("123"), true);
+        digit(new Value(""), false);
+        digit(new Value("  "), false);
+        digit(new Value("12 3"), false);
+        digit(new Value("abc4"), false);
+        digit(new Value("12-3"), false);
+        digit(new Value("12.3"), false);
+        digit(new Value("-1.2"), false);
+        digit(new Value("-123"), false);
+    }
+
     @Test
     public void test_startWith() {
         Value value = new Value("plus.kat");

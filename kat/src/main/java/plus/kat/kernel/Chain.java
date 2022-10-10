@@ -203,6 +203,15 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns true if, and only if,
+     * this chain is finally unchanged
+     */
+    public final boolean isFixed() {
+        // star & Integer.MIN_VALUE
+        return star < 0;
+    }
+
+    /**
      * Returns a {@link CharSequence} that
      * is a subsequence of this {@link Chain}
      *
@@ -769,6 +778,14 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Returns true if, and only if,
      * the count of this chain is {@code 0}
      *
+     * <pre>{@code
+     *   new Value().isEmpty()          = true
+     *   new Value("").isEmpty()        = true
+     *   new Value(" ").isEmpty()       = false
+     *   new Value("kat").isEmpty()     = false
+     *   new Value("  kat  ").isEmpty() = false
+     * }</pre>
+     *
      * @see Chain#isNotEmpty()
      */
     public boolean isEmpty() {
@@ -780,6 +797,15 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * or contains only white space codepoints
      * <p>
      * White space: {@code 9,10,11,12,13,28,29,30,31,32}
+     *
+     * <pre>{@code
+     *   new Value().isBlank()          = true
+     *   new Value("").isBlank()        = true
+     *   new Value(" ").isBlank()       = true
+     *   new Value("  ").isBlank()      = true
+     *   new Value("kat").isBlank()     = false
+     *   new Value("  kat  ").isBlank() = false
+     * }</pre>
      *
      * @see Chain#isNotBlank()
      * @see Character#isWhitespace(char)
@@ -802,6 +828,46 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Returns true if the chain is
+     * non-empty and contains only numbers
+     * <p>
+     * Digit code: {@code 48,49,50,51,52,53,54,55,56,57}
+     *
+     * <pre>{@code
+     *   new Value("0").isDigit()    = true
+     *   new Value("01").isDigit()   = true
+     *   new Value("123").isDigit()  = true
+     *   new Value("").isDigit()     = false
+     *   new Value("  ").isDigit()   = false
+     *   new Value("12 3").isDigit() = false
+     *   new Value("abc4").isDigit() = false
+     *   new Value("12-3").isDigit() = false
+     *   new Value("12.3").isDigit() = false
+     *   new Value("-1.2").isDigit() = false
+     *   new Value("-123").isDigit() = false
+     * }</pre>
+     *
+     * @see Chain#isNotDigit()
+     * @see Character#isDigit(char)
+     * @since 0.0.5
+     */
+    public boolean isDigit() {
+        int l = count;
+        if (l == 0) {
+            return false;
+        }
+
+        byte[] it = value;
+        for (int i = 0; i < l; i++) {
+            byte b = it[i];
+            if (b < 48 || b > 57) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns true if, and only if,
      * the count of this chain is not {@code 0}
      *
@@ -818,7 +884,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * White space: {@code 9,10,11,12,13,28,29,30,31,32}
      *
      * @see Chain#isBlank()
-     * @see Character#isWhitespace(char)
      */
     public boolean isNotBlank() {
         int l = count;
@@ -838,14 +903,53 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns true if, and only if,
-     * this chain is finally unchanged
+     * Returns false if the chain is
+     * non-empty and contains only numbers
+     * <p>
+     * Digit code: {@code 48,49,50,51,52,53,54,55,56,57}
      *
+     * @see Chain#isDigit()
      * @since 0.0.5
      */
-    public final boolean isFixed() {
-        // star & Integer.MIN_VALUE
-        return star < 0;
+    public boolean isNotDigit() {
+        int l = count;
+        if (l == 0) {
+            return true;
+        }
+
+        byte[] it = value;
+        for (int i = 0; i < l; i++) {
+            byte b = it[i];
+            if (b < 48 || b > 57) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if and only if this {@code Latin1}
+     * chain contains the specified {@code byte} value
+     *
+     * @param b the byte value to search for
+     * @see Chain#indexOf(byte)
+     */
+    public boolean contains(byte b) {
+        return indexOf(b) != -1;
+    }
+
+    /**
+     * Returns true if and only if this {@code Latin1}
+     * chain contains the specified {@code Latin1} sequence
+     *
+     * @param c the {@link CharSequence} to search for
+     * @see Chain#indexOf(CharSequence)
+     * @see String#contains(CharSequence)
+     */
+    public boolean contains(
+        @Nullable CharSequence c
+    ) {
+        return indexOf(c) != -1;
     }
 
     /**
@@ -1166,31 +1270,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         }
 
         return -1;
-    }
-
-    /**
-     * Returns true if and only if this {@code Latin1}
-     * chain contains the specified {@code byte} value
-     *
-     * @param b the byte value to search for
-     * @see Chain#indexOf(byte)
-     */
-    public boolean contains(byte b) {
-        return indexOf(b) != -1;
-    }
-
-    /**
-     * Returns true if and only if this {@code Latin1}
-     * chain contains the specified {@code Latin1} sequence
-     *
-     * @param c the {@link CharSequence} to search for
-     * @see Chain#indexOf(CharSequence)
-     * @see String#contains(CharSequence)
-     */
-    public boolean contains(
-        @Nullable CharSequence c
-    ) {
-        return indexOf(c) != -1;
     }
 
     /**
