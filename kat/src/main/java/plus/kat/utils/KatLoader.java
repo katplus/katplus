@@ -15,6 +15,7 @@
  */
 package plus.kat.utils;
 
+import plus.kat.anno.*;
 import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
@@ -26,14 +27,14 @@ import java.util.*;
  * @author kraity
  * @since 0.0.3
  */
-public class KatLoader<T> extends Chain implements Iterator<T> {
+public class KatLoader<T> implements Iterator<T>, Closeable {
 
     private static final String
         PREFIX = "META-INF/services/";
-    private static final byte n = '\n';
+    private static final byte LF = '\n';
 
-    protected int size;
-    protected int index;
+    private int size;
+    private Parser parser;
 
     protected final Class<T> service;
     protected final ClassLoader classLoader;
@@ -106,10 +107,102 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
             .getResources(PREFIX + name);
 
         while (configs.hasMoreElements()) {
-            URL url = configs.nextElement();
+            Parser it = parser;
+            if (it == null) {
+                parser = it = new Parser();
+            }
+            size += it.read(
+                configs.nextElement()
+            );
+        }
+    }
+
+    /**
+     * Returns true if the loader has more elements
+     */
+    @Override
+    public boolean hasNext() {
+        return size != 0;
+    }
+
+    /**
+     * Returns the next element in the {@link KatLoader}
+     *
+     * @throws Collapse                  If the iteration has no more elements
+     * @throws ServiceConfigurationError If the provider class is loaded with errors
+     */
+    @NotNull
+    public T next() {
+        if (--size < 0) {
+            throw new Collapse(
+                "No more elements"
+            );
+        }
+
+        Class<?> clazz;
+        String name = parser.next();
+
+        try {
+            clazz = Class.forName(
+                name, false, classLoader
+            );
+        } catch (ClassNotFoundException e) {
+            throw new ServiceConfigurationError(
+                service.getName() + ": Provider '" + name + "' not found", e
+            );
+        }
+
+        if (!service.isAssignableFrom(clazz)) {
+            throw new ServiceConfigurationError(
+                service.getName() + ": Provider '" + name + "' not a subtype"
+            );
+        }
+
+        try {
+            return service.cast(
+                clazz.newInstance()
+            );
+        } catch (Throwable e) {
+            throw new ServiceConfigurationError(
+                service.getName() + ": Provider '" + name + "' could not be instantiated ", e
+            );
+        }
+    }
+
+    /**
+     * Close this {@link KatLoader}
+     */
+    @Override
+    public void close() {
+        size = 0;
+        Parser it = parser;
+        if (it != null) {
+            it.close();
+            parser = null;
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.5
+     */
+    public static class Parser extends Dram {
+
+        private int index;
+
+        /**
+         * Reads the class name from the specified source
+         *
+         * @param url the specified url
+         * @throws IOException If an I/O exception occurs
+         */
+        public int read(
+            @NotNull URL url
+        ) throws IOException {
+            int size = 0, block = 0;
             try (InputStream in = url.openStream()) {
                 Stream:
-                for (int block = 0; ; ) {
+                while (true) {
                     int i = in.read();
                     if (i > 0x20) {
                         chain(
@@ -122,10 +215,10 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                         continue;
                     }
 
-                    if (get(-1, n) == n) {
+                    if (get(-1, LF) == LF) {
                         if (i == -1) break;
                     } else {
-                        chain(n);
+                        chain(LF);
                         if (block != 0) {
                             byte[] it = value;
                             byte data = it[block];
@@ -162,72 +255,33 @@ public class KatLoader<T> extends Chain implements Iterator<T> {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * Returns true if the loader has more elements
-     */
-    @Override
-    public boolean hasNext() {
-        return size != 0;
-    }
-
-    /**
-     * Returns the next element in the {@link KatLoader}
-     *
-     * @throws Collapse                  If the iteration has no more elements
-     * @throws ServiceConfigurationError If the provider class is loaded with errors
-     */
-    @SuppressWarnings("deprecation")
-    public T next() {
-        if (--size < 0) {
-            throw new Collapse(
-                "No more elements"
-            );
+            return size;
         }
 
-        int start = index,
-            offset = indexOf(
-                (byte) '\n', start
-            );
+        /**
+         * Returns the next class name
+         *
+         * @throws Collapse If the parser has no more name
+         */
+        @SuppressWarnings(
+            "deprecation"
+        )
+        public String next() {
+            int start = index,
+                point = indexOf(
+                    (byte) '\n', start
+                );
 
-        int length = offset - start;
-        if (length <= 0) {
-            throw new Collapse(
-                offset + " <= " + start
-            );
-        }
+            int size = point - start;
+            if (size <= 0) {
+                throw new Collapse(
+                    point + " <= " + start
+                );
+            }
 
-        index = offset + 1;
-        String name = new String(
-            value, 0, start, length
-        );
-
-        Class<?> clazz;
-        try {
-            clazz = Class.forName(
-                name, false, classLoader
-            );
-        } catch (ClassNotFoundException e) {
-            throw new ServiceConfigurationError(
-                service.getName() + ": Provider '" + name + "' not found", e
-            );
-        }
-
-        if (!service.isAssignableFrom(clazz)) {
-            throw new ServiceConfigurationError(
-                service.getName() + ": Provider '" + name + "' not a subtype"
-            );
-        }
-
-        try {
-            return service.cast(
-                clazz.newInstance()
-            );
-        } catch (Throwable e) {
-            throw new ServiceConfigurationError(
-                service.getName() + ": Provider '" + name + "' could not be instantiated ", e
+            index = point + 1;
+            return new String(
+                value, 0, start, size
             );
         }
     }

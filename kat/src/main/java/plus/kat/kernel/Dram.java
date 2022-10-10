@@ -315,7 +315,7 @@ public class Dram extends Chain {
         byte[] it = value;
         if (it.length != 0) {
             Bucket bt = bucket;
-            if (bt != null &&
+            if (bt == null ||
                 bt.share(it)) {
                 value = EMPTY_BYTES;
             }

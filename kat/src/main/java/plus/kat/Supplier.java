@@ -1222,10 +1222,8 @@ public interface Supplier extends Cloneable {
             INS.table.put($D, BigDecimalSpare.INSTANCE);
             INS.table.put(EMPTY, ObjectSpare.INSTANCE);
 
-            KatLoader<Provider> loader =
-                new KatLoader<>(Provider.class);
-
-            try {
+            try (KatLoader<Provider> loader =
+                     new KatLoader<>(Provider.class)) {
                 loader.load(
                     Config.get(
                         "kat.spare.provider",
