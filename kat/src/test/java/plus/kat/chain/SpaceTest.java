@@ -72,6 +72,7 @@ public class SpaceTest {
         assertFalse(new Space("plus.kat.V2.User").isClass());
         assertFalse(new Space("plus.kat..User").isClass());
         assertFalse(new Space("plus.kat.User_Name").isClass());
+        assertFalse(new Space("plus.kat.User.name").isClass());
         assertFalse(new Space("plus.kat.User-Name").isClass());
     }
 

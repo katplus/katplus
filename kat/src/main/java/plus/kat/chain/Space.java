@@ -207,15 +207,17 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * Returns true if this space is a
-     * standard class name. If space contains an element
-     * that is not in {@code [A-Za-z0-9.$]}, it must return false
+     * Returns true if this space is a simple
+     * validated class name (Camel-Case). If space contains an
+     * element that is not in {@code [A-Za-z0-9.$]}, it must return false
      *
      * <pre>{@code
      *  isClass() -> true
      *  // kat.User
+     *  // void.User // illegal
      *  // plus.kat.User
      *  // plus.kat.v2.User
+     *  // plus.kat.v2.UserName
      *
      *  isClass() -> false
      *  // $
@@ -226,6 +228,7 @@ public final class Space extends Dram implements Type {
      *  // plus.kat.User$
      *  // plus.kat_v2.User
      *  // plus.kat.I_O
+     *  // plus.kat.v2.3Q
      *  // plus.kat.User-Name
      * }</pre>
      *
@@ -307,13 +310,14 @@ public final class Space extends Dram implements Type {
     }
 
     /**
-     * Returns true if this space is a
-     * standard class package. If space contains an element
-     * that is not in {@code [A-Za-z0-9.]}, it must return false
+     * Returns true if this space is a simple
+     * validated class package (Lower-Case). If space contains an
+     * element that is not in {@code [a-z0-9.]}, it must return false
      *
      * <pre>{@code
      *  isPackage() -> true
      *  // kat
+     *  // void // illegal
      *  // plus.kat
      *  // plus.kat.v2
      *
@@ -323,6 +327,8 @@ public final class Space extends Dram implements Type {
      *  // plus.$a
      *  // plus.kat.1v
      *  // plus.kat_v2
+     *  // plus.kat.3q
+     *  // plus.kat.V2
      *  // plus.kat.User
      * }</pre>
      *

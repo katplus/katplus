@@ -120,15 +120,49 @@ public final class Alias extends Dram {
     }
 
     /**
-     * Check if it is the correct method name
+     * Returns true if this alias is a simple
+     * validated method name (Camel-Case). If alias contains an
+     * element that is not in {@code [A-Za-z0-9]}, it must return false
+     *
+     * <pre>{@code
+     *  isMethod() -> true
+     *  // kat
+     *  // v2
+     *  // void // illegal
+     *  // isEmpty
+     *  // hashCode
+     *
+     *  isMethod() -> false
+     *  // $
+     *  // .
+     *  // _
+     *  // 3q
+     *  // _get
+     *  // Kat
+     *  // Get
+     *  // get_name
+     *  // get$name
+     * }</pre>
+     *
+     * @see Space#isClass()
      */
     public boolean isMethod() {
-        if (count == 0) {
+        int size = count;
+        if (size == 0) {
             return false;
         }
 
-        for (int i = 0; i < count; i++) {
-            byte b = value[i];
+        int i = 0;
+        byte[] it = value;
+
+        byte m = it[i++];
+        if (m < 0x61 ||
+            m > 0x7A) {
+            return false;
+        }
+
+        for (; i < size; i++) {
+            byte b = it[i];
             if (b > 0x60) {   // a-z
                 if (b < 0x7B) {
                     continue;
@@ -137,24 +171,20 @@ public final class Alias extends Dram {
             }
 
             if (b > 0x40) {   // A-Z
-                if (b < 0x5B
-                    || b == 0x5F) {  // _
+                if (b < 0x5B) {
                     continue;
                 }
                 return false;
             }
 
             if (b > 0x2F) {   // 0-9
-                if (b < 0x3A
-                    && i != 0) {
+                if (b < 0x3A) {
                     continue;
                 }
                 return false;
             }
 
-            if (b != 0x24) {  // $
-                return false;
-            }
+            return false;
         }
 
         return true;
