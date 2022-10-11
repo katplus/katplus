@@ -401,7 +401,7 @@ public class ArraySpare extends Property<Object> {
         protected int mark;
 
         protected int length;
-        protected Object entity;
+        protected Object bundle;
 
         protected Class<?> elem;
         protected Spare<?> spare;
@@ -413,25 +413,23 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) throws Crash {
+        public void onCreate() throws IOException {
             spare = supplier.lookup(elem);
-            if (spare == null) {
-                throw new Crash(
-                    "Can't lookup the Spare of '" + elem + "'", false
+            if (spare != null) {
+                size = 0;
+                mark = 1;
+                bundle = Array.newInstance(
+                    elem, length = 1
+                );
+            } else {
+                throw new UnexpectedCrash(
+                    "Can't lookup the Spare of '" + elem + "'"
                 );
             }
-
-            size = 0;
-            mark = 1;
-            entity = Array.newInstance(
-                elem, length = 1
-            );
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -441,14 +439,14 @@ public class ArraySpare extends Property<Object> {
             }
             value.setType(elem);
             Array.set(
-                entity, size++, spare.read(
+                bundle, size++, spare.read(
                     event, value
                 )
             );
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
@@ -458,7 +456,7 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public Builder<?> getBuilder(
+        public Builder<?> onReport(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
@@ -489,29 +487,29 @@ public class ArraySpare extends Property<Object> {
 
             //noinspection SuspiciousSystemArraycopy
             System.arraycopy(
-                entity, 0, make, 0, size
+                bundle, 0, make, 0, size
             );
-            entity = make;
+            bundle = make;
         }
 
         @Nullable
         @Override
-        public Object getResult() {
+        public Object onPacket() {
             if (length == size) {
-                return entity;
+                return bundle;
             }
 
             Object ary = Array.newInstance(elem, size);
             //noinspection SuspiciousSystemArraycopy
             System.arraycopy(
-                entity, 0, ary, 0, size
+                bundle, 0, ary, 0, size
             );
             return ary;
         }
 
         @Override
         public void onDestroy() {
-            entity = null;
+            bundle = null;
         }
     }
 
@@ -529,9 +527,7 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) {
+        public void onCreate() {
             Class<?> clazz = elem;
             if (clazz != Object.class) {
                 kind = clazz;
@@ -540,13 +536,13 @@ public class ArraySpare extends Property<Object> {
 
             size = 0;
             mark = 1;
-            entity = Array.newInstance(
+            bundle = Array.newInstance(
                 clazz, length = 1
             );
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -567,12 +563,12 @@ public class ArraySpare extends Property<Object> {
 
             value.setType(tag);
             Array.set(
-                entity, size++, spare0.read(event, value)
+                bundle, size++, spare0.read(event, value)
             );
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
@@ -580,12 +576,12 @@ public class ArraySpare extends Property<Object> {
                 enlarge();
             }
             Array.set(
-                entity, size++, child.getResult()
+                bundle, size++, child.onPacket()
             );
         }
 
         @Override
-        public Builder<?> getBuilder(
+        public Builder<?> onReport(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -609,7 +605,7 @@ public class ArraySpare extends Property<Object> {
         protected int index;
 
         protected ArrayType tag;
-        protected Object[] entity;
+        protected Object[] bundle;
 
         public Builder2(
             ArrayType type
@@ -619,15 +615,13 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) {
+        public void onCreate() {
             index = -1;
-            entity = new Object[size];
+            bundle = new Object[size];
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -645,7 +639,7 @@ public class ArraySpare extends Property<Object> {
 
                 if (spare != null) {
                     value.setType(type);
-                    entity[index] = spare.read(
+                    bundle[index] = spare.read(
                         event, value
                     );
                 }
@@ -657,15 +651,15 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
-            entity[index] = child.getResult();
+            bundle[index] = child.onPacket();
         }
 
         @Override
-        public Builder<?> getBuilder(
+        public Builder<?> onReport(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
@@ -693,13 +687,13 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public Object[] getResult() {
-            return entity;
+        public Object[] onPacket() {
+            return bundle;
         }
 
         @Override
         public void onDestroy() {
-            entity = null;
+            bundle = null;
         }
     }
 }

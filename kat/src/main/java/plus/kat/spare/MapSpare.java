@@ -310,7 +310,7 @@ public class MapSpare extends Property<Map> {
         protected Type key, val, raw;
 
         protected Spare<Map> owner;
-        protected Map entity;
+        protected Map bundle;
         protected Spare<?> spare0, spare1;
 
         public Builder0(
@@ -358,9 +358,7 @@ public class MapSpare extends Property<Map> {
         }
 
         @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) {
+        public void onCreate() throws IOException {
             Type tv = val;
             if (tv != null) {
                 Class<?> cls = Find.clazz(tv);
@@ -377,17 +375,17 @@ public class MapSpare extends Property<Map> {
                     cls != String.class) {
                     spare0 = supplier.lookup(cls);
                     if (spare0 == null) {
-                        throw new Collapse(
+                        throw new UnexpectedCrash(
                             tk + "'s spare does not exist"
                         );
                     }
                 }
             }
-            entity = owner.apply(raw);
+            bundle = owner.apply(raw);
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -406,7 +404,7 @@ public class MapSpare extends Property<Map> {
             Spare<?> s0 = spare0;
 
             if (s0 == null) {
-                entity.put(
+                bundle.put(
                     alias.toString(),
                     s1.read(
                         event, value
@@ -414,7 +412,7 @@ public class MapSpare extends Property<Map> {
                 );
             } else {
                 alias.setType(key);
-                entity.put(
+                bundle.put(
                     s0.read(
                         event, alias
                     ),
@@ -426,28 +424,28 @@ public class MapSpare extends Property<Map> {
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
             Spare<?> s0 = spare0;
             if (s0 == null) {
-                entity.put(
+                bundle.put(
                     alias.toString(),
-                    child.getResult()
+                    child.onPacket()
                 );
             } else {
-                entity.put(
+                bundle.put(
                     s0.read(
                         event, alias
                     ),
-                    child.getResult()
+                    child.onPacket()
                 );
             }
         }
 
         @Override
-        public Builder<?> getBuilder(
+        public Builder<?> onReport(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -465,13 +463,13 @@ public class MapSpare extends Property<Map> {
         }
 
         @Override
-        public Map getResult() {
-            return entity;
+        public Map onPacket() {
+            return bundle;
         }
 
         @Override
         public void onDestroy() {
-            entity = null;
+            bundle = null;
         }
     }
 }

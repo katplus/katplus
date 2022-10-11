@@ -114,29 +114,27 @@ public class BitSetSpare extends Property<BitSet> {
     public static class Builder0 extends Builder<BitSet> {
 
         protected int index;
-        protected BitSet entity;
+        protected BitSet bundle;
 
         @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) {
-            entity = new BitSet();
+        public void onCreate() {
+            bundle = new BitSet();
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
         ) {
             int i = index++;
             if (value.toBoolean()) {
-                entity.set(i);
+                bundle.set(i);
             }
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) {
@@ -144,7 +142,7 @@ public class BitSetSpare extends Property<BitSet> {
         }
 
         @Override
-        public Builder<?> getBuilder(
+        public Builder<?> onReport(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
@@ -155,13 +153,13 @@ public class BitSetSpare extends Property<BitSet> {
 
         @Nullable
         @Override
-        public BitSet getResult() {
-            return entity;
+        public BitSet onPacket() {
+            return bundle;
         }
 
         @Override
         public void onDestroy() {
-            entity = null;
+            bundle = null;
         }
     }
 }

@@ -18,7 +18,6 @@ package plus.kat.spare;
 import plus.kat.anno.*;
 
 import plus.kat.*;
-import plus.kat.chain.*;
 import plus.kat.crash.*;
 
 import java.lang.reflect.*;
@@ -49,30 +48,20 @@ public class RecordSpare<T> extends AbstractSpare<T> {
         );
     }
 
-    @Override
+    @NotNull
     public T apply(
-        @NotNull Alias alias
-    ) throws Crash {
-        throw new Crash(
-            "Unsupported method"
-        );
-    }
-
-    @Override
-    public T apply(
-        @NotNull Alias alias,
-        @NotNull Object... params
-    ) throws Crash {
+        @NotNull Object[] data
+    ) {
         Constructor<T> b = ctor;
         if (ctor == null) {
-            throw new Crash(
+            throw new Collapse(
                 "Not supported"
             );
         }
         try {
-            return b.newInstance(params);
+            return b.newInstance(data);
         } catch (Throwable e) {
-            throw new Crash(
+            throw new Collapse(
                 "Failed to create", e
             );
         }
@@ -88,9 +77,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
             update(
                 group, spoiler, supplier
             );
-            return apply(
-                Alias.EMPTY, group
-            );
+            return apply(group);
         } catch (Collapse e) {
             throw e;
         } catch (Throwable e) {
@@ -110,9 +97,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
             update(
                 group, supplier, resultSet
             );
-            return apply(
-                Alias.EMPTY, group
-            );
+            return apply(group);
         } catch (SQLException e) {
             throw e;
         } catch (Throwable e) {
@@ -167,7 +152,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                             );
                         }
                     }
-                    if (It.internal(e1.require())) {
+                    if ((e1.require() & Flag.Internal) != 0) {
                         continue;
                     }
                 }
@@ -195,7 +180,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                             );
                         }
                     }
-                } else if (!It.internal(e2.require())) {
+                } else if ((e2.require() & Flag.Internal) == 0) {
                     accessor = new Accessor<>(
                         e2, method, this
                     );

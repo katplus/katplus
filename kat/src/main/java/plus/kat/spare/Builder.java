@@ -46,13 +46,13 @@ public abstract class Builder<K> {
         @NotNull Alias a,
         @NotNull Event<?> e,
         @NotNull Builder<?> b
-    ) throws Crash, IOException {
+    ) throws IOException {
         if (parent == null) {
             alias = a;
             parent = b;
             event = e;
             supplier = e.getSupplier();
-            onCreate(a);
+            onCreate();
         } else {
             throw new UnexpectedCrash(
                 "Unexpectedly, this Builder is already working"
@@ -65,30 +65,21 @@ public abstract class Builder<K> {
      *
      * @throws IOException If an I/O error occurs
      */
-    public abstract void onCreate(
-        @NotNull Alias alias
-    ) throws Crash, IOException;
+    public abstract void onCreate() throws IOException;
 
     /**
      * Receive according to requirements and then parse
      *
      * @throws IOException If an I/O error occurs
      */
-    public abstract void onAccept(
-        @NotNull Alias alias,
-        @NotNull Builder<?> child
-    ) throws IOException;
+    public abstract void onReport(@NotNull Alias alias, @NotNull Builder<?> child) throws IOException;
 
     /**
      * Receive according to requirements and then parse
      *
      * @throws IOException If an I/O error occurs
      */
-    public abstract void onAccept(
-        @NotNull Space space,
-        @NotNull Alias alias,
-        @NotNull Value value
-    ) throws IOException;
+    public abstract void onReport(@NotNull Space space, @NotNull Alias alias, @NotNull Value value) throws IOException;
 
     /**
      * Create a branch of this {@link Builder}
@@ -96,10 +87,7 @@ public abstract class Builder<K> {
      * @throws IOException If an I/O error occurs
      */
     @Nullable
-    public abstract Builder<?> getBuilder(
-        @NotNull Space space,
-        @NotNull Alias alias
-    ) throws IOException;
+    public abstract Builder<?> onReport(@NotNull Space space, @NotNull Alias alias) throws IOException;
 
     /**
      * Returns the result of building {@link K}
@@ -110,8 +98,7 @@ public abstract class Builder<K> {
      * @throws IOException If a packaging error or IO error
      */
     @Nullable
-    public abstract K getResult()
-        throws IOException;
+    public abstract K onPacket() throws IOException;
 
     /**
      * Close the resources of this {@link Builder}

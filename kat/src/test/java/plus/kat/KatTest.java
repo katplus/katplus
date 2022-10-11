@@ -4,12 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
-import plus.kat.crash.Crash;
 
 import java.io.*;
 import java.util.*;
 
-import static plus.kat.It.*;
+import static plus.kat.Flag.*;
 import static plus.kat.Spare.lookup;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,7 +60,9 @@ public class KatTest {
     public void test_encode1() {
         assertEquals(
             "E{i:c(403)s:m(error)}", Kat.encode(
-                new Crash("error", 403)
+                new plus.kat.crash.Crash(
+                    "error", 403
+                )
             )
         );
         assertEquals(
@@ -476,7 +477,7 @@ public class KatTest {
 
         @Expose(
             value = "token",
-            require = readonly
+            require = Readonly
         )
         private String token;
     }

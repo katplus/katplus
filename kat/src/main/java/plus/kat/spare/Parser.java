@@ -207,7 +207,7 @@ public class Parser implements Proxy, Closeable {
         Builder<?> child, parent = active;
 
         if (depth != 0) {
-            child = active.getBuilder(
+            child = active.onReport(
                 space, name
             );
         } else {
@@ -232,7 +232,7 @@ public class Parser implements Proxy, Closeable {
             ++depth;
             active = child;
             return true;
-        } catch (Crash e) {
+        } catch (Collapse e) {
             return false;
         }
     }
@@ -247,7 +247,7 @@ public class Parser implements Proxy, Closeable {
         @NotNull Value value
     ) throws IOException {
         if (depth != 0) {
-            active.onAccept(
+            active.onReport(
                 space, alias, value
             );
         } else {
@@ -282,12 +282,12 @@ public class Parser implements Proxy, Closeable {
 
         try {
             if (depth != 0) {
-                active.onAccept(
+                active.onReport(
                     child.getAlias(), child
                 );
                 return true;
             } else {
-                bundle = child.getResult();
+                bundle = child.onPacket();
                 return false;
             }
         } finally {

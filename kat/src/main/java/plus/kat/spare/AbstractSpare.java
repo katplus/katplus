@@ -33,7 +33,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import static plus.kat.It.*;
+import static plus.kat.Flag.*;
 
 /**
  * @author kraity
@@ -231,9 +231,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull Supplier supplier
     ) throws Collapse {
         try {
-            T bean = apply(
-                Alias.EMPTY
-            );
+            T bean = apply();
             update(
                 bean, spoiler, supplier
             );
@@ -264,9 +262,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull ResultSet resultSet
     ) throws SQLException {
         try {
-            T bean = apply(
-                Alias.EMPTY
-            );
+            T bean = apply();
             update(
                 bean, supplier, resultSet
             );
@@ -909,7 +905,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                     chan.set(name, null);
                 }
             } else {
-                if ((flags & unwrapped) == 0) {
+                if ((flags & Unwrapped) == 0) {
                     chan.set(
                         name, coder, value
                     );

@@ -21,7 +21,6 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
-import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
 import plus.kat.utils.*;
@@ -57,9 +56,9 @@ public class ProxySpare extends AbstractSpare<Object> {
         if (type == klass ||
             type == proxy) {
             try {
-                return apply(
-                    Alias.EMPTY
-                );
+                return apply();
+            } catch (Collapse e) {
+                throw e;
             } catch (Exception e) {
                 throw new Collapse(
                     "Failed to create"
@@ -83,10 +82,8 @@ public class ProxySpare extends AbstractSpare<Object> {
         );
     }
 
-    @Override
-    public Object apply(
-        @NotNull Alias alias
-    ) throws Crash {
+    @NotNull
+    public Object apply() {
         try {
             Constructor<?> c = cons;
             if (c == null) {
@@ -114,7 +111,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                 new Explorer()
             );
         } catch (Exception e) {
-            throw new Crash(
+            throw new Collapse(
                 "Failed to create", e
             );
         }
@@ -185,7 +182,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                         continue;
                     }
 
-                    if (!It.internal(expose.require())) {
+                    if ((expose.require() & Flag.Internal) == 0) {
                         String[] keys = expose.value();
                         if (keys.length == 0) {
                             setWriter(
@@ -272,7 +269,7 @@ public class ProxySpare extends AbstractSpare<Object> {
             @NotNull Object bean,
             @Nullable Object value
         ) {
-            if (value != null || (flags & It.NotNull) == 0) {
+            if (value != null || (flags & Flag.NotNull) == 0) {
                 try {
                     Class<?> cl = bean.getClass();
                     if (cl != spare.proxy) {

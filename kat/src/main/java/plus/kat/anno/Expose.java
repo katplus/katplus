@@ -15,7 +15,7 @@
  */
 package plus.kat.anno;
 
-import plus.kat.It;
+import plus.kat.Flag;
 import plus.kat.spare.Coder;
 
 import java.lang.annotation.*;
@@ -51,7 +51,7 @@ public @interface Expose {
     /**
      * Returns the flags of this
      *
-     * @see It
+     * @see Flag
      * @since 0.0.4
      */
     int require() default 0;

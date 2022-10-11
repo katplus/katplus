@@ -7,7 +7,7 @@ import plus.kat.chain.Alias;
 
 import java.util.Date;
 
-import static plus.kat.It.*;
+import static plus.kat.Flag.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -97,25 +97,25 @@ public class ExposeTest {
 
         @Expose(
             value = "size",
-            require = disabled
+            require = Excluded
         )
         public int size;
 
         @Expose(
             value = "salt",
-            require = readonly
+            require = Readonly
         )
         public String salt;
 
         @Expose(
             value = "trace",
-            require = internal
+            require = Internal
         )
         public String trace;
 
         @Expose(
             value = "uid",
-            require = disabled
+            require = Excluded
         )
         public void setUId(
             int uid
@@ -125,7 +125,7 @@ public class ExposeTest {
 
         @Expose(
             value = "uid",
-            require = disabled
+            require = Excluded
         )
         public int getUId() {
             return id;

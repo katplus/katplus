@@ -15,6 +15,9 @@
  */
 package plus.kat;
 
+import plus.kat.anno.Embed;
+import plus.kat.anno.Expose;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -23,6 +26,8 @@ package plus.kat;
 public interface Flag {
     /**
      * Write Flags
+     *
+     * @see Chan
      */
     long PRETTY = 0x1;
     long UNICODE = 0x2;
@@ -33,9 +38,30 @@ public interface Flag {
 
     /**
      * Read Flags
+     *
+     * @see Event
      */
     long INDEX_AS_ENUM = 0x4;
     long STRING_AS_OBJECT = 0x8;
+
+    /**
+     * Embed Flags
+     *
+     * @see Embed
+     */
+    int Sealed = 0x1;
+    int Nimble = 0x2;
+
+    /**
+     * Expose Flags
+     *
+     * @see Expose
+     */
+    int NotNull = 0x1;
+    int Readonly = 0x2;
+    int Internal = 0x4;
+    int Excluded = 0x6;
+    int Unwrapped = 0x8;
 
     /**
      * Check if this {@link Object} use the {@code flag}

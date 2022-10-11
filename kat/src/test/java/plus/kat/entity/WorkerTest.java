@@ -8,7 +8,7 @@ import plus.kat.Spare;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 
-import static plus.kat.It.*;
+import static plus.kat.Flag.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -37,7 +37,7 @@ public class WorkerTest {
 
     @Embed(
         value = "User",
-        require = sealed
+        require = Sealed
     )
     static class User {
         @Expose("meta")
@@ -46,7 +46,7 @@ public class WorkerTest {
 
     @Embed(
         value = "Meta",
-        require = nimble
+        require = Nimble
     )
     static class Meta {
         @Expose(index = 0)

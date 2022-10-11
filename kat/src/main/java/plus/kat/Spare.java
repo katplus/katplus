@@ -93,6 +93,7 @@ public interface Spare<K> extends Coder<K> {
      * it returns it, otherwise it will return {@code null}
      *
      * @return {@link K} or {@code null}
+     * @throws Collapse If a failure occurs
      * @since 0.0.3
      */
     @Nullable

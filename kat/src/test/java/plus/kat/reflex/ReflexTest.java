@@ -3,10 +3,8 @@ package plus.kat.reflex;
 import org.junit.jupiter.api.Test;
 
 import plus.kat.*;
-
 import plus.kat.anno.*;
 
-import static plus.kat.It.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ReflexTest {
@@ -191,7 +189,7 @@ public class ReflexTest {
     static class Tag {
         @Expose(
             value = "id",
-            require = NotNull
+            require = Flag.NotNull
         )
         private String id;
         private String name;
@@ -202,7 +200,7 @@ public class ReflexTest {
             this.name = name;
         }
 
-        @Expose(require = NotNull)
+        @Expose(require = Flag.NotNull)
         public String getName() {
             return name;
         }
@@ -291,7 +289,7 @@ public class ReflexTest {
         public int id;
 
         @Expose(
-            require = unwrapped
+            require = Flag.Unwrapped
         )
         public Name name;
     }
@@ -373,9 +371,9 @@ public class ReflexTest {
 
         public User1(
             @Expose("id")
-                int id,
+            int id,
             @Expose("name")
-                String name
+            String name
         ) {
             this.id = id;
             this.name = name;

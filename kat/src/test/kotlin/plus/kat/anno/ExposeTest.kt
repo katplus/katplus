@@ -2,7 +2,7 @@ package plus.kat.anno
 
 import plus.kat.*
 
-import plus.kat.It.*
+import plus.kat.Flag.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 

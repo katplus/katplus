@@ -26,7 +26,6 @@ import java.sql.SQLException;
 
 import plus.kat.*;
 import plus.kat.anno.*;
-import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
 import plus.kat.utils.*;
@@ -70,46 +69,30 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
         );
     }
 
-    @Override
+    @NotNull
     public T apply() {
         MethodHandle m = handle;
-        if (m != null) {
-            try {
-                return (T) m.invoke();
-            } catch (Throwable e) {
-                // Nothing
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public T apply(
-        @NotNull Alias alias
-    ) throws Crash {
-        MethodHandle m = handle;
         if (m == null) {
-            throw new Crash(
+            throw new Collapse(
                 "Not supported"
             );
         }
         try {
             return (T) m.invoke();
         } catch (Throwable e) {
-            throw new Crash(
+            throw new Collapse(
                 "Failed to create", e
             );
         }
     }
 
-    @Override
+    @NotNull
     public T apply(
-        @NotNull Alias alias,
-        @NotNull Object... data
-    ) throws Crash {
+        @NotNull Object[] data
+    ) {
         Constructor<T> b = builder;
         if (b == null) {
-            throw new Crash(
+            throw new Collapse(
                 "Not supported"
             );
         }
@@ -137,7 +120,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
         try {
             return b.newInstance(data);
         } catch (Throwable e) {
-            throw new Crash(
+            throw new Collapse(
                 "Failed to create", e
             );
         }
@@ -151,9 +134,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
         try {
             Class<?>[] as = args;
             if (as == null) {
-                T bean = apply(
-                    Alias.EMPTY
-                );
+                T bean = apply();
                 update(
                     bean, spoiler, supplier
                 );
@@ -165,9 +146,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 update(
                     group, spoiler, supplier
                 );
-                return apply(
-                    Alias.EMPTY, group
-                );
+                return apply(group);
             }
         } catch (Collapse e) {
             throw e;
@@ -190,9 +169,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
         try {
             Class<?>[] as = args;
             if (as == null) {
-                T bean = apply(
-                    Alias.EMPTY
-                );
+                T bean = apply();
                 update(
                     bean, supplier, resultSet
                 );
@@ -204,9 +181,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 update(
                     group, supplier, resultSet
                 );
-                return apply(
-                    Alias.EMPTY, group
-                );
+                return apply(group);
             }
         } catch (SQLException e) {
             throw e;
@@ -248,8 +223,8 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
         @NotNull int grade,
         @NotNull Field[] fields
     ) {
-        boolean sealed = It.sealed(flags);
-        boolean nimble = It.nimble(flags);
+        boolean sealed = (flags & Flag.Sealed) != 0;
+        boolean nimble = (flags & Flag.Nimble) != 0;
 
         for (Field field : fields)
             try {
@@ -298,8 +273,8 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 }
 
                 int flag = expose.require();
-                boolean solveOnly = It.internal(flag);
-                boolean serialOnly = It.readonly(flag);
+                boolean solveOnly = (flag & Flag.Internal) != 0;
+                boolean serialOnly = (flag & Flag.Readonly) != 0;
                 if (solveOnly && serialOnly) {
                     continue;
                 }
@@ -386,8 +361,8 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
         @NotNull int grade,
         @NotNull Method[] methods
     ) {
-        boolean sealed = It.sealed(flags);
-        boolean nimble = It.nimble(flags);
+        boolean sealed = (flags & Flag.Sealed) != 0;
+        boolean nimble = (flags & Flag.Nimble) != 0;
 
         for (Method method : methods)
             try {
@@ -427,7 +402,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                     String[] keys = expose.value();
 
                     if (count == 0) {
-                        if (It.internal(flag)) {
+                        if ((flag & Flag.Internal) != 0) {
                             continue;
                         }
                         if (keys.length != 0) {
@@ -447,7 +422,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                             continue;
                         }
                     } else {
-                        if (It.readonly(flag)) {
+                        if ((flag & Flag.Readonly) != 0) {
                             continue;
                         }
                         if (keys.length != 0) {

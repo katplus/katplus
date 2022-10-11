@@ -45,51 +45,32 @@ import java.util.Date;
 public interface Subject<K> extends Spare<K>, Maker<K> {
     /**
      * If this {@link Subject} can create an instance,
-     * it returns it, otherwise it will return {@code null}
+     * it returns it, otherwise it will throw {@link Collapse}
      *
-     * @return {@link K} or {@code null}
+     * @return {@link K}, it is not null
+     * @throws Collapse If a failure occurs
      */
-    @Nullable
-    @Override
+    @NotNull
     default K apply() {
-        try {
-            return apply(
-                Alias.EMPTY
-            );
-        } catch (Exception e) {
-            return null;
-        }
+        throw new Collapse(
+            "Failure occurs"
+        );
     }
 
     /**
      * If this {@link Subject} can create an instance,
-     * it returns it, otherwise it will throw {@link Crash}
+     * it returns it, otherwise it will throw {@link Collapse}
      *
-     * @param alias the alias of entity
+     * @param args the specified args
      * @return {@link K}, it is not null
-     * @throws Crash If a failure occurs
+     * @throws Collapse If a failure occurs
      */
     @NotNull
-    K apply(
-        @NotNull Alias alias
-    ) throws Crash;
-
-    /**
-     * If this {@link Subject} can create an instance,
-     * it returns it, otherwise it will throw {@link Crash}
-     *
-     * @param alias the alias of entity
-     * @return {@link K}, it is not null
-     * @throws Crash If a failure occurs
-     */
-    @NotNull
-    @Override
     default K apply(
-        @NotNull Alias alias,
-        @NotNull Object... params
-    ) throws Crash {
-        throw new Crash(
-            "Unsupported method"
+        @NotNull Object[] args
+    ) {
+        throw new Collapse(
+            "Failure occurs"
         );
     }
 
@@ -567,7 +548,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         /**
          * Returns the flags of {@link V}
          *
-         * @see It
+         * @see Flag
          */
         @NotNull
         default int getFlags() {
@@ -639,10 +620,8 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * Prepare before parsing
          */
         @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) throws Crash {
-            bean = subject.apply(alias);
+        public void onCreate() {
+            bean = subject.apply();
         }
 
         /**
@@ -651,12 +630,12 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
             setter.invoke(
-                bean, child.getResult()
+                bean, child.onPacket()
             );
         }
 
@@ -666,7 +645,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -701,7 +680,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If an I/O error occurs
          */
         @Nullable
-        public Builder<?> getBuilder(
+        public Builder<?> onReport(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
@@ -730,8 +709,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * Returns the result of building {@link K}
          */
         @Nullable
-        @Override
-        public K getResult() {
+        public K onPacket() {
             return bean;
         }
 
@@ -771,9 +749,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * Prepare before parsing
          */
         @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) {
+        public void onCreate() {
             // Nothing
         }
 
@@ -783,12 +759,12 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
             setter.invoke(
-                data, child.getResult()
+                data, child.onPacket()
             );
         }
 
@@ -798,7 +774,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -833,8 +809,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If an I/O error occurs
          */
         @Nullable
-        @Override
-        public Builder<?> getBuilder(
+        public Builder<?> onReport(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
@@ -865,15 +840,12 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If a packaging error or IO error
          */
         @Nullable
-        @Override
-        public K getResult()
+        public K onPacket()
             throws IOException {
             if (bean == null) {
                 try {
-                    bean = subject.apply(
-                        getAlias(), data
-                    );
-                } catch (Crash e) {
+                    bean = subject.apply(data);
+                } catch (Collapse e) {
                     throw new UnexpectedCrash(
                         "Error creating entity", e
                     );
@@ -937,12 +909,10 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) throws IOException {
+        public void onCreate() throws IOException {
             Class<?> o = cxt;
             if (o != null) {
-                Object res = getParent().getResult();
+                Object res = getParent().onPacket();
                 if (res == null) {
                     throw new UnexpectedCrash(
                         "Unexpectedly, the parent is is null"
@@ -965,18 +935,18 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
             if (target != null) {
                 target.invoke(
-                    data, child.getResult()
+                    data, child.onPacket()
                 );
             } else {
                 Cache<K> ca = new Cache<>();
                 ca.setter = setter;
-                ca.value = child.getResult();
+                ca.value = child.onPacket();
                 if (cache == null) {
                     cache = ca;
                 } else {
@@ -991,7 +961,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -1053,8 +1023,8 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          *
          * @throws IOException If an I/O error occurs
          */
-        @Override
-        public Builder<?> getBuilder(
+        @Nullable
+        public Builder<?> onReport(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
@@ -1108,15 +1078,12 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          *
          * @throws IOException If a packaging error or IO error
          */
-        @Override
-        public K getResult()
-            throws IOException {
+        @Nullable
+        public K onPacket() throws IOException {
             if (bean == null) {
                 try {
-                    bean = subject.apply(
-                        getAlias(), data
-                    );
-                } catch (Crash e) {
+                    bean = subject.apply(data);
+                } catch (Collapse e) {
                     throw new UnexpectedCrash(
                         "Error creating entity", e
                     );

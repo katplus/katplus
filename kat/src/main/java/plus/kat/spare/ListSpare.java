@@ -251,7 +251,7 @@ public class ListSpare extends Property<List> {
         protected Type tag, raw;
         protected Class<?> kind;
 
-        protected T entity;
+        protected T bundle;
         protected Spare<T> owner;
         protected Spare<?> spare0;
 
@@ -297,9 +297,7 @@ public class ListSpare extends Property<List> {
         }
 
         @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) {
+        public void onCreate() {
             Type tv = tag;
             if (tv != null) {
                 Class<?> cls = Find.clazz(tv);
@@ -309,11 +307,11 @@ public class ListSpare extends Property<List> {
                     spare0 = supplier.lookup(cls);
                 }
             }
-            entity = owner.apply(raw);
+            bundle = owner.apply(raw);
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -329,7 +327,7 @@ public class ListSpare extends Property<List> {
             }
 
             value.setType(tag);
-            entity.add(
+            bundle.add(
                 spare.read(
                     event, value
                 )
@@ -337,17 +335,17 @@ public class ListSpare extends Property<List> {
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
-            entity.add(
-                child.getResult()
+            bundle.add(
+                child.onPacket()
             );
         }
 
         @Override
-        public Builder<?> getBuilder(
+        public Builder<?> onReport(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -365,13 +363,13 @@ public class ListSpare extends Property<List> {
         }
 
         @Override
-        public T getResult() {
-            return entity;
+        public T onPacket() {
+            return bundle;
         }
 
         @Override
         public void onDestroy() {
-            entity = null;
+            bundle = null;
         }
     }
 }

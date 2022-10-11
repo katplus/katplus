@@ -95,19 +95,17 @@ public class ErrorSpare extends Property<Exception> {
 
     public static class Builder0 extends Builder<Crash> {
 
-        private Crash entity;
+        private Crash crash;
         private int code;
         private String message;
 
         @Override
-        public void onCreate(
-            @NotNull Alias alias
-        ) {
+        public void onCreate() {
             // Nothing
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -124,7 +122,7 @@ public class ErrorSpare extends Property<Exception> {
         }
 
         @Override
-        public void onAccept(
+        public void onReport(
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) {
@@ -132,7 +130,7 @@ public class ErrorSpare extends Property<Exception> {
         }
 
         @Override
-        public Builder<?> getBuilder(
+        public Builder<?> onReport(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -141,18 +139,18 @@ public class ErrorSpare extends Property<Exception> {
 
         @Nullable
         @Override
-        public Crash getResult() {
-            if (entity != null) {
-                return entity;
+        public Crash onPacket() {
+            if (crash != null) {
+                return crash;
             }
-            return entity = new Crash(
+            return crash = new Crash(
                 message, code
             );
         }
 
         @Override
         public void onDestroy() {
-            entity = null;
+            crash = null;
         }
     }
 }
