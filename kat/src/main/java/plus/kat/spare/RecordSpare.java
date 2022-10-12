@@ -198,7 +198,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                     }
                 }
             } catch (Exception e) {
-                throw new Collapse(e);
+                throw new FatalCrash(e);
             }
         }
     }
@@ -220,7 +220,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
         }
 
         if (b == null) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, the Constructor of '" + klass + "' is null"
             );
         }
@@ -231,7 +231,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
                 b.setAccessible(true);
             }
         } else {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, the number of actual and formal parameters differ"
             );
         }

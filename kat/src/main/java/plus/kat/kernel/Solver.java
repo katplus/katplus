@@ -27,7 +27,18 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public interface Solver extends Firm, Closeable {
+public interface Solver extends Closeable {
+    /**
+     * Returns the algo of this {@link Solver}
+     *
+     * <pre>{@code
+     *   Solver solver = ...
+     *   Algo algo = solver.algo();
+     * }</pre>
+     */
+    @NotNull
+    Algo algo();
+
     /**
      * {@link Reader} as the data source and {@link Proxy} as the data consumer.
      * This {@link Solver} uses reader to read the source, translate it and then stream it to share.

@@ -16,9 +16,9 @@
 package plus.kat.retrofit;
 
 import plus.kat.*;
+import plus.kat.crash.*;
 import plus.kat.okhttp.*;
 
-import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import retrofit2.Converter;
 
@@ -31,7 +31,7 @@ import java.lang.reflect.Type;
  */
 public class MutableRequestBodyConverter<T> implements Converter<T, RequestBody> {
 
-    protected final Job job;
+    protected final Algo algo;
     protected final Type type;
 
     protected Plan plan;
@@ -39,12 +39,12 @@ public class MutableRequestBodyConverter<T> implements Converter<T, RequestBody>
 
     public MutableRequestBodyConverter(
         Type type,
-        Job job,
+        Algo algo,
         Plan plan,
         Supplier supplier
     ) {
         this.type = type;
-        this.job = job;
+        this.algo = algo;
         this.plan = plan;
         this.supplier = supplier;
     }
@@ -53,47 +53,20 @@ public class MutableRequestBodyConverter<T> implements Converter<T, RequestBody>
     public RequestBody convert(
         T value
     ) throws IOException {
-        Chan chan;
-        MediaType media;
-        switch (job) {
-            case KAT: {
-                media = MediaTypes.APPLICATION_KAT;
-                chan = new Chan(
-                    plan, supplier
-                );
-                break;
-            }
-            case DOC: {
-                media = MediaTypes.APPLICATION_DOC;
-                chan = new Doc(
-                    plan, supplier
-                );
-                break;
-            }
-            case JSON: {
-                media = MediaTypes.APPLICATION_JSON;
-                chan = new Json(
-                    plan, supplier
-                );
-                break;
-            }
-            default: {
-                throw new IOException(
-                    "Unexpectedly, Converter did not find " + job + "'s Chan"
+        try (Chan chan = supplier.telex(algo, plan)) {
+            if (chan.set(null, value)) {
+                return new RequestPaper(
+                    chan.getFlow(), MediaTypes.of(algo)
                 );
             }
+        } catch (Collapse e) {
+            throw new IOException(
+                "Converter didn't find " + algo + "'s Chan"
+            );
         }
 
-        try (Chan ch = chan) {
-            if (ch.set(null, value)) {
-                return new RequestPaper(
-                    ch.getFlow(), media
-                );
-            } else {
-                throw new IOException(
-                    "Unexpectedly, Cannot serialize " + value + " to " + job
-                );
-            }
-        }
+        throw new IOException(
+            "Unexpectedly, Cannot serialize " + value + " to " + algo.name()
+        );
     }
 }

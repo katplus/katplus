@@ -23,7 +23,7 @@ import org.springframework.http.converter.*;
 import org.springframework.util.Assert;
 
 import plus.kat.*;
-import plus.kat.chain.*;
+import plus.kat.crash.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -36,52 +36,53 @@ import java.util.List;
  */
 public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConverter<Object> {
 
-    protected final Job job;
+    protected final Algo algo;
     protected Supplier supplier;
 
     protected Plan plan = Plan.DEF;
     protected MediaType[] mediaTypes;
 
     /**
-     * @param job the specified job
+     * @param algo the specified algo
      * @since 0.0.2
      */
     public MutableHttpMessageConverter(
-        Job job
+        Algo algo
     ) {
-        this(job, Supplier.ins());
+        this(algo, Supplier.ins());
     }
 
     /**
-     * @param job      the specified job
+     * @param algo     the specified algo
      * @param supplier the specified supplier
      * @since 0.0.2
      */
     public MutableHttpMessageConverter(
-        Job job,
+        Algo algo,
         Supplier supplier
     ) {
         super();
-        Assert.notNull(job, "Job must not be null");
+        Assert.notNull(algo, "Algo must not be null");
         Assert.notNull(supplier, "Supplier must not be null");
 
+        this.algo = algo;
         this.supplier = supplier;
-        switch (this.job = job) {
-            case KAT: {
+        switch (algo.name()) {
+            case "kat": {
                 mediaTypes = new MediaType[]{
                     MediaTypes.TEXT_KAT,
                     MediaTypes.APPLICATION_KAT
                 };
                 break;
             }
-            case DOC: {
+            case "xml": {
                 mediaTypes = new MediaType[]{
                     MediaType.TEXT_XML,
                     MediaType.APPLICATION_XML
                 };
                 break;
             }
-            case JSON: {
+            case "json": {
                 mediaTypes = new MediaType[]{
                     MediaType.APPLICATION_JSON
                 };
@@ -89,7 +90,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             }
             default: {
                 throw new HttpMessageNotWritableException(
-                    "Unexpectedly, Converter did not find " + job
+                    "Unexpectedly, Converter did not find " + algo
                 );
             }
         }
@@ -130,7 +131,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             );
 
         return supplier.solve(
-            clazz, job, new Event<>(in.getBody()).with(plan)
+            clazz, algo, new Event<>(in.getBody()).with(plan)
         );
     }
 
@@ -140,7 +141,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         HttpInputMessage in
     ) throws IOException, HttpMessageNotReadableException {
         return supplier.solve(
-            clazz, job, new Event<>(in.getBody()).with(plan)
+            clazz, algo, new Event<>(in.getBody()).with(plan)
         );
     }
 
@@ -167,43 +168,21 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         Type type,
         HttpOutputMessage output
     ) throws IOException, HttpMessageNotWritableException {
-        Chan chan;
-        switch (job) {
-            case KAT: {
-                chan = new Chan(
-                    plan, supplier
-                );
-                break;
-            }
-            case DOC: {
-                chan = new Doc(
-                    plan, supplier
-                );
-                break;
-            }
-            case JSON: {
-                chan = new Json(
-                    plan, supplier
-                );
-                break;
-            }
-            default: {
-                throw new HttpMessageNotWritableException(
-                    "Unexpectedly, Converter did not find " + job + "'s Chan"
-                );
-            }
-        }
-
-        try (Chan ch = chan) {
-            if (ch.set(null, data)) {
-                ch.getFlow().update(
+        try (Chan chan = supplier.telex(algo, plan)) {
+            if (chan.set(null, data)) {
+                chan.getFlow().update(
                     output.getBody()
                 );
             } else {
                 throw new HttpMessageNotWritableException(
-                    "Unexpectedly, Cannot serialize " + data + " to " + job
+                    "Unexpectedly, Cannot serialize "
+                        + data + " to " + algo.name()
                 );
             }
+        } catch (Collapse collapse) {
+            throw new HttpMessageNotWritableException(
+                collapse.getMessage(), collapse
+            );
         }
     }
 

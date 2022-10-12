@@ -196,8 +196,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
             synchronized (this) {
                 time = format(date);
             }
-            String name = flow.name();
-            if (name.equals("JSON")) {
+            if (flow.algo().is("json")) {
                 flow.addByte((byte) '"');
                 flow.emit(time);
                 flow.addByte((byte) '"');

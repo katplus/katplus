@@ -31,35 +31,35 @@ import java.lang.reflect.Type;
  */
 public class MutableConverterFactory extends Converter.Factory {
 
-    protected final Job job;
+    protected final Algo algo;
     protected Supplier supplier;
     protected Plan plan = Plan.DEF;
 
     /**
-     * @param job      the specified job
+     * @param algo     the specified algo
      * @param supplier the specified supplier
      * @since 0.0.3
      */
     public MutableConverterFactory(
-        Job job,
+        Algo algo,
         Supplier supplier
     ) {
         super();
-        assert job != null : "Job must not be null";
+        assert algo != null : "Algo must not be null";
         assert supplier != null : "Supplier must not be null";
 
-        this.job = job;
+        this.algo = algo;
         this.supplier = supplier;
     }
 
     public static MutableConverterFactory create() {
-        return create(Job.JSON, Supplier.ins());
+        return create(Algo.JSON, Supplier.ins());
     }
 
     public static MutableConverterFactory create(
-        Job job, Supplier supplier
+        Algo algo, Supplier supplier
     ) {
-        return new MutableConverterFactory(job, supplier);
+        return new MutableConverterFactory(algo, supplier);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class MutableConverterFactory extends Converter.Factory {
         Retrofit retrofit
     ) {
         return new MutableResponseBodyConverter<>(
-            type, job, plan, supplier
+            type, algo, plan, supplier
         );
     }
 
@@ -81,7 +81,7 @@ public class MutableConverterFactory extends Converter.Factory {
         Retrofit retrofit
     ) {
         return new MutableRequestBodyConverter<>(
-            type, job, plan, supplier
+            type, algo, plan, supplier
         );
     }
 }

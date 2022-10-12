@@ -276,7 +276,7 @@ public final class Alias extends Dram {
                 return result;
             }
 
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, Exceeding range '" + RANGE + "' in alias"
             );
         }

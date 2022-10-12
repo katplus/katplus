@@ -60,7 +60,7 @@ public class Crash extends Exception implements Kat {
     }
 
     /**
-     * @param e the cause saved for later retrieval by the {@link #getCause()} method
+     * @param e the specified cause to saved
      */
     public Crash(
         @NotNull Throwable e
@@ -87,7 +87,7 @@ public class Crash extends Exception implements Kat {
 
     /**
      * @param m the detail message
-     * @param e the cause saved for later retrieval by the {@link #getCause()} method
+     * @param e the specified cause to saved
      */
     public Crash(String m, Throwable e) {
         super(m, e, false, false);
@@ -95,7 +95,7 @@ public class Crash extends Exception implements Kat {
 
     /**
      * @param m the detail message
-     * @param e the cause saved for later retrieval by the {@link #getCause()} method
+     * @param e the specified cause to saved
      * @param a whether suppression is enabled or disabled
      * @param b whether the stack trace should be writable
      */

@@ -30,7 +30,7 @@ public interface Getter<K, V> {
      * Gets the property of the bean
      *
      * @return the specified value of property
-     * @throws Collapse If the underlying method throws an exception
+     * @throws FatalCrash If the underlying method throws a fatal exception
      */
     @Nullable
     V apply(
@@ -41,7 +41,7 @@ public interface Getter<K, V> {
      * Gets the property of the bean
      *
      * @return the specified value of property
-     * @throws Collapse If the underlying method throws an exception
+     * @throws FatalCrash If the underlying method throws a fatal exception
      * @see Getter#apply(Object)
      */
     @Nullable
@@ -54,7 +54,7 @@ public interface Getter<K, V> {
                 (K) bean
             );
         } catch (ClassCastException e) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Failed to cast", e
             );
         }

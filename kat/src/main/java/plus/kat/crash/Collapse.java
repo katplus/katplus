@@ -24,6 +24,9 @@ import plus.kat.chain.*;
 import java.io.IOException;
 
 /**
+ * Collapse is a false break that
+ * occurs during the build or parsing process
+ *
  * @author kraity
  * @since 0.0.4
  */
@@ -32,11 +35,11 @@ public class Collapse extends RuntimeException implements Kat {
      * @param m the detail message
      */
     public Collapse(String m) {
-        super(m);
+        super(m, null, false, false);
     }
 
     /**
-     * @param e the cause saved for later retrieval by the {@link #getCause()} method
+     * @param e the specified cause to saved
      */
     public Collapse(Throwable e) {
         super(e.getMessage(), e, false, false);
@@ -44,35 +47,16 @@ public class Collapse extends RuntimeException implements Kat {
 
     /**
      * @param m the detail message
-     * @param t enable suppression and writing stack trace
-     */
-    public Collapse(String m, boolean t) {
-        super(m, null, t, t);
-    }
-
-    /**
-     * @param m the detail message
-     * @param e the cause saved for later retrieval by the {@link #getCause()} method
+     * @param e the specified cause to saved
      */
     public Collapse(String m, Throwable e) {
         super(m, e, false, false);
     }
 
     /**
-     * @param m the detail message
-     * @param e the cause saved for later retrieval by the {@link #getCause()} method
-     * @param a whether suppression is enabled or disabled
-     * @param b whether the stack trace should be writable
-     */
-    public Collapse(String m, Throwable e, boolean a, boolean b) {
-        super(m, e, a, b);
-    }
-
-    /**
      * Returns the space of this
      */
     @Nullable
-    @Override
     public Space space() {
         return Space.$E;
     }

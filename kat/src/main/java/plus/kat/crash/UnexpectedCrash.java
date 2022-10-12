@@ -36,7 +36,7 @@ public class UnexpectedCrash extends IOException implements Kat {
     }
 
     /**
-     * @param e the cause saved for later retrieval by the {@link #getCause()} method
+     * @param e the specified cause to saved
      */
     public UnexpectedCrash(Throwable e) {
         super(e);
@@ -44,7 +44,7 @@ public class UnexpectedCrash extends IOException implements Kat {
 
     /**
      * @param m the detail message
-     * @param e the cause saved for later retrieval by the {@link #getCause()} method
+     * @param e the specified cause to saved
      */
     public UnexpectedCrash(String m, Throwable e) {
         super(m, e);
@@ -54,7 +54,6 @@ public class UnexpectedCrash extends IOException implements Kat {
      * Returns the space of this
      */
     @Nullable
-    @Override
     public Space space() {
         return Space.$E;
     }

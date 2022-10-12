@@ -29,7 +29,7 @@ import java.lang.reflect.Type;
  */
 public class MutableResponseBodyConverter<T> implements Converter<ResponseBody, T> {
 
-    protected final Job job;
+    protected final Algo algo;
     protected final Type type;
 
     protected Plan plan;
@@ -37,12 +37,12 @@ public class MutableResponseBodyConverter<T> implements Converter<ResponseBody, 
 
     public MutableResponseBodyConverter(
         Type type,
-        Job job,
+        Algo algo,
         Plan plan,
         Supplier supplier
     ) {
         this.type = type;
-        this.job = job;
+        this.algo = algo;
         this.plan = plan;
         this.supplier = supplier;
     }
@@ -52,7 +52,7 @@ public class MutableResponseBodyConverter<T> implements Converter<ResponseBody, 
         ResponseBody value
     ) throws IOException {
         return supplier.solve(
-            type, job, new Event<T>(
+            type, algo, new Event<T>(
                 value.byteStream()
             ).with(plan)
         );

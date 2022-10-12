@@ -532,7 +532,7 @@ public final class Space extends Dram implements Type {
                 return result;
             }
 
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, Exceeding range '" + RANGE + "' in space"
             );
         }

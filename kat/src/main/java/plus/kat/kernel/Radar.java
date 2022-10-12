@@ -15,8 +15,8 @@
  */
 package plus.kat.kernel;
 
-import plus.kat.anno.NotNull;
-
+import plus.kat.*;
+import plus.kat.anno.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
@@ -65,11 +65,11 @@ public class Radar implements Solver {
     }
 
     /**
-     * Returns the name of {@link Solver}
+     * Returns the algo of solver
      */
     @Override
-    public String name() {
-        return "KAT";
+    public Algo algo() {
+        return Algo.KAT;
     }
 
     /**
@@ -421,11 +421,11 @@ public class Radar implements Solver {
             QUOT = '"', SLASH = '/';
 
         /**
-         * Returns the name of {@link Solver}
+         * Returns the algo of solver
          */
         @Override
-        public String name() {
-            return "XML";
+        public Algo algo() {
+            return Algo.DOC;
         }
 
         /**
@@ -939,11 +939,11 @@ public class Radar implements Solver {
         private boolean mutable;
 
         /**
-         * Returns the name of {@link Solver}
+         * Returns the algo of solver
          */
         @Override
-        public String name() {
-            return "JSON";
+        public Algo algo() {
+            return Algo.JSON;
         }
 
         /**

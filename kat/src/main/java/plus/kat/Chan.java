@@ -33,7 +33,7 @@ import static plus.kat.Supplier.Impl.INS;
  * @author kraity
  * @since 0.0.1
  */
-public class Chan implements Flag, Firm, Closeable {
+public class Chan implements Flag, Closeable {
 
     protected Flow flow;
     protected Supplier supplier;
@@ -377,14 +377,6 @@ public class Chan implements Flag, Firm, Closeable {
     }
 
     /**
-     * Returns the name of {@link Chan}
-     */
-    @Override
-    public String name() {
-        return "KAT";
-    }
-
-    /**
      * Check if this {@link Flow} use the {@code flag}
      *
      * @param flag the specified {@code flag}
@@ -510,11 +502,11 @@ public class Chan implements Flag, Firm, Closeable {
         }
 
         /**
-         * Returns the uppercase name
+         * Returns the algo of flow
          */
         @Override
-        public String name() {
-            return "KAT";
+        public Algo algo() {
+            return Algo.KAT;
         }
 
         /**

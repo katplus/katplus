@@ -597,7 +597,7 @@ public class Value extends Dram {
                 if (i < LIMIT) {
                     data = new byte[(i + 1) * SCALE - 1];
                 } else {
-                    throw new Collapse(
+                    throw new FatalCrash(
                         "Unexpectedly, Exceeding range '" + LIMIT * SCALE + "' in value"
                     );
                 }

@@ -208,14 +208,6 @@ public class Doc extends Chan {
     }
 
     /**
-     * Returns the name of {@link Chan}
-     */
-    @Override
-    public String name() {
-        return "XML";
-    }
-
-    /**
      * Check if this {@link Flow} use the {@code flag}
      *
      * @param flag the specified {@code flag}
@@ -370,9 +362,9 @@ public class Doc extends Chan {
     /**
      * Parse {@link Doc} {@link CharSequence}
      *
-     * @param text specify the {@code text} to be parsed
-     * @throws Collapse If parsing fails
-     * @see Spare#solve(Job, Event)
+     * @param text the specified {@code text} to be parsed
+     * @throws Collapse If a build error occurs
+     * @see Spare#solve(Algo, Event)
      */
     @Nullable
     public static Object decode(
@@ -382,16 +374,16 @@ public class Doc extends Chan {
             return null;
         }
         return INS.solve(
-            Job.DOC, new Event<>(text)
+            Algo.DOC, new Event<>(text)
         );
     }
 
     /**
      * Parse {@link Doc} {@link CharSequence}
      *
-     * @param event specify the {@code event} to be handled
-     * @throws Collapse If parsing fails
-     * @see Spare#solve(Job, Event)
+     * @param event the specified {@code event} to be handled
+     * @throws Collapse If a build error occurs
+     * @see Spare#solve(Algo, Event)
      */
     @Nullable
     public static <T> T decode(
@@ -402,15 +394,15 @@ public class Doc extends Chan {
         }
 
         return INS.solve(
-            Job.DOC, event
+            Algo.DOC, event
         );
     }
 
     /**
      * Parse {@link Doc} byte array
      *
-     * @param text specify the {@code text} to be parsed
-     * @throws Collapse If parsing fails
+     * @param text the specified {@code text} to be parsed
+     * @throws Collapse If a build error occurs
      * @see Supplier#down(Class, Event)
      */
     @Nullable
@@ -431,8 +423,8 @@ public class Doc extends Chan {
     /**
      * Parse {@link Doc} {@link CharSequence}
      *
-     * @param text specify the {@code text} to be parsed
-     * @throws Collapse If parsing fails
+     * @param text the specified {@code text} to be parsed
+     * @throws Collapse If a build error occurs
      * @see Supplier#down(Class, Event)
      */
     @Nullable
@@ -453,8 +445,8 @@ public class Doc extends Chan {
     /**
      * Parse {@link Doc} {@link CharSequence}
      *
-     * @param event specify the {@code event} to be handled
-     * @throws Collapse If parsing fails
+     * @param event the specified {@code event} to be handled
+     * @throws Collapse If a build error occurs
      * @see Supplier#down(Class, Event)
      */
     @Nullable
@@ -501,11 +493,11 @@ public class Doc extends Chan {
         }
 
         /**
-         * Returns the uppercase name
+         * Returns the algo of flow
          */
         @Override
-        public String name() {
-            return "XML";
+        public Algo algo() {
+            return Algo.DOC;
         }
 
         /**

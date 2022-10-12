@@ -136,9 +136,9 @@ public interface Kat {
     /**
      * Parse {@link Kat} {@link CharSequence}
      *
-     * @param text specify the {@code text} to be parsed
-     * @throws Collapse If parsing fails
-     * @see Spare#solve(Job, Event)
+     * @param text the specified {@code text} to be parsed
+     * @throws Collapse If a build error occurs
+     * @see Spare#solve(Algo, Event)
      */
     @Nullable
     static Object decode(
@@ -148,16 +148,16 @@ public interface Kat {
             return null;
         }
         return INS.solve(
-            Job.KAT, new Event<>(text)
+            Algo.KAT, new Event<>(text)
         );
     }
 
     /**
      * Parse {@link Kat} {@link CharSequence}
      *
-     * @param event specify the {@code event} to be handled
-     * @throws Collapse If parsing fails
-     * @see Spare#solve(Job, Event)
+     * @param event the specified {@code event} to be handled
+     * @throws Collapse If a build error occurs
+     * @see Spare#solve(Algo, Event)
      */
     @Nullable
     static <T> T decode(
@@ -168,15 +168,15 @@ public interface Kat {
         }
 
         return INS.solve(
-            Job.KAT, event
+            Algo.KAT, event
         );
     }
 
     /**
      * Parse {@link Kat} byte array
      *
-     * @param text specify the {@code text} to be parsed
-     * @throws Collapse If parsing fails
+     * @param text the specified {@code text} to be parsed
+     * @throws Collapse If a build error occurs
      * @see Supplier#read(Class, Event)
      */
     @Nullable
@@ -197,8 +197,8 @@ public interface Kat {
     /**
      * Parse {@link Kat} {@link CharSequence}
      *
-     * @param text specify the {@code text} to be parsed
-     * @throws Collapse If parsing fails
+     * @param text the specified {@code text} to be parsed
+     * @throws Collapse If a build error occurs
      * @see Supplier#read(Class, Event)
      */
     @Nullable
@@ -219,8 +219,8 @@ public interface Kat {
     /**
      * Parse {@link Kat} {@link CharSequence}
      *
-     * @param event specify the {@code event} to be handled
-     * @throws Collapse If parsing fails
+     * @param event the specified {@code event} to be handled
+     * @throws Collapse If a build error occurs
      * @see Supplier#read(Class, Event)
      */
     @Nullable

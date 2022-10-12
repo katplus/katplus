@@ -1076,14 +1076,14 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         ) {
             MethodHandle method = getter;
             if (method == null) {
-                throw new Collapse(
+                throw new FatalCrash(
                     "Getter is not supported"
                 );
             } else {
                 try {
                     return method.invoke(bean);
                 } catch (Throwable e) {
-                    throw new Collapse(
+                    throw new FatalCrash(
                         "Accessor call 'invoke' failed", e
                     );
                 }
@@ -1097,7 +1097,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         ) {
             MethodHandle method = setter;
             if (method == null) {
-                throw new Collapse(
+                throw new FatalCrash(
                     "Setter is not supported"
                 );
             }
@@ -1108,7 +1108,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                     );
                     return true;
                 } catch (Throwable e) {
-                    throw new Collapse(
+                    throw new FatalCrash(
                         "Edge call 'invoke' failed", e
                     );
                 }

@@ -54,7 +54,7 @@ public class RequestPaper extends RequestBody {
         Paper paper
     ) {
         this(
-            paper, MediaTypes.of(paper)
+            paper, MediaTypes.of(paper.algo())
         );
     }
 

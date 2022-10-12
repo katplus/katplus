@@ -48,7 +48,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      * it returns it, otherwise it will throw {@link Collapse}
      *
      * @return {@link K}, it is not null
-     * @throws Collapse If a failure occurs
+     * @throws Collapse If a build error occurs
      */
     @NotNull
     default K apply() {
@@ -63,7 +63,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      *
      * @param args the specified args
      * @return {@link K}, it is not null
-     * @throws Collapse If a failure occurs
+     * @throws Collapse If a build error occurs
      */
     @NotNull
     default K apply(
@@ -490,7 +490,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         default V apply(
             @NotNull K bean
         ) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unsupported"
             );
         }
@@ -506,7 +506,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             @NotNull K bean,
             @Nullable V value
         ) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unsupported"
             );
         }

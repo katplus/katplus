@@ -2,7 +2,7 @@ package plus.kat.spring.http;
 
 import org.junit.jupiter.api.Test;
 
-import plus.kat.Job;
+import plus.kat.Algo;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
@@ -22,42 +22,42 @@ public class MutableHttpMessageConverterTest {
 
     @Test
     public void test() throws IOException {
-        HashMap<Job, String> in = new HashMap<>();
-        HashMap<Job, String> out = new HashMap<>();
+        HashMap<Algo, String> in = new HashMap<>();
+        HashMap<Algo, String> out = new HashMap<>();
 
-        in.put(Job.KAT, "{i:id(1)s:name(kraity)}");
-        out.put(Job.KAT, "plus.kat.spring.http.MutableHttpMessageConverterTest$User{s:name(kraity)i:id(1)}");
+        in.put(Algo.KAT, "{i:id(1)s:name(kraity)}");
+        out.put(Algo.KAT, "plus.kat.spring.http.MutableHttpMessageConverterTest$User{s:name(kraity)i:id(1)}");
 
-        in.put(Job.DOC, "<User><id>1</id><name>kraity</name></User>");
-        out.put(Job.DOC, "<plus.kat.spring.http.MutableHttpMessageConverterTest$User><name>kraity</name><id>1</id></plus.kat.spring.http.MutableHttpMessageConverterTest$User>");
+        in.put(Algo.DOC, "<User><id>1</id><name>kraity</name></User>");
+        out.put(Algo.DOC, "<plus.kat.spring.http.MutableHttpMessageConverterTest$User><name>kraity</name><id>1</id></plus.kat.spring.http.MutableHttpMessageConverterTest$User>");
 
-        in.put(Job.JSON, "{\"id\":1,\"name\":\"kraity\"}");
-        out.put(Job.JSON, "{\"name\":\"kraity\",\"id\":1}");
+        in.put(Algo.JSON, "{\"id\":1,\"name\":\"kraity\"}");
+        out.put(Algo.JSON, "{\"name\":\"kraity\",\"id\":1}");
 
-        HashMap<Job, MediaType[]> mediaTypes = new HashMap<>();
+        HashMap<Algo, MediaType[]> mediaTypes = new HashMap<>();
         mediaTypes.put(
-            Job.KAT, new MediaType[]{
+            Algo.KAT, new MediaType[]{
                 MediaTypes.TEXT_KAT,
                 MediaTypes.APPLICATION_KAT
             }
         );
         mediaTypes.put(
-            Job.DOC, new MediaType[]{
+            Algo.DOC, new MediaType[]{
                 MediaType.TEXT_XML,
                 MediaType.APPLICATION_XML
             }
         );
         mediaTypes.put(
-            Job.JSON, new MediaType[]{
+            Algo.JSON, new MediaType[]{
                 MediaType.APPLICATION_JSON
             }
         );
 
-        for (Job job : Job.values()) {
+        for (Algo algo : new Algo[]{Algo.KAT, Algo.DOC, Algo.JSON}) {
             MutableHttpMessageConverter converter =
-                new MutableHttpMessageConverter(job);
+                new MutableHttpMessageConverter(algo);
 
-            for (MediaType mediaType : mediaTypes.get(job)) {
+            for (MediaType mediaType : mediaTypes.get(algo)) {
                 assertTrue(converter.canRead(
                     User.class, User.class, mediaType
                 ));
@@ -71,7 +71,7 @@ public class MutableHttpMessageConverterTest {
                     @Override
                     public InputStream getBody() {
                         return new ByteArrayInputStream(
-                            in.get(job).getBytes(UTF_8)
+                            in.get(algo).getBytes(UTF_8)
                         );
                     }
 
@@ -98,7 +98,7 @@ public class MutableHttpMessageConverterTest {
                     }
                 }
             );
-            assertEquals(out.get(job), output.toString("UTF-8"));
+            assertEquals(out.get(algo), output.toString("UTF-8"));
         }
     }
 

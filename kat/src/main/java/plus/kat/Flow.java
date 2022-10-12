@@ -25,15 +25,217 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public interface Flow extends Flag, Firm, Appendable {
+public interface Flow extends Flag, Appendable {
     /**
-     * Returns the uppercase name
+     * Returns the algo of this {@link Flow}
      *
-     * @see Job
-     * @since 0.0.4
+     * <pre>{@code
+     *   Flow flow = ...
+     *   Algo algo = flow.algo();
+     * }</pre>
+     */
+    @NotNull
+    Algo algo();
+
+    /**
+     * add a data to this {@link Flow},
+     * which will be escaped if it is a special character
+     *
+     * <pre>{@code
+     *   Flow flow = ...
+     *
+     *   // kat
+     *   flow.emit((byte) '^'); // escape: ^^
+     *   flow.emit((byte) 'k'); // not escaped
+     *
+     *   // json
+     *   flow.emit((byte) '"'); // escape: \"
+     *   flow.emit((byte) '\'); // escape: \\
+     *   flow.emit((byte) 'k'); // not escaped
+     * }</pre>
+     *
+     * @throws IOException If an I/O error occurs
+     * @see Paper#emit(byte)
+     */
+    void emit(
+        byte b
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow},
+     * which will be escaped if it is a special character
+     *
+     * <pre>{@code
+     *   Flow flow = ...
+     *
+     *   // kat
+     *   flow.emit('^'); // escape: ^^
+     *   flow.emit('k'); // not escaped
+     *
+     *   // json
+     *   flow.emit('"'); // escape: \"
+     *   flow.emit('\'); // escape: \\
+     *   flow.emit('k'); // not escaped
+     * }</pre>
+     *
+     * @throws IOException If an I/O error occurs
+     * @see Paper#emit(char)
+     */
+    void emit(
+        char c
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow},
+     * which will be escaped if it is a special character
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#emit(byte[])
+     */
+    void emit(
+        @NotNull byte[] data
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow},
+     * which will be escaped if it is a special character
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#emit(byte[], int, int)
+     */
+    void emit(
+        @NotNull byte[] data, int offset, int length
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow},
+     * which will be escaped if it is a special character
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#emit(CharSequence)
+     */
+    void emit(
+        @NotNull CharSequence data
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow},
+     * which will be escaped if it is a special character
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#emit(CharSequence, int, int)
+     */
+    void emit(
+        @NotNull CharSequence data, int offset, int length
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#text(char)
+     */
+    void text(
+        char data
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#text(byte[])
+     */
+    void text(
+        @NotNull byte[] data
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#text(byte[], int, int)
+     */
+    void text(
+        @NotNull byte[] data, int offset, int length
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#text(CharSequence)
+     */
+    void text(
+        @NotNull CharSequence data
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#text(CharSequence, int, int)
+     */
+    void text(
+        @NotNull CharSequence data, int offset, int length
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
+     *
+     * @return this {@link Flow}
+     * @throws IOException If an I/O error occurs
+     * @see Paper#append(char)
+     * @since 0.0.2
      */
     @Override
-    String name();
+    Flow append(
+        char c
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
+     *
+     * @return this {@link Flow}
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#append(CharSequence)
+     * @since 0.0.2
+     */
+    @Override
+    Flow append(
+        CharSequence data
+    ) throws IOException;
+
+    /**
+     * add a data to this {@link Flow} that will be escaped
+     * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
+     *
+     * @return this {@link Flow}
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see Paper#append(CharSequence, int, int)
+     * @since 0.0.2
+     */
+    @Override
+    Flow append(
+        CharSequence data, int start, int end
+    ) throws IOException;
 
     /**
      * add a byte value to this {@link Flow}
@@ -383,205 +585,5 @@ public interface Flow extends Flag, Firm, Appendable {
      */
     void addChars(
         @NotNull CharSequence data, int offset, int length
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow},
-     * which will be escaped if it is a special character
-     *
-     * <pre>{@code
-     *   Flow flow = ...
-     *
-     *   // kat
-     *   flow.emit((byte) '^'); // escape: ^^
-     *   flow.emit((byte) 'k'); // not escaped
-     *
-     *   // json
-     *   flow.emit((byte) '"'); // escape: \"
-     *   flow.emit((byte) '\'); // escape: \\
-     *   flow.emit((byte) 'k'); // not escaped
-     * }</pre>
-     *
-     * @throws IOException If an I/O error occurs
-     * @see Paper#emit(byte)
-     */
-    void emit(
-        byte b
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow},
-     * which will be escaped if it is a special character
-     *
-     * <pre>{@code
-     *   Flow flow = ...
-     *
-     *   // kat
-     *   flow.emit('^'); // escape: ^^
-     *   flow.emit('k'); // not escaped
-     *
-     *   // json
-     *   flow.emit('"'); // escape: \"
-     *   flow.emit('\'); // escape: \\
-     *   flow.emit('k'); // not escaped
-     * }</pre>
-     *
-     * @throws IOException If an I/O error occurs
-     * @see Paper#emit(char)
-     */
-    void emit(
-        char c
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow},
-     * which will be escaped if it is a special character
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#emit(byte[])
-     */
-    void emit(
-        @NotNull byte[] data
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow},
-     * which will be escaped if it is a special character
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#emit(byte[], int, int)
-     */
-    void emit(
-        @NotNull byte[] data, int offset, int length
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow},
-     * which will be escaped if it is a special character
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#emit(CharSequence)
-     */
-    void emit(
-        @NotNull CharSequence data
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow},
-     * which will be escaped if it is a special character
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#emit(CharSequence, int, int)
-     */
-    void emit(
-        @NotNull CharSequence data, int offset, int length
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow} that will be escaped
-     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#text(char)
-     */
-    void text(
-        char data
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow} that will be escaped
-     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#text(byte[])
-     */
-    void text(
-        @NotNull byte[] data
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow} that will be escaped
-     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#text(byte[], int, int)
-     */
-    void text(
-        @NotNull byte[] data, int offset, int length
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow} that will be escaped
-     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#text(CharSequence)
-     */
-    void text(
-        @NotNull CharSequence data
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow} that will be escaped
-     * if it is a special character, or will be escaped to Unicode if it is non-ASCII
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#text(CharSequence, int, int)
-     */
-    void text(
-        @NotNull CharSequence data, int offset, int length
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow} that will be escaped
-     * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
-     *
-     * @return this {@link Flow}
-     * @throws IOException If an I/O error occurs
-     * @see Paper#append(char)
-     * @since 0.0.2
-     */
-    @Override
-    Flow append(
-        char c
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow} that will be escaped
-     * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
-     *
-     * @return this {@link Flow}
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#append(CharSequence)
-     * @since 0.0.2
-     */
-    @Override
-    Flow append(
-        CharSequence data
-    ) throws IOException;
-
-    /**
-     * add a data to this {@link Flow} that will be escaped
-     * if it is a special character, or will be escaped to Unicode if flow uses {@link Flag#UNICODE}
-     *
-     * @return this {@link Flow}
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code data} is null
-     * @see Paper#append(CharSequence, int, int)
-     * @since 0.0.2
-     */
-    @Override
-    Flow append(
-        CharSequence data, int start, int end
     ) throws IOException;
 }

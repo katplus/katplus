@@ -337,10 +337,10 @@ public class Client extends Caller {
      * @see Client#accept(String)
      */
     public Client accept(
-        @NotNull Job job
+        @NotNull Algo algo
     ) {
-        this.job = job;
-        return contentType(job);
+        this.algo = algo;
+        return contentType(algo);
     }
 
     /**
@@ -376,49 +376,48 @@ public class Client extends Caller {
      * @see Client#contentType(String)
      */
     public Client contentType(
-        @NotNull Firm firm
+        @NotNull Algo algo
     ) {
-        switch (firm.name()) {
-            case "KAT": {
+        switch (algo.name()) {
+            case "kat": {
                 return contentType(
                     "application/kat; charset=utf-8"
                 );
             }
-            case "XML": {
+            case "xml": {
                 return contentType(
                     "application/xml; charset=utf-8"
                 );
             }
-            case "JSON": {
+            case "json": {
                 return contentType(
                     "application/json; charset=utf-8"
                 );
             }
             default: {
-                throw new Collapse(
-                    "Unexpectedly, Client does not support " + firm.name()
+                throw new FatalCrash(
+                    "Unexpectedly, Client does not support " + algo.name()
                 );
             }
         }
     }
 
     /**
-     * Returns the specified {@link Job}
+     * Returns the specified {@link Algo}
      *
-     * @throws Collapse If no specified job
+     * @throws FatalCrash If the specified algo is null
      */
-    @NotNull
     @Override
-    public Job job() {
-        Job j = job;
-        if (j != null) {
-            return j;
+    public Algo algo() {
+        Algo a = algo;
+        if (a != null) {
+            return a;
         }
 
         String type = contentType();
         if (type == null ||
             type.length() < 7) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "The content type(" + type + ") is illegal"
             );
         }
@@ -427,31 +426,31 @@ public class Client extends Caller {
         // text
         if (c == 't') {
             if (type.startsWith("text/kat")) {
-                return Job.KAT;
+                return Algo.KAT;
             }
 
             if (type.startsWith("text/xml")) {
-                return Job.DOC;
+                return Algo.DOC;
             }
         }
 
         // application
         else if (c == 'a') {
             if (type.startsWith("application/json")) {
-                return Job.JSON;
+                return Algo.JSON;
             }
 
             if (type.startsWith("application/kat")) {
-                return Job.KAT;
+                return Algo.KAT;
             }
 
             if (type.startsWith("application/xml")) {
-                return Job.DOC;
+                return Algo.DOC;
             }
         }
 
-        throw new Collapse(
-            "Could not find the specified Job of " + type
+        throw new FatalCrash(
+            "Could not find the specified Algo of " + type
         );
     }
 
@@ -629,7 +628,9 @@ public class Client extends Caller {
         Paper flow
     ) throws IOException {
         try {
-            contentType(flow);
+            contentType(
+                flow.algo()
+            );
             return request(
                 "PUT", flow
             );
@@ -702,7 +703,9 @@ public class Client extends Caller {
         Paper flow
     ) throws IOException {
         try {
-            contentType(flow);
+            contentType(
+                flow.algo()
+            );
             return request(
                 "POST", flow
             );

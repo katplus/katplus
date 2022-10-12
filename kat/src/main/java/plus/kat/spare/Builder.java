@@ -63,6 +63,7 @@ public abstract class Builder<K> {
     /**
      * Prepare before parsing
      *
+     * @throws Collapse    If it signals to skip
      * @throws IOException If an I/O error occurs
      */
     public abstract void onCreate() throws IOException;

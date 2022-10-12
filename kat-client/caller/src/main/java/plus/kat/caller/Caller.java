@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public abstract class Caller extends Chain {
 
-    protected Job job;
+    protected Algo algo;
     protected Plan plan;
     protected Supplier supplier;
 
@@ -102,14 +102,14 @@ public abstract class Caller extends Chain {
     }
 
     /**
-     * Use the specified {@link Job}
+     * Use the specified {@link Algo}
      *
-     * @param target the specified job
+     * @param target the specified algo
      */
     public Caller with(
-        @NotNull Job target
+        @NotNull Algo target
     ) {
-        job = target;
+        algo = target;
         return this;
     }
 
@@ -154,7 +154,8 @@ public abstract class Caller extends Chain {
     /**
      * Parse this {@link Caller} and convert result to {@link T}
      *
-     * @throws Collapse If no specified job
+     * @throws Collapse   If a build error or parsing error occurs
+     * @throws FatalCrash If no available {@code algo} can be found
      */
     @Nullable
     public <E, T extends E> T to(
@@ -164,9 +165,9 @@ public abstract class Caller extends Chain {
             return null;
         }
 
-        Job job = job();
+        Algo algo = algo();
         return supplier.solve(
-            klass, job, new Event<T>(
+            klass, algo, new Event<T>(
                 reader()
             ).with(plan)
         );
@@ -177,7 +178,7 @@ public abstract class Caller extends Chain {
      */
     @Nullable
     public <E, T extends E> T to(
-        @NotNull Job job,
+        @NotNull Algo algo,
         @NotNull Class<E> klass
     ) {
         if (count == 0) {
@@ -185,7 +186,7 @@ public abstract class Caller extends Chain {
         }
 
         return supplier.solve(
-            klass, job, new Event<T>(
+            klass, algo, new Event<T>(
                 reader()
             ).with(plan)
         );
@@ -197,7 +198,7 @@ public abstract class Caller extends Chain {
     @Nullable
     public <E, T extends E> T solve(
         @NotNull Class<E> klass,
-        @NotNull Job job,
+        @NotNull Algo algo,
         @NotNull Event<T> event
     ) {
         if (count == 0) {
@@ -205,7 +206,7 @@ public abstract class Caller extends Chain {
         }
 
         return supplier.solve(
-            klass, job, event.with(
+            klass, algo, event.with(
                 reader()
             ).with(plan)
         );
@@ -214,7 +215,7 @@ public abstract class Caller extends Chain {
     /**
      * Parse this {@link Caller} and convert result to {@code Array}
      *
-     * @throws Collapse If no specified job
+     * @throws Collapse If a build error or parsing error occurs
      * @since 0.0.4
      */
     @Nullable
@@ -227,7 +228,7 @@ public abstract class Caller extends Chain {
     /**
      * Parse this {@link Caller} and convert result to {@link List}
      *
-     * @throws Collapse If no specified job
+     * @throws Collapse If a build error or parsing error occurs
      * @since 0.0.4
      */
     @Nullable
@@ -238,7 +239,7 @@ public abstract class Caller extends Chain {
     /**
      * Parse this {@link Caller} and convert result to {@link Map}
      *
-     * @throws Collapse If no specified job
+     * @throws Collapse If a build error or parsing error occurs
      * @since 0.0.4
      */
     @Nullable
@@ -247,39 +248,38 @@ public abstract class Caller extends Chain {
     }
 
     /**
-     * Returns the specified {@link Job}
+     * Returns the specified {@link Algo}
      *
-     * @throws Collapse If no specified job
+     * @throws FatalCrash If the specified algo is null
      */
     @NotNull
-    public Job job() {
-        Job j = job;
-        if (j != null) {
-            return j;
+    public Algo algo() {
+        Algo a = algo;
+        if (a != null) {
+            return a;
         }
 
-        throw new Collapse(
-            "Could not find the specified Job"
+        throw new FatalCrash(
+            "Could not find the specified Algo"
         );
     }
 
     /**
-     * Returns the internal {@link Job}
+     * Returns the internal {@link Algo}
      */
-    public Job getJob() {
-        return job;
+    public Algo getAlgo() {
+        return algo;
     }
 
     /**
-     * Sets the job of this Caller
+     * Sets the algo of this Caller
      *
-     * @param job the specified job
-     * @since 0.0.4
+     * @param algo the specified algo
      */
-    public void setJob(
-        @Nullable Job job
+    public void setAlgo(
+        @Nullable Algo algo
     ) {
-        this.job = job;
+        this.algo = algo;
     }
 
     /**

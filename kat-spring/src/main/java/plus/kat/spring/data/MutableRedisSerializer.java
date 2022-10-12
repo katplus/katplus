@@ -20,6 +20,7 @@ import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.util.Assert;
 
 import plus.kat.*;
+import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
 import java.io.IOException;
@@ -30,40 +31,40 @@ import java.io.IOException;
  */
 public class MutableRedisSerializer<T> implements RedisSerializer<T> {
 
-    protected final Job job;
+    protected final Algo algo;
     protected Supplier supplier;
 
     protected Plan plan = Plan.DEF;
     protected final Class<T> type;
 
     /**
-     * @param job  the specified job
+     * @param algo the specified algo
      * @param type the specified type
      * @since 0.0.3
      */
     public MutableRedisSerializer(
-        Job job, Class<T> type
+        Algo algo, Class<T> type
     ) {
-        this(job, type, Supplier.ins());
+        this(algo, type, Supplier.ins());
     }
 
     /**
-     * @param job      the specified job
+     * @param algo     the specified algo
      * @param type     the specified type
      * @param supplier the specified supplier
      * @since 0.0.3
      */
     public MutableRedisSerializer(
-        Job job,
+        Algo algo,
         Class<T> type,
         Supplier supplier
     ) {
         super();
-        Assert.notNull(job, "Job must not be null");
+        Assert.notNull(algo, "Algo must not be null");
         Assert.notNull(type, "Class must not be null");
         Assert.notNull(supplier, "Supplier must not be null");
 
-        this.job = job;
+        this.algo = algo;
         this.type = type;
         this.supplier = supplier;
     }
@@ -75,46 +76,21 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
         if (data == null) {
             return Chain.EMPTY_BYTES;
         }
-        Chan chan;
-        switch (job) {
-            case KAT: {
-                chan = new Chan(
-                    plan, supplier
-                );
-                break;
+        try (Chan chan = supplier.telex(algo, plan)) {
+            if (chan.set(null, data)) {
+                return chan.toBytes();
             }
-            case DOC: {
-                chan = new Doc(
-                    plan, supplier
-                );
-                break;
-            }
-            case JSON: {
-                chan = new Json(
-                    plan, supplier
-                );
-                break;
-            }
-            default: {
-                throw new SerializationException(
-                    "Unexpectedly, Converter did not find " + job + "'s Chan"
-                );
-            }
+        } catch (Collapse e) {
+            throw new SerializationException(
+                "Converter didn't find " + algo + "'s Chan"
+            );
+        } catch (IOException e) {
+            // Skip to below
         }
 
-        try (Chan ch = chan) {
-            if (ch.set(null, data)) {
-                return ch.toBytes();
-            } else {
-                throw new SerializationException(
-                    "Unexpectedly, Cannot serialize " + data + " to " + job
-                );
-            }
-        } catch (IOException e) {
-            throw new SerializationException(
-                "Unexpectedly, Cannot serialize " + data + " to " + job, e
-            );
-        }
+        throw new SerializationException(
+            "Unexpectedly, Cannot serialize " + data + " to " + algo.name()
+        );
     }
 
     @Override
@@ -127,7 +103,7 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
         }
 
         return supplier.solve(
-            type, job, new Event<T>(data).with(plan)
+            type, algo, new Event<T>(data).with(plan)
         );
     }
 

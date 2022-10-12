@@ -319,8 +319,8 @@ public interface Supplier extends Cloneable {
      * }</pre>
      *
      * @return {@link E}, it is not null
-     * @throws Collapse             If it fails to create
-     * @throws NullPointerException If the klass is null
+     * @throws Collapse             If parsing fails or the result is null
+     * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#apply(Type)
      * @since 0.0.4
      */
@@ -352,7 +352,7 @@ public interface Supplier extends Cloneable {
      * }</pre>
      *
      * @return {@link E}, it is not null
-     * @throws Collapse             If it fails to create
+     * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the klass or spoiler is null
      * @see Spare#apply(Spoiler, Supplier)
      * @since 0.0.4
@@ -666,7 +666,7 @@ public interface Supplier extends Cloneable {
      * @throws Collapse             If parsing fails or the result is null
      * @throws ClassCastException   If {@link T} is not an instance of {@code klass}
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Supplier#solve(CharSequence, Job, Event)
+     * @see Supplier#solve(CharSequence, Algo, Event)
      */
     @NotNull
     default <T> T read(
@@ -674,7 +674,7 @@ public interface Supplier extends Cloneable {
         @NotNull Event<T> event
     ) {
         return solve(
-            klass, Job.KAT, event
+            klass, Algo.KAT, event
         );
     }
 
@@ -695,7 +695,7 @@ public interface Supplier extends Cloneable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Supplier#solve(Class, Job, Event)
+     * @see Supplier#solve(Class, Algo, Event)
      */
     @NotNull
     default <E, T extends E> T read(
@@ -703,7 +703,7 @@ public interface Supplier extends Cloneable {
         @NotNull Event<T> event
     ) {
         return solve(
-            klass, Job.KAT, event
+            klass, Algo.KAT, event
         );
     }
 
@@ -771,7 +771,7 @@ public interface Supplier extends Cloneable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Supplier#solve(CharSequence, Job, Event)
+     * @see Supplier#solve(CharSequence, Algo, Event)
      */
     @NotNull
     default <T> T down(
@@ -779,7 +779,7 @@ public interface Supplier extends Cloneable {
         @NotNull Event<T> event
     ) {
         return solve(
-            klass, Job.DOC, event
+            klass, Algo.DOC, event
         );
     }
 
@@ -800,7 +800,7 @@ public interface Supplier extends Cloneable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Supplier#solve(Class, Job, Event)
+     * @see Supplier#solve(Class, Algo, Event)
      */
     @NotNull
     default <E, T extends E> T down(
@@ -808,7 +808,7 @@ public interface Supplier extends Cloneable {
         @NotNull Event<T> event
     ) {
         return solve(
-            klass, Job.DOC, event
+            klass, Algo.DOC, event
         );
     }
 
@@ -876,7 +876,7 @@ public interface Supplier extends Cloneable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
-     * @see Supplier#solve(CharSequence, Job, Event)
+     * @see Supplier#solve(CharSequence, Algo, Event)
      */
     @NotNull
     default <T> T parse(
@@ -884,7 +884,7 @@ public interface Supplier extends Cloneable {
         @NotNull Event<T> event
     ) {
         return solve(
-            klass, Job.JSON, event
+            klass, Algo.JSON, event
         );
     }
 
@@ -905,7 +905,7 @@ public interface Supplier extends Cloneable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
-     * @see Supplier#solve(Class, Job, Event)
+     * @see Supplier#solve(Class, Algo, Event)
      */
     @NotNull
     default <E, T extends E> T parse(
@@ -913,7 +913,7 @@ public interface Supplier extends Cloneable {
         @NotNull Event<T> event
     ) {
         return solve(
-            klass, Job.JSON, event
+            klass, Algo.JSON, event
         );
     }
 
@@ -970,48 +970,86 @@ public interface Supplier extends Cloneable {
     }
 
     /**
-     * Resolve the {@link Event} and convert the result to {@link T}
+     * Returns the {@link Chan} of the algo with the specified plan
      *
      * <pre>{@code
-     *   Event<User> event = ...
-     *   Supplier supplier = ...
+     *  Algo algo = ...
+     *  Supplier supplier = ..
      *
-     *   Job job = ...
-     *   User user = supplier.solve(
-     *      job, event.with(
-     *         Flag.STRING_AS_OBJECT
-     *      )
-     *   );
+     *  Plan plan = ...
+     *  Object data = ...
+     *  try (Chan chan = supplier.telex(algo, plan)) {
+     *      if (chan.set(null, data)) {
+     *          String text = chan.toString();
+     *      } else {
+     *          throw new Exception(
+     *              "Cannot serialize " + data + " to " + algo
+     *          );
+     *      }
+     *  }
      * }</pre>
      *
-     * @param event the specified event to be handled
-     * @throws Collapse             If parsing fails or the result is null
-     * @throws NullPointerException If the specified {@code job} or {@code event} is null
-     * @see Spare#solve(Job, Event)
-     * @since 0.0.4
+     * @param algo the specified algo
+     * @param plan the specified plan for witter
+     * @throws FatalCrash If the chan of the specified algo is not found
      */
     @NotNull
-    default <T> T solve(
-        @NotNull Job job,
-        @NotNull Event<T> event
+    default Chan telex(
+        @NotNull Algo algo,
+        @NotNull Plan plan
     ) {
-        Spare<T> spare = (Spare<T>)
-            event.getSpare();
+        return telex(
+            algo, plan.writeFlags
+        );
+    }
 
-        if (spare != null) {
-            event.prepare(this);
-            return spare.solve(
-                job, event
-            );
-        } else {
-            Type type = event.getType();
-            if (type != null) {
-                return solve(
-                    type, job, event
+    /**
+     * Returns the {@link Chan} of the algo with the specified flags
+     *
+     * <pre>{@code
+     *  Algo algo = ...
+     *  Supplier supplier = ..
+     *
+     *  Object data = ...
+     *  try (Chan chan = supplier.telex(algo, Flag.PRETTY)) {
+     *      if (chan.set(null, data)) {
+     *          String text = chan.toString();
+     *      } else {
+     *          throw new Exception(
+     *              "Cannot serialize " + data + " to " + algo
+     *          );
+     *      }
+     *  }
+     * }</pre>
+     *
+     * @param algo  the specified algo
+     * @param flags the specified flags for witter
+     * @throws FatalCrash If the chan of the specified algo is not found
+     */
+    @NotNull
+    default Chan telex(
+        @NotNull Algo algo,
+        @NotNull long flags
+    ) {
+        switch (algo.name()) {
+            case "kat": {
+                return new Chan(
+                    flags, this
                 );
-            } else {
-                return solve(
-                    Object.class, job, event
+            }
+            case "xml": {
+                return new Doc(
+                    flags, this
+                );
+            }
+            case "json": {
+                return new Json(
+                    flags, this
+                );
+            }
+            default: {
+                throw new FatalCrash(
+                    "Unexpectedly, Supplier didn't find " + algo + "'s Chan"
                 );
             }
         }
@@ -1024,11 +1062,59 @@ public interface Supplier extends Cloneable {
      *   Event<User> event = ...
      *   Supplier supplier = ...
      *
-     *   Job job = ...
+     *   Algo algo = ...
+     *   User user = supplier.solve(
+     *      algo, event.with(
+     *         Flag.STRING_AS_OBJECT
+     *      )
+     *   );
+     * }</pre>
+     *
+     * @param event the specified event to be handled
+     * @throws Collapse             If parsing fails or the result is null
+     * @throws NullPointerException If the specified {@code algo} or {@code event} is null
+     * @see Spare#solve(Algo, Event)
+     * @since 0.0.4
+     */
+    @NotNull
+    default <T> T solve(
+        @NotNull Algo algo,
+        @NotNull Event<T> event
+    ) {
+        Spare<T> spare = (Spare<T>)
+            event.getSpare();
+
+        if (spare != null) {
+            event.prepare(this);
+            return spare.solve(
+                algo, event
+            );
+        } else {
+            Type type = event.getType();
+            if (type != null) {
+                return solve(
+                    type, algo, event
+                );
+            } else {
+                return solve(
+                    Object.class, algo, event
+                );
+            }
+        }
+    }
+
+    /**
+     * Resolve the {@link Event} and convert the result to {@link T}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Supplier supplier = ...
+     *
+     *   Algo algo = ...
      *   String type = "plus.kat.entity.User";
      *
      *   User user = supplier.solve(
-     *      type, job, event.with(
+     *      type, algo, event.with(
      *         Flag.STRING_AS_OBJECT
      *      )
      *   );
@@ -1037,13 +1123,13 @@ public interface Supplier extends Cloneable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Spare#solve(Job, Event)
+     * @see Spare#solve(Algo, Event)
      * @since 0.0.2
      */
     @NotNull
     default <T> T solve(
         @NotNull CharSequence klass,
-        @NotNull Job job,
+        @NotNull Algo algo,
         @NotNull Event<T> event
     ) {
         Spare<T> spare = search(klass);
@@ -1055,7 +1141,7 @@ public interface Supplier extends Cloneable {
         }
 
         event.with(this);
-        return spare.solve(job, event);
+        return spare.solve(algo, event);
     }
 
     /**
@@ -1065,11 +1151,11 @@ public interface Supplier extends Cloneable {
      *   Event<User> event = ...
      *   Supplier supplier = ...
      *
-     *   Job job = ...
+     *   Algo algo = ...
      *   Type type = User.class;
      *
      *   User user = supplier.solve(
-     *      type, job, event.with(
+     *      type, algo, event.with(
      *         Flag.STRING_AS_OBJECT
      *      )
      *   );
@@ -1078,13 +1164,13 @@ public interface Supplier extends Cloneable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Spare#solve(Job, Event)
+     * @see Spare#solve(Algo, Event)
      * @since 0.0.2
      */
     @NotNull
     default <T> T solve(
         @NotNull Type type,
-        @NotNull Job job,
+        @NotNull Algo algo,
         @NotNull Event<T> event
     ) {
         Spare<T> spare = lookup(type, null);
@@ -1098,7 +1184,7 @@ public interface Supplier extends Cloneable {
         event.with(this);
         event.prepare(type);
 
-        return spare.solve(job, event);
+        return spare.solve(algo, event);
     }
 
     /**
@@ -1108,11 +1194,11 @@ public interface Supplier extends Cloneable {
      *   Event<User> event = ...
      *   Supplier supplier = ...
      *
-     *   Job job = ...
+     *   Algo algo = ...
      *   Class<User> type = User.class;
      *
      *   User user = supplier.solve(
-     *      type, job, event.with(
+     *      type, algo, event.with(
      *         Flag.STRING_AS_OBJECT
      *      )
      *   );
@@ -1121,13 +1207,13 @@ public interface Supplier extends Cloneable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Spare#solve(Job, Event)
+     * @see Spare#solve(Algo, Event)
      * @since 0.0.2
      */
     @NotNull
     default <E, T extends E> T solve(
         @NotNull Class<E> klass,
-        @NotNull Job job,
+        @NotNull Algo algo,
         @NotNull Event<T> event
     ) {
         Spare<E> spare = lookup(klass);
@@ -1141,7 +1227,7 @@ public interface Supplier extends Cloneable {
         event.with(this);
         event.prepare(klass);
 
-        return spare.solve(job, event);
+        return spare.solve(algo, event);
     }
 
     /**
@@ -1345,10 +1431,8 @@ public interface Supplier extends Cloneable {
                         spare = p.lookup(
                             klass, this
                         );
-                    } catch (Collapse e) {
+                    } catch (RuntimeException e) {
                         return null;
-                    } catch (Exception e) {
-                        continue;
                     }
 
                     if (spare != null) {
@@ -1612,10 +1696,8 @@ public interface Supplier extends Cloneable {
                         spare = p.search(
                             type, name, this
                         );
-                    } catch (Collapse e) {
+                    } catch (RuntimeException e) {
                         return null;
-                    } catch (Exception e) {
-                        continue;
                     }
 
                     if (spare != null) {

@@ -16,7 +16,6 @@
 package plus.kat.utils;
 
 import plus.kat.anno.*;
-import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
 import java.io.*;
@@ -128,13 +127,13 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
     /**
      * Returns the next element in the {@link KatLoader}
      *
-     * @throws Collapse                  If the iteration has no more elements
+     * @throws IllegalAccessError        If the iteration has no more elements
      * @throws ServiceConfigurationError If the provider class is loaded with errors
      */
     @NotNull
     public T next() {
         if (--size < 0) {
-            throw new Collapse(
+            throw new IllegalAccessError(
                 "No more elements"
             );
         }
@@ -261,7 +260,7 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
         /**
          * Returns the next class name
          *
-         * @throws Collapse If the parser has no more name
+         * @throws IllegalAccessError If the parser has no more name
          */
         @SuppressWarnings(
             "deprecation"
@@ -274,7 +273,7 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
 
             int size = point - start;
             if (size <= 0) {
-                throw new Collapse(
+                throw new IllegalAccessError(
                     point + " <= " + start
                 );
             }

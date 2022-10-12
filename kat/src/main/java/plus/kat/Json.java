@@ -196,14 +196,6 @@ public class Json extends Chan {
     }
 
     /**
-     * Returns the name of {@link Chan}
-     */
-    @Override
-    public String name() {
-        return "JSON";
-    }
-
-    /**
      * Check if this {@link Flow} use the {@code flag}
      *
      * @param flag the specified {@code flag}
@@ -327,9 +319,9 @@ public class Json extends Chan {
     /**
      * Parse {@link Json} {@link CharSequence}
      *
-     * @param text specify the {@code text} to be parsed
-     * @throws Collapse If parsing fails
-     * @see Spare#solve(Job, Event)
+     * @param text the specified {@code text} to be parsed
+     * @throws Collapse If a build error occurs
+     * @see Spare#solve(Algo, Event)
      */
     @Nullable
     public static Object decode(
@@ -339,16 +331,16 @@ public class Json extends Chan {
             return null;
         }
         return INS.solve(
-            Job.JSON, new Event<>(text)
+            Algo.JSON, new Event<>(text)
         );
     }
 
     /**
      * Parse {@link Json} {@link CharSequence}
      *
-     * @param event specify the {@code event} to be handled
-     * @throws Collapse If parsing fails
-     * @see Spare#solve(Job, Event)
+     * @param event the specified {@code event} to be handled
+     * @throws Collapse If a build error occurs
+     * @see Spare#solve(Algo, Event)
      */
     @Nullable
     public static <T> T decode(
@@ -359,15 +351,15 @@ public class Json extends Chan {
         }
 
         return INS.solve(
-            Job.JSON, event
+            Algo.JSON, event
         );
     }
 
     /**
      * Parse {@link Json} byte array
      *
-     * @param text specify the {@code text} to be parsed
-     * @throws Collapse If parsing fails
+     * @param text the specified {@code text} to be parsed
+     * @throws Collapse If a build error occurs
      * @see Supplier#parse(Class, Event)
      */
     @Nullable
@@ -388,8 +380,8 @@ public class Json extends Chan {
     /**
      * Parse {@link Json} {@link CharSequence}
      *
-     * @param text specify the {@code text} to be parsed
-     * @throws Collapse If parsing fails
+     * @param text the specified {@code text} to be parsed
+     * @throws Collapse If a build error occurs
      * @see Supplier#parse(Class, Event)
      */
     @Nullable
@@ -410,8 +402,8 @@ public class Json extends Chan {
     /**
      * Parse {@link Json} {@link CharSequence}
      *
-     * @param event specify the {@code event} to be handled
-     * @throws Collapse If parsing fails
+     * @param event the specified {@code event} to be handled
+     * @throws Collapse If a build error occurs
      * @see Supplier#parse(Class, Event)
      */
     @Nullable
@@ -461,11 +453,11 @@ public class Json extends Chan {
         }
 
         /**
-         * Returns the uppercase name
+         * Returns the algo of flow
          */
         @Override
-        public String name() {
-            return "JSON";
+        public Algo algo() {
+            return Algo.JSON;
         }
 
         /**

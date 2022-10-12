@@ -93,7 +93,7 @@ public interface Spare<K> extends Coder<K> {
      * it returns it, otherwise it will return {@code null}
      *
      * @return {@link K} or {@code null}
-     * @throws Collapse If a failure occurs
+     * @throws Collapse If a build error occurs
      * @since 0.0.3
      */
     @Nullable
@@ -107,7 +107,7 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param type the specified actual subclass type
      * @return {@link K} or throws collapse
-     * @throws Collapse If failed to create an instance of a subclass
+     * @throws Collapse If failed to build an instance of a subclass
      *                  or the {@code type} is not a subclass of {@link K}
      * @since 0.0.4
      */
@@ -115,8 +115,8 @@ public interface Spare<K> extends Coder<K> {
     default K apply(
         @NotNull Type type
     ) {
-        Class<?> kind = getType();
-        if (type == kind) {
+        Class<?> klass = getType();
+        if (type == klass) {
             // default value
             K it = apply();
 
@@ -139,7 +139,7 @@ public interface Spare<K> extends Coder<K> {
         }
 
         // Check if subclass of the kind
-        if (kind.isAssignableFrom(clazz)) {
+        if (klass.isAssignableFrom(clazz)) {
             // Using this spare's Supplier
             Supplier supplier = getSupplier();
 
@@ -165,8 +165,8 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param spoiler the specified spoiler to be used
      * @return {@link K}, it is not null
-     * @throws Collapse             If it fails to create
-     * @throws NullPointerException If the spoiler is null
+     * @throws Collapse             If a build error occurs
+     * @throws NullPointerException If the specified spoiler is null
      * @see Spare#apply(Spoiler, Supplier)
      * @see Property#apply(Spoiler, Supplier)
      * @see AbstractSpare#apply(Spoiler, Supplier)
@@ -197,8 +197,8 @@ public interface Spare<K> extends Coder<K> {
      * @param spoiler  the specified spoiler
      * @param supplier the specified supplier
      * @return {@link K}, it is not null
-     * @throws Collapse             If it fails to create
-     * @throws NullPointerException If the supplier or spoiler is null
+     * @throws Collapse             If a build error occurs
+     * @throws NullPointerException If the specified supplier or specified spoiler is null
      * @see AbstractSpare#apply(Spoiler, Supplier)
      * @since 0.0.4
      */
@@ -218,9 +218,9 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param resultSet the specified result to be used
      * @return {@link K}, it is not null
-     * @throws SQLCrash             If it fails to create
+     * @throws SQLCrash             If a build error occurs
      * @throws SQLException         If a database access error occurs
-     * @throws NullPointerException If the result is null
+     * @throws NullPointerException If the specified resultSet is null
      * @see Spare#apply(Supplier, ResultSet)
      * @see Property#apply(Supplier, ResultSet)
      * @see AbstractSpare#apply(Supplier, ResultSet)
@@ -254,7 +254,7 @@ public interface Spare<K> extends Coder<K> {
      * @param supplier  the specified supplier
      * @param resultSet the specified resultSet to be used
      * @return {@link K}, it is not null
-     * @throws SQLCrash             If it fails to create
+     * @throws SQLCrash             If a build error occurs
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the supplier or resultSet is null
      * @see AbstractSpare#apply(Supplier, ResultSet)
@@ -304,7 +304,7 @@ public interface Spare<K> extends Coder<K> {
      * <pre>{@code
      *  Spare<User> spare = ...
      *  User user = ...
-     *  spare.set("name").call(user, "kraity");
+     *  spare.set("name").invoke(user, "kraity");
      * }</pre>
      *
      * @param key the property name of the bean
@@ -326,7 +326,7 @@ public interface Spare<K> extends Coder<K> {
      * <pre>{@code
      *  Spare<User> spare = ...
      *  User user = ...
-     *  Object name = spare.get("name").call(user);
+     *  Object name = spare.get("name").invoke(user);
      * }</pre>
      *
      * @param key the property name of the bean
@@ -439,7 +439,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull Event<T> event
     ) {
         return solve(
-            Job.KAT, event
+            Algo.KAT, event
         );
     }
 
@@ -538,7 +538,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull Event<T> event
     ) {
         return solve(
-            Job.DOC, event
+            Algo.DOC, event
         );
     }
 
@@ -637,7 +637,7 @@ public interface Spare<K> extends Coder<K> {
         @NotNull Event<T> event
     ) {
         return solve(
-            Job.JSON, event
+            Algo.JSON, event
         );
     }
 
@@ -859,7 +859,7 @@ public interface Spare<K> extends Coder<K> {
      */
     @NotNull
     default <T extends K> T solve(
-        @NotNull Job job,
+        @NotNull Algo algo,
         @NotNull Event<T> event
     ) {
         // parser pool
@@ -871,13 +871,13 @@ public interface Spare<K> extends Coder<K> {
         try {
             event.with(this);
             return parser.read(
-                job, event
+                algo, event
             );
         } catch (Collapse error) {
             throw error;
         } catch (Exception error) {
             throw new Collapse(
-                "Failed to solve " + job, error
+                "Failed to solve " + algo, error
             );
         } finally {
             // returns parser

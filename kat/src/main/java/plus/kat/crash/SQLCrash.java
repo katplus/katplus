@@ -44,7 +44,7 @@ public class SQLCrash extends SQLException implements Kat {
     }
 
     /**
-     * @param e the cause saved for later retrieval by the {@link #getCause()} method
+     * @param e the specified cause to saved
      */
     public SQLCrash(Throwable e) {
         super(e);
@@ -52,7 +52,7 @@ public class SQLCrash extends SQLException implements Kat {
 
     /**
      * @param m the detail message
-     * @param e the cause saved for later retrieval by the {@link #getCause()} method
+     * @param e the specified cause to saved
      */
     public SQLCrash(String m, Throwable e) {
         super(m, e);
@@ -62,7 +62,6 @@ public class SQLCrash extends SQLException implements Kat {
      * Returns the space of this
      */
     @Nullable
-    @Override
     public Space space() {
         return Space.$E;
     }

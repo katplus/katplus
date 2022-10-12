@@ -81,7 +81,7 @@ public class Parser implements Proxy, Closeable {
     /**
      * Parses the {@link Event} by using {@link Radar}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified {@code event} to be handled
      * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
      * @throws NullPointerException If the specified {@code event} is null
      */
@@ -97,7 +97,8 @@ public class Parser implements Proxy, Closeable {
     /**
      * Parses the {@link Event} by using specified {@link Solver}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified {@code event} to be handled
+     * @throws Collapse             If a build error or parsing error occurs
      * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
      * @throws NullPointerException If the specified {@code coder} or {@code event} is null
      */
@@ -146,24 +147,25 @@ public class Parser implements Proxy, Closeable {
     }
 
     /**
-     * Parses the {@link Event} with specified {@link Job}
+     * Parses the {@link Event} with specified {@link Algo}
      *
-     * @param event specify the {@code event} to be handled
+     * @param event the specified event to be handled
+     * @throws Collapse             If a build error or parsing error occurs
      * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
-     * @throws NullPointerException If the specified {@code job} or {@code event} is null
+     * @throws NullPointerException If the specified {@code algo} or {@code event} is null
      */
     @NotNull
     public <T> T read(
-        @NotNull Job job,
+        @NotNull Algo algo,
         @NotNull Event<T> event
     ) throws IOException {
-        switch (job) {
-            case KAT: {
+        switch (algo.name()) {
+            case "kat": {
                 return read(
                     radar, event
                 );
             }
-            case DOC: {
+            case "xml": {
                 Solver it = doc;
                 if (it == null) {
                     doc = it = radar.new DOC();
@@ -172,7 +174,7 @@ public class Parser implements Proxy, Closeable {
                     it, event
                 );
             }
-            case JSON: {
+            case "json": {
                 Solver it = json;
                 if (it == null) {
                     json = it = radar.new JSON();
@@ -183,7 +185,7 @@ public class Parser implements Proxy, Closeable {
             }
             default: {
                 throw new Collapse(
-                    "Unexpectedly, Parser did not find " + job + "'s Solver"
+                    "Unexpectedly, Parser did not find " + algo + "'s Solver"
                 );
             }
         }

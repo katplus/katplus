@@ -198,8 +198,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
                 e.ordinal()
             );
         } else {
-            String name = flow.name();
-            if (name.equals("JSON")) {
+            if (flow.algo().is("json")) {
                 flow.addByte((byte) '"');
                 flow.emit(e.name());
                 flow.addByte((byte) '"');

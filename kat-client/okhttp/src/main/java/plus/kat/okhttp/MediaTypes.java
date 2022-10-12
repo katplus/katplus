@@ -35,22 +35,22 @@ public class MediaTypes {
         APPLICATION_JSON = MediaType.parse("application/json; charset=UTF-8");
 
     public static MediaType of(
-        Firm firm
+        Algo algo
     ) {
-        switch (firm.name()) {
-            case "KAT": {
+        switch (algo.name()) {
+            case "kat": {
                 return APPLICATION_KAT;
             }
-            case "DOC": {
+            case "xml": {
                 return APPLICATION_DOC;
             }
-            case "JSON": {
+            case "json": {
                 return APPLICATION_JSON;
             }
         }
 
-        throw new Collapse(
-            "Unexpectedly, Converter did not find " + firm.name() + "'s MediaType"
+        throw new FatalCrash(
+            "Unexpectedly, Converter did not find " + algo + "'s MediaType"
         );
     }
 }

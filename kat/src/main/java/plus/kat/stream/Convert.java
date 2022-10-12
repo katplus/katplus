@@ -22,7 +22,7 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.kernel.*;
 
-import static plus.kat.Job.*;
+import static plus.kat.Algo.*;
 import static plus.kat.kernel.Chain.*;
 import static plus.kat.stream.Binary.*;
 
@@ -964,17 +964,17 @@ public final class Convert {
             }
         } while (i < e);
 
-        Job job;
+        Algo algo;
         if (c2 != '}') {
             // ()
             if (c2 == ')') {
-                job = KAT;
+                algo = KAT;
             }
 
             // []
             else if (c2 == ']') {
                 if (c1 == '[') {
-                    job = JSON;
+                    algo = JSON;
                 } else {
                     return null;
                 }
@@ -983,7 +983,7 @@ public final class Convert {
             // <>
             else if (c2 == '>') {
                 if (c1 == '<' && e > 6) {
-                    job = DOC;
+                    algo = DOC;
                 } else {
                     return null;
                 }
@@ -992,7 +992,7 @@ public final class Convert {
             }
         } else {
             if (c1 != '{') {
-                job = Job.KAT;
+                algo = KAT;
             } else {
                 char ch;
                 int t = i + 1;
@@ -1004,12 +1004,12 @@ public final class Convert {
                         case '"':
                         case '\'':
                         case '\\': {
-                            job = JSON;
+                            algo = JSON;
                             break Strap;
                         }
                         default: {
                             if (ch > 0x20 || t >= e) {
-                                job = KAT;
+                                algo = KAT;
                                 break Strap;
                             }
                         }
@@ -1037,7 +1037,7 @@ public final class Convert {
 
         try {
             return spare.solve(
-                job, event.with(supplier)
+                algo, event.with(supplier)
             );
         } catch (Exception ex) {
             // Nothing

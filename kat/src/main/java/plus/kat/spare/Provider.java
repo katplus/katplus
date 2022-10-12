@@ -71,10 +71,10 @@ public interface Provider extends Comparable<Provider> {
     }
 
     /**
-     * Returns {@link Spare} of the specified {@code klass}
+     * Returns the {@link Spare} of the specified {@code klass}
      *
-     * @throws Collapse             The Provider signals to interrupt subsequent lookup
-     * @throws NullPointerException If the specified {@code klass} is null
+     * @throws RuntimeException     If this provider signals to interrupt subsequent lookup
+     * @throws NullPointerException If the specified {@code name} or {@code supplier} is null
      */
     @Nullable
     default Spare<?> lookup(
@@ -85,10 +85,10 @@ public interface Provider extends Comparable<Provider> {
     }
 
     /**
-     * Returns {@link Spare} of the specified {@code klass}
+     * Returns the {@link Spare} of the specified {@code name} and {@code type}
      *
-     * @throws Collapse             The Provider signals to interrupt subsequent search
-     * @throws NullPointerException If the specified {@code klass} is null
+     * @throws RuntimeException     If this provider signals to interrupt subsequent search
+     * @throws NullPointerException If the specified {@code name} or {@code supplier} is null
      * @see Supplier#lookup(Class, CharSequence)
      * @see Supplier#search(Class, CharSequence)
      * @since 0.0.4

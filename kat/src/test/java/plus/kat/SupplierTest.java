@@ -61,18 +61,18 @@ public class SupplierTest {
     public void test_read_Array() {
         Supplier supplier = Supplier.ins();
 
-        HashMap<Job, String> data0 = new HashMap<>();
+        HashMap<Algo, String> data0 = new HashMap<>();
         data0.put(
-            Job.KAT, "{{:id(0):name(kraity)}{:id(1):name(kraity)}{:id(2):name(kraity)}{:id(3):name(kraity)}}"
+            Algo.KAT, "{{:id(0):name(kraity)}{:id(1):name(kraity)}{:id(2):name(kraity)}{:id(3):name(kraity)}}"
         );
         data0.put(
-            Job.JSON, "[{\"id\":0,\"name\":\"kraity\"},{\"id\":1,\"name\":\"kraity\"},{\"id\":2,\"name\":\"kraity\"},{\"id\":3,\"name\":\"kraity\"}]"
+            Algo.JSON, "[{\"id\":0,\"name\":\"kraity\"},{\"id\":1,\"name\":\"kraity\"},{\"id\":2,\"name\":\"kraity\"},{\"id\":3,\"name\":\"kraity\"}]"
         );
         data0.put(
-            Job.DOC, "<data><user><id>0</id><name>kraity</name></user><user><id>1</id><name>kraity</name></user><user><id>2</id><name>kraity</name></user><user><id>3</id><name>kraity</name></user></data>"
+            Algo.DOC, "<data><user><id>0</id><name>kraity</name></user><user><id>1</id><name>kraity</name></user><user><id>2</id><name>kraity</name></user><user><id>3</id><name>kraity</name></user></data>"
         );
 
-        for (Map.Entry<Job, String> entry : data0.entrySet()) {
+        for (Map.Entry<Algo, String> entry : data0.entrySet()) {
             User[] users0 = supplier.solve(
                 User[].class,
                 entry.getKey(),
@@ -106,18 +106,18 @@ public class SupplierTest {
             }
         }
 
-        HashMap<Job, String> data1 = new HashMap<>();
+        HashMap<Algo, String> data1 = new HashMap<>();
         data1.put(
-            Job.KAT, "{(0)(1)(2)(3)}"
+            Algo.KAT, "{(0)(1)(2)(3)}"
         );
         data1.put(
-            Job.JSON, "[0,1,2,3]"
+            Algo.JSON, "[0,1,2,3]"
         );
         data1.put(
-            Job.DOC, "<data><item>0</item><item>1</item><item>2</item><item>3</item></data>"
+            Algo.DOC, "<data><item>0</item><item>1</item><item>2</item><item>3</item></data>"
         );
 
-        for (Map.Entry<Job, String> entry : data1.entrySet()) {
+        for (Map.Entry<Algo, String> entry : data1.entrySet()) {
             int[] d0 = supplier.solve(
                 int[].class,
                 entry.getKey(),

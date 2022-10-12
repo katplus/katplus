@@ -150,7 +150,7 @@ public class Dram extends Chain {
      * Adds the specified byte value
      *
      * @param data the specified byte value
-     * @throws Collapse If the chain is finally fixed
+     * @throws FatalCrash If the chain is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */
@@ -168,7 +168,7 @@ public class Dram extends Chain {
                 value[count++] = data;
             }
         } else {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, the chain is finally fixed"
             );
         }
@@ -179,7 +179,7 @@ public class Dram extends Chain {
      *
      * @param i    the specified index
      * @param data the specified value
-     * @throws Collapse                       If the chain is finally fixed
+     * @throws FatalCrash                     If the chain is finally fixed
      * @throws ArrayIndexOutOfBoundsException if the index argument is negative
      * @see Chain#isFixed()
      * @since 0.0.5
@@ -194,7 +194,7 @@ public class Dram extends Chain {
                 it[i] = data;
             }
         } else {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, the chain is finally fixed"
             );
         }
@@ -211,7 +211,7 @@ public class Dram extends Chain {
      * }</pre>
      *
      * @param length the specified length
-     * @throws Collapse                       If the chain is finally fixed
+     * @throws FatalCrash                     If the chain is finally fixed
      * @throws ArrayIndexOutOfBoundsException if the index argument is negative or out of range
      * @see Chain#isFixed()
      * @since 0.0.5
@@ -231,7 +231,7 @@ public class Dram extends Chain {
                 count = length;
             }
         } else {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, the chain is finally fixed"
             );
         }
@@ -249,7 +249,7 @@ public class Dram extends Chain {
      * Sets the modifier type of {@link Dram}
      *
      * @param type the specified type
-     * @throws Collapse If the chain is finally fixed
+     * @throws FatalCrash If the chain is finally fixed
      * @see Chain#isFixed()
      */
     public void setType(
@@ -258,7 +258,7 @@ public class Dram extends Chain {
         if (0 <= star) {
             this.type = type;
         } else {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, the chain is finally fixed"
             );
         }
@@ -267,7 +267,7 @@ public class Dram extends Chain {
     /**
      * Clean this {@link Dram}
      *
-     * @throws Collapse If the chain is finally fixed
+     * @throws FatalCrash If the chain is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */
@@ -279,7 +279,7 @@ public class Dram extends Chain {
             type = null;
             backup = null;
         } else {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, the chain is finally fixed"
             );
         }
@@ -288,7 +288,7 @@ public class Dram extends Chain {
     /**
      * Clear this {@link Dram}
      *
-     * @throws Collapse If the chain is finally fixed
+     * @throws FatalCrash If the chain is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */
@@ -306,7 +306,7 @@ public class Dram extends Chain {
     /**
      * Close this {@link Dram}
      *
-     * @throws Collapse If the chain is finally fixed
+     * @throws FatalCrash If the chain is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */

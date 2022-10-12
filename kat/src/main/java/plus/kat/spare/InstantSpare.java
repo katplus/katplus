@@ -88,8 +88,7 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializer {
                 ((Instant) value).toEpochMilli()
             );
         } else {
-            String name = flow.name();
-            if (name.equals("JSON")) {
+            if (flow.algo().is("json")) {
                 flow.addByte((byte) '"');
                 formatter.formatTo(
                     (TemporalAccessor) value, flow

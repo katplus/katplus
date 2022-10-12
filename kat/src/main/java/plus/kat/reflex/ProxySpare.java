@@ -260,7 +260,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                 }
                 return null;
             } catch (Throwable e) {
-                throw new Collapse(e);
+                throw new FatalCrash(e);
             }
         }
 
@@ -285,7 +285,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                     }
                     return true;
                 } catch (Throwable e) {
-                    throw new Collapse(e);
+                    throw new FatalCrash(e);
                 }
             }
             return false;
@@ -351,12 +351,12 @@ public class ProxySpare extends AbstractSpare<Object> {
                     return proxy;
                 }
 
-                throw new Collapse(
+                throw new FatalCrash(
                     c + " not supported"
                 );
             }
 
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, Not currently supported: " + method
             );
         }

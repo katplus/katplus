@@ -30,7 +30,7 @@ public interface Setter<K, V> {
      * Sets the specified value to the bean
      *
      * @return {@code true} if successful otherwise {@code false}
-     * @throws Collapse If the underlying method throws an exception
+     * @throws FatalCrash If the underlying method throws a fatal exception
      */
     boolean accept(
         @NotNull K bean,
@@ -41,7 +41,7 @@ public interface Setter<K, V> {
      * Sets the specified value to the bean
      *
      * @return {@code true} if successful otherwise {@code false}
-     * @throws Collapse If the underlying method throws an exception
+     * @throws FatalCrash If the underlying method throws a fatal exception
      * @see Setter#accept(Object, Object)
      */
     @SuppressWarnings("unchecked")
@@ -54,7 +54,7 @@ public interface Setter<K, V> {
                 (K) bean, (V) value
             );
         } catch (ClassCastException e) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Failed to cast", e
             );
         }

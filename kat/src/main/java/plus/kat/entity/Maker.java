@@ -31,7 +31,7 @@ public interface Maker<K> {
      *
      * @param args the specified args
      * @return {@link K}, it is not null
-     * @throws Collapse If a failure occurs
+     * @throws Collapse If a build error occurs
      */
     @NotNull
     K apply(

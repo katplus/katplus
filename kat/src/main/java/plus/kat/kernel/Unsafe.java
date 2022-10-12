@@ -41,7 +41,7 @@ public final class Unsafe {
     /**
      * Unsafe method, and may be removed
      *
-     * @throws Collapse             If the chain is finally fixed
+     * @throws FatalCrash           If the chain is finally fixed
      * @throws NullPointerException If the specified chain is null
      */
     public static void bucket(
@@ -51,7 +51,7 @@ public final class Unsafe {
         if (!c.isFixed()) {
             c.bucket = b;
         } else {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, the chain is finally fixed"
             );
         }
