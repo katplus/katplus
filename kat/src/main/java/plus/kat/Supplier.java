@@ -320,6 +320,7 @@ public interface Supplier extends Cloneable {
      *
      * @return {@link E}, it is not null
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#apply(Type)
      * @since 0.0.4
@@ -330,13 +331,13 @@ public interface Supplier extends Cloneable {
     ) throws Collapse {
         Spare<E> spare = lookup(klass);
 
-        if (spare == null) {
-            throw new Collapse(
+        if (spare != null) {
+            return spare.apply(klass);
+        } else {
+            throw new FatalCrash(
                 "No spare of " + klass
             );
         }
-
-        return spare.apply(klass);
     }
 
     /**
@@ -353,6 +354,7 @@ public interface Supplier extends Cloneable {
      *
      * @return {@link E}, it is not null
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the klass or spoiler is null
      * @see Spare#apply(Spoiler, Supplier)
      * @since 0.0.4
@@ -365,7 +367,7 @@ public interface Supplier extends Cloneable {
         Spare<E> spare = lookup(klass);
 
         if (spare == null) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "No spare of " + klass
             );
         }
@@ -394,9 +396,10 @@ public interface Supplier extends Cloneable {
      * }</pre>
      *
      * @return {@link E}, it is not null
-     * @throws SQLCrash             If it fails to create
+     * @throws SQLCrash             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws SQLException         If a database access error occurs
-     * @throws NullPointerException If the klass or result is null
+     * @throws NullPointerException If the specified klass or resultSet is null
      * @see Spare#apply(Supplier, ResultSet)
      * @since 0.0.3
      */
@@ -408,7 +411,7 @@ public interface Supplier extends Cloneable {
         Spare<E> spare = lookup(klass);
 
         if (spare == null) {
-            throw new SQLCrash(
+            throw new FatalCrash(
                 "No spare of " + klass
             );
         }
@@ -664,6 +667,7 @@ public interface Supplier extends Cloneable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws ClassCastException   If {@link T} is not an instance of {@code klass}
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(CharSequence, Algo, Event)
@@ -694,6 +698,7 @@ public interface Supplier extends Cloneable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(Class, Algo, Event)
      */
@@ -770,6 +775,7 @@ public interface Supplier extends Cloneable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(CharSequence, Algo, Event)
      */
@@ -799,6 +805,7 @@ public interface Supplier extends Cloneable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Supplier#solve(Class, Algo, Event)
      */
@@ -875,6 +882,7 @@ public interface Supplier extends Cloneable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
      * @see Supplier#solve(CharSequence, Algo, Event)
      */
@@ -904,6 +912,7 @@ public interface Supplier extends Cloneable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the specified {@code klass} {@code event} is null
      * @see Supplier#solve(Class, Algo, Event)
      */
@@ -991,7 +1000,8 @@ public interface Supplier extends Cloneable {
      *
      * @param algo the specified algo
      * @param plan the specified plan for witter
-     * @throws FatalCrash If the chan of the specified algo is not found
+     * @throws FatalCrash If no chan available for algo is found
+     * @since 0.0.5
      */
     @NotNull
     default Chan telex(
@@ -1024,7 +1034,8 @@ public interface Supplier extends Cloneable {
      *
      * @param algo  the specified algo
      * @param flags the specified flags for witter
-     * @throws FatalCrash If the chan of the specified algo is not found
+     * @throws FatalCrash If no chan available for algo is found
+     * @since 0.0.5
      */
     @NotNull
     default Chan telex(
@@ -1049,7 +1060,7 @@ public interface Supplier extends Cloneable {
             }
             default: {
                 throw new FatalCrash(
-                    "Unexpectedly, Supplier didn't find " + algo + "'s Chan"
+                    "Supplier didn't find the chan of " + algo
                 );
             }
         }
@@ -1072,6 +1083,7 @@ public interface Supplier extends Cloneable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the specified {@code algo} or {@code event} is null
      * @see Spare#solve(Algo, Event)
      * @since 0.0.4
@@ -1122,6 +1134,7 @@ public interface Supplier extends Cloneable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Algo, Event)
      * @since 0.0.2
@@ -1135,7 +1148,7 @@ public interface Supplier extends Cloneable {
         Spare<T> spare = search(klass);
 
         if (spare == null) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "No spare of " + klass
             );
         }
@@ -1163,6 +1176,7 @@ public interface Supplier extends Cloneable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Algo, Event)
      * @since 0.0.2
@@ -1176,7 +1190,7 @@ public interface Supplier extends Cloneable {
         Spare<T> spare = lookup(type, null);
 
         if (spare == null) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "No spare of " + type
             );
         }
@@ -1206,6 +1220,7 @@ public interface Supplier extends Cloneable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
      * @throws NullPointerException If the specified {@code klass} or {@code event} is null
      * @see Spare#solve(Algo, Event)
      * @since 0.0.2
@@ -1219,7 +1234,7 @@ public interface Supplier extends Cloneable {
         Spare<E> spare = lookup(klass);
 
         if (spare == null) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "No spare of " + klass
             );
         }
@@ -1431,7 +1446,7 @@ public interface Supplier extends Cloneable {
                         spare = p.lookup(
                             klass, this
                         );
-                    } catch (RuntimeException e) {
+                    } catch (Collapse e) {
                         return null;
                     }
 
@@ -1696,7 +1711,7 @@ public interface Supplier extends Cloneable {
                         spare = p.search(
                             type, name, this
                         );
-                    } catch (RuntimeException e) {
+                    } catch (Collapse e) {
                         return null;
                     }
 

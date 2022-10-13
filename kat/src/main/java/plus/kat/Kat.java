@@ -57,7 +57,8 @@ public interface Kat {
     /**
      * Serialize to pretty {@link Kat} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      */
     @NotNull
     static String pretty(
@@ -71,7 +72,8 @@ public interface Kat {
     /**
      * Serialize to {@link Kat} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      */
     @NotNull
     static String encode(
@@ -85,7 +87,8 @@ public interface Kat {
     /**
      * Serialize to {@link Kat} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      */
     @NotNull
     static String encode(
@@ -99,7 +102,8 @@ public interface Kat {
     /**
      * Serialize to {@link Kat} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      */
     @NotNull
     static String encode(
@@ -114,7 +118,8 @@ public interface Kat {
     /**
      * Serialize to {@link Kat} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      */
     @NotNull
     static String encode(
@@ -127,7 +132,7 @@ public interface Kat {
             );
             return chan.toString();
         } catch (Exception e) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, error serializing to kat", e
             );
         }
@@ -136,8 +141,9 @@ public interface Kat {
     /**
      * Parse {@link Kat} {@link CharSequence}
      *
-     * @param text the specified {@code text} to be parsed
-     * @throws Collapse If a build error occurs
+     * @param text the specified text to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Spare#solve(Algo, Event)
      */
     @Nullable
@@ -155,8 +161,9 @@ public interface Kat {
     /**
      * Parse {@link Kat} {@link CharSequence}
      *
-     * @param event the specified {@code event} to be handled
-     * @throws Collapse If a build error occurs
+     * @param event the specified event to be handled
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Spare#solve(Algo, Event)
      */
     @Nullable
@@ -175,8 +182,9 @@ public interface Kat {
     /**
      * Parse {@link Kat} byte array
      *
-     * @param text the specified {@code text} to be parsed
-     * @throws Collapse If a build error occurs
+     * @param text the specified text to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Supplier#read(Class, Event)
      */
     @Nullable
@@ -197,8 +205,9 @@ public interface Kat {
     /**
      * Parse {@link Kat} {@link CharSequence}
      *
-     * @param text the specified {@code text} to be parsed
-     * @throws Collapse If a build error occurs
+     * @param text the specified text to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Supplier#read(Class, Event)
      */
     @Nullable
@@ -219,8 +228,9 @@ public interface Kat {
     /**
      * Parse {@link Kat} {@link CharSequence}
      *
-     * @param event the specified {@code event} to be handled
-     * @throws Collapse If a build error occurs
+     * @param event the specified event to be handled
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Supplier#read(Class, Event)
      */
     @Nullable

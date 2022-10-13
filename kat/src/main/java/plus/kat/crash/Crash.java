@@ -34,13 +34,6 @@ public class Crash extends Exception implements Kat {
     private int code;
 
     /**
-     * default
-     */
-    public Crash() {
-        super();
-    }
-
-    /**
      * @param m the detail message
      */
     public Crash(
@@ -50,7 +43,7 @@ public class Crash extends Exception implements Kat {
     }
 
     /**
-     * @param e the crash saved for later retrieval by the {@link #getCause()} method
+     * @param e the specified cause to saved
      */
     public Crash(
         @NotNull Crash e
@@ -91,16 +84,6 @@ public class Crash extends Exception implements Kat {
      */
     public Crash(String m, Throwable e) {
         super(m, e, false, false);
-    }
-
-    /**
-     * @param m the detail message
-     * @param e the specified cause to saved
-     * @param a whether suppression is enabled or disabled
-     * @param b whether the stack trace should be writable
-     */
-    public Crash(String m, Throwable e, boolean a, boolean b) {
-        super(m, e, a, b);
     }
 
     /**

@@ -81,7 +81,8 @@ public class Parser implements Proxy, Closeable {
     /**
      * Parses the {@link Event} by using {@link Radar}
      *
-     * @param event the specified {@code event} to be handled
+     * @param event the specified event to be handled
+     * @throws Collapse             If parsing fails or the result is null
      * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
      * @throws NullPointerException If the specified {@code event} is null
      */
@@ -97,8 +98,8 @@ public class Parser implements Proxy, Closeable {
     /**
      * Parses the {@link Event} by using specified {@link Solver}
      *
-     * @param event the specified {@code event} to be handled
-     * @throws Collapse             If a build error or parsing error occurs
+     * @param event the specified event to be handled
+     * @throws Collapse             If parsing fails or the result is null
      * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
      * @throws NullPointerException If the specified {@code coder} or {@code event} is null
      */
@@ -140,9 +141,9 @@ public class Parser implements Proxy, Closeable {
             return (T) data;
         }
 
-        throw new UnexpectedCrash(
-            "Unexpectedly, depth is " + depth
-                + ", range is " + range + ", result is null"
+        throw new Collapse(
+            "Unexpectedly, the depth is " + depth
+                + ", the range is " + range + ", the result is null"
         );
     }
 
@@ -150,7 +151,8 @@ public class Parser implements Proxy, Closeable {
      * Parses the {@link Event} with specified {@link Algo}
      *
      * @param event the specified event to be handled
-     * @throws Collapse             If a build error or parsing error occurs
+     * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no solver available for algo is found
      * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
      * @throws NullPointerException If the specified {@code algo} or {@code event} is null
      */
@@ -184,8 +186,8 @@ public class Parser implements Proxy, Closeable {
                 );
             }
             default: {
-                throw new Collapse(
-                    "Unexpectedly, Parser did not find " + algo + "'s Solver"
+                throw new FatalCrash(
+                    "Parser didn't find the Solver of " + algo
                 );
             }
         }
@@ -200,8 +202,8 @@ public class Parser implements Proxy, Closeable {
         @NotNull Alias alias
     ) throws IOException {
         if (depth >= range) {
-            throw new UnexpectedCrash(
-                "Parse depth out of range"
+            throw new IOException(
+                "Depth out of range"
             );
         }
 
@@ -223,20 +225,19 @@ public class Parser implements Proxy, Closeable {
             );
         }
 
-        if (child == null) {
-            return false;
+        if (child != null) {
+            try {
+                child.onAttach(
+                    name, event, parent
+                );
+                ++depth;
+                active = child;
+                return true;
+            } catch (Collapse e) {
+                return false;
+            }
         }
-
-        try {
-            child.onAttach(
-                name, event, parent
-            );
-            ++depth;
-            active = child;
-            return true;
-        } catch (Collapse e) {
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -274,8 +275,8 @@ public class Parser implements Proxy, Closeable {
     public boolean detach()
         throws IOException {
         if (--depth < 0) {
-            throw new UnexpectedCrash(
-                "Parse depth out of range"
+            throw new IOException(
+                "Depth out of range"
             );
         }
 

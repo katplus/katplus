@@ -841,7 +841,7 @@ public final class Convert {
     /**
      * Parse {@link CharSequence} and convert result to {@link T}
      *
-     * @param text the specified {@code text} to be parsed
+     * @param text the specified text to be parsed
      * @return {@link T} or {@code null}
      * @throws NullPointerException If the {@code spare} is null
      * @since 0.0.4
@@ -867,7 +867,7 @@ public final class Convert {
     /**
      * Parse {@link CharSequence} and convert result to {@link T}
      *
-     * @param text the specified {@code text} to be parsed
+     * @param text the specified text to be parsed
      * @return {@link T} or {@code null}
      * @throws NullPointerException If the {@code clazz} is null
      * @since 0.0.4
@@ -896,7 +896,7 @@ public final class Convert {
     /**
      * Parse {@link CharSequence} and convert result to {@link T}
      *
-     * @param text the specified {@code text} to be parsed
+     * @param text the specified text to be parsed
      * @return {@link T} or {@code null}
      * @throws NullPointerException If the {@code text} or {@code spare} is null
      * @since 0.0.4
@@ -922,7 +922,7 @@ public final class Convert {
     /**
      * Parse {@link CharSequence} and convert result to {@link T}
      *
-     * @param text the specified {@code text} to be parsed
+     * @param text the specified text to be parsed
      * @return {@link T} or {@code null}
      * @throws NullPointerException If the {@code text} or {@code spare} is null
      * @since 0.0.4

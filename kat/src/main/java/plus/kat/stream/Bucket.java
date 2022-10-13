@@ -15,7 +15,8 @@
  */
 package plus.kat.stream;
 
-import plus.kat.anno.NotNull;
+import plus.kat.anno.*;
+import plus.kat.crash.*;
 
 /**
  * @author kraity
@@ -23,7 +24,7 @@ import plus.kat.anno.NotNull;
  */
 public interface Bucket {
     /**
-     * Share the specified old buffer array with buket
+     * Share the specified old buffer array with bucket
      *
      * @param old the specified array that will be shared
      * @return {@code true} if successful
@@ -49,6 +50,7 @@ public interface Bucket {
      * @param old  the specified array that will be released
      * @param len  the specified length of buffer array
      * @param size the specified minimum size of buffer array
+     * @throws FatalCrash If a fatal error occurs in the process
      */
     @NotNull
     byte[] apply(

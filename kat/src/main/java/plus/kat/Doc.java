@@ -281,7 +281,8 @@ public class Doc extends Chan {
     /**
      * Serialize to pretty {@link Doc} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      */
     @NotNull
     public static String pretty(
@@ -295,7 +296,8 @@ public class Doc extends Chan {
     /**
      * Serialize to {@link Doc} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      */
     @NotNull
     public static String encode(
@@ -309,7 +311,8 @@ public class Doc extends Chan {
     /**
      * Serialize to {@link Doc} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      * @since 0.0.2
      */
     @NotNull
@@ -324,7 +327,8 @@ public class Doc extends Chan {
     /**
      * Serialize to {@link Doc} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      */
     @NotNull
     public static String encode(
@@ -339,7 +343,8 @@ public class Doc extends Chan {
     /**
      * Serialize to {@link Doc} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      * @since 0.0.3
      */
     @NotNull
@@ -353,7 +358,7 @@ public class Doc extends Chan {
             );
             return chan.toString();
         } catch (Exception e) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, error serializing to xml", e
             );
         }
@@ -362,8 +367,9 @@ public class Doc extends Chan {
     /**
      * Parse {@link Doc} {@link CharSequence}
      *
-     * @param text the specified {@code text} to be parsed
-     * @throws Collapse If a build error occurs
+     * @param text the specified text to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Spare#solve(Algo, Event)
      */
     @Nullable
@@ -381,8 +387,9 @@ public class Doc extends Chan {
     /**
      * Parse {@link Doc} {@link CharSequence}
      *
-     * @param event the specified {@code event} to be handled
-     * @throws Collapse If a build error occurs
+     * @param event the specified event to be handled
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Spare#solve(Algo, Event)
      */
     @Nullable
@@ -401,8 +408,9 @@ public class Doc extends Chan {
     /**
      * Parse {@link Doc} byte array
      *
-     * @param text the specified {@code text} to be parsed
-     * @throws Collapse If a build error occurs
+     * @param text the specified text to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Supplier#down(Class, Event)
      */
     @Nullable
@@ -423,8 +431,9 @@ public class Doc extends Chan {
     /**
      * Parse {@link Doc} {@link CharSequence}
      *
-     * @param text the specified {@code text} to be parsed
-     * @throws Collapse If a build error occurs
+     * @param text the specified text to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Supplier#down(Class, Event)
      */
     @Nullable
@@ -445,8 +454,9 @@ public class Doc extends Chan {
     /**
      * Parse {@link Doc} {@link CharSequence}
      *
-     * @param event the specified {@code event} to be handled
-     * @throws Collapse If a build error occurs
+     * @param event the specified event to be handled
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Supplier#down(Class, Event)
      */
     @Nullable

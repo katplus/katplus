@@ -269,7 +269,8 @@ public class Json extends Chan {
     /**
      * Serialize to pretty {@link Json} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      */
     @NotNull
     public static String pretty(
@@ -283,7 +284,8 @@ public class Json extends Chan {
     /**
      * Serialize to {@link Json} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      */
     @NotNull
     public static String encode(
@@ -297,7 +299,8 @@ public class Json extends Chan {
     /**
      * Serialize to {@link Json} String
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
      * @since 0.0.2
      */
     @NotNull
@@ -310,7 +313,7 @@ public class Json extends Chan {
             );
             return chan.toString();
         } catch (Exception e) {
-            throw new Collapse(
+            throw new FatalCrash(
                 "Unexpectedly, error serializing to json", e
             );
         }
@@ -319,8 +322,9 @@ public class Json extends Chan {
     /**
      * Parse {@link Json} {@link CharSequence}
      *
-     * @param text the specified {@code text} to be parsed
-     * @throws Collapse If a build error occurs
+     * @param text the specified text to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Spare#solve(Algo, Event)
      */
     @Nullable
@@ -338,8 +342,9 @@ public class Json extends Chan {
     /**
      * Parse {@link Json} {@link CharSequence}
      *
-     * @param event the specified {@code event} to be handled
-     * @throws Collapse If a build error occurs
+     * @param event the specified event to be handled
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Spare#solve(Algo, Event)
      */
     @Nullable
@@ -358,8 +363,9 @@ public class Json extends Chan {
     /**
      * Parse {@link Json} byte array
      *
-     * @param text the specified {@code text} to be parsed
-     * @throws Collapse If a build error occurs
+     * @param text the specified text to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Supplier#parse(Class, Event)
      */
     @Nullable
@@ -380,8 +386,9 @@ public class Json extends Chan {
     /**
      * Parse {@link Json} {@link CharSequence}
      *
-     * @param text the specified {@code text} to be parsed
-     * @throws Collapse If a build error occurs
+     * @param text the specified text to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Supplier#parse(Class, Event)
      */
     @Nullable
@@ -402,8 +409,9 @@ public class Json extends Chan {
     /**
      * Parse {@link Json} {@link CharSequence}
      *
-     * @param event the specified {@code event} to be handled
-     * @throws Collapse If a build error occurs
+     * @param event the specified event to be handled
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
      * @see Supplier#parse(Class, Event)
      */
     @Nullable
