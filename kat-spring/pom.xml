@@ -14,7 +14,7 @@
 
     <properties>
         <spring.version>5.3.23</spring.version>
-        <spring.redis.version>2.7.3</spring.redis.version>
+        <spring.redis.version>2.7.5</spring.redis.version>
     </properties>
 
     <dependencies>
