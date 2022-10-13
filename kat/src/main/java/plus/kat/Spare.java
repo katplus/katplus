@@ -82,6 +82,8 @@ public interface Spare<K> extends Coder<K> {
 
     /**
      * Create a {@link Builder} of {@link K}
+     *
+     * @param type the specified actual type
      */
     @Nullable
     Builder<? extends K> getBuilder(
@@ -163,7 +165,7 @@ public interface Spare<K> extends Coder<K> {
      * If this spare can be built with spiller,
      * then perform a given {@link Spoiler} to create a {@link K}
      *
-     * @param spoiler the specified spoiler to be used
+     * @param spoiler the specified spoiler as source
      * @return {@link K}, it is not null
      * @throws Collapse             If a build error occurs
      * @throws NullPointerException If the specified spoiler is null
@@ -194,11 +196,11 @@ public interface Spare<K> extends Coder<K> {
      *  );
      * }</pre>
      *
-     * @param spoiler  the specified spoiler
-     * @param supplier the specified supplier
+     * @param spoiler  the specified spoiler as source
+     * @param supplier the specified supplier as the loader
      * @return {@link K}, it is not null
      * @throws Collapse             If a build error occurs
-     * @throws NullPointerException If the specified supplier or specified spoiler is null
+     * @throws NullPointerException If the specified supplier or the spoiler is null
      * @see AbstractSpare#apply(Spoiler, Supplier)
      * @since 0.0.4
      */
@@ -216,7 +218,7 @@ public interface Spare<K> extends Coder<K> {
      * If this spare can be built with resultSet,
      * then perform a given {@link ResultSet} to create a {@link K}
      *
-     * @param resultSet the specified result to be used
+     * @param resultSet the specified result as data source
      * @return {@link K}, it is not null
      * @throws SQLCrash             If a build error occurs
      * @throws SQLException         If a database access error occurs
@@ -251,12 +253,12 @@ public interface Spare<K> extends Coder<K> {
      *  }
      * }</pre>
      *
-     * @param supplier  the specified supplier
-     * @param resultSet the specified resultSet to be used
+     * @param supplier  the specified supplier as the loader
+     * @param resultSet the specified resultSet as data source
      * @return {@link K}, it is not null
      * @throws SQLCrash             If a build error occurs
      * @throws SQLException         If a database access error occurs
-     * @throws NullPointerException If the supplier or resultSet is null
+     * @throws NullPointerException If the specified supplier or the resultSet is null
      * @see AbstractSpare#apply(Supplier, ResultSet)
      * @since 0.0.3
      */
@@ -285,7 +287,7 @@ public interface Spare<K> extends Coder<K> {
      *   }
      * }</pre>
      *
-     * @param supplier the specified supplier
+     * @param supplier the specified supplier to be loaded
      * @see AbstractSpare#embed(Supplier)
      * @since 0.0.4
      */
@@ -309,7 +311,7 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param key the property name of the bean
      * @return {@link Setter} or {@code null}
-     * @throws NullPointerException If the key is null
+     * @throws NullPointerException If the specified key is null
      * @since 0.0.4
      */
     @Nullable
@@ -331,7 +333,7 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param key the property name of the bean
      * @return {@link Getter} or {@code null}
-     * @throws NullPointerException If the key is null
+     * @throws NullPointerException If the specified key is null
      * @since 0.0.4
      */
     @Nullable
@@ -355,8 +357,9 @@ public interface Spare<K> extends Coder<K> {
      *  }
      * }</pre>
      *
+     * @param bean the specified bean to be flattened
      * @return {@link Spoiler} or {@code null}
-     * @throws NullPointerException If the {@code bean} is null
+     * @throws NullPointerException If the specified bean is null
      * @since 0.0.3
      */
     @Nullable
@@ -383,6 +386,8 @@ public interface Spare<K> extends Coder<K> {
      *  String name = (String) collector.get("name");
      * }</pre>
      *
+     * @param bean    the specified bean to be flattened
+     * @param visitor the specified visitor used to access bean
      * @return {@code true} if the bean can be flattened otherwise {@code false}
      * @throws NullPointerException If the {@code bean} or {@code visitor} is null
      * @since 0.0.3
@@ -456,7 +461,7 @@ public interface Spare<K> extends Coder<K> {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -481,7 +486,8 @@ public interface Spare<K> extends Coder<K> {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @param flags the specified flags for serialize
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -555,7 +561,7 @@ public interface Spare<K> extends Coder<K> {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -580,7 +586,8 @@ public interface Spare<K> extends Coder<K> {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @param flags the specified flags for serialize
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -654,7 +661,7 @@ public interface Spare<K> extends Coder<K> {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -679,7 +686,8 @@ public interface Spare<K> extends Coder<K> {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @param flags the specified flags for serialize
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -732,7 +740,7 @@ public interface Spare<K> extends Coder<K> {
      *  );
      * }</pre>
      *
-     * @param supplier the specified supplier
+     * @param supplier the specified supplier to be used
      * @param data     the specified data to be to converted
      * @return {@link K} or {@code null}
      */
@@ -761,17 +769,19 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Copy the property values of the specified spoiler into the given specified bean
      *
+     * @param bean    the specified bean to be updated
+     * @param spoiler the specified spoiler as data source
      * @return the number of rows affected
      * @throws NullPointerException If the parameters contains null
      * @see Spare#update(Object, Spoiler, Supplier)
      * @since 0.0.4
      */
     default int update(
-        @NotNull K entity,
+        @NotNull K bean,
         @NotNull Spoiler spoiler
     ) {
         return update(
-            entity, spoiler, getSupplier()
+            bean, spoiler, getSupplier()
         );
     }
 
@@ -789,13 +799,16 @@ public interface Spare<K> extends Coder<K> {
      *  spare.update(user, spoiler);
      * }</pre>
      *
+     * @param bean     the specified bean to be updated
+     * @param spoiler  the specified spoiler as data source
+     * @param supplier the specified supplier as the spare loader
      * @return the number of rows affected
      * @throws NullPointerException If the parameters contains null
      * @see Subject#update(Object, Spoiler, Supplier)
      * @since 0.0.4
      */
     default int update(
-        @NotNull K entity,
+        @NotNull K bean,
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
     ) {
@@ -805,17 +818,19 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Copy the property values of the specified resultSet into the given specified bean
      *
+     * @param bean      the specified bean to be updated
+     * @param resultSet the specified spoiler as data source
      * @return the number of rows affected
      * @throws NullPointerException If the parameters contains null
      * @see Spare#update(Object, Supplier, ResultSet)
      * @since 0.0.4
      */
     default int update(
-        @NotNull K entity,
+        @NotNull K bean,
         @NotNull ResultSet resultSet
     ) throws SQLException {
         return update(
-            entity, getSupplier(), resultSet
+            bean, getSupplier(), resultSet
         );
     }
 
@@ -835,6 +850,9 @@ public interface Spare<K> extends Coder<K> {
      *  }
      * }</pre>
      *
+     * @param bean      the specified bean to be updated
+     * @param supplier  the specified supplier as the loader
+     * @param resultSet the specified spoiler as data source
      * @return the number of rows affected
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the parameters contains null
@@ -842,7 +860,7 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.4
      */
     default int update(
-        @NotNull K entity,
+        @NotNull K bean,
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
@@ -852,6 +870,7 @@ public interface Spare<K> extends Coder<K> {
     /**
      * Parse {@link Event} and convert result to {@link K}
      *
+     * @param algo  the specified algo for solve
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws NullPointerException If the specified {@code event} is null
@@ -894,7 +913,7 @@ public interface Spare<K> extends Coder<K> {
      *  Spare.embed(User.class, spare);
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param klass the specified klass for embed
      * @param spare the specified spare to be embedded
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
@@ -917,7 +936,7 @@ public interface Spare<K> extends Coder<K> {
      *  Spare.revoke(User.class);
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param klass the specified klass for revoke
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code type} is null
      */
@@ -936,7 +955,7 @@ public interface Spare<K> extends Coder<K> {
      *  Spare<User> spare = Spare.lookup(User.class);
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param klass the specified klass for lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      */

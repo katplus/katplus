@@ -56,7 +56,7 @@ public interface Supplier extends Cloneable {
      *  supplier.embed(User.class, spare);
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param klass the specified klass for embed
      * @param spare the specified spare to be embedded
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
@@ -78,7 +78,7 @@ public interface Supplier extends Cloneable {
      *  supplier.revoke(User.class);
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param klass the specified klass for revoke
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#revoke(Class)
@@ -100,7 +100,7 @@ public interface Supplier extends Cloneable {
      *  );
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param klass the specified klass for embed
      * @param spare the specified spare to be embedded
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} or {@code spare} is null
@@ -123,7 +123,7 @@ public interface Supplier extends Cloneable {
      *  );
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param klass the specified klass for revoke
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#revoke(CharSequence)
@@ -142,7 +142,7 @@ public interface Supplier extends Cloneable {
      *  Spare<User> spare = supplier.lookup(User.class);
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param klass the specified klass for lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#lookup(Class)
@@ -164,7 +164,7 @@ public interface Supplier extends Cloneable {
      *  );
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param klass the specified klass for lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Impl#lookup(CharSequence)
@@ -186,7 +186,8 @@ public interface Supplier extends Cloneable {
      *  );
      * }</pre>
      *
-     * @param type the specified type
+     * @param type  the specified type for lookup
+     * @param klass the specified alternate klass
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#accept(Class)
@@ -210,7 +211,8 @@ public interface Supplier extends Cloneable {
      *  );
      * }</pre>
      *
-     * @param type the specified type
+     * @param type  the specified type for lookup
+     * @param klass the specified alternate klass
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#accept(Class)
@@ -235,7 +237,7 @@ public interface Supplier extends Cloneable {
      *  );
      * }</pre>
      *
-     * @param klass the specified klass
+     * @param klass the specified klass for search
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#accept(Class)
@@ -260,7 +262,8 @@ public interface Supplier extends Cloneable {
      *  Spare<UserVO> spare = supplier.search(type, "plus.kat.entity.UserVO");
      * }</pre>
      *
-     * @param type the specified parent type
+     * @param type  the specified parent type
+     * @param klass the specified actual type
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#accept(Class)
@@ -288,7 +291,8 @@ public interface Supplier extends Cloneable {
      *  Spare<UserVO> spare = supplier.search(type, "plus.kat.entity.UserVO");
      * }</pre>
      *
-     * @param type the specified parent class
+     * @param type  the specified parent class
+     * @param klass the specified actual class
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Spare#accept(Class)
@@ -318,6 +322,7 @@ public interface Supplier extends Cloneable {
      *  User user = supplier.apply(User.class);
      * }</pre>
      *
+     * @param klass the specified klass for lookup
      * @return {@link E}, it is not null
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
@@ -352,10 +357,12 @@ public interface Supplier extends Cloneable {
      *  );
      * }</pre>
      *
+     * @param klass   the specified klass for lookup
+     * @param spoiler the specified spoiler to be used
      * @return {@link E}, it is not null
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
-     * @throws NullPointerException If the klass or spoiler is null
+     * @throws NullPointerException If the specified klass or the spoiler is null
      * @see Spare#apply(Spoiler, Supplier)
      * @since 0.0.4
      */
@@ -434,7 +441,8 @@ public interface Supplier extends Cloneable {
      *  );
      * }</pre>
      *
-     * @param data the specified data to be converted
+     * @param klass the specified klass for lookup
+     * @param data  the specified data to be converted
      * @return {@link E} or {@code null}
      * @see Spare#cast(Object, Supplier)
      */
@@ -467,7 +475,8 @@ public interface Supplier extends Cloneable {
      *  );
      * }</pre>
      *
-     * @param data the specified data to be converted
+     * @param klass the specified klass for lookup
+     * @param data  the specified data to be converted
      * @return {@link E} or {@code null}
      * @throws ClassCastException If {@link E} is not an instance of {@code klass}
      * @see Spare#cast(Object, Supplier)
@@ -500,8 +509,9 @@ public interface Supplier extends Cloneable {
      *  }
      * }</pre>
      *
+     * @param bean the specified bean to be flattened
      * @return {@link Spoiler} or {@code null}
-     * @throws NullPointerException If the parameters contains null
+     * @throws NullPointerException If the specified bean is null
      * @since 0.0.3
      */
     @Nullable
@@ -536,8 +546,10 @@ public interface Supplier extends Cloneable {
      *  String name = (String) collector.get("name");
      * }</pre>
      *
+     * @param bean    the specified bean to be flattened
+     * @param visitor the specified visitor used to access bean
      * @return {@code true} if the bean can be flattened otherwise {@code false}
-     * @throws NullPointerException If the parameters contains null
+     * @throws NullPointerException If the {@code bean} or {@code visitor} is null
      * @see Spare#flat(Object, Visitor)
      * @since 0.0.3
      */
@@ -567,6 +579,8 @@ public interface Supplier extends Cloneable {
      *  supplier.update(user, spoiler);
      * }</pre>
      *
+     * @param bean    the specified bean to be updated
+     * @param spoiler the specified spoiler as data source
      * @return {@code true} if successful update
      * @throws NullPointerException If the parameters contains null
      * @since 0.0.4
@@ -597,6 +611,8 @@ public interface Supplier extends Cloneable {
      *  supplier.update(user, resultSet);
      * }</pre>
      *
+     * @param bean      the specified bean to be updated
+     * @param resultSet the specified spoiler as data source
      * @return {@code true} if successful update
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the parameters contains null
@@ -628,6 +644,8 @@ public interface Supplier extends Cloneable {
      *  supplier.mutate(source, target);
      * }</pre>
      *
+     * @param target the specified target to be updated
+     * @param source the specified source as data source
      * @return {@code true} if successful update
      * @throws NullPointerException If the parameters contains null
      * @see Spare#update(Object, Spoiler, Supplier)
@@ -665,6 +683,7 @@ public interface Supplier extends Cloneable {
      *   User user = supplier.read(text);
      * }</pre>
      *
+     * @param klass the specified klass for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
@@ -696,6 +715,7 @@ public interface Supplier extends Cloneable {
      *   );
      * }</pre>
      *
+     * @param klass the specified klass for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
@@ -725,7 +745,7 @@ public interface Supplier extends Cloneable {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -750,7 +770,8 @@ public interface Supplier extends Cloneable {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @param flags the specified flags for serialize
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -773,6 +794,7 @@ public interface Supplier extends Cloneable {
      *   User user = supplier.down(text);
      * }</pre>
      *
+     * @param klass the specified klass for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
@@ -803,6 +825,7 @@ public interface Supplier extends Cloneable {
      *   );
      * }</pre>
      *
+     * @param klass the specified klass for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
@@ -832,7 +855,7 @@ public interface Supplier extends Cloneable {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -857,7 +880,8 @@ public interface Supplier extends Cloneable {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @param flags the specified flags for serialize
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -880,6 +904,7 @@ public interface Supplier extends Cloneable {
      *   User user = supplier.parse(text);
      * }</pre>
      *
+     * @param klass the specified klass for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
@@ -910,6 +935,7 @@ public interface Supplier extends Cloneable {
      *   );
      * }</pre>
      *
+     * @param klass the specified klass for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
@@ -939,7 +965,7 @@ public interface Supplier extends Cloneable {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -964,7 +990,8 @@ public interface Supplier extends Cloneable {
      *   }
      * }</pre>
      *
-     * @param value specify serialized value
+     * @param value the specified value to serialized
+     * @param flags the specified flags for serialize
      * @throws IOException If an I/O error occurs
      */
     @NotNull
@@ -998,9 +1025,10 @@ public interface Supplier extends Cloneable {
      *  }
      * }</pre>
      *
-     * @param algo the specified algo
-     * @param plan the specified plan for witter
-     * @throws FatalCrash If no chan available for algo is found
+     * @param algo the specified algo for telex
+     * @param plan the specified plan for serialize
+     * @throws FatalCrash           If no chan available for algo is found
+     * @throws NullPointerException If the specified algo or the plan is null
      * @since 0.0.5
      */
     @NotNull
@@ -1032,9 +1060,10 @@ public interface Supplier extends Cloneable {
      *  }
      * }</pre>
      *
-     * @param algo  the specified algo
-     * @param flags the specified flags for witter
-     * @throws FatalCrash If no chan available for algo is found
+     * @param algo  the specified algo for telex
+     * @param flags the specified flags for serialize
+     * @throws FatalCrash           If no chan available for algo is found
+     * @throws NullPointerException If the specified algo for telex is null
      * @since 0.0.5
      */
     @NotNull
@@ -1081,10 +1110,11 @@ public interface Supplier extends Cloneable {
      *   );
      * }</pre>
      *
+     * @param algo  the specified algo for solve
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
-     * @throws NullPointerException If the specified {@code algo} or {@code event} is null
+     * @throws NullPointerException If the specified algo or the event is null
      * @see Spare#solve(Algo, Event)
      * @since 0.0.4
      */
@@ -1132,10 +1162,12 @@ public interface Supplier extends Cloneable {
      *   );
      * }</pre>
      *
+     * @param algo  the specified algo for solve
+     * @param klass the specified klass for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
-     * @throws NullPointerException If the specified {@code klass} or {@code event} is null
+     * @throws NullPointerException If the specified klass, algo or the event is null
      * @see Spare#solve(Algo, Event)
      * @since 0.0.2
      */
@@ -1174,10 +1206,12 @@ public interface Supplier extends Cloneable {
      *   );
      * }</pre>
      *
+     * @param algo  the specified algo for solve
+     * @param type  the specified type for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
-     * @throws NullPointerException If the specified {@code klass} or {@code event} is null
+     * @throws NullPointerException If the specified type, algo or the event is null
      * @see Spare#solve(Algo, Event)
      * @since 0.0.2
      */
@@ -1218,10 +1252,12 @@ public interface Supplier extends Cloneable {
      *   );
      * }</pre>
      *
+     * @param algo  the specified algo for solve
+     * @param klass the specified klass for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no spare available for klass is found
-     * @throws NullPointerException If the specified {@code klass} or {@code event} is null
+     * @throws NullPointerException If the specified klass, algo or the event is null
      * @see Spare#solve(Algo, Event)
      * @since 0.0.2
      */

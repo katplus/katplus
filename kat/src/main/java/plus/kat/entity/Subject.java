@@ -61,7 +61,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      * If this {@link Subject} can create an instance,
      * it returns it, otherwise it will throw {@link Collapse}
      *
-     * @param args the specified args
+     * @param args the specified args for constructs
      * @return {@link K}, it is not null
      * @throws Collapse If a build error occurs
      */
@@ -112,7 +112,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      *
      * @param name the property name of the bean
      * @return {@link Member} or {@code null}
-     * @throws NullPointerException If the alias is null
+     * @throws NullPointerException If the specified alias is null
      */
     @Override
     default Member<K, ?> set(
@@ -127,7 +127,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      *
      * @param name the property name of the bean
      * @return {@link Member} or {@code null}
-     * @throws NullPointerException If the alias is null
+     * @throws NullPointerException If the specified alias is null
      */
     @Override
     default Member<K, ?> get(
@@ -142,7 +142,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      *
      * @param name the parameter name of the bean
      * @return {@link Member} or {@code null}
-     * @throws NullPointerException If the alias is null
+     * @throws NullPointerException If the specified alias is null
      */
     @Nullable
     default Member<Object[], ?> arg(
@@ -154,12 +154,15 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     /**
      * Copy the property values of the specified spoiler into the given specified bean
      *
+     * @param bean     the specified bean to be updated
+     * @param spoiler  the specified spoiler as data source
+     * @param supplier the specified supplier as the spare loader
      * @return the number of rows affected
-     * @throws NullPointerException If the parameters contains null
+     * @throws NullPointerException If the arguments contains null
      */
     @Override
     default int update(
-        @NotNull K entity,
+        @NotNull K bean,
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
     ) {
@@ -181,7 +184,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             if (clazz.isInstance(value)) {
                 rows++;
                 setter.invoke(
-                    entity, value
+                    bean, value
                 );
                 continue;
             }
@@ -190,7 +193,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             if (spare != null) {
                 rows++;
                 setter.invoke(
-                    entity, spare.cast(
+                    bean, spare.cast(
                         value, supplier
                     )
                 );
@@ -203,8 +206,11 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     /**
      * Copy the property values of the specified spoiler into the given specified group
      *
+     * @param group    the specified array to be updated
+     * @param spoiler  the specified spoiler as data source
+     * @param supplier the specified supplier as the spare loader
      * @return the number of rows affected
-     * @throws NullPointerException If the parameters contains null
+     * @throws NullPointerException If the arguments contains null
      */
     default int update(
         @NotNull Object[] group,
@@ -250,13 +256,16 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     /**
      * Copy the property values of the specified resultSet into the given specified bean
      *
+     * @param bean      the specified bean to be updated
+     * @param supplier  the specified supplier as the loader
+     * @param resultSet the specified spoiler as data source
      * @return the number of rows affected
      * @throws SQLException         If a database access error occurs
-     * @throws NullPointerException If the parameters contains null
+     * @throws NullPointerException If the arguments contains null
      */
     @Override
     default int update(
-        @NotNull K entity,
+        @NotNull K bean,
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
@@ -288,14 +297,14 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             Class<?> clazz = setter.getType();
             if (clazz.isInstance(value)) {
                 rows++;
-                setter.invoke(entity, value);
+                setter.invoke(bean, value);
                 continue;
             }
 
             Object result = supplier.cast(clazz, value);
             if (result != null) {
                 rows++;
-                setter.invoke(entity, result);
+                setter.invoke(bean, result);
                 continue;
             }
 
@@ -311,9 +320,12 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     /**
      * Copy the property values of the specified spoiler into the given specified group
      *
+     * @param group     the specified array to be updated
+     * @param supplier  the specified supplier as the loader
+     * @param resultSet the specified spoiler as data source
      * @return the number of rows affected
      * @throws SQLException         If a database access error occurs
-     * @throws NullPointerException If the parameters contains null
+     * @throws NullPointerException If the arguments contains null
      */
     default int update(
         @NotNull Object[] group,
@@ -371,7 +383,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     /**
      * Returns the custom {@link Coder} for the {@link Member}
      *
-     * @param expose the specified expose
+     * @param expose the specified expose to be used
      * @param member the specified member to be solved
      * @return {@link Coder} or {@code null}
      */
@@ -486,7 +498,6 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @see Getter#apply(Object)
          */
         @Nullable
-        @Override
         default V apply(
             @NotNull K bean
         ) {

@@ -29,7 +29,7 @@ public interface Maker<K> {
      * If this {@link Maker} can create an instance,
      * it returns it, otherwise it will throw {@link Collapse}
      *
-     * @param args the specified args
+     * @param args the specified args for constructs
      * @return {@link K}, it is not null
      * @throws Collapse If a build error occurs
      */
