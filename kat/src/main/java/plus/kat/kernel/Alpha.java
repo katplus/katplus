@@ -134,7 +134,7 @@ public class Alpha extends Chain {
      * Concatenates the specified byte value to {@link Alpha}
      *
      * @param data the specified byte value
-     * @throws FatalCrash If the chain is finally fixed
+     * @throws FatalCrash If the alpha is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */
@@ -154,7 +154,7 @@ public class Alpha extends Chain {
             }
         } else {
             throw new FatalCrash(
-                "Unexpectedly, the chain is finally fixed"
+                "Unexpectedly, the alpha is finally fixed"
             );
         }
     }
@@ -180,8 +180,8 @@ public class Alpha extends Chain {
      *
      * @param i the specified index
      * @param b the specified value
-     * @throws FatalCrash                     If the chain is finally fixed
-     * @throws ArrayIndexOutOfBoundsException if the index argument is negative
+     * @throws FatalCrash                     If the alpha is finally fixed
+     * @throws ArrayIndexOutOfBoundsException If the specified index is out of range
      * @see Chain#isFixed()
      * @since 0.0.5
      */
@@ -189,14 +189,28 @@ public class Alpha extends Chain {
         int i, byte b
     ) {
         if (0 <= asset) {
-            byte[] it = value;
-            if (i < it.length) {
-                it[i] = b;
-                asset = 0;
+            if (0 <= i) {
+                if (i < count) {
+                    asset = 0;
+                    value[i] = b;
+                } else {
+                    throw new ArrayIndexOutOfBoundsException(
+                        "Index " + i + " out of bounds for length " + count
+                    );
+                }
+            } else {
+                if (0 <= (i += count)) {
+                    asset = 0;
+                    value[i] = b;
+                } else {
+                    throw new ArrayIndexOutOfBoundsException(
+                        "Index " + (i - count) + " out of bounds for length " + count
+                    );
+                }
             }
         } else {
             throw new FatalCrash(
-                "Unexpectedly, the chain is finally fixed"
+                "Unexpectedly, the alpha is finally fixed"
             );
         }
     }
@@ -206,13 +220,13 @@ public class Alpha extends Chain {
      *
      * <pre>{@code
      *  Alpha alpha = ..
-     *  alpha.add("plus.kat");
+     *  alpha.emit("plus.kat");
      *  alpha.slip(3);
      *  int length = value.length(); // 3
      * }</pre>
      *
      * @param length the specified length
-     * @throws FatalCrash                     If the chain is finally fixed
+     * @throws FatalCrash                     If the alpha is finally fixed
      * @throws ArrayIndexOutOfBoundsException if the index argument is negative or out of range
      * @see Chain#isFixed()
      * @since 0.0.5
@@ -233,7 +247,7 @@ public class Alpha extends Chain {
             }
         } else {
             throw new FatalCrash(
-                "Unexpectedly, the chain is finally fixed"
+                "Unexpectedly, the alpha is finally fixed"
             );
         }
     }
@@ -250,7 +264,7 @@ public class Alpha extends Chain {
      * Sets the modifier type of {@link Alpha}
      *
      * @param type the specified type
-     * @throws FatalCrash If the chain is finally fixed
+     * @throws FatalCrash If the alpha is finally fixed
      * @see Chain#isFixed()
      */
     public void setType(
@@ -260,7 +274,7 @@ public class Alpha extends Chain {
             this.type = type;
         } else {
             throw new FatalCrash(
-                "Unexpectedly, the chain is finally fixed"
+                "Unexpectedly, the alpha is finally fixed"
             );
         }
     }
@@ -268,7 +282,7 @@ public class Alpha extends Chain {
     /**
      * Clean this {@link Alpha}
      *
-     * @throws FatalCrash If the chain is finally fixed
+     * @throws FatalCrash If the alpha is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */
@@ -280,7 +294,7 @@ public class Alpha extends Chain {
             backup = null;
         } else {
             throw new FatalCrash(
-                "Unexpectedly, the chain is finally fixed"
+                "Unexpectedly, the alpha is finally fixed"
             );
         }
     }
@@ -288,7 +302,7 @@ public class Alpha extends Chain {
     /**
      * Clear this {@link Alpha}
      *
-     * @throws FatalCrash If the chain is finally fixed
+     * @throws FatalCrash If the alpha is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */
@@ -306,7 +320,7 @@ public class Alpha extends Chain {
     /**
      * Close this {@link Alpha}
      *
-     * @throws FatalCrash If the chain is finally fixed
+     * @throws FatalCrash If the alpha is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */

@@ -132,7 +132,7 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.add(1024); // 1024
+     *   value.emit(1024); // 1024
      * }</pre>
      *
      * @param num the specified int value
@@ -150,7 +150,7 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.add(1024L); // 1024
+     *   value.emit(1024L); // 1024
      * }</pre>
      *
      * @param num the specified long value
@@ -168,7 +168,7 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.add(10.24F); // 10.24
+     *   value.emit(10.24F); // 10.24
      * }</pre>
      *
      * @param num the specified float value
@@ -186,7 +186,7 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.add(10.24D); // 10.24
+     *   value.emit(10.24D); // 10.24
      * }</pre>
      *
      * @param num the specified double value
@@ -204,7 +204,7 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.add(true); // true
+     *   value.emit(true); // true
      * }</pre>
      *
      * @param bool the specified boolean value
@@ -221,7 +221,7 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.add('k');
+     *   value.emit('k');
      * }</pre>
      *
      * @param c the specified char value
@@ -324,7 +324,7 @@ public class Value extends Alpha {
      * <pre>{@code
      *  Value value = ...
      *  InputStream in = ...
-     *  value.add(in); // auto close
+     *  value.emit(in); // auto close
      * }</pre>
      *
      * @param in the specified {@link InputStream} will be used and closed
@@ -344,12 +344,12 @@ public class Value extends Alpha {
      * <pre>{@code
      *  Value value = ...
      *  InputStream in = ...
-     *  value.add(in, 512);
+     *  value.emit(in, 512);
      *  in.close(); // close it
      *
      *  // or
      *  try (InputStream in = ...) {
-     *      value.add(in, 512);
+     *      value.emit(in, 512);
      *  }
      * }</pre>
      *

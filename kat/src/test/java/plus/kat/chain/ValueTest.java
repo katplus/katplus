@@ -16,6 +16,17 @@ public class ValueTest {
     }
 
     @Test
+    public void test_set() {
+        Value value = new Value("kat.plus");
+        value.set(3, (byte) '+');
+        assertEquals("kat+plus", value.toString());
+        value.set(-5, (byte) '.');
+        assertEquals("kat.plus", value.toString());
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> value.set(8, (byte) '+'));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> value.set(-9, (byte) '+'));
+    }
+
+    @Test
     public void test_isFixed() {
         Value v0 = new Value("陆之岇");
         assertFalse(v0.isFixed());
