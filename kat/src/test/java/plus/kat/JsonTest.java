@@ -210,10 +210,13 @@ public class JsonTest {
 
     @Test
     public void test_encode3() {
+        Map<Object, Object> data = new HashMap<>();
+        data.put("别名", "陆之岇");
         assertEquals(
-            "\"\\u9646\\u4E4B\\u5C87\"", Json.encode(
-                "陆之岇", Flag.UNICODE
-            )
+            "{\"别名\":\"陆之岇\"}", Json.encode(data)
+        );
+        assertEquals(
+            "{\"\\u522B\\u540D\":\"\\u9646\\u4E4B\\u5C87\"}", Json.encode(data, Flag.UNICODE)
         );
     }
 

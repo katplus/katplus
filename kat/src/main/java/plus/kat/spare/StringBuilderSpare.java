@@ -42,8 +42,8 @@ public class StringBuilderSpare extends Property<StringBuilder> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$s;
+    public String getSpace() {
+        return "s";
     }
 
     @Override
@@ -71,7 +71,7 @@ public class StringBuilderSpare extends Property<StringBuilder> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.append(
+        flow.emit(
             (CharSequence) value
         );
     }

@@ -21,9 +21,11 @@ import plus.kat.anno.Nullable;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
-import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
@@ -32,238 +34,384 @@ import static plus.kat.Supplier.Impl.INS;
  * @author kraity
  * @since 0.0.1
  */
-public class Json extends Chan {
+public class Json extends Steam implements Chan {
 
-    protected Flow flow;
+    private static final byte
+        LP = '[', RP = ']',
+        LB = '{', RB = '}';
+
+    protected boolean blank;
+    protected Supplier supplier;
 
     /**
-     * default
+     * Constructs a default json
      */
     public Json() {
-        this.flow = new Flow();
-        this.supplier = INS;
+        this(0L, INS);
     }
 
     /**
-     * @param flags the specified {@code flags}
+     * Constructs a json with the specified flags
+     *
+     * @param flags the specified flags
      */
     public Json(
         long flags
     ) {
-        this.flow = new Flow(flags);
-        this.supplier = INS;
+        this(flags, INS);
     }
 
     /**
-     * @param plan the specified {@code plan}
+     * Constructs a json with the specified plan
+     *
+     * @param plan the specified plan
      */
     public Json(
         @NotNull Plan plan
     ) {
-        this.flow = new Flow(
-            plan.writeFlags
-        );
-        this.supplier = INS;
+        this(plan.writeFlags);
     }
 
     /**
-     * @param flags    the specified {@code flags}
-     * @param supplier the specified {@code supplier}
+     * Constructs a json with the specified flags and supplier
+     *
+     * @param flags    the specified flags
+     * @param supplier the specified supplier
      */
     public Json(
         @NotNull long flags,
-        @Nullable Supplier supplier
+        @NotNull Supplier supplier
     ) {
-        this(new Flow(flags), supplier);
+        super(flags);
+        this.blank = true;
+        this.supplier = supplier;
     }
 
     /**
-     * @param plan     the specified {@code plan}
-     * @param supplier the specified {@code supplier}
+     * Constructs a json with the specified plan and supplier
+     *
+     * @param plan     the specified plan
+     * @param supplier the specified supplier
      */
     public Json(
         @NotNull Plan plan,
-        @Nullable Supplier supplier
+        @NotNull Supplier supplier
     ) {
         this(plan.writeFlags, supplier);
     }
 
     /**
-     * @param flow     the specified {@code flow}
-     * @param supplier the specified {@code supplier}
+     * Returns the algo of flow
      */
-    public Json(
-        @NotNull Flow flow,
-        @Nullable Supplier supplier
-    ) {
-        this.flow = flow;
-        this.supplier = supplier == null ? INS : supplier;
+    @Override
+    public Algo algo() {
+        return Algo.JSON;
     }
 
     /**
-     * Serializes the specified {@code alias} and {@code kat} at the current hierarchy
+     * Serializes the specified alias and value at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
      */
     @Override
     public boolean set(
-        @Nullable CharSequence alias,
-        @Nullable Kat kat
-    ) throws IOException {
-        if (kat != null) {
-            flow.addComma();
-            if (alias != null) {
-                flow.addAlias(alias);
-            }
-            flow.leftBrace();
-            kat.coding(this);
-            flow.rightBrace();
-            return true;
-        }
-        return coding(alias);
-    }
-
-    /**
-     * Serializes the specified {@code alias}, {@code space} and {@code kat} at the current hierarchy
-     *
-     * @return {@code true} if successful
-     * @throws IOException If an I/O error occurs
-     */
-    @Override
-    public boolean set(
-        @Nullable CharSequence alias,
-        @Nullable CharSequence space,
-        @Nullable Kat kat
+        @Nullable String alias,
+        @Nullable Object value
     ) throws IOException {
         return set(
-            alias, kat
+            alias, null, value
         );
     }
 
     /**
-     * Writes the specified {@code alias}
-     *
-     * @return {@code true} if successful
-     */
-    @Override
-    protected boolean coding(
-        @Nullable CharSequence alias
-    ) {
-        flow.addComma();
-        flow.addAlias(alias);
-        flow.addNull();
-        return true;
-    }
-
-    /**
-     * Writes the specified {@code alias} and {@code value} by specified {@link Coder}
+     * Serializes the specified alias and fitter at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
      */
     @Override
-    protected boolean coding(
-        @Nullable CharSequence alias,
-        @NotNull Coder<?> coder,
-        @NotNull Object value
+    public boolean set(
+        @Nullable String alias,
+        @Nullable Fitter fitter
     ) throws IOException {
-        Boolean flag =
-            coder.getFlag();
+        return set(
+            alias, "M", fitter
+        );
+    }
 
-        flow.addComma();
-        flow.addAlias(alias);
-        if (flag != null) {
-            if (flag) {
-                flow.leftBrace();
-                coder.write(this, value);
-                flow.rightBrace();
+    /**
+     * Serializes the specified alias, space and fitter at the current hierarchy
+     *
+     * @return {@code true} if successful
+     * @throws IOException If an I/O error occurs
+     */
+    @Override
+    public boolean set(
+        @Nullable String alias,
+        @Nullable String space,
+        @Nullable Fitter fitter
+    ) throws IOException {
+        if (blank) {
+            blank = false;
+        } else {
+            concat(
+                (byte) ','
+            );
+        }
+
+        short d = depth;
+        if (d > 0) {
+            int i = d + 1;
+            grow(count + i * 2);
+            byte[] it = value;
+            it[count++] = '\n';
+            while (--i != 0) {
+                it[count++] = ' ';
+                it[count++] = ' ';
+            }
+        }
+
+        if (alias != null) {
+            concat((byte) '"');
+            emit(alias);
+            concat((byte) '"');
+            concat((byte) ':');
+        }
+
+        if (fitter == null) {
+            grow(count + 4);
+            asset = 0;
+            value[count++] = 'n';
+            value[count++] = 'u';
+            value[count++] = 'l';
+            value[count++] = 'l';
+            return true;
+        }
+
+        concat(LB);
+        blank = true;
+        if (d < 0) {
+            fitter.accept(this);
+        } else {
+            ++depth;
+            fitter.accept(this);
+            --depth;
+            if (d == 0) {
+                grow(count + 1);
+                value[count++] = '\n';
             } else {
-                flow.leftBracket();
-                coder.write(this, value);
-                flow.rightBracket();
+                int i = d + 1;
+                grow(count + i * 2);
+                byte[] it = value;
+                it[count++] = '\n';
+                while (--i != 0) {
+                    it[count++] = ' ';
+                    it[count++] = ' ';
+                }
+            }
+        }
+        concat(RB);
+        return true;
+    }
+
+    /**
+     * Serializes the specified alias, coder and object at the current hierarchy
+     *
+     * @return {@code true} if successful
+     * @throws IOException If an I/O error occurs
+     */
+    @Override
+    public boolean set(
+        @Nullable String alias,
+        @Nullable Coder<?> coder,
+        @Nullable Object object
+    ) throws IOException {
+        if (object == null) {
+            return set(
+                alias, "$", null
+            );
+        }
+
+        if (coder == null) {
+            // search for the spare of object
+            coder = supplier.lookup(
+                object.getClass()
+            );
+
+            // solving the coder problem again
+            if (coder == null) {
+                if (object instanceof Fitter) {
+                    return set(
+                        alias, (Fitter) object
+                    );
+                }
+
+                if (object instanceof Optional) {
+                    Optional<?> o = (Optional<?>) object;
+                    return set(
+                        alias, null, o.orElse(null)
+                    );
+                }
+
+                if (object instanceof Exception) {
+                    coder = ErrorSpare.INSTANCE;
+                } else if (object instanceof Map) {
+                    coder = MapSpare.INSTANCE;
+                } else if (object instanceof Set) {
+                    coder = SetSpare.INSTANCE;
+                } else if (object instanceof Iterable) {
+                    coder = ListSpare.INSTANCE;
+                } else {
+                    return set(
+                        alias, "$", null
+                    );
+                }
+            }
+        }
+
+        if (blank) {
+            blank = false;
+        } else {
+            concat(
+                (byte) ','
+            );
+        }
+
+        short d = depth;
+        if (d > 0) {
+            int i = d + 1;
+            grow(count + i * 2);
+            byte[] it = value;
+            it[count++] = '\n';
+            while (--i != 0) {
+                it[count++] = ' ';
+                it[count++] = ' ';
+            }
+        }
+
+        if (alias != null) {
+            concat((byte) '"');
+            emit(alias);
+            concat((byte) '"');
+            concat((byte) ':');
+        }
+
+        Boolean flag = coder.getFlag();
+        if (flag == null) {
+            if (Boolean.FALSE ==
+                coder.getBorder(this)) {
+                coder.write(
+                    (Flow) this, object
+                );
+            } else {
+                concat((byte) '"');
+                coder.write(
+                    (Flow) this, object
+                );
+                concat((byte) '"');
             }
         } else {
-            if (coder instanceof Serializer) {
-                coder.write(flow, value);
+            concat(
+                flag ? LB : LP
+            );
+            blank = true;
+            if (d < 0) {
+                coder.write(
+                    (Chan) this, object
+                );
             } else {
-                flow.addQuote();
-                coder.write(flow, value);
-                flow.addQuote();
+                ++depth;
+                coder.write(
+                    (Chan) this, object
+                );
+                --depth;
+                if (d == 0) {
+                    grow(count + 1);
+                    value[count++] = '\n';
+                } else {
+                    int i = d + 1;
+                    grow(count + i * 2);
+                    byte[] it = value;
+                    it[count++] = '\n';
+                    while (--i != 0) {
+                        it[count++] = ' ';
+                        it[count++] = ' ';
+                    }
+                }
             }
+            concat(
+                flag ? RB : RP
+            );
         }
         return true;
     }
 
     /**
-     * Check if this {@link Flow} use the {@code flag}
-     *
-     * @param flag the specified {@code flag}
-     */
-    @Override
-    public boolean isFlag(
-        long flag
-    ) {
-        return flow.isFlag(flag);
-    }
-
-    /**
-     * Returns the internal {@link Paper}
+     * Returns the internal {@link Steam}
      */
     @NotNull
-    @Override
-    public Paper getFlow() {
-        return flow;
+    public Steam getSteam() {
+        return this;
     }
 
     /**
-     * Close this {@link Chan}
-     *
-     * <pre>{@code
-     *   try (Chan chan = new Json()) {
-     *       chan.set("id", 1);
-     *       chan.set("name", "kraity");
-     *   }
-     * }</pre>
-     *
-     * @see Paper#close()
-     * @since 0.0.4
+     * Returns the internal {@link Supplier}
      */
     @Override
-    public void close() {
-        flow.close();
+    public Supplier getSupplier() {
+        return supplier;
     }
 
     /**
-     * Returns the {@link Flow} of this
-     * {@link Json} as a serialized {@code byte[]}
+     * Concatenates the byte value to this {@link Json},
+     * which will be escaped if it is a special character
      *
-     * <pre>{@code
-     *   Json json = ...
-     *   byte[] data = json.toBytes();
-     * }</pre>
-     *
-     * @see Flow#toBytes()
-     */
-    @NotNull
-    public byte[] toBytes() {
-        return flow.toBytes();
-    }
-
-    /**
-     * Returns the {@link Flow} of this
-     * {@link Json} as a serialized {@link String}
-     *
-     * <pre>{@code
-     *   Json json = ...
-     *   String text = json.toString();
-     * }</pre>
-     *
-     * @see Flow#toString()
+     * @param b the specified byte value to be appended
      */
     @Override
-    public String toString() {
-        return flow.toString();
+    public void emit(byte b) {
+        if (b < 0x5D) {
+            if (b > 0x1F) {
+                if (b == '"' ||
+                    b == '\\') {
+                    concat(
+                        (byte) '\\'
+                    );
+                }
+            } else {
+                switch (b) {
+                    case '\r': {
+                        b = 'r';
+                        break;
+                    }
+                    case '\n': {
+                        b = 'n';
+                        break;
+                    }
+                    case '\t': {
+                        b = 't';
+                        break;
+                    }
+                    default: {
+                        return;
+                    }
+                }
+                concat(
+                    (byte) '\\'
+                );
+            }
+        }
+
+        byte[] it = value;
+        if (count != it.length) {
+            asset = 0;
+            it[count++] = b;
+        } else {
+            grow(count + 1);
+            asset = 0;
+            value[count++] = b;
+        }
     }
 
     /**
@@ -425,189 +573,5 @@ public class Json extends Chan {
         }
 
         return INS.parse(klass, event);
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.1
-     */
-    public static class Flow extends Paper {
-
-        protected boolean comma;
-
-        /**
-         * default
-         */
-        public Flow() {
-            super();
-        }
-
-        /**
-         * @param flags the specified {@code flags}
-         */
-        public Flow(
-            long flags
-        ) {
-            super(flags);
-        }
-
-        /**
-         * @param bucket the specified {@link Bucket} to be used
-         */
-        public Flow(
-            @Nullable Bucket bucket
-        ) {
-            super(bucket);
-        }
-
-        /**
-         * Returns the algo of flow
-         */
-        @Override
-        public Algo algo() {
-            return Algo.JSON;
-        }
-
-        /**
-         * Writers left brace
-         */
-        public void leftBrace() {
-            addByte(
-                (byte) '{'
-            );
-            comma = false;
-            if (depth != 0) ++depth;
-        }
-
-        /**
-         * Writers right brace
-         */
-        public void rightBrace() {
-            if (depth == 0) {
-                addByte(
-                    (byte) '}'
-                );
-            } else {
-                if (--depth != 1) {
-                    grow(count + depth * 2);
-                    value[count++] = '\n';
-                    for (int i = 1; i < depth; i++) {
-                        value[count++] = ' ';
-                        value[count++] = ' ';
-                    }
-                } else {
-                    grow(count + 2);
-                    value[count++] = '\n';
-                }
-                value[count++] = '}';
-            }
-        }
-
-        /**
-         * Writers left bracket
-         */
-        public void leftBracket() {
-            addByte(
-                (byte) '['
-            );
-            comma = false;
-            if (depth != 0) ++depth;
-        }
-
-        /**
-         * Writers right bracket
-         */
-        public void rightBracket() {
-            if (depth == 0) {
-                addByte(
-                    (byte) ']'
-                );
-            } else {
-                if (--depth != 1) {
-                    grow(count + depth * 2);
-                    value[count++] = '\n';
-                    for (int i = 1; i < depth; i++) {
-                        value[count++] = ' ';
-                        value[count++] = ' ';
-                    }
-                } else {
-                    grow(count + 2);
-                    value[count++] = '\n';
-                }
-                value[count++] = ']';
-            }
-        }
-
-        /**
-         * Writes null
-         */
-        public void addNull() {
-            grow(count + 4);
-            star = 0;
-            value[count++] = 'n';
-            value[count++] = 'u';
-            value[count++] = 'l';
-            value[count++] = 'l';
-        }
-
-        /**
-         * Writes quote
-         */
-        public void addQuote() {
-            addByte(
-                (byte) '"'
-            );
-        }
-
-        /**
-         * Writes comma
-         */
-        public void addComma() {
-            if (comma) {
-                addByte(
-                    (byte) ','
-                );
-            } else {
-                comma = true;
-            }
-        }
-
-        /**
-         * Writes the specified alias
-         */
-        public void addAlias(
-            @Nullable CharSequence c
-        ) {
-            if (depth > 1) {
-                grow(count + depth * 2);
-                value[count++] = '\n';
-                for (int i = 1; i < depth; i++) {
-                    value[count++] = ' ';
-                    value[count++] = ' ';
-                }
-            }
-
-            // skip if null
-            if (c == null) return;
-
-            int i = 0,
-                l = c.length();
-            grow(count + l + 3);
-
-            star = 0;
-            value[count++] = '"';
-
-            while (i < l) {
-                char d = c.charAt(i++);
-                if (d >= 0x80) {
-                    addChar(d);
-                } else {
-                    emit((byte) d);
-                }
-            }
-
-            value[count++] = '"';
-            value[count++] = ':';
-        }
     }
 }

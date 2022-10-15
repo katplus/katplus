@@ -32,7 +32,7 @@ import javax.crypto.spec.IvParameterSpec;
  * @author kraity
  * @since 0.0.1
  */
-public class Value extends Dram {
+public class Value extends Alpha {
     /**
      * Constructs a mutable value
      */
@@ -127,7 +127,97 @@ public class Value extends Dram {
     }
 
     /**
-     * Appends the char value to this {@link Value}
+     * Concatenates the string representation
+     * of the integer value to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.add(1024); // 1024
+     * }</pre>
+     *
+     * @param num the specified int value
+     * @since 0.0.5
+     */
+    public void emit(
+        int num
+    ) {
+        concat(num);
+    }
+
+    /**
+     * Concatenates the string representation
+     * of the long value to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.add(1024L); // 1024
+     * }</pre>
+     *
+     * @param num the specified long value
+     * @since 0.0.5
+     */
+    public void emit(
+        long num
+    ) {
+        concat(num);
+    }
+
+    /**
+     * Concatenates the string representation
+     * of the float value to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.add(10.24F); // 10.24
+     * }</pre>
+     *
+     * @param num the specified float value
+     * @since 0.0.5
+     */
+    public void emit(
+        float num
+    ) {
+        concat(num);
+    }
+
+    /**
+     * Concatenates the string representation
+     * of the double value to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.add(10.24D); // 10.24
+     * }</pre>
+     *
+     * @param num the specified double value
+     * @since 0.0.5
+     */
+    public void emit(
+        double num
+    ) {
+        concat(num);
+    }
+
+    /**
+     * Concatenates the string representation
+     * of the boolean value to this {@link Value}
+     *
+     * <pre>{@code
+     *   Value value = ...
+     *   value.add(true); // true
+     * }</pre>
+     *
+     * @param bool the specified boolean value
+     * @since 0.0.5
+     */
+    public void emit(
+        boolean bool
+    ) {
+        concat(bool);
+    }
+
+    /**
+     * Concatenates the char value to this {@link Value}
      *
      * <pre>{@code
      *   Value value = ...
@@ -135,77 +225,45 @@ public class Value extends Dram {
      * }</pre>
      *
      * @param c the specified char value
+     * @since 0.0.5
      */
-    public void add(
+    public void emit(
         char c
     ) {
-        chain(c);
+        concat(c);
     }
 
     /**
-     * Appends the number to this {@link Value}
-     *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.add(1024);
-     * }</pre>
-     *
-     * @param num the specified int value
-     * @since 0.0.4
-     */
-    public void add(
-        int num
-    ) {
-        chain(num);
-    }
-
-    /**
-     * Appends the number to this {@link Value}
-     *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.add(1024L);
-     * }</pre>
-     *
-     * @param num the specified long value
-     * @since 0.0.4
-     */
-    public void add(
-        long num
-    ) {
-        chain(num);
-    }
-
-    /**
-     * Appends the byte array to this {@link Value}
+     * Concatenates the byte array to this {@link Value}
      *
      * @param b the specified byte array
+     * @since 0.0.5
      */
-    public void add(
+    public void emit(
         byte[] b
     ) {
         if (b != null) {
-            chain(
+            concat(
                 b, 0, b.length
             );
         }
     }
 
     /**
-     * Appends the byte array to this {@link Value}
+     * Concatenates the byte array to this {@link Value}
      *
      * @param b the specified byte array
      * @param i the specified index
      * @param l the specified length
-     * @throws ArrayIndexOutOfBoundsException If the {@code index} or {@code length} ou of range
-     * @since 0.0.4
+     * @throws ArrayIndexOutOfBoundsException If the index or length out of range
+     * @since 0.0.5
      */
-    public void add(
+    public void emit(
         byte[] b, int i, int l
     ) {
         if (b != null && l != 0) {
             if (i >= 0 && i + l <= b.length) {
-                chain(
+                concat(
                     b, i, l
                 );
             } else {
@@ -217,17 +275,18 @@ public class Value extends Dram {
     }
 
     /**
-     * Appends the char array to this {@link Value}
+     * Concatenates the char array to this {@link Value}
      *
      * @param c the specified char array
+     * @since 0.0.5
      */
-    public void add(
+    public void emit(
         char[] c
     ) {
         if (c != null) {
             int len = c.length;
             if (len != 0) {
-                chain(
+                concat(
                     c, 0, len
                 );
             }
@@ -235,20 +294,20 @@ public class Value extends Dram {
     }
 
     /**
-     * Appends the char array to this {@link Value}
+     * Concatenates the char array to this {@link Value}
      *
      * @param c the specified byte array
      * @param i the specified index
      * @param l the specified length
-     * @throws ArrayIndexOutOfBoundsException If the {@code index} or {@code length} ou of range
-     * @since 0.0.4
+     * @throws ArrayIndexOutOfBoundsException If the index or length out of range
+     * @since 0.0.5
      */
-    public void add(
+    public void emit(
         char[] c, int i, int l
     ) {
         if (c != null && l != 0) {
             if (i >= 0 && i + l <= c.length) {
-                chain(
+                concat(
                     c, i, l
                 );
             } else {
@@ -260,7 +319,7 @@ public class Value extends Dram {
     }
 
     /**
-     * Appends the {@link InputStream} to this {@link Value}
+     * Concatenates the {@link InputStream} to this {@link Value}
      *
      * <pre>{@code
      *  Value value = ...
@@ -269,18 +328,18 @@ public class Value extends Dram {
      * }</pre>
      *
      * @param in the specified {@link InputStream} will be used and closed
-     * @since 0.0.3
+     * @since 0.0.5
      */
-    public void add(
+    public void emit(
         InputStream in
     ) {
         if (in != null) {
-            chain(in);
+            concat(in);
         }
     }
 
     /**
-     * Appends the {@link InputStream} to this {@link Value}
+     * Concatenates the {@link InputStream} to this {@link Value}
      *
      * <pre>{@code
      *  Value value = ...
@@ -299,12 +358,12 @@ public class Value extends Dram {
      * @throws IOException If an I/O error occurs
      * @since 0.0.5
      */
-    public void add(
+    public void emit(
         InputStream in, int range
     ) throws IOException {
         if (in != null) {
             if (range > 0) {
-                chain(
+                concat(
                     in, range
                 );
             } else {
@@ -316,17 +375,18 @@ public class Value extends Dram {
     }
 
     /**
-     * Appends the {@link CharSequence} to this {@link Value}
+     * Concatenates the {@link CharSequence} to this {@link Value}
      *
      * @param c the specified char array
+     * @since 0.0.5
      */
-    public void add(
+    public void emit(
         CharSequence c
     ) {
         if (c != null) {
             int len = c.length();
             if (len != 0) {
-                chain(
+                concat(
                     c, 0, len
                 );
             }
@@ -334,20 +394,20 @@ public class Value extends Dram {
     }
 
     /**
-     * Appends the {@link CharSequence} to this {@link Value}
+     * Concatenates the {@link CharSequence} to this {@link Value}
      *
      * @param c the specified byte array
      * @param i the specified index
      * @param l the specified length
-     * @throws ArrayIndexOutOfBoundsException If the {@code index} or {@code length} ou of range
-     * @since 0.0.4
+     * @throws ArrayIndexOutOfBoundsException If the index or length out of range
+     * @since 0.0.5
      */
-    public void add(
+    public void emit(
         CharSequence c, int i, int l
     ) {
         if (c != null && l != 0) {
             if (i >= 0 && i + l <= c.length()) {
-                chain(
+                concat(
                     c, i, l
                 );
             } else {
@@ -359,7 +419,7 @@ public class Value extends Dram {
     }
 
     /**
-     * Adds the data to uppercase hexadecimal
+     * Concatenates the uppercase hexadecimal of the data to this {@link Value}
      *
      * <pre>{@code
      *   Value value = ...
@@ -377,7 +437,7 @@ public class Value extends Dram {
             int size = data.length;
             if (size != 0) {
                 grow(count * size * 2);
-                star = 0;
+                asset = 0;
                 int i = 0;
                 byte[] it = value;
                 while (i < size) {
@@ -390,7 +450,7 @@ public class Value extends Dram {
     }
 
     /**
-     * Adds the data to lowercase hexadecimal
+     * Concatenates the lowercase hexadecimal of the data to this {@link Value}
      *
      * <pre>{@code
      *   Value value = ...
@@ -408,7 +468,7 @@ public class Value extends Dram {
             int size = data.length;
             if (size != 0) {
                 grow(count * size * 2);
-                star = 0;
+                asset = 0;
                 int i = 0;
                 byte[] it = value;
                 while (i < size) {

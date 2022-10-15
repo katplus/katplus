@@ -19,15 +19,12 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
-import plus.kat.chain.*;
-
-import java.io.IOException;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class Crash extends Exception implements Kat {
+public class Crash extends Exception {
     /**
      * code
      */
@@ -91,30 +88,6 @@ public class Crash extends Exception implements Kat {
      */
     public int getCode() {
         return code;
-    }
-
-    /**
-     * Returns the space of this
-     */
-    @Nullable
-    @Override
-    public Space space() {
-        return Space.$E;
-    }
-
-    /**
-     * @param chan the specified chan
-     */
-    @Override
-    public void coding(
-        @NotNull Chan chan
-    ) throws IOException {
-        chan.set(
-            "c", code
-        );
-        chan.set(
-            "m", getMessage()
-        );
     }
 
     /**

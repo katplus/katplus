@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author kraity
  * @since 0.0.1
  */
-public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializer {
+public class DateSpare extends SimpleDateFormat implements Spare<Date> {
 
     public static final DateSpare
         INSTANCE = new DateSpare();
@@ -90,6 +90,16 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
     @Override
     public Class<Date> getType() {
         return Date.class;
+    }
+
+    @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        if (flag.isFlag(Flag.DATE_AS_TIMESTAMP)) {
+            return Boolean.FALSE;
+        }
+        return null;
     }
 
     @Override
@@ -188,7 +198,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
     ) throws IOException {
         Date date = (Date) value;
         if (flow.isFlag(Flag.DATE_AS_TIMESTAMP)) {
-            flow.addLong(
+            flow.emit(
                 date.getTime()
             );
         } else {
@@ -196,13 +206,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date>, Serializ
             synchronized (this) {
                 time = format(date);
             }
-            if (flow.algo().is("json")) {
-                flow.addByte((byte) '"');
-                flow.emit(time);
-                flow.addByte((byte) '"');
-            } else {
-                flow.emit(time);
-            }
+            flow.emit(time);
         }
     }
 

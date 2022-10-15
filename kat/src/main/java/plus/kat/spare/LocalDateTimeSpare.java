@@ -45,7 +45,7 @@ public class LocalDateTimeSpare extends TemporalSpare<LocalDateTime> {
     }
 
     @Override
-    public CharSequence getSpace() {
+    public String getSpace() {
         return "LocalDateTime";
     }
 

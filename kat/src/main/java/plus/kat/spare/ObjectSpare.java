@@ -39,8 +39,8 @@ public class ObjectSpare extends Property<Object> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$;
+    public String getSpace() {
+        return "$";
     }
 
     @Override

@@ -48,7 +48,7 @@ public class Query extends Chain {
         super();
         int len = url.length();
         if (len != 0) {
-            chain(url, 0, len);
+            concat(url, 0, len);
             if (offset() == 0) {
                 offset = -1;
             }
@@ -177,7 +177,7 @@ public class Query extends Chain {
         byte b
     ) {
         grow(count + 3);
-        star = 0;
+        asset = 0;
         value[count++] = '%';
         value[count++] = upper((b & 0xF0) >> 4);
         value[count++] = upper(b & 0x0F);
@@ -192,11 +192,11 @@ public class Query extends Chain {
     ) {
         if (count > 0) {
             if (offset != -1) {
-                super.chain(
+                super.concat(
                     (byte) '&'
                 );
             } else {
-                super.chain(
+                super.concat(
                     (byte) '?'
                 );
                 offset = count;
@@ -207,11 +207,11 @@ public class Query extends Chain {
         byte[] it = value;
 
         if (count != it.length) {
-            star = 0;
+            asset = 0;
             it[count++] = '=';
         } else {
             grow(count + 1);
-            star = 0;
+            asset = 0;
             value[count++] = '=';
         }
         return this;
@@ -226,17 +226,17 @@ public class Query extends Chain {
         if ((0x60 < b && b < 0x7b) ||
             (0x40 < b && b < 0x5b) ||
             (0x2F < b && b < 0x3A)) {
-            chain(b);
+            concat(b);
         } else {
             if (b == ' ') {
-                chain(
+                concat(
                     (byte) '+'
                 );
             } else if (b == '.' ||
                 b == '_' ||
                 b == '-' ||
                 b == '*') {
-                chain(b);
+                concat(b);
             } else {
                 return set(b);
             }
@@ -279,7 +279,7 @@ public class Query extends Chain {
     public Query add(
         int num
     ) {
-        chain(num);
+        concat(num);
         return this;
     }
 
@@ -289,7 +289,7 @@ public class Query extends Chain {
     public Query add(
         long num
     ) {
-        chain(num);
+        concat(num);
         return this;
     }
 
@@ -632,14 +632,14 @@ public class Query extends Chain {
                 byte b = data[i++];
 
                 if (b == '+') {
-                    chain(
+                    concat(
                         (byte) 0x20
                     );
                     continue;
                 }
 
                 if (b != '%') {
-                    chain(b);
+                    concat(b);
                     continue;
                 }
 
@@ -653,7 +653,7 @@ public class Query extends Chain {
                         d |= (byte) digit(
                             data[i++]
                         );
-                        chain(d);
+                        concat(d);
                     } catch (IOException e) {
                         throw new UnsupportedCrash(e);
                     }
@@ -668,14 +668,14 @@ public class Query extends Chain {
                 char b = c.charAt(i++);
 
                 if (b == '+') {
-                    chain(
+                    concat(
                         (byte) 0x20
                     );
                     continue;
                 }
 
                 if (b != '%') {
-                    chain(b);
+                    concat(b);
                     continue;
                 }
 
@@ -689,7 +689,7 @@ public class Query extends Chain {
                         d |= (byte) digit(
                             (byte) c.charAt(i++)
                         );
-                        chain(d);
+                        concat(d);
                     } catch (IOException e) {
                         throw new UnsupportedCrash(e);
                     }

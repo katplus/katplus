@@ -37,14 +37,14 @@ public class CoderTest {
                 "Note{i:id(101)s:title(kat+)s:status(OPEN)}", chan.toString()
             );
         }
-        try (Doc doc = spare.mark(note)) {
+        try (Chan chan = spare.mark(note)) {
             assertEquals(
-                "<Note><id>101</id><title>kat+</title><status>OPEN</status></Note>", doc.toString()
+                "<Note><id>101</id><title>kat+</title><status>OPEN</status></Note>", chan.toString()
             );
         }
-        try (Json json = spare.serial(note)) {
+        try (Chan chan = spare.serial(note)) {
             assertEquals(
-                "{\"id\":101,\"title\":\"kat+\",\"status\":\"OPEN\"}", json.toString()
+                "{\"id\":101,\"title\":\"kat+\",\"status\":\"OPEN\"}", chan.toString()
             );
         }
     }
@@ -64,8 +64,8 @@ public class CoderTest {
     static class StatusCoder implements Coder<String> {
 
         @Override
-        public Space getSpace() {
-            return Space.$s;
+        public String getSpace() {
+            return "s";
         }
 
         @Override

@@ -902,7 +902,9 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         ) throws IOException {
             if (value == null) {
                 if ((flags & NotNull) == 0) {
-                    chan.set(name, null);
+                    chan.set(
+                        name, coder, null
+                    );
                 }
             } else {
                 if ((flags & Unwrapped) == 0) {

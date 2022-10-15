@@ -31,7 +31,7 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.1
  */
-public class BooleanSpare extends Property<Boolean> implements Serializer {
+public class BooleanSpare extends Property<Boolean> {
 
     public static final BooleanSpare
         INSTANCE = new BooleanSpare();
@@ -60,8 +60,8 @@ public class BooleanSpare extends Property<Boolean> implements Serializer {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$b;
+    public String getSpace() {
+        return "b";
     }
 
     @Override
@@ -71,6 +71,13 @@ public class BooleanSpare extends Property<Boolean> implements Serializer {
         return clazz == boolean.class
             || clazz == Boolean.class
             || clazz == Object.class;
+    }
+
+    @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.FALSE;
     }
 
     @Override
@@ -94,7 +101,7 @@ public class BooleanSpare extends Property<Boolean> implements Serializer {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.addBoolean(
+        flow.emit(
             (boolean) value
         );
     }

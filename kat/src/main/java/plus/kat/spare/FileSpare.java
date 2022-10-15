@@ -70,7 +70,7 @@ public class FileSpare extends Property<File> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.text(
+        flow.emit(
             ((File) value).getPath()
         );
     }

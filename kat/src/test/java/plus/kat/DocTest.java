@@ -87,9 +87,9 @@ public class DocTest {
         Article article = spare.down(text);
         assertNotNull(article);
 
-        try (Doc doc = spare.mark(article)) {
+        try (Chan chan = spare.mark(article)) {
             assertEquals(
-                text, doc.toString()
+                text, chan.toString()
             );
         }
     }
@@ -145,10 +145,13 @@ public class DocTest {
 
     @Test
     public void test_encode1() {
+        Map<Object, Object> data = new HashMap<>();
+        data.put("别名", "陆之岇");
         assertEquals(
-            "<s>\\u9646\\u4E4B\\u5C87</s>", Doc.encode(
-                "陆之岇", Flag.UNICODE
-            )
+            "<M><别名>陆之岇</别名></M>", Doc.encode(data)
+        );
+        assertEquals(
+            "<M><\\u522B\\u540D>\\u9646\\u4E4B\\u5C87</\\u522B\\u540D></M>", Doc.encode(data, Flag.UNICODE)
         );
     }
 

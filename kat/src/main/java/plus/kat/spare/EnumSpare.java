@@ -33,7 +33,7 @@ import java.lang.reflect.Type;
  * @since 0.0.1
  */
 @SuppressWarnings("unchecked")
-public class EnumSpare<K extends Enum<K>> extends Property<K> implements Serializer {
+public class EnumSpare<K extends Enum<K>> extends Property<K> {
 
     protected String[] spaces;
     private K[] enums;
@@ -124,6 +124,16 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
     }
 
     @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        if (flag.isFlag(Flag.ENUM_AS_INDEX)) {
+            return Boolean.FALSE;
+        }
+        return null;
+    }
+
+    @Override
     public void embed(
         @NotNull Supplier supplier
     ) {
@@ -194,17 +204,13 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> implements Seriali
     ) throws IOException {
         Enum<?> e = (Enum<?>) value;
         if (flow.isFlag(Flag.ENUM_AS_INDEX)) {
-            flow.addInt(
+            flow.emit(
                 e.ordinal()
             );
         } else {
-            if (flow.algo().is("json")) {
-                flow.addByte((byte) '"');
-                flow.emit(e.name());
-                flow.addByte((byte) '"');
-            } else {
-                flow.emit(e.name());
-            }
+            flow.emit(
+                e.name()
+            );
         }
     }
 

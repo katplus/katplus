@@ -27,7 +27,7 @@ class KatKtTest {
         }
 
         kat.use {
-            assertSame(Chan::class.java, kat::class.java)
+            assertSame(Kat::class.java, kat::class.java)
             assertEquals(
                 "User{i:id(1)s:name(kraity)}", kat.toString()
             )

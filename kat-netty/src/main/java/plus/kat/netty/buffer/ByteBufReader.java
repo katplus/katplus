@@ -21,8 +21,8 @@ import plus.kat.stream.*;
 
 import io.netty.buffer.ByteBuf;
 
-import static plus.kat.kernel.Dram.Memory;
-import static plus.kat.kernel.Dram.Memory.INS;
+import static plus.kat.kernel.Alpha.Memory;
+import static plus.kat.kernel.Alpha.Memory.INS;
 
 /**
  * @author kraity

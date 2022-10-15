@@ -27,7 +27,7 @@ import plus.kat.utils.*;
  * @author kraity
  * @since 0.0.1
  */
-public final class Alias extends Dram {
+public final class Alias extends Alpha {
     /**
      * empty alias
      */
@@ -50,7 +50,7 @@ public final class Alias extends Dram {
         @NotNull byte[] data
     ) {
         super(data);
-        star |= Integer.MIN_VALUE;
+        asset |= Integer.MIN_VALUE;
     }
 
     /**
@@ -62,7 +62,7 @@ public final class Alias extends Dram {
         @NotNull Chain chain
     ) {
         super(chain);
-        star |= Integer.MIN_VALUE;
+        asset |= Integer.MIN_VALUE;
     }
 
     /**
@@ -100,7 +100,7 @@ public final class Alias extends Dram {
         @Nullable CharSequence sequence
     ) {
         super(sequence);
-        star |= Integer.MIN_VALUE;
+        asset |= Integer.MIN_VALUE;
     }
 
     /**

@@ -54,8 +54,8 @@ public class ListSpare extends Property<List> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$L;
+    public String getSpace() {
+        return "L";
     }
 
     @Override

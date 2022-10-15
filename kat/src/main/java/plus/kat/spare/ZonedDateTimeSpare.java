@@ -45,7 +45,7 @@ public class ZonedDateTimeSpare extends TemporalSpare<ZonedDateTime> {
     }
 
     @Override
-    public CharSequence getSpace() {
+    public String getSpace() {
         return "ZonedDateTime";
     }
 

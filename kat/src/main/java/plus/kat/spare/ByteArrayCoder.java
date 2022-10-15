@@ -32,8 +32,8 @@ public class ByteArrayCoder implements Coder<byte[]> {
         INSTANCE = new ByteArrayCoder();
 
     @Override
-    public Space getSpace() {
-        return Space.$s;
+    public String getSpace() {
+        return "s";
     }
 
     @Override

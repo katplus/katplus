@@ -57,14 +57,14 @@ public abstract class Caller extends Chain {
     ) {
         byte[] data;
         try {
-            chain(in, 1024);
+            concat(in, 1024);
             data = toBytes();
         } catch (Exception e) {
             data = EMPTY_BYTES;
         } finally {
             try {
                 hash = 0;
-                star = 0;
+                asset = 0;
                 count = 0;
                 backup = null;
                 byte[] it = value;

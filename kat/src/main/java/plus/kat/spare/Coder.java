@@ -33,8 +33,8 @@ public interface Coder<K> {
      * Returns the space of {@link Coder}
      */
     @NotNull
-    default CharSequence getSpace() {
-        return Space.$;
+    default String getSpace() {
+        return "$";
     }
 
     /**
@@ -42,6 +42,16 @@ public interface Coder<K> {
      */
     @Nullable
     default Boolean getFlag() {
+        return null;
+    }
+
+    /**
+     * Returns the border of {@link Coder}
+     */
+    @Nullable
+    default Boolean getBorder(
+        @NotNull Flag flag
+    ) {
         return null;
     }
 
@@ -57,7 +67,7 @@ public interface Coder<K> {
 
     /**
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the {@code flag} or {@code alias} is null
+     * @throws NullPointerException If the flag or alias is null
      */
     @Nullable
     default K read(
@@ -69,7 +79,7 @@ public interface Coder<K> {
 
     /**
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the {@code flag} or {@code value} is null
+     * @throws NullPointerException If the flag or value is null
      */
     @Nullable
     default K read(
@@ -81,7 +91,7 @@ public interface Coder<K> {
 
     /**
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the {@code chan} or {@code value} is null
+     * @throws NullPointerException If the chan or value is null
      */
     default void write(
         @NotNull Chan chan,
@@ -92,7 +102,7 @@ public interface Coder<K> {
 
     /**
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the {@code flow} or {@code value} is null
+     * @throws NullPointerException If the flow or value is null
      */
     default void write(
         @NotNull Flow flow,

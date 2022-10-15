@@ -21,7 +21,7 @@ import javax.crypto.Cipher;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static plus.kat.kernel.Dram.Memory.INS;
+import static plus.kat.kernel.Alpha.Memory.INS;
 
 /**
  * @author kraity

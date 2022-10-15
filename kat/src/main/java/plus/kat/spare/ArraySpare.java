@@ -77,8 +77,8 @@ public class ArraySpare extends Property<Object> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$A;
+    public String getSpace() {
+        return "A";
     }
 
     @Override

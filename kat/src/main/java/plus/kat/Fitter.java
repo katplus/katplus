@@ -13,11 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.spare;
+package plus.kat;
+
+import plus.kat.anno.NotNull;
+
+import java.io.IOException;
 
 /**
  * @author kraity
- * @since 0.0.3
+ * @since 0.0.5
  */
-public interface Serializer {
+@FunctionalInterface
+public interface Fitter {
+    /**
+     * Serializes this at the current hierarchy
+     *
+     * @throws IOException If an I/O error occurs
+     * @see Chan#set(String, Fitter)
+     */
+    void accept(
+        @NotNull Chan chan
+    ) throws IOException;
 }

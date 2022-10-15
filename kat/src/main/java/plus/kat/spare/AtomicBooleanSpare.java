@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Serializer {
+public class AtomicBooleanSpare extends Property<AtomicBoolean> {
 
     public static final AtomicBooleanSpare
         INSTANCE = new AtomicBooleanSpare();
@@ -56,6 +56,13 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Seria
     }
 
     @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.FALSE;
+    }
+
+    @Override
     public AtomicBoolean read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -80,7 +87,7 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> implements Seria
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.addBoolean(
+        flow.emit(
             ((AtomicBoolean) value).get()
         );
     }

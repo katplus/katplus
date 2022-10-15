@@ -37,7 +37,7 @@ public class RequestPaper extends RequestBody {
         Chan chan
     ) {
         this(
-            chan.getFlow()
+            chan.getSteam()
         );
     }
 
@@ -46,23 +46,23 @@ public class RequestPaper extends RequestBody {
         MediaType mediaType
     ) {
         this(
-            chan.getFlow(), mediaType
+            chan.getSteam(), mediaType
         );
     }
 
     public RequestPaper(
-        Paper paper
+        Steam steam
     ) {
         this(
-            paper, MediaTypes.of(paper.algo())
+            steam, MediaTypes.of(steam.algo())
         );
     }
 
     public RequestPaper(
-        Paper paper,
+        Steam steam,
         MediaType mediaType
     ) {
-        try (Paper ch = paper) {
+        try (Steam ch = steam) {
             this.data = ch.toBytes();
             this.mediaType = mediaType;
         }

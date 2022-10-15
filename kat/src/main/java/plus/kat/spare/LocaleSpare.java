@@ -91,7 +91,7 @@ public class LocaleSpare extends Property<Locale> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.text(
+        flow.emit(
             value.toString()
         );
     }

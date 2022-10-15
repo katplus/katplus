@@ -185,7 +185,7 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
      * @author kraity
      * @since 0.0.5
      */
-    public static class Parser extends Dram {
+    public static class Parser extends Alpha {
 
         private int index;
 
@@ -204,7 +204,7 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
                 while (true) {
                     int i = in.read();
                     if (i > 0x20) {
-                        chain(
+                        concat(
                             (byte) i
                         );
                         continue;
@@ -217,7 +217,7 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
                     if (get(-1, LF) == LF) {
                         if (i == -1) break;
                     } else {
-                        chain(LF);
+                        concat(LF);
                         if (block != 0) {
                             byte[] it = value;
                             byte data = it[block];
@@ -262,9 +262,7 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
          *
          * @throws IllegalAccessError If the parser has no more name
          */
-        @SuppressWarnings(
-            "deprecation"
-        )
+        @SuppressWarnings("deprecation")
         public String next() {
             int start = index,
                 point = indexOf(

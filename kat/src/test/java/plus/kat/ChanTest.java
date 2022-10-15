@@ -3,6 +3,7 @@ package plus.kat;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+
 import plus.kat.kernel.Chain;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,7 +16,7 @@ public class ChanTest {
 
     @Test
     public void test_chan_toString() throws IOException {
-        Chan chan = new Chan();
+        Chan chan = new Kat();
         chan.set(null, it ->
             it.set("id", 1)
         );
@@ -30,7 +31,7 @@ public class ChanTest {
 
     @Test
     public void test_chan_toBytes() throws IOException {
-        Chan chan = new Chan();
+        Chan chan = new Kat();
         chan.set(null, it ->
             it.set("id", 1)
         );

@@ -43,7 +43,7 @@ public interface Spare<K> extends Coder<K> {
      * Generally, it is class name, or custom name
      */
     @NotNull
-    CharSequence getSpace();
+    String getSpace();
 
     /**
      * Returns the flag of {@link K}
@@ -449,7 +449,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Serialize to {@link Chan}
+     * Serialize to {@link Kat}
      *
      * <pre>{@code
      *   User user = ...
@@ -474,7 +474,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Serialize to {@link Chan}
+     * Serialize to {@link Kat}
      *
      * <pre>{@code
      *   User user = ...
@@ -494,7 +494,7 @@ public interface Spare<K> extends Coder<K> {
     default Chan write(
         @Nullable K value, long flags
     ) throws IOException {
-        Chan chan = new Chan(flags);
+        Chan chan = new Kat(flags);
         chan.set(null, this, value);
         return chan;
     }
@@ -565,7 +565,7 @@ public interface Spare<K> extends Coder<K> {
      * @throws IOException If an I/O error occurs
      */
     @NotNull
-    default Doc mark(
+    default Chan mark(
         @Nullable K value
     ) throws IOException {
         return mark(
@@ -591,10 +591,10 @@ public interface Spare<K> extends Coder<K> {
      * @throws IOException If an I/O error occurs
      */
     @NotNull
-    default Doc mark(
+    default Chan mark(
         @Nullable K value, long flags
     ) throws IOException {
-        Doc chan = new Doc(flags);
+        Chan chan = new Doc(flags);
         chan.set(null, this, value);
         return chan;
     }
@@ -665,7 +665,7 @@ public interface Spare<K> extends Coder<K> {
      * @throws IOException If an I/O error occurs
      */
     @NotNull
-    default Json serial(
+    default Chan serial(
         @Nullable K value
     ) throws IOException {
         return serial(
@@ -691,10 +691,10 @@ public interface Spare<K> extends Coder<K> {
      * @throws IOException If an I/O error occurs
      */
     @NotNull
-    default Json serial(
+    default Chan serial(
         @Nullable K value, long flags
     ) throws IOException {
-        Json chan = new Json(flags);
+        Chan chan = new Json(flags);
         chan.set(null, this, value);
         return chan;
     }

@@ -53,8 +53,8 @@ public class SetSpare extends Property<Set> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$S;
+    public String getSpace() {
+        return "S";
     }
 
     @Override

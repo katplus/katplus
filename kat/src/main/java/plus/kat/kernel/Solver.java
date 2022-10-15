@@ -31,12 +31,8 @@ public interface Solver extends Closeable {
     /**
      * Returns the algo of this {@link Solver}
      *
-     * <pre>{@code
-     *   Solver solver = ...
-     *   Algo algo = solver.algo();
-     * }</pre>
+     * @return {@link Algo}, NotNull
      */
-    @NotNull
     Algo algo();
 
     /**
@@ -51,12 +47,6 @@ public interface Solver extends Closeable {
         @NotNull Proxy proxy,
         @NotNull Reader reader
     ) throws IOException;
-
-    /**
-     * Close this {@link Solver}
-     */
-    @Override
-    void close();
 
     /**
      * Clear this {@link Solver}

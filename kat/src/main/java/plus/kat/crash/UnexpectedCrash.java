@@ -15,19 +15,13 @@
  */
 package plus.kat.crash;
 
-import plus.kat.anno.NotNull;
-import plus.kat.anno.Nullable;
-
-import plus.kat.*;
-import plus.kat.chain.*;
-
 import java.io.IOException;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class UnexpectedCrash extends IOException implements Kat {
+public class UnexpectedCrash extends IOException {
     /**
      * @param m the detail message
      */
@@ -48,25 +42,5 @@ public class UnexpectedCrash extends IOException implements Kat {
      */
     public UnexpectedCrash(String m, Throwable e) {
         super(m, e);
-    }
-
-    /**
-     * Returns the space of this
-     */
-    @Nullable
-    public Space space() {
-        return Space.$E;
-    }
-
-    /**
-     * @param chan the specified chan
-     */
-    @Override
-    public void coding(
-        @NotNull Chan chan
-    ) throws IOException {
-        chan.set(
-            "message", getMessage()
-        );
     }
 }

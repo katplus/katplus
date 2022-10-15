@@ -113,9 +113,12 @@ public abstract class TemporalSpare<K extends TemporalAccessor> extends Property
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
+        StringBuilder builder
+            = new StringBuilder(32);
         formatter.formatTo(
-            (TemporalAccessor) value, flow
+            (TemporalAccessor) value, builder
         );
+        flow.emit(builder);
     }
 
     @Nullable

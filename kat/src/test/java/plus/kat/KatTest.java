@@ -79,13 +79,15 @@ public class KatTest {
 
     @Test
     public void test_encode2() {
+        Map<Object, Object> data = new HashMap<>();
+        data.put("别名", "陆之岇");
         assertEquals(
-            "s(^u9646^u4E4B^u5C87)", Kat.encode(
-                "陆之岇", Flag.UNICODE
-            )
+            "M{s:别名(陆之岇)}", Kat.encode(data)
+        );
+        assertEquals(
+            "M{s:^u522B^u540D(^u9646^u4E4B^u5C87)}", Kat.encode(data, Flag.UNICODE)
         );
     }
-
 
     @Test
     public void test_optional() {

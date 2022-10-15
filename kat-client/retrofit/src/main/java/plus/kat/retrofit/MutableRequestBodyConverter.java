@@ -56,7 +56,7 @@ public class MutableRequestBodyConverter<T> implements Converter<T, RequestBody>
         try (Chan chan = supplier.telex(algo, plan)) {
             if (chan.set(null, value)) {
                 return new RequestPaper(
-                    chan.getFlow(), MediaTypes.of(algo)
+                    chan.getSteam(), MediaTypes.of(algo)
                 );
             }
         } catch (Collapse e) {

@@ -37,9 +37,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
-import static plus.kat.Plan.DEF;
-import static plus.kat.chain.Space.*;
-
 /**
  * @author kraity
  * @since 0.0.1
@@ -733,7 +730,7 @@ public interface Supplier extends Cloneable {
     }
 
     /**
-     * Serialize to {@link Chan}
+     * Serialize to {@link Kat}
      *
      * <pre>{@code
      *   User user = ...
@@ -753,12 +750,12 @@ public interface Supplier extends Cloneable {
         @Nullable Object value
     ) throws IOException {
         return write(
-            value, DEF.writeFlags
+            value, Plan.DEF.writeFlags
         );
     }
 
     /**
-     * Serialize to {@link Chan}
+     * Serialize to {@link Kat}
      *
      * <pre>{@code
      *   User user = ...
@@ -778,7 +775,7 @@ public interface Supplier extends Cloneable {
     default Chan write(
         @Nullable Object value, long flags
     ) throws IOException {
-        Chan chan = new Chan(
+        Chan chan = new Kat(
             flags, this
         );
         chan.set(null, value);
@@ -859,11 +856,11 @@ public interface Supplier extends Cloneable {
      * @throws IOException If an I/O error occurs
      */
     @NotNull
-    default Doc mark(
+    default Chan mark(
         @Nullable Object value
     ) throws IOException {
         return mark(
-            value, DEF.writeFlags
+            value, Plan.DEF.writeFlags
         );
     }
 
@@ -885,10 +882,10 @@ public interface Supplier extends Cloneable {
      * @throws IOException If an I/O error occurs
      */
     @NotNull
-    default Doc mark(
+    default Chan mark(
         @Nullable Object value, long flags
     ) throws IOException {
-        Doc chan = new Doc(
+        Chan chan = new Doc(
             flags, this
         );
         chan.set(null, value);
@@ -969,11 +966,11 @@ public interface Supplier extends Cloneable {
      * @throws IOException If an I/O error occurs
      */
     @NotNull
-    default Json serial(
+    default Chan serial(
         @Nullable Object value
     ) throws IOException {
         return serial(
-            value, DEF.writeFlags
+            value, Plan.DEF.writeFlags
         );
     }
 
@@ -995,10 +992,10 @@ public interface Supplier extends Cloneable {
      * @throws IOException If an I/O error occurs
      */
     @NotNull
-    default Json serial(
+    default Chan serial(
         @Nullable Object value, long flags
     ) throws IOException {
-        Json chan = new Json(
+        Chan chan = new Json(
             flags, this
         );
         chan.set(null, value);
@@ -1073,7 +1070,7 @@ public interface Supplier extends Cloneable {
     ) {
         switch (algo.name()) {
             case "kat": {
-                return new Chan(
+                return new Kat(
                     flags, this
                 );
             }
@@ -1339,25 +1336,25 @@ public interface Supplier extends Cloneable {
             INS.put(StringBuffer.class, StringBufferSpare.INSTANCE);
             INS.put(StringBuilder.class, StringBuilderSpare.INSTANCE);
 
-            INS.table.put($, ObjectSpare.INSTANCE);
-            INS.table.put($s, StringSpare.INSTANCE);
-            INS.table.put($b, BooleanSpare.INSTANCE);
-            INS.table.put($i, IntegerSpare.INSTANCE);
-            INS.table.put($l, LongSpare.INSTANCE);
-            INS.table.put($f, FloatSpare.INSTANCE);
-            INS.table.put($d, DoubleSpare.INSTANCE);
-            INS.table.put($c, CharSpare.INSTANCE);
-            INS.table.put($o, ByteSpare.INSTANCE);
-            INS.table.put($u, ShortSpare.INSTANCE);
-            INS.table.put($M, MapSpare.INSTANCE);
-            INS.table.put($A, ArraySpare.INSTANCE);
-            INS.table.put($L, ListSpare.INSTANCE);
-            INS.table.put($S, SetSpare.INSTANCE);
-            INS.table.put($E, ErrorSpare.INSTANCE);
-            INS.table.put($B, ByteArraySpare.INSTANCE);
-            INS.table.put($I, BigIntegerSpare.INSTANCE);
-            INS.table.put($D, BigDecimalSpare.INSTANCE);
-            INS.table.put(EMPTY, ObjectSpare.INSTANCE);
+            INS.table.put("$", ObjectSpare.INSTANCE);
+            INS.table.put("s", StringSpare.INSTANCE);
+            INS.table.put("b", BooleanSpare.INSTANCE);
+            INS.table.put("i", IntegerSpare.INSTANCE);
+            INS.table.put("l", LongSpare.INSTANCE);
+            INS.table.put("f", FloatSpare.INSTANCE);
+            INS.table.put("d", DoubleSpare.INSTANCE);
+            INS.table.put("c", CharSpare.INSTANCE);
+            INS.table.put("o", ByteSpare.INSTANCE);
+            INS.table.put("u", ShortSpare.INSTANCE);
+            INS.table.put("M", MapSpare.INSTANCE);
+            INS.table.put("A", ArraySpare.INSTANCE);
+            INS.table.put("L", ListSpare.INSTANCE);
+            INS.table.put("S", SetSpare.INSTANCE);
+            INS.table.put("E", ErrorSpare.INSTANCE);
+            INS.table.put("B", ByteArraySpare.INSTANCE);
+            INS.table.put("I", BigIntegerSpare.INSTANCE);
+            INS.table.put("D", BigDecimalSpare.INSTANCE);
+            INS.table.put("", ObjectSpare.INSTANCE);
 
             try (KatLoader<Provider> loader =
                      new KatLoader<>(Provider.class)) {
@@ -1417,7 +1414,7 @@ public interface Supplier extends Cloneable {
         /**
          * default relationship table
          */
-        protected final Map<CharSequence, Spare<?>> table;
+        protected final Map<Object, Spare<?>> table;
 
         public Impl(
             int sponsor, int capacity
@@ -1567,8 +1564,9 @@ public interface Supplier extends Cloneable {
                 .getAnnotation(Embed.class);
             if (embed == null) {
                 if (klass.isInterface() ||
-                    Kat.class.isAssignableFrom(klass) ||
-                    Coder.class.isAssignableFrom(klass)) {
+                    Coder.class.isAssignableFrom(klass) ||
+                    Fitter.class.isAssignableFrom(klass) ||
+                    Exception.class.isAssignableFrom(klass)) {
                     return null;
                 }
             } else {

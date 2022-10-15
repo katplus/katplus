@@ -26,7 +26,7 @@ import plus.kat.kernel.Chain;
 import java.io.*;
 import java.net.*;
 
-import static plus.kat.kernel.Dram.Memory;
+import static plus.kat.kernel.Alpha.Memory;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -616,7 +616,7 @@ public class Client extends Caller {
         Chan chan
     ) throws IOException {
         return put(
-            chan.getFlow()
+            chan.getSteam()
         );
     }
 
@@ -625,7 +625,7 @@ public class Client extends Caller {
      * @throws IOException If an I/O error occurs
      */
     public Client put(
-        Paper flow
+        Steam flow
     ) throws IOException {
         try {
             contentType(
@@ -691,7 +691,7 @@ public class Client extends Caller {
         Chan chan
     ) throws IOException {
         return post(
-            chan.getFlow()
+            chan.getSteam()
         );
     }
 
@@ -700,7 +700,7 @@ public class Client extends Caller {
      * @throws IOException If an I/O error occurs
      */
     public Client post(
-        Paper flow
+        Steam flow
     ) throws IOException {
         try {
             contentType(

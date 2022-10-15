@@ -61,8 +61,8 @@ public class VoidSpare extends Property<Void> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$;
+    public String getSpace() {
+        return "$";
     }
 
     @Override

@@ -42,7 +42,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     protected int hash;
     protected Bucket bucket;
 
-    protected int star;
+    protected int asset;
     protected String backup;
 
     /**
@@ -85,7 +85,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     ) {
         value = EMPTY_BYTES;
         if (fixed) {
-            star |= Integer.MIN_VALUE;
+            asset |= Integer.MIN_VALUE;
         }
     }
 
@@ -139,9 +139,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     @Override
     public int hashCode() {
         int h = hash;
-        if ((star & 1) == 0) {
+        if ((asset & 1) == 0) {
             h = 0;
-            star |= 1;
             int size = count;
             if (size != 0) {
                 byte[] v = value;
@@ -150,6 +149,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 }
             }
             hash = h;
+            asset |= 1;
         }
         return h;
     }
@@ -207,8 +207,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * this chain is finally unchanged
      */
     public final boolean isFixed() {
-        // star & Integer.MIN_VALUE
-        return star < 0;
+        // asset & 0x80000000
+        return asset < 0;
     }
 
     /**
@@ -1394,7 +1394,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
         @NotNull OutputStream s, int i, int l
     ) throws IOException {
         if (i <= count - l) {
-            if (0 <= star) {
+            if (0 <= asset) {
                 s.write(
                     value, i, l
                 );
@@ -1621,7 +1621,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @since 0.0.5
      */
     @NotNull
-    public byte[] encode(
+    public byte[] encrypt(
         @NotNull Base64 base64
     ) {
         return base64.encode(
@@ -1640,7 +1640,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @since 0.0.5
      */
     @NotNull
-    public byte[] encode(
+    public byte[] encrypt(
         @NotNull Base64 base64, int i, int l
     ) {
         if (i <= count - l && 0 <= i && 0 <= l) {
@@ -1663,7 +1663,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @since 0.0.5
      */
     @NotNull
-    public byte[] decode(
+    public byte[] decrypt(
         @NotNull Base64 base64
     ) {
         return base64.decode(
@@ -1682,7 +1682,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @since 0.0.5
      */
     @NotNull
-    public byte[] decode(
+    public byte[] decrypt(
         @NotNull Base64 base64, int i, int l
     ) {
         if (i <= count - l && 0 <= i && 0 <= l) {
@@ -1820,8 +1820,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             return "";
         }
 
-        if ((star & 2) == 0) {
-            star |= 2;
+        if ((asset & 2) == 0) {
+            asset |= 2;
         } else {
             String data = backup;
             if (data != null) {
@@ -2395,22 +2395,87 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Connects the chain to the end of this {@link Chain}
+     * Escapes the byte value (if necessary)
+     * and concatenates it to this {@link Chain}
      *
-     * @param c the specified {@link Chain}
+     * @param b the specified byte value to be appended
+     * @see Chain#concat(byte)
+     * @since 0.0.5
      */
-    protected void chain(
+    protected void emit(
+        byte b
+    ) {
+        asset = 0;
+        byte[] it = value;
+        if (count != it.length) {
+            it[count++] = b;
+        } else {
+            grow(count + 1);
+            value[count++] = b;
+        }
+    }
+
+    /**
+     * Concatenates the byte value to this {@link Chain}, copy it directly
+     *
+     * @param b the specified byte value to be appended
+     * @see Chain#emit(byte)
+     * @since 0.0.5
+     */
+    protected void concat(
+        byte b
+    ) {
+        byte[] it = value;
+        if (count != it.length) {
+            asset = 0;
+            it[count++] = b;
+        } else {
+            grow(count + 1);
+            asset = 0;
+            value[count++] = b;
+        }
+    }
+
+    /**
+     * Concatenates the byte array to this {@link Chain}, copy it directly
+     *
+     * @param b the specified source to be appended
+     * @param i the specified start index for array
+     * @param l the specified length of bytes to concat
+     * @since 0.0.5
+     */
+    protected void concat(
+        @NotNull byte[] b, int i, int l
+    ) {
+        if (l != 0) {
+            int d = count;
+            grow(d + l);
+            asset = 0;
+            count += l;
+            System.arraycopy(
+                b, i, value, d, l
+            );
+        }
+    }
+
+    /**
+     * Concatenates the chain to this {@link Chain}, copy it directly
+     *
+     * @param c the specified {@link Chain} to be appended
+     * @since 0.0.5
+     */
+    protected void concat(
         @NotNull Chain c
     ) {
         int d = count;
         int l = c.count;
         if (l == 1) {
             grow(d + 1);
-            star = 0;
+            asset = 0;
             value[count++] = c.value[0];
         } else if (l != 0) {
             grow(d + l);
-            star = 0;
+            asset = 0;
             count += l;
             System.arraycopy(
                 c.value, 0, value, d, l
@@ -2419,20 +2484,20 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Connects the chain to the end of this {@link Chain}
+     * Concatenates the chain to this {@link Chain}, copy it directly
      *
-     * @param c the specified chain
+     * @param c the specified chain to be appended
      * @param i the specified index
      * @param l the specified length
-     * @since 0.0.4
+     * @since 0.0.5
      */
-    protected void chain(
+    protected void concat(
         @NotNull Chain c, int i, int l
     ) {
         if (l != 0) {
             int d = count;
             grow(d + l);
-            star = 0;
+            asset = 0;
             count += l;
             System.arraycopy(
                 c.value, i, value, d, l
@@ -2441,16 +2506,16 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Connects the inputStream to the end of this {@link Chain}
+     * Connects the stream to this {@link Chain}, copy it directly
      *
-     * @param in the specified {@link InputStream}
-     * @since 0.0.3
+     * @param in the specified {@link InputStream} to be appended
+     * @since 0.0.5
      */
-    protected void chain(
+    protected void concat(
         @NotNull InputStream in
     ) {
         try {
-            chain(in, 128);
+            concat(in, 128);
         } catch (Exception e) {
             // Nothing
         } finally {
@@ -2463,13 +2528,13 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Connects the inputStream to the end of this {@link Chain}
+     * Concatenates the stream to this {@link Chain}, copy it directly
      *
-     * @param in the specified {@link InputStream}
+     * @param in the specified {@link InputStream} to be appended
      * @throws IOException If an I/O error occurs
-     * @since 0.0.3
+     * @since 0.0.5
      */
-    protected void chain(
+    protected void concat(
         @NotNull InputStream in, int range
     ) throws IOException {
         int m, n, size;
@@ -2492,7 +2557,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 if (size == -1) {
                     break;
                 } else {
-                    star = 0;
+                    asset = 0;
                     count += size;
                 }
             } else {
@@ -2502,11 +2567,11 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 } else {
                     byte[] it = value;
                     if (count != it.length) {
-                        star = 0;
+                        asset = 0;
                         it[count++] = (byte) m;
                     } else {
                         grow(count + 1);
-                        star = 0;
+                        asset = 0;
                         value[count++] = (byte) m;
                     }
                 }
@@ -2515,272 +2580,443 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Connects the byte value to the end of this {@link Chain}
+     * Concatenates the string representation
+     * of the integer value to this {@link Chain}
      *
-     * @param b the specified byte value
+     * @param num the specified number to be appended
+     * @since 0.0.5
      */
-    protected void chain(
-        byte b
-    ) {
-        byte[] it = value;
-        if (count != it.length) {
-            star = 0;
-            it[count++] = b;
-        } else {
-            grow(count + 1);
-            star = 0;
-            value[count++] = b;
-        }
-    }
-
-    /**
-     * Connects the number to the end of this {@link Chain}
-     *
-     * @param num the specified int value
-     * @since 0.0.4
-     */
-    protected void chain(
+    protected void concat(
         int num
     ) {
         if (num < 0) {
-            grow(count + 1);
-            value[count++] = '-';
+            concat(
+                (byte) '-'
+            );
+            if (num > -10) {
+                concat((byte) (
+                    0x3A + num
+                ));
+            } else {
+                int mark = count;
+                do {
+                    concat((byte) (
+                        0x3A + (num % 10)
+                    ));
+                    num /= 10;
+                } while (num != 0);
+                swop(mark, count);
+            }
         } else {
-            num = -num;
-        }
-
-        if (num > -10) {
-            grow(count + 1);
-            star = 0;
-            value[count++] = lower(-num);
-        } else {
-            int mark = count;
-            do {
-                grow(count + 1);
-                value[count++] = lower(-(num % 10));
-                num /= 10;
-            } while (num < 0);
-            swop(mark, count);
+            if (num < 10) {
+                concat((byte) (
+                    0x30 + num
+                ));
+            } else {
+                int mark = count;
+                do {
+                    concat((byte) (
+                        0x30 + (num % 10)
+                    ));
+                    num /= 10;
+                } while (num != 0);
+                swop(mark, count);
+            }
         }
     }
 
     /**
-     * Connects the number to the end of this {@link Chain}
+     * Concatenates the string representation
+     * of the long value to this {@link Chain}
      *
-     * @param num the specified long value
-     * @since 0.0.4
+     * @param num the specified number to be appended
+     * @since 0.0.5
      */
-    protected void chain(
+    protected void concat(
         long num
     ) {
         if (num < 0) {
-            grow(count + 1);
-            value[count++] = '-';
-        } else {
-            num = -num;
-        }
-
-        if (num > -10L) {
-            grow(count + 1);
-            star = 0;
-            value[count++] = lower((int) -num);
-        } else {
-            int mark = count;
-            do {
-                grow(count + 1);
-                value[count++] = lower((int) -(num % 10L));
-                num /= 10L;
-            } while (num < 0L);
-            swop(mark, count);
-        }
-    }
-
-    /**
-     * Connects the byte array to the end of this {@link Chain}
-     *
-     * @param b the specified array
-     * @param i the specified index
-     * @param l the specified length
-     */
-    protected void chain(
-        @NotNull byte[] b, int i, int l
-    ) {
-        if (l != 0) {
-            int d = count;
-            grow(d + l);
-            star = 0;
-            count += l;
-            System.arraycopy(
-                b, i, value, d, l
+            concat(
+                (byte) '-'
             );
+            if (num > -10) {
+                concat((byte) (
+                    0x3A + num
+                ));
+            } else {
+                int mark = count;
+                do {
+                    concat((byte) (
+                        0x3A + (num % 10)
+                    ));
+                    num /= 10;
+                } while (num != 0);
+                swop(mark, count);
+            }
+        } else {
+            if (num < 10) {
+                concat((byte) (
+                    0x30 + num
+                ));
+            } else {
+                int mark = count;
+                do {
+                    concat((byte) (
+                        0x30 + (num % 10)
+                    ));
+                    num /= 10;
+                } while (num != 0);
+                swop(mark, count);
+            }
         }
     }
 
     /**
-     * Connects the char value to the end of this {@link Chain}
+     * Concatenates the string representation
+     * of the float value to this {@link Chain}
      *
-     * @param c the specified char value
+     * @param num the specified number to be appended
+     * @since 0.0.5
      */
-    protected void chain(
-        char c
+    @SuppressWarnings("deprecation")
+    protected void concat(
+        float num
+    ) {
+        String data = Float.toString(num);
+        int size = data.length();
+        grow(count + size);
+        asset = 0;
+        data.getBytes(
+            0, size, value, count
+        );
+        count += size;
+    }
+
+    /**
+     * Concatenates the string representation
+     * of the double value to this {@link Chain}
+     *
+     * @param num the specified number to be appended
+     * @since 0.0.5
+     */
+    @SuppressWarnings("deprecation")
+    protected void concat(
+        double num
+    ) {
+        String data = Double.toString(num);
+        int size = data.length();
+        grow(count + size);
+        asset = 0;
+        data.getBytes(
+            0, size, value, count
+        );
+        count += size;
+    }
+
+    /**
+     * Concatenates the string representation
+     * of the boolean value to this {@link Chain}
+     *
+     * @param bool the specified boolean to be appended
+     * @since 0.0.5
+     */
+    protected void concat(
+        boolean bool
+    ) {
+        asset = 0;
+        byte[] it = value;
+        if (bool) {
+            int size = count + 4;
+            if (size > it.length) {
+                grow(size);
+                it = value;
+            }
+            it[count++] = 't';
+            it[count++] = 'r';
+            it[count++] = 'u';
+        } else {
+            int size = count + 5;
+            if (size > it.length) {
+                grow(size);
+                it = value;
+            }
+            it[count++] = 'f';
+            it[count++] = 'a';
+            it[count++] = 'l';
+            it[count++] = 's';
+        }
+        it[count++] = 'e';
+    }
+
+    /**
+     * Concatenates the char value to this {@link Chain}
+     *
+     * @param ch the specified char value to be appended
+     * @since 0.0.5
+     */
+    protected void concat(
+        char ch
     ) {
         // U+0000 ~ U+007F
-        star = 0;
-        if (c < 0x80) {
-            grow(count + 1);
-            value[count++] = (byte) c;
+        asset = 0;
+        if (ch < 0x80) {
+            emit((byte) ch);
         }
 
         // U+0080 ~ U+07FF
-        else if (c < 0x800) {
+        else if (ch < 0x800) {
             grow(count + 2);
-            value[count++] = (byte) ((c >> 6) | 0xC0);
-            value[count++] = (byte) ((c & 0x3F) | 0x80);
+            byte[] it = value;
+            it[count++] = (byte) ((ch >> 6) | 0xC0);
+            it[count++] = (byte) ((ch & 0x3F) | 0x80);
         }
 
         // U+10000 ~ U+10FFFF
         // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-        else if (c >= 0xD800 && c <= 0xDFFF) {
+        else if (0xD800 <= ch && ch <= 0xDFFF) {
             // crippled surrogate pair
-            grow(count + 1);
-            value[count++] = '?';
+            emit((byte) '?');
         }
 
         // U+0800 ~ U+FFFF
         else {
             grow(count + 3);
-            value[count++] = (byte) ((c >> 12) | 0xE0);
-            value[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
-            value[count++] = (byte) ((c & 0x3F) | 0x80);
+            byte[] it = value;
+            it[count++] = (byte) ((ch >> 12) | 0xE0);
+            it[count++] = (byte) (((ch >> 6) & 0x3F) | 0x80);
+            it[count++] = (byte) ((ch & 0x3F) | 0x80);
         }
     }
 
     /**
-     * Connects the char array to the end of this {@link Chain}
+     * Concatenates the char value to this {@link Chain}
      *
-     * @param c the specified array
-     * @param i the specified index
-     * @param l the specified length
+     * @param esc the specified escape character
+     * @param ch  the specified char value to be appended
+     * @since 0.0.5
      */
-    protected void chain(
-        @NotNull char[] c, int i, int l
+    protected void concat(
+        char ch, byte esc
+    ) {
+        if (ch < 0x80) {
+            emit(
+                (byte) ch
+            );
+        } else {
+            // xxxx xxxx : xxxx xxxx
+            grow(count + 6);
+            byte[] it = value;
+            it[count++] = esc;
+            it[count++] = 'u';
+            it[count++] = upper((ch >> 12) & 0x0F);
+            it[count++] = upper((ch >> 8) & 0x0F);
+            it[count++] = upper((ch >> 4) & 0x0F);
+            it[count++] = upper(ch & 0x0F);
+        }
+    }
+
+    /**
+     * Concatenates the sequence to this {@link Chain}
+     *
+     * @param ch the specified source to be appended
+     * @param i  the specified start index for array
+     * @param l  the specified length of chars to concat
+     * @since 0.0.5
+     */
+    protected void concat(
+        @NotNull char[] ch, int i, int l
     ) {
         int k = i + l;
         grow(count + l);
 
-        star = 0;
+        asset = 0;
         while (i < k) {
             // next char
-            char d = c[i++];
+            char c = ch[i++];
 
             // U+0000 ~ U+007F
-            if (d < 0x80) {
-                grow(count + 1);
-                value[count++] = (byte) d;
+            if (c < 0x80) {
+                emit((byte) c);
             }
 
             // U+0080 ~ U+07FF
-            else if (d < 0x800) {
+            else if (c < 0x800) {
                 grow(count + 2);
-                value[count++] = (byte) ((d >> 6) | 0xC0);
-                value[count++] = (byte) ((d & 0x3F) | 0x80);
+                byte[] it = value;
+                it[count++] = (byte) ((c >> 6) | 0xC0);
+                it[count++] = (byte) ((c & 0x3F) | 0x80);
             }
 
             // U+10000 ~ U+10FFFF
             // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-            else if (d >= 0xD800 && d <= 0xDFFF) {
-                if (i >= k) {
-                    grow(count + 1);
-                    value[count++] = '?';
+            else if (0xD800 <= c && c <= 0xDFFF) {
+                if (k <= i) {
+                    emit((byte) '?');
                     break;
                 }
 
-                char f = c[i++];
-                if (f < 0xDC00 || f > 0xDFFF) {
-                    grow(count + 1);
-                    value[count++] = '?';
+                char next = ch[i++];
+                if (next < 0xDC00 ||
+                    next > 0xDFFF) {
+                    emit((byte) '?');
                     continue;
                 }
 
                 grow(count + 4);
-                int u = (d << 10) + f - 0x35F_DC00;
-                value[count++] = (byte) ((u >> 18) | 0xF0);
-                value[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
-                value[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
-                value[count++] = (byte) ((u & 0x3F) | 0x80);
+                byte[] it = value;
+                int u = (c << 10) + next - 0x35F_DC00;
+                it[count++] = (byte) ((u >> 18) | 0xF0);
+                it[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
+                it[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
+                it[count++] = (byte) ((u & 0x3F) | 0x80);
             }
 
             // U+0800 ~ U+FFFF
             else {
                 grow(count + 3);
-                value[count++] = (byte) ((d >> 12) | 0xE0);
-                value[count++] = (byte) (((d >> 6) & 0x3F) | 0x80);
-                value[count++] = (byte) ((d & 0x3F) | 0x80);
+                byte[] it = value;
+                it[count++] = (byte) ((c >> 12) | 0xE0);
+                it[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
+                it[count++] = (byte) ((c & 0x3F) | 0x80);
             }
         }
     }
 
     /**
-     * Connects the charSequence to the end of this {@link Chain}
+     * Concatenates the sequence to this {@link Chain}
      *
-     * @param c the specified array
-     * @param i the specified index
-     * @param l the specified length
+     * @param esc the specified escape character
+     * @param ch  the specified source to be appended
+     * @param i   the specified start index for array
+     * @param l   the specified length of chars to concat
+     * @since 0.0.5
      */
-    protected void chain(
-        @NotNull CharSequence c, int i, int l
+    protected void concat(
+        @NotNull char[] ch, int i, int l, byte esc
     ) {
         int k = i + l;
         grow(count + l);
 
-        star = 0;
         while (i < k) {
             // next char
-            char d = c.charAt(i++);
+            char c = ch[i++];
 
             // U+0000 ~ U+007F
-            if (d < 0x80) {
-                grow(count + 1);
-                value[count++] = (byte) d;
+            if (c < 0x80) {
+                emit((byte) c);
+            } else {
+                // xxxx xxxx : xxxx xxxx
+                grow(count + 6);
+                byte[] it = value;
+                it[count++] = esc;
+                it[count++] = 'u';
+                it[count++] = upper((c >> 12) & 0x0F);
+                it[count++] = upper((c >> 8) & 0x0F);
+                it[count++] = upper((c >> 4) & 0x0F);
+                it[count++] = upper(c & 0x0F);
+            }
+        }
+    }
+
+    /**
+     * Concatenates the sequence to this {@link Chain}
+     *
+     * @param ch the specified sequence to be appended
+     * @param i  the specified start index for sequence
+     * @param l  the specified length of sequence to concat
+     * @since 0.0.5
+     */
+    protected void concat(
+        @NotNull CharSequence ch, int i, int l
+    ) {
+        int k = i + l;
+        grow(count + l);
+
+        asset = 0;
+        while (i < k) {
+            // next char
+            char c = ch.charAt(i++);
+
+            // U+0000 ~ U+007F
+            if (c < 0x80) {
+                emit((byte) c);
             }
 
             // U+0080 ~ U+07FF
-            else if (d < 0x800) {
+            else if (c < 0x800) {
                 grow(count + 2);
-                value[count++] = (byte) ((d >> 6) | 0xC0);
-                value[count++] = (byte) ((d & 0x3F) | 0x80);
+                byte[] it = value;
+                it[count++] = (byte) ((c >> 6) | 0xC0);
+                it[count++] = (byte) ((c & 0x3F) | 0x80);
             }
 
             // U+10000 ~ U+10FFFF
             // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-            else if (d >= 0xD800 && d <= 0xDFFF) {
-                if (i >= k) {
-                    grow(count + 1);
-                    value[count++] = '?';
+            else if (0xD800 <= c && c <= 0xDFFF) {
+                if (k <= i) {
+                    emit((byte) '?');
                     break;
                 }
 
-                char f = c.charAt(i++);
-                if (f < 0xDC00 || f > 0xDFFF) {
-                    grow(count + 1);
-                    value[count++] = '?';
+                char next = ch.charAt(i++);
+                if (next < 0xDC00 ||
+                    next > 0xDFFF) {
+                    emit((byte) '?');
                     continue;
                 }
 
                 grow(count + 4);
-                int u = (d << 10) + f - 0x35F_DC00;
-                value[count++] = (byte) ((u >> 18) | 0xF0);
-                value[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
-                value[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
-                value[count++] = (byte) ((u & 0x3F) | 0x80);
+                byte[] it = value;
+                int u = (c << 10) + next - 0x35F_DC00;
+                it[count++] = (byte) ((u >> 18) | 0xF0);
+                it[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
+                it[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
+                it[count++] = (byte) ((u & 0x3F) | 0x80);
             }
 
             // U+0800 ~ U+FFFF
             else {
                 grow(count + 3);
-                value[count++] = (byte) ((d >> 12) | 0xE0);
-                value[count++] = (byte) (((d >> 6) & 0x3F) | 0x80);
-                value[count++] = (byte) ((d & 0x3F) | 0x80);
+                byte[] it = value;
+                it[count++] = (byte) ((c >> 12) | 0xE0);
+                it[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
+                it[count++] = (byte) ((c & 0x3F) | 0x80);
+            }
+        }
+    }
+
+    /**
+     * Concatenates the sequence to this {@link Chain}
+     *
+     * @param esc the specified escape character
+     * @param ch  the specified sequence to be appended
+     * @param i   the specified start index for sequence
+     * @param l   the specified length of sequence to concat
+     * @since 0.0.5
+     */
+    protected void concat(
+        @NotNull CharSequence ch, int i, int l, byte esc
+    ) {
+        int k = i + l;
+        grow(count + l);
+
+        while (i < k) {
+            // next char
+            char c = ch.charAt(i++);
+
+            // U+0000 ~ U+007F
+            if (c < 0x80) {
+                emit((byte) c);
+            } else {
+                // xxxx xxxx : xxxx xxxx
+                grow(count + 6);
+                byte[] it = value;
+                it[count++] = esc;
+                it[count++] = 'u';
+                it[count++] = upper((c >> 12) & 0x0F);
+                it[count++] = upper((c >> 8) & 0x0F);
+                it[count++] = upper((c >> 4) & 0x0F);
+                it[count++] = upper(c & 0x0F);
             }
         }
     }
@@ -2800,14 +3036,14 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     protected void swop(
         int s, int e
     ) {
-        byte cat;
-        star = 0;
+        byte bit;
+        asset = 0;
 
         byte[] it = value;
         while (s < --e) {
-            cat = it[e];
+            bit = it[e];
             it[e] = it[s];
-            it[s++] = cat;
+            it[s++] = bit;
         }
     }
 

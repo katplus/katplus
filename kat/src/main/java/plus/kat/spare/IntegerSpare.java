@@ -31,7 +31,7 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.1
  */
-public class IntegerSpare extends Property<Integer> implements Serializer {
+public class IntegerSpare extends Property<Integer> {
 
     public static final IntegerSpare
         INSTANCE = new IntegerSpare();
@@ -60,8 +60,8 @@ public class IntegerSpare extends Property<Integer> implements Serializer {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$i;
+    public String getSpace() {
+        return "i";
     }
 
     @Override
@@ -72,6 +72,13 @@ public class IntegerSpare extends Property<Integer> implements Serializer {
             || clazz == Integer.class
             || clazz == Number.class
             || clazz == Object.class;
+    }
+
+    @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.FALSE;
     }
 
     @Override
@@ -95,7 +102,7 @@ public class IntegerSpare extends Property<Integer> implements Serializer {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.addInt(
+        flow.emit(
             (int) value
         );
     }

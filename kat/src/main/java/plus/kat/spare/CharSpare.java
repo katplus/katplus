@@ -59,8 +59,8 @@ public class CharSpare extends Property<Character> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$c;
+    public String getSpace() {
+        return "c";
     }
 
     @Override

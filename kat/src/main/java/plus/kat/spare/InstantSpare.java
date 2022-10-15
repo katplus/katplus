@@ -34,7 +34,7 @@ import static java.time.format.DateTimeFormatter.ISO_INSTANT;
  * @author kraity
  * @since 0.0.2
  */
-public class InstantSpare extends TemporalSpare<Instant> implements Serializer {
+public class InstantSpare extends TemporalSpare<Instant> {
 
     public static final InstantSpare
         INSTANCE = new InstantSpare();
@@ -54,6 +54,16 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializer {
     @Override
     public String getSpace() {
         return "Instant";
+    }
+
+    @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        if (flag.isFlag(Flag.INSTANT_AS_TIMESTAMP)) {
+            return Boolean.FALSE;
+        }
+        return null;
     }
 
     @Override
@@ -84,21 +94,16 @@ public class InstantSpare extends TemporalSpare<Instant> implements Serializer {
         @NotNull Object value
     ) throws IOException {
         if (flow.isFlag(Flag.INSTANT_AS_TIMESTAMP)) {
-            flow.addLong(
+            flow.emit(
                 ((Instant) value).toEpochMilli()
             );
         } else {
-            if (flow.algo().is("json")) {
-                flow.addByte((byte) '"');
-                formatter.formatTo(
-                    (TemporalAccessor) value, flow
-                );
-                flow.addByte((byte) '"');
-            } else {
-                formatter.formatTo(
-                    (TemporalAccessor) value, flow
-                );
-            }
+            StringBuilder builder
+                = new StringBuilder(32);
+            formatter.formatTo(
+                (TemporalAccessor) value, builder
+            );
+            flow.emit(builder);
         }
     }
 

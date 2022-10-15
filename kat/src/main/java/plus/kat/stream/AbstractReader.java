@@ -19,7 +19,7 @@ import plus.kat.crash.UnexpectedCrash;
 
 import java.io.IOException;
 
-import static plus.kat.kernel.Dram.Memory;
+import static plus.kat.kernel.Alpha.Memory;
 
 /**
  * @author kraity

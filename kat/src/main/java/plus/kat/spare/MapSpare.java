@@ -52,8 +52,8 @@ public class MapSpare extends Property<Map> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$M;
+    public String getSpace() {
+        return "M";
     }
 
     @Override
@@ -81,9 +81,9 @@ public class MapSpare extends Property<Map> {
     ) throws IOException {
         for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
             Object key = entry.getKey();
-            if (key instanceof CharSequence) {
+            if (key instanceof String) {
                 chan.set(
-                    (CharSequence) key, entry.getValue()
+                    (String) key, entry.getValue()
                 );
             } else {
                 chan.set(

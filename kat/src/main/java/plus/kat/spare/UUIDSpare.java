@@ -78,31 +78,23 @@ public class UUIDSpare extends Property<UUID> {
         long most = u.getMostSignificantBits();
         long least = u.getLeastSignificantBits();
 
-        flow.addLong(
+        flow.emit(
             (most >> 32) & 0xFFFFFFFFL, 4, 8
         );
-        flow.addByte(
-            (byte) '-'
-        );
-        flow.addLong(
+        flow.emit((byte) '-');
+        flow.emit(
             (most >> 16) & 0xFFFFL, 4, 4
         );
-        flow.addByte(
-            (byte) '-'
-        );
-        flow.addLong(
+        flow.emit((byte) '-');
+        flow.emit(
             most & 0xFFFFL, 4, 4
         );
-        flow.addByte(
-            (byte) '-'
-        );
-        flow.addLong(
+        flow.emit((byte) '-');
+        flow.emit(
             (least >> 48) & 0xFFFFL, 4, 4
         );
-        flow.addByte(
-            (byte) '-'
-        );
-        flow.addLong(
+        flow.emit((byte) '-');
+        flow.emit(
             least & 0xFFFFFFFFFFFFL, 4, 12
         );
     }

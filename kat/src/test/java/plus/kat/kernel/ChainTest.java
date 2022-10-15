@@ -97,9 +97,9 @@ public class ChainTest {
         for (char i = 0; i < 256; i++) {
             if (Character.isWhitespace(i)) {
                 if (c.isNotEmpty()) {
-                    c.chain((byte) ',');
+                    c.concat((byte) ',');
                 }
-                c.chain((int) i);
+                c.concat((int) i);
             }
         }
 
@@ -112,7 +112,7 @@ public class ChainTest {
         assertEquals(105950, v.hashCode());
         assertSame(v.toString(), v.toString());
 
-        v.add(".plus");
+        v.emit(".plus");
         assertSame(v.toString(), v.toString());
         assertEquals(1057563562, v.hashCode());
 
@@ -134,7 +134,7 @@ public class ChainTest {
         String name = "陆之岇";
         byte[] temp = name.getBytes(UTF_8);
 
-        v.add(temp);
+        v.emit(temp);
         assertEquals(name, v.toString());
         assertEquals(new String(temp, UTF_8), v.toString(UTF_8));
         assertEquals(new String(temp, US_ASCII), v.toString(US_ASCII));
@@ -337,7 +337,7 @@ public class ChainTest {
     @Test
     public void test_InputStream() {
         Value v1 = new Value();
-        v1.add(
+        v1.emit(
             new ByteArrayInputStream(
                 "kat.plus".getBytes(UTF_8)
             )
@@ -345,10 +345,10 @@ public class ChainTest {
         assertEquals("kat.plus", v1.toString());
 
         for (int i = 0; i < 128; i++) {
-            v1.add(".kat.plus");
+            v1.emit(".kat.plus");
         }
         Value v2 = new Value();
-        v2.add(
+        v2.emit(
             new ByteArrayInputStream(
                 v1.value, 0, v1.count
             )
@@ -366,7 +366,7 @@ public class ChainTest {
         Alias alias = new Alias("kraity");
 
         try (InputStream in = alias.toInputStream()) {
-            value.add(in, 128);
+            value.emit(in, 128);
         }
 
         assertEquals(6, value.length());
@@ -411,7 +411,7 @@ public class ChainTest {
         assertEquals("t.t.t.", c.toString(ISO_8859_1));
 
         c.grow(32);
-        c.chain("kat.plus", 0, 8);
+        c.concat("kat.plus", 0, 8);
         assertEquals("t.t.t.kat.plus", c.toString(ISO_8859_1));
 
         c.move(6, -4);

@@ -29,7 +29,7 @@ import java.math.BigInteger;
  * @author kraity
  * @since 0.0.1
  */
-public class BigIntegerSpare extends Property<BigInteger> implements Serializer {
+public class BigIntegerSpare extends Property<BigInteger> {
 
     public static final BigIntegerSpare
         INSTANCE = new BigIntegerSpare();
@@ -44,8 +44,8 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializer 
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$I;
+    public String getSpace() {
+        return "I";
     }
 
     @Override
@@ -55,6 +55,13 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializer 
         return clazz == BigInteger.class
             || clazz == Number.class
             || clazz == Object.class;
+    }
+
+    @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.FALSE;
     }
 
     @Override
@@ -70,7 +77,7 @@ public class BigIntegerSpare extends Property<BigInteger> implements Serializer 
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.addChars(
+        flow.emit(
             value.toString()
         );
     }

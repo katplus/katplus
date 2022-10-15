@@ -30,7 +30,7 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.1
  */
-public class DoubleSpare extends Property<Double> implements Serializer {
+public class DoubleSpare extends Property<Double> {
 
     public static final DoubleSpare
         INSTANCE = new DoubleSpare();
@@ -59,8 +59,8 @@ public class DoubleSpare extends Property<Double> implements Serializer {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$d;
+    public String getSpace() {
+        return "d";
     }
 
     @Override
@@ -71,6 +71,13 @@ public class DoubleSpare extends Property<Double> implements Serializer {
             || clazz == Double.class
             || clazz == Number.class
             || clazz == Object.class;
+    }
+
+    @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.FALSE;
     }
 
     @Override
@@ -95,11 +102,11 @@ public class DoubleSpare extends Property<Double> implements Serializer {
         @NotNull Object value
     ) throws IOException {
         if (flow.isFlag(Flag.FLOAT_AS_BITMAP)) {
-            flow.addDouble(
+            flow.emit(
                 (double) value, true
             );
         } else {
-            flow.addDouble(
+            flow.emit(
                 (double) value
             );
         }

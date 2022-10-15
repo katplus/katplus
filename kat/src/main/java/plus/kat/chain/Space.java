@@ -18,10 +18,10 @@ package plus.kat.chain;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import java.math.*;
-import java.util.*;
 import java.lang.reflect.*;
 import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Map;
 
 import plus.kat.crash.*;
 import plus.kat.kernel.*;
@@ -34,7 +34,7 @@ import static java.nio.charset.StandardCharsets.*;
  * @author kraity
  * @since 0.0.1
  */
-public final class Space extends Dram implements Type {
+public final class Space extends Alpha implements Type {
     /**
      * empty space
      */
@@ -42,24 +42,9 @@ public final class Space extends Dram implements Type {
         EMPTY = new Space();
 
     public static final Space $ = new Space(Object.class, "$");
+    public static final Space $s = new Space(String.class, "s");
     public static final Space $M = new Space(Map.class, "M");
     public static final Space $L = new Space(List.class, "L");
-    public static final Space $A = new Space(Object[].class, "A");
-    public static final Space $S = new Space(Set.class, "S");
-    public static final Space $E = new Space(Crash.class, "E");
-    public static final Space $s = new Space(String.class, "s");
-    public static final Space $n = new Space(Number.class, "n");
-    public static final Space $i = new Space(int.class, "i");
-    public static final Space $l = new Space(long.class, "l");
-    public static final Space $f = new Space(float.class, "f");
-    public static final Space $d = new Space(double.class, "d");
-    public static final Space $b = new Space(boolean.class, "b");
-    public static final Space $c = new Space(char.class, "c");
-    public static final Space $o = new Space(byte.class, "o");
-    public static final Space $u = new Space(short.class, "u");
-    public static final Space $B = new Space(byte[].class, "B");
-    public static final Space $I = new Space(BigInteger.class, "I");
-    public static final Space $D = new Space(BigDecimal.class, "D");
 
     /**
      * For internal use
@@ -95,7 +80,7 @@ public final class Space extends Dram implements Type {
             Binary.latin(name)
         );
         backup = name;
-        star |= 0x80000002;
+        asset |= 0x80000002;
         this.type = type;
         this.count = value.length;
     }
@@ -109,7 +94,7 @@ public final class Space extends Dram implements Type {
         @NotNull byte[] data
     ) {
         super(data);
-        star |= Integer.MIN_VALUE;
+        asset |= Integer.MIN_VALUE;
     }
 
     /**
@@ -121,7 +106,7 @@ public final class Space extends Dram implements Type {
         @NotNull Chain chain
     ) {
         super(chain);
-        star |= Integer.MIN_VALUE;
+        asset |= Integer.MIN_VALUE;
     }
 
     /**
@@ -133,7 +118,7 @@ public final class Space extends Dram implements Type {
         @NotNull Space space
     ) {
         super(space);
-        star |= Integer.MIN_VALUE;
+        asset |= Integer.MIN_VALUE;
     }
 
     /**
@@ -171,7 +156,7 @@ public final class Space extends Dram implements Type {
         @Nullable CharSequence sequence
     ) {
         super(sequence);
-        star |= Integer.MIN_VALUE;
+        asset |= Integer.MIN_VALUE;
     }
 
     /**

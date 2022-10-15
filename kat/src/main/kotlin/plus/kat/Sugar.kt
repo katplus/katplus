@@ -26,7 +26,7 @@ import java.io.IOException
 import kotlin.jvm.Throws
 
 /**
- * Serialize block to Kat [String]
+ * Serialize the fitter to Kat [String]
  *
  * E.g.
  * ```
@@ -40,10 +40,10 @@ import kotlin.jvm.Throws
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun kat(block: Kat) = Kat(null, block).use { it.toString() }
+fun kat(fitter: Fitter) = Kat(null, fitter).use { it.toString() }
 
 /**
- * Serialize block to Kat [String]
+ * Serialize the fitter to Kat [String]
  *
  * E.g.
  * ```
@@ -57,10 +57,10 @@ fun kat(block: Kat) = Kat(null, block).use { it.toString() }
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun kat(space: CharSequence?, block: Kat) = Kat(space, block).use { it.toString() }
+fun kat(space: String?, fitter: Fitter) = Kat(space, fitter).use { it.toString() }
 
 /**
- * Serialize block to Kat
+ * Serialize the fitter to Kat
  *
  * E.g.
  * ```
@@ -70,11 +70,11 @@ fun kat(space: CharSequence?, block: Kat) = Kat(space, block).use { it.toString(
  *  }
  * ```
  *
- * @return [Chan]
+ * @return [Kat]
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Kat(space: CharSequence?, block: Kat) = Chan(Plan.DEF).also { it[null, space] = block }
+fun Kat(space: String?, fitter: Fitter) = Kat(Plan.DEF).also { it[null, space] = fitter }
 
 /**
  * Serialize [Any]? to Kat [String]
@@ -105,7 +105,7 @@ inline fun Any?.toKat() = Kat.encode(null, this)
 inline fun Any?.toKat(flags: Long) = Kat.encode(null, this, flags)
 
 /**
- * Serialize block to Doc [String]
+ * Serialize the fitter to Doc [String]
  *
  * E.g.
  * ```
@@ -119,10 +119,10 @@ inline fun Any?.toKat(flags: Long) = Kat.encode(null, this, flags)
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun doc(name: CharSequence?, block: Kat) = Doc(name, block).use { it.toString() }
+fun doc(name: String?, fitter: Fitter) = Doc(name, fitter).use { it.toString() }
 
 /**
- * Serialize block to [Doc]
+ * Serialize the fitter to [Doc]
  *
  * E.g.
  * ```
@@ -136,7 +136,7 @@ fun doc(name: CharSequence?, block: Kat) = Doc(name, block).use { it.toString() 
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Doc(name: CharSequence?, block: Kat) = Doc(Plan.DEF).also { it[name] = block }
+fun Doc(name: String?, fitter: Fitter) = Doc(Plan.DEF).also { it[name] = fitter }
 
 /**
  * Serialize [Any]? to Doc [String]
@@ -167,7 +167,7 @@ inline fun Any?.toDoc(): String = Doc.encode(null, this)
 inline fun Any?.toDoc(flags: Long): String = Doc.encode(null, this, flags)
 
 /**
- * Serialize block to Json [String]
+ * Serialize the fitter to Json [String]
  *
  * E.g.
  * ```
@@ -181,10 +181,10 @@ inline fun Any?.toDoc(flags: Long): String = Doc.encode(null, this, flags)
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun json(block: Kat) = Json(block).use { it.toString() }
+fun json(fitter: Fitter) = Json(fitter).use { it.toString() }
 
 /**
- * Serialize block to [Json]
+ * Serialize the fitter to [Json]
  *
  * E.g.
  * ```
@@ -198,7 +198,7 @@ fun json(block: Kat) = Json(block).use { it.toString() }
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Json(block: Kat) = Json(Plan.DEF).also { it[null] = block }
+fun Json(fitter: Fitter) = Json(Plan.DEF).also { it[null] = fitter }
 
 /**
  * Serialize [Any]? to Json [String]
@@ -519,7 +519,7 @@ inline fun <reified T : Any>
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Supplier?.mark(value: Any?, alias: CharSequence?) = Doc(Plan.DEF, this).also { it[alias] = value }
+fun Supplier?.mark(value: Any?, alias: String?) = Doc(Plan.DEF, this).also { it[alias] = value }
 
 /**
  * E.g.
@@ -534,4 +534,4 @@ fun Supplier?.mark(value: Any?, alias: CharSequence?) = Doc(Plan.DEF, this).also
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Supplier?.write(value: Any?, alias: CharSequence?) = Chan(Plan.DEF, this).also { it[alias] = value }
+fun Supplier?.write(value: Any?, alias: String?) = Kat(Plan.DEF, this).also { it[alias] = value }

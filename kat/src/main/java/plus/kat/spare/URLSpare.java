@@ -73,7 +73,7 @@ public class URLSpare extends Property<URL> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.text(
+        flow.emit(
             ((URL) value).toExternalForm()
         );
     }

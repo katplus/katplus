@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicIntegerSpare extends Property<AtomicInteger> implements Serializer {
+public class AtomicIntegerSpare extends Property<AtomicInteger> {
 
     public static final AtomicIntegerSpare
         INSTANCE = new AtomicIntegerSpare();
@@ -57,6 +57,13 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
     }
 
     @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.FALSE;
+    }
+
+    @Override
     public AtomicInteger read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -81,7 +88,7 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> implements Seria
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.addInt(
+        flow.emit(
             ((AtomicInteger) value).get()
         );
     }

@@ -15,14 +15,6 @@
  */
 package plus.kat.crash;
 
-import plus.kat.anno.NotNull;
-import plus.kat.anno.Nullable;
-
-import plus.kat.*;
-import plus.kat.chain.*;
-
-import java.io.IOException;
-
 /**
  * Collapse is a false break that
  * occurs during the build or parsing process
@@ -30,7 +22,7 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.4
  */
-public class Collapse extends RuntimeException implements Kat {
+public class Collapse extends RuntimeException {
     /**
      * @param m the detail message
      */
@@ -51,25 +43,5 @@ public class Collapse extends RuntimeException implements Kat {
      */
     public Collapse(String m, Throwable e) {
         super(m, e, false, false);
-    }
-
-    /**
-     * Returns the space of this
-     */
-    @Nullable
-    public Space space() {
-        return Space.$E;
-    }
-
-    /**
-     * @param chan the specified chan
-     */
-    @Override
-    public void coding(
-        @NotNull Chan chan
-    ) throws IOException {
-        chan.set(
-            "message", getMessage()
-        );
     }
 }

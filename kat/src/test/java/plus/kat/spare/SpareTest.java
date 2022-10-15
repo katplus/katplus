@@ -179,8 +179,8 @@ public class SpareTest {
         assertNotNull(a1);
         assertEquals(1, a1.id);
         assertEquals("kraity", a1.name);
-        try (Json json = spare.serial(a1)) {
-            assertEquals("{\"id\":1,\"meta\":\"tag->katplus\",\"alias\":\"name->kraity\"}", json.toString());
+        try (Chan chan = spare.serial(a1)) {
+            assertEquals("{\"id\":1,\"meta\":\"tag->katplus\",\"alias\":\"name->kraity\"}", chan.toString());
         }
 
         Map<String, Object> map = new HashMap<>();

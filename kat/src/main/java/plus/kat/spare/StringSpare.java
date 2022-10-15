@@ -58,8 +58,8 @@ public class StringSpare extends Property<String> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$s;
+    public String getSpace() {
+        return "s";
     }
 
     @Override
@@ -92,15 +92,9 @@ public class StringSpare extends Property<String> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        if (flow.isFlag(Flag.UNICODE)) {
-            flow.text(
-                (CharSequence) value
-            );
-        } else {
-            flow.emit(
-                (CharSequence) value
-            );
-        }
+        flow.emit(
+            (CharSequence) value
+        );
     }
 
     @Override

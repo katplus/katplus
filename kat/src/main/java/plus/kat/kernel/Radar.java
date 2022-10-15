@@ -177,20 +177,13 @@ public class Radar implements Solver {
                                 "Unexpectedly, byte '" + b + "' in space, it can't be here."
                             );
                         }
-                        default: {
-                            s.chain(b);
-                        }
                     }
+                    s.concat(b);
                 }
             }
             case 1: {
                 while (true) {
                     byte b = r.next();
-                    if (b <= 0x20) {
-                        throw new UnexpectedCrash(
-                            "Unexpectedly, byte '" + b + "' <= 32 in alias"
-                        );
-                    }
                     switch (b) {
                         case '{': {
                             event = 0;
@@ -220,10 +213,8 @@ public class Radar implements Solver {
                                 "Unexpectedly, byte '" + b + "' in alias, it can't be here."
                             );
                         }
-                        default: {
-                            a.chain(b);
-                        }
                     }
+                    a.concat(b);
                 }
             }
             case 2: {
@@ -249,10 +240,8 @@ public class Radar implements Solver {
                                 "Unexpectedly, byte '" + b + "' in value, it can't be here."
                             );
                         }
-                        default: {
-                            v.chain(b);
-                        }
                     }
+                    v.concat(b);
                 }
             }
         }
@@ -278,7 +267,7 @@ public class Radar implements Solver {
         byte b = r.next();
         switch (b) {
             case '^': {
-                c.chain(b);
+                c.concat(b);
                 return;
             }
             case 's': {
@@ -298,7 +287,7 @@ public class Radar implements Solver {
                 return;
             }
         }
-        c.chain(b);
+        c.concat(b);
     }
 
     /**
@@ -467,7 +456,7 @@ public class Radar implements Solver {
                 byte b = r.read();
                 if (b != LT) {
                     if (b != AMP) {
-                        v.chain(b);
+                        v.concat(b);
                     } else {
                         escape(v, r);
                     }
@@ -532,7 +521,7 @@ public class Radar implements Solver {
                         }
 
                         v.clean();
-                        a.chain(c);
+                        a.concat(c);
 
                         while (true) {
                             b = r.next();
@@ -549,7 +538,7 @@ public class Radar implements Solver {
                             }
 
                             if (b != ' ') {
-                                a.chain(b);
+                                a.concat(b);
                                 continue;
                             }
 
@@ -608,7 +597,7 @@ public class Radar implements Solver {
                 }
 
                 if (b != '=') {
-                    a.chain(b);
+                    a.concat(b);
                     continue;
                 }
 
@@ -617,7 +606,7 @@ public class Radar implements Solver {
                     while (true) {
                         b = r.next();
                         if (b != QUOT) {
-                            v.chain(b);
+                            v.concat(b);
                             continue;
                         }
 
@@ -682,7 +671,7 @@ public class Radar implements Solver {
                     if (b != ';') {
                         break;
                     }
-                    c.chain(LT);
+                    c.concat(LT);
                     return;
                 }
                 case 'g': {
@@ -694,7 +683,7 @@ public class Radar implements Solver {
                     if (b != ';') {
                         break;
                     }
-                    c.chain(GT);
+                    c.concat(GT);
                     return;
                 }
                 case 'q': {
@@ -714,7 +703,7 @@ public class Radar implements Solver {
                     if (b != ';') {
                         break;
                     }
-                    c.chain(QUOT);
+                    c.concat(QUOT);
                     return;
                 }
                 case 'a': {
@@ -728,7 +717,7 @@ public class Radar implements Solver {
                         if (b != ';') {
                             break;
                         }
-                        c.chain(AMP);
+                        c.concat(AMP);
                         return;
                     } else if (b == 'p') {
                         b = r.next();
@@ -743,7 +732,7 @@ public class Radar implements Solver {
                         if (b != ';') {
                             break;
                         }
-                        c.chain(APOS);
+                        c.concat(APOS);
                         return;
                     }
                 }
@@ -809,22 +798,22 @@ public class Radar implements Solver {
                     while (true) {
                         byte c = r.next();
                         if (c != ']') {
-                            v.chain(c);
+                            v.concat(c);
                             continue;
                         }
 
                         byte d = r.next();
                         if (d != ']') {
-                            v.chain(c);
-                            v.chain(d);
+                            v.concat(c);
+                            v.concat(d);
                             continue;
                         }
 
                         byte e = r.next();
                         if (e != GT) {
-                            v.chain(c);
-                            v.chain(d);
-                            v.chain(e);
+                            v.concat(c);
+                            v.concat(d);
+                            v.concat(e);
                         } else {
                             break Boot;
                         }
@@ -1151,7 +1140,7 @@ public class Radar implements Solver {
                             }
                         }
                         default: {
-                            v.chain(b);
+                            v.concat(b);
                         }
                     }
 
@@ -1199,7 +1188,7 @@ public class Radar implements Solver {
                                 continue Boot;
                             }
                             default: {
-                                v.chain(c);
+                                v.concat(c);
                             }
                         }
                     }
@@ -1309,7 +1298,7 @@ public class Radar implements Solver {
                 }
 
                 if (b != '\\') {
-                    c.chain(b);
+                    c.concat(b);
                     continue;
                 }
 
@@ -1332,7 +1321,7 @@ public class Radar implements Solver {
                         continue;
                     }
                 }
-                c.chain(b);
+                c.concat(b);
             }
         }
 
@@ -1425,7 +1414,7 @@ public class Radar implements Solver {
             // 0xxxxxx
             if (c2 == 0x0 && c3 < 0x8) {
                 // 0xxx xxxx
-                c.chain((byte) (
+                c.concat((byte) (
                     c3 << 4 | c4
                 ));
             }
@@ -1433,10 +1422,10 @@ public class Radar implements Solver {
             // 110xxxxx 10xxxxxx
             else {
                 // 110xxx xx : 10xx xxxx
-                c.chain((byte) (
+                c.concat((byte) (
                     (c2 << 2) | (c3 >> 2) | 0xC0
                 ));
-                c.chain((byte) (
+                c.concat((byte) (
                     ((c3 & 0x03) << 4) | c4 | 0x80
                 ));
             }
@@ -1447,14 +1436,19 @@ public class Radar implements Solver {
         // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
         else if (c1 == 0xD && c2 > 0x7) {
             // escape
-            r.next();
+            byte b = r.next();
+            if (b != '^' &&
+                b != '\\') {
+                throw new IOException(
+                    "Illegal esc char: " + b
+                );
+            }
 
             // check mark
             if (r.next() != 'u') {
-                c.chain(
-                    (byte) '?'
+                throw new IOException(
+                    "Illegal esc mark: " + b
                 );
-                return;
             }
 
             // hex number
@@ -1465,25 +1459,25 @@ public class Radar implements Solver {
 
             // check surrogate pair
             if (d1 != 0xD || d2 < 0xC) {
-                c.chain(
-                    (byte) '?'
+                throw new IOException(
+                    "Not another agent pair: "
+                        + d1 + ',' + d2 + ',' + d3 + ',' + d4
                 );
-                return;
             }
 
             // 11110x xx : 10xxxx xx : 10xx xx xx : 10xx xxxx
             // 11110x xx : 10x100 00
             // 1101 10xx xxxx xxxx 1101 11xx xxxx xxxx
-            c.chain((byte) (
+            c.concat((byte) (
                 (c2 & 0x03) | 0xF0
             ));
-            c.chain((byte) (
+            c.concat((byte) (
                 ((c3 + 0x04) << 2) | (c4 >> 2) | 0x80
             ));
-            c.chain((byte) (
+            c.concat((byte) (
                 ((c4 & 0x03) << 4) | ((d2 & 0x03) << 2) | (d3 >> 2) | 0x80
             ));
-            c.chain((byte) (
+            c.concat((byte) (
                 ((d3 & 0x03) << 4) | d4 | 0x80
             ));
         }
@@ -1492,13 +1486,13 @@ public class Radar implements Solver {
         // 1110xxxx 10xxxxxx 10xxxxxx
         else {
             // xxxx : 10xxxx xx : 10xx xxxx
-            c.chain((byte) (
+            c.concat((byte) (
                 c1 | 0xE0
             ));
-            c.chain((byte) (
+            c.concat((byte) (
                 (c2 << 2) | (c3 >> 2) | 0x80
             ));
-            c.chain((byte) (
+            c.concat((byte) (
                 ((c3 & 0x03) << 4) | c4 | 0x80
             ));
         }

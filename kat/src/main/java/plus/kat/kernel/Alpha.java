@@ -26,47 +26,47 @@ import java.lang.reflect.Type;
 
 /**
  * @author kraity
- * @since 0.0.4
+ * @since 0.0.5
  */
-public class Dram extends Chain {
+public class Alpha extends Chain {
 
     protected Type type;
 
     /**
-     * Constructs an empty dram
+     * Constructs an empty alpha
      */
-    public Dram() {
+    public Alpha() {
         super();
     }
 
     /**
-     * Constructs a dram with the specified size
+     * Constructs an alpha with the specified size
      *
      * @param size the initial capacity
      */
-    public Dram(
+    public Alpha(
         int size
     ) {
         super(size);
     }
 
     /**
-     * Constructs an empty dram
+     * Constructs an empty alpha
      *
      * @param fixed the specified state
      */
-    public Dram(
+    public Alpha(
         boolean fixed
     ) {
         super(fixed);
     }
 
     /**
-     * Constructs a dram with the specified data
+     * Constructs an alpha with the specified data
      *
      * @param data the initial byte array
      */
-    public Dram(
+    public Alpha(
         @NotNull byte[] data
     ) {
         super(data);
@@ -74,34 +74,34 @@ public class Dram extends Chain {
     }
 
     /**
-     * Constructs a dram with the specified chain
+     * Constructs an alpha with the specified chain
      *
      * @param chain the specified chain to be used
      */
-    public Dram(
+    public Alpha(
         @NotNull Chain chain
     ) {
         super(chain);
     }
 
     /**
-     * Constructs an empty dram with the specified chain
+     * Constructs an empty alpha with the specified bucket
      *
      * @param bucket the specified bucket to be used
      */
-    public Dram(
+    public Alpha(
         @Nullable Bucket bucket
     ) {
         super(bucket);
     }
 
     /**
-     * Constructs a dram with the specified chain and bucket
+     * Constructs an alpha with the specified chain and bucket
      *
      * @param chain  the specified chain to be used
      * @param bucket the specified bucket to be used
      */
-    public Dram(
+    public Alpha(
         @NotNull Chain chain,
         @Nullable Bucket bucket
     ) {
@@ -110,61 +110,46 @@ public class Dram extends Chain {
     }
 
     /**
-     * Constructs a chain with the specified sequence
+     * Constructs an alpha with the specified sequence
      *
      * @param sequence the specified sequence to be used
      */
-    public Dram(
+    public Alpha(
         @Nullable CharSequence sequence
     ) {
         super();
         if (sequence != null) {
             int len = sequence.length();
             if (len != 0) {
-                chain(
+                concat(
                     sequence, 0, len
                 );
-                star |= 2;
+                asset |= 2;
                 backup = sequence.toString();
             }
         }
     }
 
     /**
-     * Returns a {@link Dram} that
-     * is a subsequence of this {@link Dram}
-     *
-     * @param start the start index, inclusive
-     * @param end   the end index, exclusive
-     */
-    @Override
-    public Dram subSequence(
-        int start, int end
-    ) {
-        return new Dram(
-            toBytes(start, end)
-        );
-    }
-
-    /**
-     * Adds the specified byte value
+     * Concatenates the specified byte value to {@link Alpha}
      *
      * @param data the specified byte value
      * @throws FatalCrash If the chain is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */
-    public void add(
+    @Override
+    public void emit(
         byte data
     ) {
-        if (0 <= star) {
+        if (0 <= asset) {
             byte[] it = value;
             if (count != it.length) {
-                star = 0;
+                asset = 0;
                 it[count++] = data;
             } else {
                 grow(count + 1);
-                star = 0;
+                asset = 0;
                 value[count++] = data;
             }
         } else {
@@ -175,23 +160,39 @@ public class Dram extends Chain {
     }
 
     /**
+     * Returns an {@link Alpha} that
+     * is a subsequence of this {@link Alpha}
+     *
+     * @param start the start index, inclusive
+     * @param end   the end index, exclusive
+     */
+    @Override
+    public Alpha subSequence(
+        int start, int end
+    ) {
+        return new Alpha(
+            toBytes(start, end)
+        );
+    }
+
+    /**
      * Sets the value of the specified location
      *
-     * @param i    the specified index
-     * @param data the specified value
+     * @param i the specified index
+     * @param b the specified value
      * @throws FatalCrash                     If the chain is finally fixed
      * @throws ArrayIndexOutOfBoundsException if the index argument is negative
      * @see Chain#isFixed()
      * @since 0.0.5
      */
     public void set(
-        int i, byte data
+        int i, byte b
     ) {
-        if (0 <= star) {
+        if (0 <= asset) {
             byte[] it = value;
             if (i < it.length) {
-                star = 0;
-                it[i] = data;
+                it[i] = b;
+                asset = 0;
             }
         } else {
             throw new FatalCrash(
@@ -204,9 +205,9 @@ public class Dram extends Chain {
      * Sets the specified length of this chain
      *
      * <pre>{@code
-     *  Dram dram = ..
-     *  dram.add("plus.kat");
-     *  dram.slip(3);
+     *  Alpha alpha = ..
+     *  alpha.add("plus.kat");
+     *  alpha.slip(3);
      *  int length = value.length(); // 3
      * }</pre>
      *
@@ -219,15 +220,15 @@ public class Dram extends Chain {
     public void slip(
         int length
     ) {
-        if (0 <= star) {
+        if (0 <= asset) {
             if (length == 0) {
-                star = 0;
+                asset = 0;
                 count = 0;
             } else {
                 if (length < 0 || length > value.length) {
                     throw new ArrayIndexOutOfBoundsException();
                 }
-                star = 0;
+                asset = 0;
                 count = length;
             }
         } else {
@@ -246,7 +247,7 @@ public class Dram extends Chain {
     }
 
     /**
-     * Sets the modifier type of {@link Dram}
+     * Sets the modifier type of {@link Alpha}
      *
      * @param type the specified type
      * @throws FatalCrash If the chain is finally fixed
@@ -255,7 +256,7 @@ public class Dram extends Chain {
     public void setType(
         @Nullable Type type
     ) {
-        if (0 <= star) {
+        if (0 <= asset) {
             this.type = type;
         } else {
             throw new FatalCrash(
@@ -265,16 +266,15 @@ public class Dram extends Chain {
     }
 
     /**
-     * Clean this {@link Dram}
+     * Clean this {@link Alpha}
      *
      * @throws FatalCrash If the chain is finally fixed
      * @see Chain#isFixed()
      * @since 0.0.5
      */
     public void clean() {
-        if (0 <= star) {
-            hash = 0;
-            star = 0;
+        if (0 <= asset) {
+            asset = 0;
             count = 0;
             type = null;
             backup = null;
@@ -286,7 +286,7 @@ public class Dram extends Chain {
     }
 
     /**
-     * Clear this {@link Dram}
+     * Clear this {@link Alpha}
      *
      * @throws FatalCrash If the chain is finally fixed
      * @see Chain#isFixed()
@@ -304,7 +304,7 @@ public class Dram extends Chain {
     }
 
     /**
-     * Close this {@link Dram}
+     * Close this {@link Alpha}
      *
      * @throws FatalCrash If the chain is finally fixed
      * @see Chain#isFixed()

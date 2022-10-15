@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author kraity
  * @since 0.0.2
  */
-public class AtomicLongSpare extends Property<AtomicLong> implements Serializer {
+public class AtomicLongSpare extends Property<AtomicLong> {
 
     public static final AtomicLongSpare
         INSTANCE = new AtomicLongSpare();
@@ -57,6 +57,13 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializer 
     }
 
     @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.FALSE;
+    }
+
+    @Override
     public AtomicLong read(
         @NotNull Flag flag,
         @NotNull Alias alias
@@ -81,7 +88,7 @@ public class AtomicLongSpare extends Property<AtomicLong> implements Serializer 
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.addLong(
+        flow.emit(
             ((AtomicLong) value).get()
         );
     }

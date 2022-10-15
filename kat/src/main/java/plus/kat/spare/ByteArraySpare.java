@@ -45,8 +45,8 @@ public class ByteArraySpare extends Property<byte[]> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$B;
+    public String getSpace() {
+        return "B";
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ByteArraySpare extends Property<byte[]> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.decode(
+        return value.decrypt(
             Base64.mime()
         );
     }
@@ -72,10 +72,12 @@ public class ByteArraySpare extends Property<byte[]> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.addBytes(
-            Base64.base().encode(
+        byte[] b = Base64.base()
+            .encode(
                 (byte[]) value
-            )
+            );
+        flow.emit(
+            b, 'B', 0, b.length
         );
     }
 

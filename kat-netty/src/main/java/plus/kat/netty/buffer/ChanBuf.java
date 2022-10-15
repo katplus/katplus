@@ -38,7 +38,7 @@ public class ChanBuf {
         @NotNull Chan chan
     ) {
         return wrappedBuffer(
-            chan.getFlow()
+            chan.getSteam()
         );
     }
 

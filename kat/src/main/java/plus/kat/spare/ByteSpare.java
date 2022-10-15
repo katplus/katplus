@@ -31,7 +31,7 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.1
  */
-public class ByteSpare extends Property<Byte> implements Serializer {
+public class ByteSpare extends Property<Byte> {
 
     public static final ByteSpare
         INSTANCE = new ByteSpare();
@@ -60,8 +60,8 @@ public class ByteSpare extends Property<Byte> implements Serializer {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$o;
+    public String getSpace() {
+        return "o";
     }
 
     @Override
@@ -72,6 +72,13 @@ public class ByteSpare extends Property<Byte> implements Serializer {
             || clazz == Byte.class
             || clazz == Number.class
             || clazz == Object.class;
+    }
+
+    @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.FALSE;
     }
 
     @Override
@@ -95,8 +102,8 @@ public class ByteSpare extends Property<Byte> implements Serializer {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.addInt(
-            (byte) value
+        flow.emit(
+            ((Byte) value).intValue()
         );
     }
 

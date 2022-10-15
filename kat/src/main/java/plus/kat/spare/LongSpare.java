@@ -31,7 +31,7 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.1
  */
-public class LongSpare extends Property<Long> implements Serializer {
+public class LongSpare extends Property<Long> {
 
     public static final LongSpare
         INSTANCE = new LongSpare();
@@ -60,8 +60,8 @@ public class LongSpare extends Property<Long> implements Serializer {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$l;
+    public String getSpace() {
+        return "l";
     }
 
     @Override
@@ -72,6 +72,13 @@ public class LongSpare extends Property<Long> implements Serializer {
             || clazz == Long.class
             || clazz == Number.class
             || clazz == Object.class;
+    }
+
+    @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.FALSE;
     }
 
     @Override
@@ -95,7 +102,7 @@ public class LongSpare extends Property<Long> implements Serializer {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.addLong(
+        flow.emit(
             (long) value
         );
     }

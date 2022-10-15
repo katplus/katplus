@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-import static plus.kat.kernel.Dram.Memory.INS;
+import static plus.kat.kernel.Alpha.Memory.INS;
 
 /**
  * @author kraity
@@ -43,8 +43,8 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$s;
+    public String getSpace() {
+        return "s";
     }
 
     @Override

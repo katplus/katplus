@@ -43,8 +43,8 @@ public class ErrorSpare extends Property<Exception> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$E;
+    public String getSpace() {
+        return "E";
     }
 
     @Override

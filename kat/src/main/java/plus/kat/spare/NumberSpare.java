@@ -27,7 +27,7 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.3
  */
-public class NumberSpare extends Property<Number> implements Serializer {
+public class NumberSpare extends Property<Number> {
 
     public static final NumberSpare
         INSTANCE = new NumberSpare();
@@ -37,8 +37,8 @@ public class NumberSpare extends Property<Number> implements Serializer {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$n;
+    public String getSpace() {
+        return "n";
     }
 
     @Override
@@ -47,6 +47,13 @@ public class NumberSpare extends Property<Number> implements Serializer {
     ) {
         return clazz == Number.class
             || clazz == Object.class;
+    }
+
+    @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.FALSE;
     }
 
     @Override
@@ -71,31 +78,31 @@ public class NumberSpare extends Property<Number> implements Serializer {
         @NotNull Object value
     ) throws IOException {
         if (value instanceof Integer) {
-            flow.addInt(
+            flow.emit(
                 (int) value
             );
         } else if (value instanceof Long) {
-            flow.addLong(
+            flow.emit(
                 (long) value
             );
         } else if (value instanceof Float) {
-            flow.addFloat(
+            flow.emit(
                 (float) value
             );
         } else if (value instanceof Double) {
-            flow.addDouble(
+            flow.emit(
                 (double) value
             );
         } else if (value instanceof Byte) {
-            flow.addInt(
-                (byte) value
+            flow.emit(
+                ((Byte) value).intValue()
             );
         } else if (value instanceof Short) {
-            flow.addInt(
-                (short) value
+            flow.emit(
+                ((Short) value).intValue()
             );
         } else if (value instanceof Number) {
-            flow.addChars(
+            flow.emit(
                 value.toString()
             );
         }

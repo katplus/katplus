@@ -42,8 +42,8 @@ public class StringBufferSpare extends Property<StringBuffer> {
     }
 
     @Override
-    public Space getSpace() {
-        return Space.$s;
+    public String getSpace() {
+        return "s";
     }
 
     @Override
@@ -71,7 +71,7 @@ public class StringBufferSpare extends Property<StringBuffer> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.append(
+        flow.emit(
             (CharSequence) value
         );
     }

@@ -50,7 +50,7 @@ public abstract class Property<T> implements Spare<T> {
     }
 
     @Override
-    public CharSequence getSpace() {
+    public String getSpace() {
         return klass.getName();
     }
 
