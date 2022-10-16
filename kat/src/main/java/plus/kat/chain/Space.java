@@ -192,6 +192,17 @@ public final class Space extends Alpha implements Type {
     }
 
     /**
+     * Returns true if and only if
+     * the chain is describing class
+     *
+     * @since 0.0.5
+     */
+    @Override
+    public boolean isSpace() {
+        return true;
+    }
+
+    /**
      * Returns true if this space is a simple
      * validated class name (Camel-Case). If space contains an
      * element that is not in {@code [A-Za-z0-9.$]}, it must return false

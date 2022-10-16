@@ -110,7 +110,8 @@ public class Parser implements Proxy, Closeable {
         @NotNull Event<T> event
     ) throws IOException {
         @Nullable
-        Reader reader = event.getReader();
+        Reader reader =
+            event.getReader();
         if (reader == null) {
             throw new Collapse(
                 "Reader is null"
@@ -121,28 +122,31 @@ public class Parser implements Proxy, Closeable {
         this.range = event.getRange();
 
         try {
-            coder.read(
-                this, reader
-            );
+            if (reader.also()) {
+                coder.read(
+                    this, reader
+                );
+                Object data = bundle;
+                if (data != null) {
+                    return (T) data;
+                }
+            }
         } finally {
             coder.clear();
             reader.close();
-
-            Builder<?> k, t = active;
-            active = null;
-            for (; t != null; t = k) {
-                k = t.getParent();
-                t.onDetach();
+            Builder<?> a = active;
+            if (a != null) {
+                Builder<?> b;
+                active = null;
+                do {
+                    b = a.getParent();
+                    a.onDetach();
+                } while (b != null);
             }
         }
 
-        Object data = bundle;
-        if (data != null) {
-            return (T) data;
-        }
-
         throw new Collapse(
-            "Unexpectedly, the depth is " + depth
+            "Parsing error, the depth is " + depth
                 + ", the range is " + range + ", the result is null"
         );
     }
@@ -170,7 +174,7 @@ public class Parser implements Proxy, Closeable {
             case "xml": {
                 Solver it = doc;
                 if (it == null) {
-                    doc = it = radar.new DOC();
+                    doc = it = radar.new Motor();
                 }
                 return read(
                     it, event
@@ -179,7 +183,7 @@ public class Parser implements Proxy, Closeable {
             case "json": {
                 Solver it = json;
                 if (it == null) {
-                    json = it = radar.new JSON();
+                    json = it = radar.new Lidar();
                 }
                 return read(
                     it, event

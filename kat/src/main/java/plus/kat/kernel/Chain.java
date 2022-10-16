@@ -24,6 +24,7 @@ import java.math.*;
 import java.security.*;
 import java.nio.charset.Charset;
 
+import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
 
@@ -203,8 +204,20 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns true if, and only if,
+     * Returns true if and only if
+     * the chain is describing class
+     *
+     * @since 0.0.5
+     */
+    public boolean isSpace() {
+        return false;
+    }
+
+    /**
+     * Returns true if and only if
      * this chain is finally unchanged
+     *
+     * @since 0.0.5
      */
     public final boolean isFixed() {
         // asset & 0x80000000
@@ -775,7 +788,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns true if, and only if,
+     * Returns true if and only if
      * the count of this chain is {@code 0}
      *
      * <pre>{@code
@@ -868,7 +881,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Returns true if, and only if,
+     * Returns true if and only if
      * the count of this chain is not {@code 0}
      *
      * @see Chain#isEmpty()

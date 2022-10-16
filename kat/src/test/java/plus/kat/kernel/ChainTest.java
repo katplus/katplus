@@ -13,10 +13,6 @@ import static java.nio.charset.StandardCharsets.*;
 
 public class ChainTest {
 
-    static class Chalk
-        extends Chain {
-    }
-
     @Test
     public void test_is() {
         assertTrue(new Value("$").is('$'));
@@ -92,18 +88,18 @@ public class ChainTest {
 
     @Test
     public void test_blank() {
-        Chalk c = new Chalk();
-        c.grow(12);
+        Alpha a = new Alpha();
+        a.grow(12);
         for (char i = 0; i < 256; i++) {
             if (Character.isWhitespace(i)) {
-                if (c.isNotEmpty()) {
-                    c.concat((byte) ',');
+                if (a.isNotEmpty()) {
+                    a.concat((byte) ',');
                 }
-                c.concat((int) i);
+                a.concat((int) i);
             }
         }
 
-        assertEquals("9,10,11,12,13,28,29,30,31,32", c.toString(ISO_8859_1));
+        assertEquals("9,10,11,12,13,28,29,30,31,32", a.toString(ISO_8859_1));
     }
 
     @Test
@@ -375,49 +371,49 @@ public class ChainTest {
 
     @Test
     public void test_grow() {
-        Chalk c = new Chalk();
+        Alpha a = new Alpha();
         byte[] b = "kat.plus".getBytes(ISO_8859_1);
 
-        c.value = b;
-        c.count = b.length;
+        a.value = b;
+        a.count = b.length;
 
-        c.grow(b.length + 2);
-        assertEquals(b.length, c.count);
-        assertTrue(b.length + 2 <= c.value.length);
+        a.grow(b.length + 2);
+        assertEquals(b.length, a.count);
+        assertTrue(b.length + 2 <= a.value.length);
     }
 
     @Test
     public void test_swop() {
-        Chalk c = new Chalk();
+        Alpha a = new Alpha();
         byte[] b = "kat.plus".getBytes(ISO_8859_1);
 
-        c.value = b;
-        c.count = b.length;
+        a.value = b;
+        a.count = b.length;
 
-        c.swop(1, 6);
-        assertEquals("klp.taus", c.toString(ISO_8859_1));
+        a.swop(1, 6);
+        assertEquals("klp.taus", a.toString(ISO_8859_1));
     }
 
     @Test
     public void test_move() {
-        Chalk c = new Chalk();
-        c.count = 6;
-        c.value = "kat.plus".getBytes(ISO_8859_1);
+        Alpha a = new Alpha();
+        a.count = 6;
+        a.value = "kat.plus".getBytes(ISO_8859_1);
 
-        c.move(2, 2);
-        assertEquals("kat.t.", c.toString(ISO_8859_1));
+        a.move(2, 2);
+        assertEquals("kat.t.", a.toString(ISO_8859_1));
 
-        c.move(2, -2);
-        assertEquals("t.t.t.", c.toString(ISO_8859_1));
+        a.move(2, -2);
+        assertEquals("t.t.t.", a.toString(ISO_8859_1));
 
-        c.grow(32);
-        c.concat("kat.plus", 0, 8);
-        assertEquals("t.t.t.kat.plus", c.toString(ISO_8859_1));
+        a.grow(32);
+        a.concat("kat.plus", 0, 8);
+        assertEquals("t.t.t.kat.plus", a.toString(ISO_8859_1));
 
-        c.move(6, -4);
-        assertEquals("t.kat.plusplus", c.toString(ISO_8859_1));
+        a.move(6, -4);
+        assertEquals("t.kat.plusplus", a.toString(ISO_8859_1));
 
-        c.move(0, 4);
-        assertEquals("t.kat.kat.plus", c.toString(ISO_8859_1));
+        a.move(0, 4);
+        assertEquals("t.kat.kat.plus", a.toString(ISO_8859_1));
     }
 }

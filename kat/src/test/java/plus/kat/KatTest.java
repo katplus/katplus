@@ -99,12 +99,12 @@ public class KatTest {
 
     @Test
     public void test_decode1() {
-        HashMap<String, Object> any = new HashMap<>();
-        any.put("name", "kraity");
-
-        assertEquals(
-            "M{s:name(kraity)}", Kat.encode(any)
+        String text = "用户{:名字(陆之岇)}";
+        Map user = Kat.decode(
+            Map.class, text
         );
+        assertNotNull(user);
+        assertEquals("陆之岇", user.get("名字"));
     }
 
     @Test
