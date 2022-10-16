@@ -949,7 +949,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                 );
             }
 
-            throw new UnexpectedCrash(
+            throw new ProxyCrash(
                 "Unexpectedly, supplier not found"
             );
         }

@@ -422,7 +422,7 @@ public class ArraySpare extends Property<Object> {
                     elem, length = 1
                 );
             } else {
-                throw new UnexpectedCrash(
+                throw new ProxyCrash(
                     "Can't lookup the Spare of '" + elem + "'"
                 );
             }
@@ -450,7 +450,7 @@ public class ArraySpare extends Property<Object> {
             @NotNull Alias alias,
             @NotNull Builder<?> child
         ) throws IOException {
-            throw new UnexpectedCrash(
+            throw new ProxyCrash(
                 "Unexpectedly, operation not supported"
             );
         }
@@ -460,7 +460,7 @@ public class ArraySpare extends Property<Object> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            throw new UnexpectedCrash(
+            throw new ProxyCrash(
                 "Unexpectedly, operation not supported"
             );
         }
@@ -644,7 +644,7 @@ public class ArraySpare extends Property<Object> {
                     );
                 }
             } else {
-                throw new UnexpectedCrash(
+                throw new ProxyCrash(
                     "Unexpectedly, the number of elements exceeds the range: " + size
                 );
             }
@@ -680,7 +680,7 @@ public class ArraySpare extends Property<Object> {
 
                 return spare.getBuilder(type);
             } else {
-                throw new UnexpectedCrash(
+                throw new ProxyCrash(
                     "Unexpectedly, the number of elements exceeds the range: " + size
                 );
             }

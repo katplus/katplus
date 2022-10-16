@@ -539,7 +539,7 @@ public class Event<T> implements Flag {
             return spare;
         }
 
-        throw new UnexpectedCrash(
+        throw new ProxyCrash(
             "Unexpectedly, the specified spare was not found"
         );
     }

@@ -17,7 +17,6 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.crash.*;
 import plus.kat.kernel.*;
 
 import java.io.IOException;
@@ -225,7 +224,7 @@ public final class Binary {
                 return b - 0x37;
             }
         }
-        throw new UnexpectedCrash(
+        throw new IOException(
             "Unexpectedly, " + (char) b + " is not a hexadecimal number"
         );
     }

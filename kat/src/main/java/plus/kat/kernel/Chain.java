@@ -24,7 +24,6 @@ import java.math.*;
 import java.security.*;
 import java.nio.charset.Charset;
 
-import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
 
@@ -1713,7 +1712,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     /**
      * Returns a lowercase {@code MD5} of this {@link Chain}
      *
-     * @throws UnsupportedCrash If not supports the MD5
+     * @throws FatalCrash If the MD5 algo is not supported
      */
     @NotNull
     public String digest() {
@@ -1726,7 +1725,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Returns a lowercase message digest of this {@link Chain}
      *
      * @param algo the name of the algorithm requested
-     * @throws UnsupportedCrash If not supports the algo
+     * @throws FatalCrash If the specified algo is not supported
      * @see MessageDigest
      * @see Binary#toLower(byte[])
      * @see Chain#digest(String, int, int)
@@ -1746,7 +1745,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * @param algo the name of the algorithm requested
      * @param i    the specified offset
      * @param l    the specified length
-     * @throws UnsupportedCrash         If not supports the algo
+     * @throws FatalCrash               If the specified algo is not supported
      * @throws IllegalArgumentException If the length out of range
      * @see MessageDigest
      * @see Binary#toLower(byte[])
@@ -1769,8 +1768,8 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                     md.digest()
                 );
             } catch (NoSuchAlgorithmException e) {
-                throw new UnsupportedCrash(
-                    "Unexpectedly, " + algo + " unsupported", e
+                throw new FatalCrash(
+                    algo + " is not supported", e
                 );
             }
         } else {
@@ -3169,7 +3168,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
                 return b[i++];
             }
 
-            throw new UnexpectedCrash(
+            throw new ReaderCrash(
                 "Unexpectedly, no readable byte"
             );
         }

@@ -15,7 +15,7 @@
  */
 package plus.kat.stream;
 
-import plus.kat.crash.UnexpectedCrash;
+import plus.kat.crash.*;
 
 import java.io.IOException;
 
@@ -171,7 +171,7 @@ public abstract class AbstractReader implements Reader {
             }
         }
 
-        throw new UnexpectedCrash(
+        throw new ReaderCrash(
             "Unexpectedly, no readable byte"
         );
     }

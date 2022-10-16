@@ -15,22 +15,24 @@
  */
 package plus.kat.crash;
 
+import java.io.IOException;
+
 /**
  * @author kraity
- * @since 0.0.4
+ * @since 0.0.5
  */
-public class UnsupportedCrash extends RuntimeException {
+public class ProxyCrash extends IOException {
     /**
      * @param m the detail message
      */
-    public UnsupportedCrash(String m) {
+    public ProxyCrash(String m) {
         super(m);
     }
 
     /**
      * @param e the specified cause to saved
      */
-    public UnsupportedCrash(Throwable e) {
+    public ProxyCrash(Throwable e) {
         super(e);
     }
 
@@ -38,7 +40,7 @@ public class UnsupportedCrash extends RuntimeException {
      * @param m the detail message
      * @param e the specified cause to saved
      */
-    public UnsupportedCrash(String m, Throwable e) {
+    public ProxyCrash(String m, Throwable e) {
         super(m, e);
     }
 }

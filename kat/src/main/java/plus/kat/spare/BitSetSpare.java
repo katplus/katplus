@@ -146,7 +146,7 @@ public class BitSetSpare extends Property<BitSet> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            throw new UnexpectedCrash(
+            throw new ProxyCrash(
                 "Unexpectedly, invalid BitSet value type '" + space + "'"
             );
         }

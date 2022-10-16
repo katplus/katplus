@@ -375,7 +375,7 @@ public class MapSpare extends Property<Map> {
                     cls != String.class) {
                     spare0 = supplier.lookup(cls);
                     if (spare0 == null) {
-                        throw new UnexpectedCrash(
+                        throw new ProxyCrash(
                             tk + "'s spare does not exist"
                         );
                     }

@@ -18,6 +18,7 @@ package plus.kat.kernel;
 import plus.kat.anno.NotNull;
 
 import plus.kat.*;
+import plus.kat.crash.*;
 import plus.kat.stream.*;
 
 import java.io.Closeable;
@@ -41,7 +42,9 @@ public interface Solver extends Closeable {
      *
      * @param proxy  the specified data transfer pipeline
      * @param reader the specified data source to be parsed
-     * @throws IOException Unexpected errors by {@link Proxy} or {@link Reader}
+     * @throws ReaderCrash Unexpected errors by {@link Reader}
+     * @throws ProxyCrash  Unexpected errors by {@link Proxy}
+     * @throws SolverCrash Unexpected errors by {@link Solver}
      */
     void read(
         @NotNull Proxy proxy,

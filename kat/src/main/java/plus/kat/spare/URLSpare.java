@@ -64,7 +64,7 @@ public class URLSpare extends Property<URL> {
                 value.toString()
             );
         } catch (MalformedURLException e) {
-            throw new UnexpectedCrash(e);
+            throw new ProxyCrash(e);
         }
     }
 

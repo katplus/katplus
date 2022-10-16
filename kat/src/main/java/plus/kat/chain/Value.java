@@ -367,7 +367,7 @@ public class Value extends Alpha {
                     in, range
                 );
             } else {
-                throw new UnexpectedCrash(
+                throw new IOException(
                     "Unexpectedly, the range is not a positive number"
                 );
             }

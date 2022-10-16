@@ -113,8 +113,7 @@ public class Client extends Caller {
 
     /**
      * @param conn the specified {@link URLConnection}
-     * @throws IOException     If an I/O error occurs
-     * @throws UnexpectedCrash If the {@code conn} is not {@link HttpURLConnection}
+     * @throws IOException If an I/O error occurs
      */
     public Client(
         @NotNull URLConnection conn
@@ -123,7 +122,7 @@ public class Client extends Caller {
         if (conn instanceof HttpURLConnection) {
             this.conn = (HttpURLConnection) conn;
         } else {
-            throw new UnexpectedCrash(
+            throw new IOException(
                 conn + " is not an HttpURLConnection"
             );
         }
@@ -131,8 +130,7 @@ public class Client extends Caller {
 
     /**
      * @param conn the specified {@link HttpURLConnection}
-     * @throws IOException     If an I/O error occurs
-     * @throws UnexpectedCrash If the {@code conn} is null
+     * @throws IOException If an I/O error occurs
      */
     public Client(
         @NotNull HttpURLConnection conn
@@ -142,7 +140,7 @@ public class Client extends Caller {
             this.conn = conn;
             this.supplier = Supplier.ins();
         } else {
-            throw new UnexpectedCrash(
+            throw new IOException(
                 "HttpURLConnection must not be null"
             );
         }
@@ -801,14 +799,14 @@ public class Client extends Caller {
         }
 
         if (!status.startsWith("HTTP/1.")) {
-            throw new UnexpectedCrash(
+            throw new IOException(
                 "Not support status(" + status + ") currently"
             );
         }
 
         int index = status.indexOf(' ');
         if (index < 0) {
-            throw new UnexpectedCrash(
+            throw new IOException(
                 "Response status(" + status + ") is incomplete"
             );
         }
@@ -840,13 +838,13 @@ public class Client extends Caller {
             if (dig < 0 ||
                 num < mul ||
                 dig >= 10) {
-                throw new UnexpectedCrash(
+                throw new IOException(
                     "Status(" + status + ": '" + (char) dig + "')"
                 );
             }
             num *= 10;
             if (num < lim + dig) {
-                throw new UnexpectedCrash(
+                throw new IOException(
                     "Status(" + status + ": " + -num + ")  is out of range"
                 );
             }
@@ -859,7 +857,7 @@ public class Client extends Caller {
                 stream(in);
             }
         } else {
-            throw new UnexpectedCrash(
+            throw new IOException(
                 "Unexpectedly, code: " + code + ", message:" + status.substring(offset)
             );
         }

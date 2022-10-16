@@ -54,7 +54,7 @@ public abstract class Builder<K> {
             supplier = e.getSupplier();
             onCreate();
         } else {
-            throw new UnexpectedCrash(
+            throw new ProxyCrash(
                 "Unexpectedly, this Builder is already working"
             );
         }

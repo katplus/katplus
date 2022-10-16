@@ -85,7 +85,7 @@ public class ByteReader implements Reader {
             return value[index++];
         }
 
-        throw new UnexpectedCrash(
+        throw new ReaderCrash(
             "Unexpectedly, no readable byte"
         );
     }

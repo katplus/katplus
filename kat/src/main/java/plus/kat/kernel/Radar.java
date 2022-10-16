@@ -97,7 +97,9 @@ public class Radar implements Solver {
      *
      * @param p the specified data transfer pipeline
      * @param r the specified data source to be parsed
-     * @throws IOException Unexpected errors by {@link Proxy} or {@link Reader}
+     * @throws ReaderCrash Unexpected errors by {@link Reader}
+     * @throws ProxyCrash  Unexpected errors by {@link Proxy}
+     * @throws SolverCrash Unexpected errors by {@link Solver}
      */
     @Override
     public void read(
@@ -137,12 +139,12 @@ public class Radar implements Solver {
                                     continue;
                                 } else break Radar;
                             }
-                            throw new UnexpectedCrash(
+                            throw new SolverCrash(
                                 "`" + b + "` can't be in " + c.getClass()
                             );
                         }
                         case 0x7F: {
-                            throw new UnexpectedCrash(
+                            throw new SolverCrash(
                                 "Control character `" + b + "` can't be here"
                             );
                         }
@@ -168,7 +170,7 @@ public class Radar implements Solver {
                             c = a;
                             continue;
                         } else {
-                            throw new UnexpectedCrash(
+                            throw new SolverCrash(
                                 a.getClass() + " is not empty <"
                                     + a + "> and `:` can't be repeated"
                             );
@@ -189,7 +191,8 @@ public class Radar implements Solver {
                 }
                 case 0x0:
                 case 0x1:
-                case 0x2: {
+                case 0x2:
+                case 0x3: {
                     switch (b) {
                         case 0x09:
                         case 0x0A:
@@ -199,13 +202,13 @@ public class Radar implements Solver {
                                     continue;
                                 } else return;
                             }
-                            throw new UnexpectedCrash(
+                            throw new SolverCrash(
                                 c.getClass() + " is not empty <"
                                     + c + "> and whitespace can't be here"
                             );
                         }
                     }
-                    throw new UnexpectedCrash(
+                    throw new SolverCrash(
                         "Control character `" + b + "` can't be here"
                     );
                 }
@@ -217,7 +220,7 @@ public class Radar implements Solver {
                                     continue;
                                 } else return;
                             }
-                            throw new UnexpectedCrash(
+                            throw new SolverCrash(
                                 c.getClass() + " is not empty <"
                                     + c + "> and space character can't be here"
                             );
@@ -227,15 +230,15 @@ public class Radar implements Solver {
                                 s.isEmpty()) {
                                 while (true) {
                                     switch (r.next()) {
-                                        case '#':
-                                        case '\r':
-                                        case '\n': {
+                                        case 0x0A:
+                                        case 0x0D:
+                                        case 0x23: {
                                             continue Radar;
                                         }
                                     }
                                 }
                             }
-                            throw new UnexpectedCrash(
+                            throw new SolverCrash(
                                 c.getClass() + " is not empty <"
                                     + c + "> and comment block can't be here"
                             );
@@ -274,8 +277,8 @@ public class Radar implements Solver {
                             }
                         }
                         case 0x29: {
-                            throw new UnexpectedCrash(
-                                "Property terminator can't be here"
+                            throw new SolverCrash(
+                                "Close parentheses can't be here"
                             );
                         }
                         default: {
@@ -361,8 +364,8 @@ public class Radar implements Solver {
                     continue;
                 }
                 case ')': {
-                    throw new UnexpectedCrash(
-                        "Parse error, `41` can't be here"
+                    throw new SolverCrash(
+                        "Close parentheses can't be here"
                     );
                 }
                 case '#': {
@@ -385,11 +388,6 @@ public class Radar implements Solver {
                             }
                             case ')': {
                                 continue Filter;
-                            }
-                            case '(': {
-                                throw new UnexpectedCrash(
-                                    "Parse error, `40` can't be here"
-                                );
                             }
                         }
                     }
@@ -562,7 +560,9 @@ public class Radar implements Solver {
          *
          * @param p the specified data transfer pipeline
          * @param r the specified data source to be parsed
-         * @throws IOException Unexpected errors by {@link Proxy} or {@link Reader}
+         * @throws ReaderCrash Unexpected errors by {@link Reader}
+         * @throws ProxyCrash  Unexpected errors by {@link Proxy}
+         * @throws SolverCrash Unexpected errors by {@link Solver}
          */
         @Override
         public void read(
@@ -586,7 +586,7 @@ public class Radar implements Solver {
                             continue;
                         }
                     }
-                    throw new UnexpectedCrash(
+                    throw new SolverCrash(
                         "Parse error, `" + b + "`  can't be here"
                     );
                 }
@@ -605,7 +605,7 @@ public class Radar implements Solver {
                         break Boot;
                     }
                     default: {
-                        throw new UnexpectedCrash(
+                        throw new SolverCrash(
                             "Parse error, `" + b + "`  can't be here"
                         );
                     }
@@ -627,7 +627,7 @@ public class Radar implements Solver {
                                     continue;
                                 }
                             }
-                            throw new UnexpectedCrash(
+                            throw new SolverCrash(
                                 "Parse error, `" + b + "`  can't be here"
                             );
                         }
@@ -645,7 +645,7 @@ public class Radar implements Solver {
                                 if (a.isEmpty()) {
                                     continue;
                                 } else {
-                                    throw new UnexpectedCrash(
+                                    throw new SolverCrash(
                                         "Parse error, ',' is not ':'"
                                     );
                                 }
@@ -655,13 +655,13 @@ public class Radar implements Solver {
                                     detach(p, true);
                                     continue Boot;
                                 } else {
-                                    throw new UnexpectedCrash(
+                                    throw new SolverCrash(
                                         "Parse error, '}' is not ':'"
                                     );
                                 }
                             }
                             default: {
-                                throw new UnexpectedCrash(
+                                throw new SolverCrash(
                                     "Parse error, `" + b + "`  can't be here"
                                 );
                             }
@@ -681,7 +681,7 @@ public class Radar implements Solver {
                                 } else break Boot;
                             }
                         }
-                        throw new UnexpectedCrash(
+                        throw new SolverCrash(
                             "Parse error, `" + b + "`  can't be here"
                         );
                     }
@@ -723,7 +723,7 @@ public class Radar implements Solver {
                             if (a.isEmpty()) {
                                 continue;
                             } else {
-                                throw new UnexpectedCrash(
+                                throw new SolverCrash(
                                     "Parse error, ',' is not a value"
                                 );
                             }
@@ -733,7 +733,7 @@ public class Radar implements Solver {
                                 detach(p, true);
                                 continue Boot;
                             } else {
-                                throw new UnexpectedCrash(
+                                throw new SolverCrash(
                                     "Parse error, '}' is not a value"
                                 );
                             }
@@ -743,7 +743,7 @@ public class Radar implements Solver {
                                 detach(p, false);
                                 continue Boot;
                             } else {
-                                throw new UnexpectedCrash(
+                                throw new SolverCrash(
                                     "Parse error, ']' is not a value"
                                 );
                             }
@@ -764,7 +764,7 @@ public class Radar implements Solver {
                                     continue;
                                 }
                             }
-                            throw new UnexpectedCrash(
+                            throw new SolverCrash(
                                 "Parse error, `" + b + "`  can't be here"
                             );
                         }
@@ -877,7 +877,7 @@ public class Radar implements Solver {
             if ((b2 != 'u' && b2 != 'U') ||
                 (b3 != 'l' && b3 != 'L') ||
                 (b4 != 'l' && b4 != 'L')) {
-                throw new UnexpectedCrash(
+                throw new SolverCrash(
                     "Parse error, N" +
                         (char) (b2 & 0xFF) +
                         (char) (b3 & 0xFF) +
@@ -1037,7 +1037,9 @@ public class Radar implements Solver {
          *
          * @param p the specified data transfer pipeline
          * @param r the specified data source to be parsed
-         * @throws IOException Unexpected errors by {@link Proxy} or {@link Reader}
+         * @throws ReaderCrash Unexpected errors by {@link Reader}
+         * @throws ProxyCrash  Unexpected errors by {@link Proxy}
+         * @throws SolverCrash Unexpected errors by {@link Solver}
          */
         @Override
         public void read(
@@ -1100,7 +1102,7 @@ public class Radar implements Solver {
                                     continue;
                                 }
 
-                                throw new UnexpectedCrash(
+                                throw new SolverCrash(
                                     "Parse error, `" + b + "`  can't be in namespace"
                                 );
                             }
@@ -1189,7 +1191,7 @@ public class Radar implements Solver {
                         p.detach();
                         break;
                     }
-                    throw new UnexpectedCrash(
+                    throw new SolverCrash(
                         "Parse error, `" + b + "`  can't be here"
                     );
                 }
@@ -1217,7 +1219,7 @@ public class Radar implements Solver {
                     }
                 }
 
-                throw new UnexpectedCrash(
+                throw new SolverCrash(
                     "Parse error, `" + b + "`  can't be here"
                 );
             }
@@ -1243,7 +1245,7 @@ public class Radar implements Solver {
                     break;
                 }
 
-                throw new UnexpectedCrash(
+                throw new SolverCrash(
                     "Parse error, `" + b + "`  can't be here"
                 );
             }
@@ -1336,7 +1338,7 @@ public class Radar implements Solver {
                 }
             }
 
-            throw new UnexpectedCrash(
+            throw new SolverCrash(
                 "Parse error, `" + b + "`  can't be here"
             );
         }
@@ -1356,7 +1358,7 @@ public class Radar implements Solver {
                 case '-': {
                     b = r.next();
                     if (b != '-') {
-                        throw new UnexpectedCrash(
+                        throw new SolverCrash(
                             "Parse error, `" + b + "`  can't be here"
                         );
                     }
@@ -1388,7 +1390,7 @@ public class Radar implements Solver {
                             continue;
                         }
 
-                        throw new UnexpectedCrash(
+                        throw new SolverCrash(
                             "Parse error, `" + b + "`  can't be here"
                         );
                     }

@@ -19,20 +19,20 @@ import java.io.IOException;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.5
  */
-public class UnexpectedCrash extends IOException {
+public class ReaderCrash extends IOException {
     /**
      * @param m the detail message
      */
-    public UnexpectedCrash(String m) {
+    public ReaderCrash(String m) {
         super(m);
     }
 
     /**
      * @param e the specified cause to saved
      */
-    public UnexpectedCrash(Throwable e) {
+    public ReaderCrash(Throwable e) {
         super(e);
     }
 
@@ -40,7 +40,7 @@ public class UnexpectedCrash extends IOException {
      * @param m the detail message
      * @param e the specified cause to saved
      */
-    public UnexpectedCrash(String m, Throwable e) {
+    public ReaderCrash(String m, Throwable e) {
         super(m, e);
     }
 }

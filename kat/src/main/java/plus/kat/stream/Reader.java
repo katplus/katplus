@@ -50,7 +50,7 @@ public interface Reader extends Closeable {
             return read();
         }
 
-        throw new UnexpectedCrash(
+        throw new ReaderCrash(
             "Unexpectedly, no readable byte"
         );
     }

@@ -655,7 +655,7 @@ public class Query extends Chain {
                         );
                         concat(d);
                     } catch (IOException e) {
-                        throw new UnsupportedCrash(e);
+                        throw new FatalCrash(e);
                     }
                 }
             }
@@ -691,7 +691,7 @@ public class Query extends Chain {
                         );
                         concat(d);
                     } catch (IOException e) {
-                        throw new UnsupportedCrash(e);
+                        throw new FatalCrash(e);
                     }
                 }
             }

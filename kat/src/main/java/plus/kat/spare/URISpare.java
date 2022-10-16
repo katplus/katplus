@@ -64,7 +64,7 @@ public class URISpare extends Property<URI> {
                 value.toString()
             );
         } catch (URISyntaxException e) {
-            throw new UnexpectedCrash(e);
+            throw new ProxyCrash(e);
         }
     }
 

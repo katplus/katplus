@@ -268,7 +268,7 @@ public class SpareTest {
                     );
                 }
 
-                throw new UnexpectedCrash("Error");
+                throw new ProxyCrash("Error");
             }
         };
 

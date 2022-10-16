@@ -551,7 +551,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 );
             }
 
-            throw new UnexpectedCrash(
+            throw new ProxyCrash(
                 "Unexpectedly, supplier not found"
             );
         }
@@ -857,7 +857,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 try {
                     bean = subject.apply(data);
                 } catch (Collapse e) {
-                    throw new UnexpectedCrash(
+                    throw new ProxyCrash(
                         "Error creating entity", e
                     );
                 }
@@ -925,14 +925,14 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             if (o != null) {
                 Object res = getParent().onPacket();
                 if (res == null) {
-                    throw new UnexpectedCrash(
+                    throw new ProxyCrash(
                         "Unexpectedly, the parent is is null"
                     );
                 } else {
                     if (o.isInstance(res)) {
                         data[0] = res;
                     } else {
-                        throw new UnexpectedCrash(
+                        throw new ProxyCrash(
                             "Unexpectedly, the parent is not " + o
                         );
                     }
@@ -1095,7 +1095,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 try {
                     bean = subject.apply(data);
                 } catch (Collapse e) {
-                    throw new UnexpectedCrash(
+                    throw new ProxyCrash(
                         "Error creating entity", e
                     );
                 }
