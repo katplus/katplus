@@ -42,9 +42,9 @@ public interface Solver extends Closeable {
      *
      * @param proxy  the specified data transfer pipeline
      * @param reader the specified data source to be parsed
-     * @throws ReaderCrash Unexpected errors by {@link Reader}
-     * @throws ProxyCrash  Unexpected errors by {@link Proxy}
-     * @throws SolverCrash Unexpected errors by {@link Solver}
+     * @throws ReaderCrash If an I/O error occurs by reader
+     * @throws ProxyCrash  If an I/O error occurs by proxy
+     * @throws SolverCrash If an I/O error occurs by solver
      */
     void read(
         @NotNull Proxy proxy,

@@ -97,9 +97,9 @@ public class Radar implements Solver {
      *
      * @param p the specified data transfer pipeline
      * @param r the specified data source to be parsed
-     * @throws ReaderCrash Unexpected errors by {@link Reader}
-     * @throws ProxyCrash  Unexpected errors by {@link Proxy}
-     * @throws SolverCrash Unexpected errors by {@link Solver}
+     * @throws ReaderCrash If an I/O error occurs by reader
+     * @throws ProxyCrash  If an I/O error occurs by proxy
+     * @throws SolverCrash If an I/O error occurs by solver
      */
     @Override
     public void read(
@@ -560,9 +560,9 @@ public class Radar implements Solver {
          *
          * @param p the specified data transfer pipeline
          * @param r the specified data source to be parsed
-         * @throws ReaderCrash Unexpected errors by {@link Reader}
-         * @throws ProxyCrash  Unexpected errors by {@link Proxy}
-         * @throws SolverCrash Unexpected errors by {@link Solver}
+         * @throws ReaderCrash If an I/O error occurs by reader
+         * @throws ProxyCrash  If an I/O error occurs by proxy
+         * @throws SolverCrash If an I/O error occurs by solver
          */
         @Override
         public void read(
@@ -1037,9 +1037,9 @@ public class Radar implements Solver {
          *
          * @param p the specified data transfer pipeline
          * @param r the specified data source to be parsed
-         * @throws ReaderCrash Unexpected errors by {@link Reader}
-         * @throws ProxyCrash  Unexpected errors by {@link Proxy}
-         * @throws SolverCrash Unexpected errors by {@link Solver}
+         * @throws ReaderCrash If an I/O error occurs by reader
+         * @throws ProxyCrash  If an I/O error occurs by proxy
+         * @throws SolverCrash If an I/O error occurs by solver
          */
         @Override
         public void read(
