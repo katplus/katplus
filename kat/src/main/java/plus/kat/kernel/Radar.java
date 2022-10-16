@@ -114,112 +114,174 @@ public class Radar implements Solver {
         // decode kat stream
         while (true) {
             byte b = r.next();
-            switch (b) {
-                case 0x09:
-                case 0x0A:
-                case 0x0D:
-                case 0x20: {
-                    if (c.isEmpty()) {
-                        if (r.also()) {
+            switch (b >> 3) {
+                case 0xF: {
+                    switch (b) {
+                        case 0x7B: {
+                            if (p.attach(s, a)) {
+                                s.clean();
+                                a.clean();
+                            } else {
+                                s.clean();
+                                a.clean();
+                                washing(r);
+                            }
+                            c = s;
                             continue;
-                        } else return;
+                        }
+                        case 0x7D: {
+                            if (c.isSpace() &&
+                                s.isEmpty()) {
+                                if (p.detach()) {
+                                    c = s;
+                                    continue;
+                                } else break Radar;
+                            }
+                            throw new UnexpectedCrash(
+                                "`" + b + "` can't be in " + c.getClass()
+                            );
+                        }
+                        case 0x7F: {
+                            throw new UnexpectedCrash(
+                                "Control character `" + b + "` can't be here"
+                            );
+                        }
+                        default: {
+                            c.concat(b);
+                        }
+                    }
+                    continue;
+                }
+                case 0xB: {
+                    if (b != 0x5E) {
+                        c.concat(b);
+                    } else {
+                        escape(c, r);
+                    }
+                    continue;
+                }
+                case 0x7: {
+                    if (b != 0x3A) {
+                        c.concat(b);
+                    } else {
+                        if (c.isSpace()) {
+                            c = a;
+                            continue;
+                        } else {
+                            throw new UnexpectedCrash(
+                                a.getClass() + " is not empty <"
+                                    + a + "> and `:` can't be repeated"
+                            );
+                        }
+                    }
+                    continue;
+                }
+                case 0x6:
+                case 0x8:
+                case 0x9:
+                case 0xA:
+                case 0xC:
+                case 0xD:
+                case 0xE:
+                default: {
+                    c.concat(b);
+                    continue;
+                }
+                case 0x0:
+                case 0x1:
+                case 0x2: {
+                    switch (b) {
+                        case 0x09:
+                        case 0x0A:
+                        case 0x0D: {
+                            if (c.isEmpty()) {
+                                if (r.also()) {
+                                    continue;
+                                } else return;
+                            }
+                            throw new UnexpectedCrash(
+                                c.getClass() + " is not empty <"
+                                    + c + "> and whitespace can't be here"
+                            );
+                        }
                     }
                     throw new UnexpectedCrash(
-                        "Parse error, `" + b + "` can't be in " + c.getClass()
+                        "Control character `" + b + "` can't be here"
                     );
                 }
-                case '{': {
-                    if (p.attach(s, a)) {
-                        s.clean();
-                        a.clean();
-                    } else {
-                        s.clean();
-                        a.clean();
-                        washing(r);
+                case 0x4: {
+                    switch (b) {
+                        case 0x20: {
+                            if (c.isEmpty()) {
+                                if (r.also()) {
+                                    continue;
+                                } else return;
+                            }
+                            throw new UnexpectedCrash(
+                                c.getClass() + " is not empty <"
+                                    + c + "> and space character can't be here"
+                            );
+                        }
+                        case 0x23: {
+                            if (c.isSpace() &&
+                                s.isEmpty()) {
+                                while (true) {
+                                    switch (r.next()) {
+                                        case '#':
+                                        case '\r':
+                                        case '\n': {
+                                            continue Radar;
+                                        }
+                                    }
+                                }
+                            }
+                            throw new UnexpectedCrash(
+                                c.getClass() + " is not empty <"
+                                    + c + "> and comment block can't be here"
+                            );
+                        }
+                        default: {
+                            c.concat(b);
+                        }
                     }
-                    c = s;
                     continue;
                 }
-                case '^': {
-                    escape(c, r);
-                    continue;
-                }
-                case '#': {
-                    if (c.isSpace() &&
-                        s.isEmpty()) {
-                        while (true) {
-                            switch (r.next()) {
-                                case '#':
-                                case '\r':
-                                case '\n': {
-                                    continue Radar;
+                case 0x5: {
+                    switch (b) {
+                        case 0x28: {
+                            while (true) {
+                                switch (b = r.next()) {
+                                    case 0x5E: {
+                                        escape(v, r);
+                                        continue;
+                                    }
+                                    case 0x29: {
+                                        p.accept(
+                                            s, a, v
+                                        );
+                                        s.clean();
+                                        a.clean();
+                                        v.clean();
+                                        if (r.also()) {
+                                            c = s;
+                                            continue Radar;
+                                        } else return;
+                                    }
+                                    default: {
+                                        v.concat(b);
+                                    }
                                 }
                             }
                         }
-                    }
-                    throw new UnexpectedCrash(
-                        "Parse error, `" + b + "` can't be in " + c.getClass()
-                    );
-                }
-                case ')': {
-                    throw new UnexpectedCrash(
-                        "Parse error, `" + b + "` can't be in " + c.getClass()
-                    );
-                }
-                case ':': {
-                    if (c.isSpace()) {
-                        c = a;
-                        continue;
-                    } else {
-                        throw new UnexpectedCrash(
-                            "Parse error, `" + b + "` can't be in " + c.getClass()
-                        );
-                    }
-                }
-                case '}': {
-                    if (c.isSpace() &&
-                        s.isEmpty()) {
-                        if (p.detach()) {
-                            c = s;
-                            continue;
-                        } else break Radar;
-                    }
-                    throw new UnexpectedCrash(
-                        "Parse error, `" + b + "` can't be in " + c.getClass()
-                    );
-                }
-                case '(': {
-                    while (true) {
-                        switch (b = r.next()) {
-                            case '^': {
-                                escape(v, r);
-                                continue;
-                            }
-                            case ')': {
-                                p.accept(
-                                    s, a, v
-                                );
-                                s.clean();
-                                a.clean();
-                                v.clean();
-                                if (r.also()) {
-                                    c = s;
-                                    continue Radar;
-                                } else return;
-                            }
-                            case '(': {
-                                throw new UnexpectedCrash(
-                                    "Parse error, `" + b + "` can't be in " + v.getClass()
-                                );
-                            }
-                            default: {
-                                v.concat(b);
-                            }
+                        case 0x29: {
+                            throw new UnexpectedCrash(
+                                "Property terminator can't be here"
+                            );
+                        }
+                        default: {
+                            c.concat(b);
                         }
                     }
-                }
-                default: {
-                    c.concat(b);
                 }
             }
         }
