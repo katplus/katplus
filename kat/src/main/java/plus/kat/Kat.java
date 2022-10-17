@@ -29,6 +29,7 @@ import java.util.Set;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
+import static plus.kat.stream.Binary.upper;
 
 /**
  * @author kraity
@@ -336,11 +337,13 @@ public class Kat extends Steam implements Chan {
      * Concatenates the byte value to this {@link Kat},
      * which will be escaped if it is a special character
      *
-     * @param b the specified byte value to be appended
+     * @param bt the specified byte value to be appended
      */
     @Override
-    public void emit(byte b) {
-        switch (b) {
+    public void emit(
+        byte bt
+    ) throws IOException {
+        switch (bt) {
             case '^':
             case '(':
             case ')': {
@@ -352,12 +355,90 @@ public class Kat extends Steam implements Chan {
         byte[] it = value;
         if (count != it.length) {
             asset = 0;
-            it[count++] = b;
+            it[count++] = bt;
         } else {
             grow(count + 1);
             asset = 0;
-            value[count++] = b;
+            value[count++] = bt;
         }
+    }
+
+    /**
+     * Concatenates the char value to this {@link Kat},
+     * which will be escaped if it is a special character
+     *
+     * @param ch the specified char value to be appended
+     */
+    @Override
+    public void emit(
+        char ch
+    ) throws IOException {
+        if (ch < 0x80) {
+            emit(
+                (byte) ch
+            );
+        } else {
+            if ((flags & 2) == 0) {
+                concat(ch);
+            } else {
+                byte[] it = value;
+                int size = count + 6;
+                if (size > it.length) {
+                    grow(size);
+                    it = value;
+                }
+                it[count++] = '^';
+                it[count++] = 'u';
+                it[count++] = upper((ch >> 12) & 0x0F);
+                it[count++] = upper((ch >> 8) & 0x0F);
+                it[count++] = upper((ch >> 4) & 0x0F);
+                it[count++] = upper(ch & 0x0F);
+            }
+        }
+    }
+
+    /**
+     * Concatenates the string representation
+     * of the boolean value to this {@link Kat}
+     *
+     * @param bo the specified boolean to be appended
+     */
+    @Override
+    public void emit(
+        boolean bo
+    ) throws IOException {
+        byte[] it = value;
+        int size = count + 1;
+        if (size > it.length) {
+            grow(size);
+            it = value;
+        }
+        asset = 0;
+        it[count++] = bo ? (byte) '1' : (byte) '0';
+    }
+
+    /**
+     * Concatenates the char value to this
+     * {@link Kat}, conventing it to unicode first
+     *
+     * @param ch the specified char value to be appended
+     */
+    @Override
+    public void save(
+        char ch
+    ) {
+        byte[] it = value;
+        int size = count + 6;
+        if (size > it.length) {
+            grow(size);
+            it = value;
+        }
+        it[count++] = '^';
+        it[count++] = 'u';
+        it[count++] = upper((ch >> 12) & 0x0F);
+        it[count++] = upper((ch >> 8) & 0x0F);
+        it[count++] = upper((ch >> 4) & 0x0F);
+        it[count++] = upper(ch & 0x0F);
     }
 
     /**
@@ -368,7 +449,7 @@ public class Kat extends Steam implements Chan {
      */
     private void escape(
         @NotNull String data
-    ) {
+    ) throws IOException {
         int i = 0,
             l = data.length();
         grow(count + l);
@@ -378,6 +459,9 @@ public class Kat extends Steam implements Chan {
                 switch (bit) {
                     case '{':
                     case '}': {
+                        concat(
+                            (byte) '^'
+                        );
                         break;
                     }
                     default: {
@@ -385,61 +469,56 @@ public class Kat extends Steam implements Chan {
                         continue;
                     }
                 }
-            }
-
-            // a ~ z
-            else if (bit > 0x60) {
-                concat(
-                    (byte) bit
-                );
-                continue;
-            }
-
-            // ! ~ `
-            else if (bit > 0x20) {
-                switch (bit) {
-                    case '^':
-                    case '#':
-                    case ':':
-                    case '(':
-                    case ')': {
-                        break;
+            } else if (bit < 0x5F) {
+                if (bit > 0x20) {
+                    switch (bit) {
+                        case '^':
+                        case '#':
+                        case ':':
+                        case '(':
+                        case ')': {
+                            concat(
+                                (byte) '^'
+                            );
+                        }
                     }
-                    default: {
-                        concat(
-                            (byte) bit
-                        );
-                        continue;
+                } else {
+                    switch (bit) {
+                        case ' ': {
+                            bit = 's';
+                            break;
+                        }
+                        case '\t': {
+                            bit = 't';
+                            break;
+                        }
+                        case '\r': {
+                            bit = 'r';
+                            break;
+                        }
+                        case '\n': {
+                            bit = 'n';
+                            break;
+                        }
+                        default: {
+                            concat(bit);
+                            continue;
+                        }
                     }
+                    concat(
+                        (byte) '^'
+                    );
                 }
+            }
+            byte[] it = value;
+            if (count != it.length) {
+                asset = 0;
+                it[count++] = (byte) bit;
             } else {
-                switch (bit) {
-                    case ' ': {
-                        bit = 's';
-                        break;
-                    }
-                    case '\t': {
-                        bit = 't';
-                        break;
-                    }
-                    case '\r': {
-                        bit = 'r';
-                        break;
-                    }
-                    case '\n': {
-                        bit = 'n';
-                        break;
-                    }
-                    default: {
-                        concat(
-                            (byte) bit
-                        );
-                        continue;
-                    }
-                }
+                grow(count + 1);
+                asset = 0;
+                value[count++] = (byte) bit;
             }
-            concat((byte) '^');
-            concat((byte) bit);
         }
     }
 

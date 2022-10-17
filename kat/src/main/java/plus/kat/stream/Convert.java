@@ -543,29 +543,6 @@ public final class Convert {
                 }
                 return def;
             }
-            case 10: {
-                if (it[0] == '0' &&
-                    it[1] == 'x') {
-                    int bits = it[2];
-                    for (int i = 3; i < 10; i++) {
-                        int dig = it[i];
-                        if (dig < 58) {
-                            dig -= 48;
-                        } else if (dig < 91) {
-                            dig -= 55;
-                        } else {
-                            dig -= 87;
-                        }
-                        if (dig < 0 || dig > 15) {
-                            return def;
-                        } else {
-                            bits <<= 4;
-                            bits |= dig;
-                        }
-                    }
-                    return Float.intBitsToFloat(bits);
-                }
-            }
         }
 
         try {
@@ -603,29 +580,6 @@ public final class Convert {
                     return dig;
                 }
                 return def;
-            }
-            case 18: {
-                if (it[0] == '0' &&
-                    it[1] == 'x') {
-                    long bits = it[2];
-                    for (int i = 3; i < 18; i++) {
-                        long dig = it[i];
-                        if (dig < 58) {
-                            dig -= 48;
-                        } else if (dig < 91) {
-                            dig -= 55;
-                        } else {
-                            dig -= 87;
-                        }
-                        if (dig < 0 || dig > 15) {
-                            return def;
-                        } else {
-                            bits <<= 4;
-                            bits |= dig;
-                        }
-                    }
-                    return Double.longBitsToDouble(bits);
-                }
             }
         }
 

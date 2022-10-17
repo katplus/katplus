@@ -32,7 +32,6 @@ public interface Flag {
     long PRETTY = 0x1;
     long UNICODE = 0x2;
     long ENUM_AS_INDEX = 0x4;
-    long FLOAT_AS_BITMAP = 0x8;
     long DATE_AS_TIMESTAMP = 0x10;
     long INSTANT_AS_TIMESTAMP = 0x20;
 

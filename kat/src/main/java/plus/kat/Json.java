@@ -367,33 +367,46 @@ public class Json extends Steam implements Chan {
      * Concatenates the byte value to this {@link Json},
      * which will be escaped if it is a special character
      *
-     * @param b the specified byte value to be appended
+     * @param bt the specified byte value to be appended
      */
     @Override
-    public void emit(byte b) {
-        if (b < 0x5D) {
-            if (b > 0x1F) {
-                if (b == '"' ||
-                    b == '\\') {
+    public void emit(
+        byte bt
+    ) throws IOException {
+        if (bt < 0x5D) {
+            if (bt > 0x1F) {
+                if (bt == '"' ||
+                    bt == '\\') {
                     concat(
                         (byte) '\\'
                     );
                 }
             } else {
-                switch (b) {
-                    case '\r': {
-                        b = 'r';
+                switch (bt) {
+                    case '\b': {
+                        bt = 'b';
                         break;
                     }
-                    case '\n': {
-                        b = 'n';
+                    case '\f': {
+                        bt = 'f';
                         break;
                     }
                     case '\t': {
-                        b = 't';
+                        bt = 't';
+                        break;
+                    }
+                    case '\r': {
+                        bt = 'r';
+                        break;
+                    }
+                    case '\n': {
+                        bt = 'n';
                         break;
                     }
                     default: {
+                        concat(
+                            (char) bt
+                        );
                         return;
                     }
                 }
@@ -406,11 +419,11 @@ public class Json extends Steam implements Chan {
         byte[] it = value;
         if (count != it.length) {
             asset = 0;
-            it[count++] = b;
+            it[count++] = bt;
         } else {
             grow(count + 1);
             asset = 0;
-            value[count++] = b;
+            value[count++] = bt;
         }
     }
 

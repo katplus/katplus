@@ -121,41 +121,10 @@ public class Alpha extends Chain {
         if (sequence != null) {
             int len = sequence.length();
             if (len != 0) {
-                concat(
-                    sequence, 0, len
-                );
+                concat(sequence, 0, len);
                 asset |= 2;
                 backup = sequence.toString();
             }
-        }
-    }
-
-    /**
-     * Concatenates the specified byte value to {@link Alpha}
-     *
-     * @param data the specified byte value
-     * @throws FatalCrash If the alpha is finally fixed
-     * @see Chain#isFixed()
-     * @since 0.0.5
-     */
-    @Override
-    public void emit(
-        byte data
-    ) {
-        if (0 <= asset) {
-            byte[] it = value;
-            if (count != it.length) {
-                asset = 0;
-                it[count++] = data;
-            } else {
-                grow(count + 1);
-                asset = 0;
-                value[count++] = data;
-            }
-        } else {
-            throw new FatalCrash(
-                "Unexpectedly, the alpha is finally fixed"
-            );
         }
     }
 
@@ -176,6 +145,32 @@ public class Alpha extends Chain {
     }
 
     /**
+     * Concatenates the specified byte value to {@link Alpha}
+     *
+     * @param b the specified byte value
+     * @throws FatalCrash If the alpha is finally fixed
+     * @see Chain#isFixed()
+     * @since 0.0.5
+     */
+    public void add(byte b) {
+        if (0 <= asset) {
+            byte[] it = value;
+            if (count != it.length) {
+                asset = 0;
+                it[count++] = b;
+            } else {
+                grow(count + 1);
+                asset = 0;
+                value[count++] = b;
+            }
+        } else {
+            throw new FatalCrash(
+                "Unexpectedly, the alpha is finally fixed"
+            );
+        }
+    }
+
+    /**
      * Sets the value of the specified location
      *
      * @param i the specified index
@@ -185,9 +180,7 @@ public class Alpha extends Chain {
      * @see Chain#isFixed()
      * @since 0.0.5
      */
-    public void set(
-        int i, byte b
-    ) {
+    public void set(int i, byte b) {
         if (0 <= asset) {
             if (0 <= i) {
                 if (i < count) {
@@ -231,9 +224,7 @@ public class Alpha extends Chain {
      * @see Chain#isFixed()
      * @since 0.0.5
      */
-    public void slip(
-        int length
-    ) {
+    public void slip(int length) {
         if (0 <= asset) {
             if (length == 0) {
                 asset = 0;

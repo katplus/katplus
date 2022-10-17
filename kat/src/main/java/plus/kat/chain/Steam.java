@@ -22,16 +22,15 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.Config;
 
-import java.io.Closeable;
+import java.io.IOException;
 
-import static plus.kat.Algo.KAT;
 import static plus.kat.stream.Binary.*;
 
 /**
  * @author kraity
  * @since 0.0.5
  */
-public abstract class Steam extends Chain implements Flow, Closeable {
+public abstract class Steam extends Chain implements Flow {
 
     protected long flags;
     protected short depth;
@@ -64,19 +63,6 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     }
 
     /**
-     * Concatenates the byte value to this {@link Steam},
-     * which will be escaped if it is a special character
-     *
-     * @param b the specified byte value to be appended
-     */
-    @Override
-    public void emit(
-        byte b
-    ) {
-        concat(b);
-    }
-
-    /**
      * Concatenates the string representation
      * of the integer value to this {@link Steam}
      *
@@ -85,7 +71,7 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         int num
-    ) {
+    ) throws IOException {
         concat(num);
     }
 
@@ -97,16 +83,16 @@ public abstract class Steam extends Chain implements Flow, Closeable {
      */
     @Override
     public void emit(
-        int num, int shift
-    ) {
-        if (0 < shift && shift < 6) {
+        int num, int s
+    ) throws IOException {
+        if (0 < s && s < 6) {
             int mark = count;
-            int mask = (1 << shift) - 1;
+            int mask = (1 << s) - 1;
             do {
                 concat(lower(
                     (num & mask)
                 ));
-                num >>>= shift;
+                num >>>= s;
             } while (num != 0);
             swop(mark, count);
         }
@@ -120,16 +106,16 @@ public abstract class Steam extends Chain implements Flow, Closeable {
      */
     @Override
     public void emit(
-        int num, int shift, int length
-    ) {
-        if (0 < shift && shift < 6) {
+        int num, int s, int l
+    ) throws IOException {
+        if (0 < s && s < 6) {
             int mark = count;
-            int mask = (1 << shift) - 1;
-            while (--length != -1) {
+            int mask = (1 << s) - 1;
+            while (--l != -1) {
                 concat(lower(
                     (num & mask)
                 ));
-                num >>>= shift;
+                num >>>= s;
             }
             swop(mark, count);
         }
@@ -144,7 +130,7 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         long num
-    ) {
+    ) throws IOException {
         concat(num);
     }
 
@@ -156,16 +142,16 @@ public abstract class Steam extends Chain implements Flow, Closeable {
      */
     @Override
     public void emit(
-        long num, int shift
-    ) {
-        if (0 < shift && shift < 6) {
+        long num, int s
+    ) throws IOException {
+        if (0 < s && s < 6) {
             int mark = count;
-            long mask = (1L << shift) - 1L;
+            long mask = (1L << s) - 1L;
             do {
                 concat(lower(
                     (int) (num & mask)
                 ));
-                num >>>= shift;
+                num >>>= s;
             } while (num != 0L);
             swop(mark, count);
         }
@@ -179,16 +165,16 @@ public abstract class Steam extends Chain implements Flow, Closeable {
      */
     @Override
     public void emit(
-        long num, int shift, int length
-    ) {
-        if (0 < shift && shift < 6) {
+        long num, int s, int l
+    ) throws IOException {
+        if (0 < s && s < 6) {
             int mark = count;
-            long mask = (1L << shift) - 1L;
-            while (--length != -1) {
+            long mask = (1L << s) - 1L;
+            while (--l != -1) {
                 concat(lower(
                     (int) (num & mask)
                 ));
-                num >>>= shift;
+                num >>>= s;
             }
             swop(mark, count);
         }
@@ -203,7 +189,7 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         short num
-    ) {
+    ) throws IOException {
         concat(num);
     }
 
@@ -216,41 +202,8 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         float num
-    ) {
+    ) throws IOException {
         concat(num);
-    }
-
-    /**
-     * Concatenates the hexadecimal format of float
-     * value (treated as unsigned) to this {@link Flow}
-     *
-     * @param num the specified number to be appended
-     */
-    @Override
-    public void emit(
-        float num, boolean boot
-    ) {
-        asset = 0;
-        byte[] it;
-        if (boot) {
-            grow(count + 10);
-            it = value;
-            it[count++] = '0';
-            it[count++] = 'x';
-        } else {
-            grow(count + 8);
-            it = value;
-        }
-
-        int mark = count;
-        int data = Float.floatToIntBits(num);
-        for (int i = 0; i < 8; i++) {
-            it[count++] = upper(
-                data & 0xF
-            );
-            data >>>= 4;
-        }
-        swop(mark, count);
     }
 
     /**
@@ -262,41 +215,8 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         double num
-    ) {
+    ) throws IOException {
         concat(num);
-    }
-
-    /**
-     * Concatenates the hexadecimal format of double
-     * value (treated as unsigned) to this {@link Flow}
-     *
-     * @param num the specified number to be appended
-     */
-    @Override
-    public void emit(
-        double num, boolean boot
-    ) {
-        asset = 0;
-        byte[] it;
-        if (boot) {
-            grow(count + 18);
-            it = value;
-            it[count++] = '0';
-            it[count++] = 'x';
-        } else {
-            grow(count + 16);
-            it = value;
-        }
-
-        int mark = count;
-        long data = Double.doubleToLongBits(num);
-        for (int i = 0; i < 16; i++) {
-            it[count++] = upper(
-                (int) (data & 0xF)
-            );
-            data >>>= 4;
-        }
-        swop(mark, count);
     }
 
     /**
@@ -308,39 +228,8 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         boolean bool
-    ) {
-        if (algo() != KAT) {
-            concat(bool);
-        } else {
-            concat(
-                bool ? (byte) '1' : (byte) '0'
-            );
-        }
-    }
-
-    /**
-     * Concatenates the char value to this {@link Steam},
-     * which will be escaped if it is a special character
-     *
-     * @param ch the specified char value to be appended
-     */
-    @Override
-    public void emit(
-        char ch
-    ) {
-        if ((flags & 2) == 0) {
-            concat(ch);
-        } else {
-            if (algo() == KAT) {
-                concat(
-                    ch, (byte) '^'
-                );
-            } else {
-                concat(
-                    ch, (byte) '\\'
-                );
-            }
-        }
+    ) throws IOException {
+        concat(bool);
     }
 
     /**
@@ -352,7 +241,7 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         @NotNull byte[] data
-    ) {
+    ) throws IOException {
         for (byte b : data) emit(b);
     }
 
@@ -365,7 +254,7 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         @NotNull byte[] data, int i, int l
-    ) {
+    ) throws IOException {
         int k = i + l;
         if (0 < l && 0 <= i && k <= data.length) {
             grow(count + l);
@@ -383,7 +272,7 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         @NotNull byte[] data, char t, int i, int l
-    ) {
+    ) throws IOException {
         int k = i + l;
         if (0 < l && 0 <= i && k <= data.length) {
             if (t == 'B') {
@@ -400,31 +289,47 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     }
 
     /**
-     * Concatenates the char array to this {@link Steam},
-     * which will be escaped if it contains special characters
+     * Concatenates the char value to this
+     * {@link Steam}, conventing it to unicode first
      *
-     * @param data the specified source to be appended
+     * @param ch the specified char value to be appended
+     */
+    public void save(
+        char ch
+    ) {
+        byte[] it = value;
+        int size = count + 6;
+        if (size > it.length) {
+            grow(size);
+            it = value;
+        }
+        it[count++] = '\\';
+        it[count++] = 'u';
+        it[count++] = upper((ch >> 12) & 0x0F);
+        it[count++] = upper((ch >> 8) & 0x0F);
+        it[count++] = upper((ch >> 4) & 0x0F);
+        it[count++] = upper(ch & 0x0F);
+    }
+
+    /**
+     * Concatenates the char value to this {@link Steam},
+     * which will be escaped if it is a special character
+     *
+     * @param ch the specified char value to be appended
      */
     @Override
     public void emit(
-        @NotNull char[] data
-    ) {
-        int l = data.length;
-        if (l != 0) {
-            if ((flags & 2) == 0) {
-                concat(
-                    data, 0, l
-                );
+        char ch
+    ) throws IOException {
+        if (ch < 0x80) {
+            emit(
+                (byte) ch
+            );
+        } else {
+            if ((flags & 2) == 2) {
+                save(ch);
             } else {
-                if (algo() == KAT) {
-                    concat(
-                        data, 0, l, (byte) '^'
-                    );
-                } else {
-                    concat(
-                        data, 0, l, (byte) '\\'
-                    );
-                }
+                concat(ch);
             }
         }
     }
@@ -437,22 +342,96 @@ public abstract class Steam extends Chain implements Flow, Closeable {
      */
     @Override
     public void emit(
+        @NotNull char[] data
+    ) throws IOException {
+        emit(data, 0, data.length);
+    }
+
+    /**
+     * Concatenates the char array to this {@link Steam},
+     * which will be escaped if it contains special characters
+     *
+     * @param data the specified source to be appended
+     */
+    @Override
+    public void emit(
         @NotNull char[] data, int i, int l
-    ) {
-        if (0 < l && 0 <= i && i + l <= data.length) {
-            if ((flags & 2) == 0) {
-                concat(
-                    data, i, l
-                );
+    ) throws IOException {
+        int k = i + l;
+        if (0 < l && 0 <= i && k <= data.length) {
+            grow(count + l);
+            if ((flags & 2) == 2) {
+                while (i < k) {
+                    char c = data[i++];
+                    if (c < 0x80) {
+                        emit(
+                            (byte) c
+                        );
+                    } else save(c);
+                }
             } else {
-                if (algo() == KAT) {
-                    concat(
-                        data, i, l, (byte) '^'
-                    );
-                } else {
-                    concat(
-                        data, i, l, (byte) '\\'
-                    );
+                asset = 0;
+                while (i < k) {
+                    // next char
+                    char c = data[i++];
+
+                    // U+0000 ~ U+007F
+                    if (c < 0x80) {
+                        emit((byte) c);
+                    }
+
+                    // U+0080 ~ U+07FF
+                    else if (c < 0x800) {
+                        byte[] it = value;
+                        int size = count + 2;
+                        if (size > it.length) {
+                            grow(size);
+                            it = value;
+                        }
+                        it[count++] = (byte) ((c >> 6) | 0xC0);
+                        it[count++] = (byte) ((c & 0x3F) | 0x80);
+                    }
+
+                    // U+10000 ~ U+10FFFF
+                    // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+                    else if (0xD800 <= c && c <= 0xDFFF) {
+                        if (k <= i) {
+                            emit((byte) '?');
+                            break;
+                        }
+
+                        char next = data[i++];
+                        if (next < 0xDC00 ||
+                            next > 0xDFFF) {
+                            emit((byte) '?');
+                            continue;
+                        }
+
+                        byte[] it = value;
+                        int size = count + 4;
+                        if (size > it.length) {
+                            grow(size);
+                            it = value;
+                        }
+                        int u = (c << 10) + next - 0x35F_DC00;
+                        it[count++] = (byte) ((u >> 18) | 0xF0);
+                        it[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
+                        it[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
+                        it[count++] = (byte) ((u & 0x3F) | 0x80);
+                    }
+
+                    // U+0800 ~ U+FFFF
+                    else {
+                        byte[] it = value;
+                        int size = count + 3;
+                        if (size > it.length) {
+                            grow(size);
+                            it = value;
+                        }
+                        it[count++] = (byte) ((c >> 12) | 0xE0);
+                        it[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
+                        it[count++] = (byte) ((c & 0x3F) | 0x80);
+                    }
                 }
             }
         }
@@ -467,25 +446,8 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         @NotNull CharSequence data
-    ) {
-        int l = data.length();
-        if (l != 0) {
-            if ((flags & 2) == 0) {
-                concat(
-                    data, 0, l
-                );
-            } else {
-                if (algo() == KAT) {
-                    concat(
-                        data, 0, l, (byte) '^'
-                    );
-                } else {
-                    concat(
-                        data, 0, l, (byte) '\\'
-                    );
-                }
-            }
-        }
+    ) throws IOException {
+        emit(data, 0, data.length());
     }
 
     /**
@@ -497,21 +459,82 @@ public abstract class Steam extends Chain implements Flow, Closeable {
     @Override
     public void emit(
         @NotNull CharSequence data, int i, int l
-    ) {
-        if (0 < l && 0 <= i && i + l <= data.length()) {
-            if ((flags & 2) == 0) {
-                concat(
-                    data, i, l
-                );
+    ) throws IOException {
+        int k = i + l;
+        if (0 < l && 0 <= i && k <= data.length()) {
+            grow(count + l);
+            if ((flags & 2) == 2) {
+                while (i < k) {
+                    char c = data.charAt(i++);
+                    if (c < 0x80) {
+                        emit(
+                            (byte) c
+                        );
+                    } else save(c);
+                }
             } else {
-                if (algo() == KAT) {
-                    concat(
-                        data, i, l, (byte) '^'
-                    );
-                } else {
-                    concat(
-                        data, i, l, (byte) '\\'
-                    );
+                asset = 0;
+                while (i < k) {
+                    // next char
+                    char c = data.charAt(i++);
+
+                    // U+0000 ~ U+007F
+                    if (c < 0x80) {
+                        emit((byte) c);
+                    }
+
+                    // U+0080 ~ U+07FF
+                    else if (c < 0x800) {
+                        byte[] it = value;
+                        int size = count + 2;
+                        if (size > it.length) {
+                            grow(size);
+                            it = value;
+                        }
+                        it[count++] = (byte) ((c >> 6) | 0xC0);
+                        it[count++] = (byte) ((c & 0x3F) | 0x80);
+                    }
+
+                    // U+10000 ~ U+10FFFF
+                    // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+                    else if (0xD800 <= c && c <= 0xDFFF) {
+                        if (k <= i) {
+                            emit((byte) '?');
+                            break;
+                        }
+
+                        char next = data.charAt(i++);
+                        if (next < 0xDC00 ||
+                            next > 0xDFFF) {
+                            emit((byte) '?');
+                            continue;
+                        }
+
+                        byte[] it = value;
+                        int size = count + 4;
+                        if (size > it.length) {
+                            grow(size);
+                            it = value;
+                        }
+                        int u = (c << 10) + next - 0x35F_DC00;
+                        it[count++] = (byte) ((u >> 18) | 0xF0);
+                        it[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
+                        it[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
+                        it[count++] = (byte) ((u & 0x3F) | 0x80);
+                    }
+
+                    // U+0800 ~ U+FFFF
+                    else {
+                        byte[] it = value;
+                        int size = count + 3;
+                        if (size > it.length) {
+                            grow(size);
+                            it = value;
+                        }
+                        it[count++] = (byte) ((c >> 12) | 0xE0);
+                        it[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
+                        it[count++] = (byte) ((c & 0x3F) | 0x80);
+                    }
                 }
             }
         }

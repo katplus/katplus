@@ -49,9 +49,7 @@ public class Query extends Chain {
         int len = url.length();
         if (len != 0) {
             concat(url, 0, len);
-            if (offset() == 0) {
-                offset = -1;
-            }
+            if (offset() == 0) offset = -1;
         }
     }
 

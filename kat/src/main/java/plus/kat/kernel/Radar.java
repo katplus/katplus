@@ -310,11 +310,14 @@ public class Radar implements Solver {
         byte b = r.next();
         switch (b) {
             case '^': {
-                c.concat(b);
-                return;
+                break;
             }
             case 's': {
                 b = ' ';
+                break;
+            }
+            case 't': {
+                b = '\t';
                 break;
             }
             case 'r': {
@@ -463,14 +466,14 @@ public class Radar implements Solver {
             byte b = r.next();
             if (b != '^' &&
                 b != '\\') {
-                throw new IOException(
+                throw new SolverCrash(
                     "Illegal esc char: " + b
                 );
             }
 
             // check mark
             if (r.next() != 'u') {
-                throw new IOException(
+                throw new SolverCrash(
                     "Illegal esc mark: " + b
                 );
             }
@@ -483,7 +486,7 @@ public class Radar implements Solver {
 
             // check surrogate pair
             if (d1 != 0xD || d2 < 0xC) {
-                throw new IOException(
+                throw new SolverCrash(
                     "Not another agent pair: "
                         + d1 + ',' + d2 + ',' + d3 + ',' + d4
                 );
@@ -909,16 +912,24 @@ public class Radar implements Solver {
 
                 b = r.next();
                 switch (b) {
+                    case 'b': {
+                        b = '\b';
+                        break;
+                    }
+                    case 'f': {
+                        b = '\f';
+                        break;
+                    }
+                    case 't': {
+                        b = '\t';
+                        break;
+                    }
                     case 'r': {
                         b = '\r';
                         break;
                     }
                     case 'n': {
                         b = '\n';
-                        break;
-                    }
-                    case 't': {
-                        b = '\t';
                         break;
                     }
                     case 'u': {

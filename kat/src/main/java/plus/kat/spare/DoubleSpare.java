@@ -101,15 +101,9 @@ public class DoubleSpare extends Property<Double> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        if (flow.isFlag(Flag.FLOAT_AS_BITMAP)) {
-            flow.emit(
-                (double) value, true
-            );
-        } else {
-            flow.emit(
-                (double) value
-            );
-        }
+        flow.emit(
+            (double) value
+        );
     }
 
     @Override

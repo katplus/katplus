@@ -132,13 +132,13 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.emit(1024); // 1024
+     *   value.add(1024); // 1024
      * }</pre>
      *
      * @param num the specified int value
      * @since 0.0.5
      */
-    public void emit(
+    public void add(
         int num
     ) {
         concat(num);
@@ -150,13 +150,13 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.emit(1024L); // 1024
+     *   value.add(1024L); // 1024
      * }</pre>
      *
      * @param num the specified long value
      * @since 0.0.5
      */
-    public void emit(
+    public void add(
         long num
     ) {
         concat(num);
@@ -168,13 +168,13 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.emit(10.24F); // 10.24
+     *   value.add(10.24F); // 10.24
      * }</pre>
      *
      * @param num the specified float value
      * @since 0.0.5
      */
-    public void emit(
+    public void add(
         float num
     ) {
         concat(num);
@@ -186,13 +186,13 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.emit(10.24D); // 10.24
+     *   value.add(10.24D); // 10.24
      * }</pre>
      *
      * @param num the specified double value
      * @since 0.0.5
      */
-    public void emit(
+    public void add(
         double num
     ) {
         concat(num);
@@ -204,16 +204,16 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.emit(true); // true
+     *   value.add(true); // true
      * }</pre>
      *
-     * @param bool the specified boolean value
+     * @param b the specified boolean value
      * @since 0.0.5
      */
-    public void emit(
-        boolean bool
+    public void add(
+        boolean b
     ) {
-        concat(bool);
+        concat(b);
     }
 
     /**
@@ -221,30 +221,30 @@ public class Value extends Alpha {
      *
      * <pre>{@code
      *   Value value = ...
-     *   value.emit('k');
+     *   value.add('k');
      * }</pre>
      *
-     * @param c the specified char value
+     * @param ch the specified char value
      * @since 0.0.5
      */
-    public void emit(
-        char c
+    public void add(
+        char ch
     ) {
-        concat(c);
+        concat(ch);
     }
 
     /**
      * Concatenates the byte array to this {@link Value}
      *
-     * @param b the specified byte array
+     * @param data the specified byte array
      * @since 0.0.5
      */
-    public void emit(
-        byte[] b
+    public void add(
+        byte[] data
     ) {
-        if (b != null) {
+        if (data != null) {
             concat(
-                b, 0, b.length
+                data, 0, data.length
             );
         }
     }
@@ -252,23 +252,23 @@ public class Value extends Alpha {
     /**
      * Concatenates the byte array to this {@link Value}
      *
-     * @param b the specified byte array
-     * @param i the specified index
-     * @param l the specified length
+     * @param data the specified byte array
+     * @param i    the specified index
+     * @param l    the specified length
      * @throws ArrayIndexOutOfBoundsException If the index or length out of range
      * @since 0.0.5
      */
-    public void emit(
-        byte[] b, int i, int l
+    public void add(
+        byte[] data, int i, int l
     ) {
-        if (b != null && l != 0) {
-            if (i >= 0 && i + l <= b.length) {
+        if (data != null && l != 0) {
+            if (i >= 0 && i + l <= data.length) {
                 concat(
-                    b, i, l
+                    data, i, l
                 );
             } else {
                 throw new ArrayIndexOutOfBoundsException(
-                    "Out of bounds, i:" + i + " l:" + l + " length:" + b.length
+                    "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
                 );
             }
         }
@@ -277,18 +277,15 @@ public class Value extends Alpha {
     /**
      * Concatenates the char array to this {@link Value}
      *
-     * @param c the specified char array
+     * @param data the specified char array
      * @since 0.0.5
      */
-    public void emit(
-        char[] c
+    public void add(
+        char[] data
     ) {
-        if (c != null) {
-            int len = c.length;
-            if (len != 0) {
-                concat(
-                    c, 0, len
-                );
+        if (data != null) {
+            for (char c : data) {
+                concat(c);
             }
         }
     }
@@ -296,23 +293,26 @@ public class Value extends Alpha {
     /**
      * Concatenates the char array to this {@link Value}
      *
-     * @param c the specified byte array
-     * @param i the specified index
-     * @param l the specified length
+     * @param data the specified byte array
+     * @param i    the specified index
+     * @param l    the specified length
      * @throws ArrayIndexOutOfBoundsException If the index or length out of range
      * @since 0.0.5
      */
-    public void emit(
-        char[] c, int i, int l
+    public void add(
+        char[] data, int i, int l
     ) {
-        if (c != null && l != 0) {
-            if (i >= 0 && i + l <= c.length) {
-                concat(
-                    c, i, l
-                );
+        if (data != null && l != 0) {
+            int k = i + l;
+            if (0 <= i && k <= data.length) {
+                while (i < k) {
+                    concat(
+                        data[i++]
+                    );
+                }
             } else {
                 throw new ArrayIndexOutOfBoundsException(
-                    "Out of bounds, i:" + i + " l:" + l + " length:" + c.length
+                    "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
                 );
             }
         }
@@ -324,17 +324,27 @@ public class Value extends Alpha {
      * <pre>{@code
      *  Value value = ...
      *  InputStream in = ...
-     *  value.emit(in); // auto close
+     *  value.add(in); // auto close
      * }</pre>
      *
      * @param in the specified {@link InputStream} will be used and closed
      * @since 0.0.5
      */
-    public void emit(
+    public void add(
         InputStream in
     ) {
         if (in != null) {
-            concat(in);
+            try {
+                concat(in, 128);
+            } catch (Exception e) {
+                // Nothing
+            } finally {
+                try {
+                    in.close();
+                } catch (Exception e) {
+                    // Nothing
+                }
+            }
         }
     }
 
@@ -344,12 +354,12 @@ public class Value extends Alpha {
      * <pre>{@code
      *  Value value = ...
      *  InputStream in = ...
-     *  value.emit(in, 512);
+     *  value.add(in, 512);
      *  in.close(); // close it
      *
      *  // or
      *  try (InputStream in = ...) {
-     *      value.emit(in, 512);
+     *      value.add(in, 512);
      *  }
      * }</pre>
      *
@@ -358,7 +368,7 @@ public class Value extends Alpha {
      * @throws IOException If an I/O error occurs
      * @since 0.0.5
      */
-    public void emit(
+    public void add(
         InputStream in, int range
     ) throws IOException {
         if (in != null) {
@@ -377,17 +387,17 @@ public class Value extends Alpha {
     /**
      * Concatenates the {@link CharSequence} to this {@link Value}
      *
-     * @param c the specified char array
+     * @param data the specified char array
      * @since 0.0.5
      */
-    public void emit(
-        CharSequence c
+    public void add(
+        CharSequence data
     ) {
-        if (c != null) {
-            int len = c.length();
+        if (data != null) {
+            int len = data.length();
             if (len != 0) {
                 concat(
-                    c, 0, len
+                    data, 0, len
                 );
             }
         }
@@ -396,86 +406,24 @@ public class Value extends Alpha {
     /**
      * Concatenates the {@link CharSequence} to this {@link Value}
      *
-     * @param c the specified byte array
-     * @param i the specified index
-     * @param l the specified length
+     * @param data the specified byte array
+     * @param i    the specified index
+     * @param l    the specified length
      * @throws ArrayIndexOutOfBoundsException If the index or length out of range
      * @since 0.0.5
      */
-    public void emit(
-        CharSequence c, int i, int l
+    public void add(
+        CharSequence data, int i, int l
     ) {
-        if (c != null && l != 0) {
-            if (i >= 0 && i + l <= c.length()) {
+        if (data != null && l != 0) {
+            if (0 <= i && i + l <= data.length()) {
                 concat(
-                    c, i, l
+                    data, i, l
                 );
             } else {
                 throw new ArrayIndexOutOfBoundsException(
-                    "Out of bounds, i:" + i + " l:" + l + " length:" + c.length()
+                    "Out of bounds, i:" + i + " l:" + l + " length:" + data.length()
                 );
-            }
-        }
-    }
-
-    /**
-     * Concatenates the uppercase hexadecimal of the data to this {@link Value}
-     *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.upper(new byte[]{1, 11, 111}); // 010B6F
-     * }</pre>
-     *
-     * @param data the specified data to be encoded
-     * @see Value#lower(byte[])
-     * @since 0.0.4
-     */
-    public void upper(
-        byte[] data
-    ) {
-        if (data != null) {
-            int size = data.length;
-            if (size != 0) {
-                grow(count * size * 2);
-                asset = 0;
-                int i = 0;
-                byte[] it = value;
-                while (i < size) {
-                    int o = data[i++] & 0xFF;
-                    it[count++] = Binary.upper(o >> 4);
-                    it[count++] = Binary.upper(o & 0xF);
-                }
-            }
-        }
-    }
-
-    /**
-     * Concatenates the lowercase hexadecimal of the data to this {@link Value}
-     *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.lower(new byte[]{1, 11, 111}); // 010b6f
-     * }</pre>
-     *
-     * @param data the specified data to be encoded
-     * @see Value#upper(byte[])
-     * @since 0.0.4
-     */
-    public void lower(
-        byte[] data
-    ) {
-        if (data != null) {
-            int size = data.length;
-            if (size != 0) {
-                grow(count * size * 2);
-                asset = 0;
-                int i = 0;
-                byte[] it = value;
-                while (i < size) {
-                    int o = data[i++] & 0xFF;
-                    it[count++] = Binary.lower(o >> 4);
-                    it[count++] = Binary.lower(o & 0xF);
-                }
             }
         }
     }

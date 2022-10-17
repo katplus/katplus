@@ -65,16 +65,6 @@ public class KatTest {
                 )
             )
         );
-        assertEquals(
-            "f(0x42F6E979)", Kat.encode(
-                123.456F, Flag.FLOAT_AS_BITMAP
-            )
-        );
-        assertEquals(
-            "d(0x405EDD3C07EE0B0B)", Kat.encode(
-                123.456789D, Flag.FLOAT_AS_BITMAP
-            )
-        );
     }
 
     @Test

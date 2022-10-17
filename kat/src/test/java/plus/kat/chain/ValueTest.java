@@ -71,12 +71,6 @@ public class ValueTest {
 
     @Test
     public void test_toFloat() {
-        Value v1 = new Value("0x3F9D70A4");
-        assertEquals(1.23F, v1.toFloat());
-
-        Value v2 = new Value("0x42F6E979");
-        assertEquals(123.456F, v2.toFloat());
-
         Value v3 = new Value("1.23");
         assertEquals(1.23F, v3.toFloat());
 
@@ -86,12 +80,6 @@ public class ValueTest {
 
     @Test
     public void test_toDouble() {
-        Value v1 = new Value("0x40934AB7318FC505");
-        assertEquals(1234.6789D, v1.toDouble());
-
-        Value v2 = new Value("0x405EDD3C07EE0B0B");
-        assertEquals(123.456789D, v2.toDouble());
-
         Value v3 = new Value("1234.6789");
         assertEquals(1234.6789D, v3.toDouble());
 

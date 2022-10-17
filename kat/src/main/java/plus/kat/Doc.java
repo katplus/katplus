@@ -333,12 +333,14 @@ public class Doc extends Steam implements Chan {
      * Concatenates the byte value to this {@link Doc},
      * which will be escaped if it is a special character
      *
-     * @param b the specified byte value to be appended
+     * @param bt the specified byte value to be appended
      */
     @Override
-    public void emit(byte b) {
+    public void emit(
+        byte bt
+    ) throws IOException {
         asset = 0;
-        switch (b) {
+        switch (bt) {
             case '<': {
                 grow(count + 4);
                 byte[] it = value;
@@ -370,10 +372,10 @@ public class Doc extends Steam implements Chan {
             default: {
                 byte[] it = value;
                 if (count != it.length) {
-                    it[count++] = b;
+                    it[count++] = bt;
                 } else {
                     grow(count + 1);
-                    value[count++] = b;
+                    value[count++] = bt;
                 }
             }
         }

@@ -108,7 +108,7 @@ public class ChainTest {
         assertEquals(105950, v.hashCode());
         assertSame(v.toString(), v.toString());
 
-        v.emit(".plus");
+        v.add(".plus");
         assertSame(v.toString(), v.toString());
         assertEquals(1057563562, v.hashCode());
 
@@ -130,7 +130,7 @@ public class ChainTest {
         String name = "陆之岇";
         byte[] temp = name.getBytes(UTF_8);
 
-        v.emit(temp);
+        v.add(temp);
         assertEquals(name, v.toString());
         assertEquals(new String(temp, UTF_8), v.toString(UTF_8));
         assertEquals(new String(temp, US_ASCII), v.toString(US_ASCII));
@@ -333,7 +333,7 @@ public class ChainTest {
     @Test
     public void test_InputStream() {
         Value v1 = new Value();
-        v1.emit(
+        v1.add(
             new ByteArrayInputStream(
                 "kat.plus".getBytes(UTF_8)
             )
@@ -341,10 +341,10 @@ public class ChainTest {
         assertEquals("kat.plus", v1.toString());
 
         for (int i = 0; i < 128; i++) {
-            v1.emit(".kat.plus");
+            v1.add(".kat.plus");
         }
         Value v2 = new Value();
-        v2.emit(
+        v2.add(
             new ByteArrayInputStream(
                 v1.value, 0, v1.count
             )
@@ -362,7 +362,7 @@ public class ChainTest {
         Alias alias = new Alias("kraity");
 
         try (InputStream in = alias.toInputStream()) {
-            value.emit(in, 128);
+            value.add(in, 128);
         }
 
         assertEquals(6, value.length());

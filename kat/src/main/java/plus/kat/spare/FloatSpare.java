@@ -101,15 +101,9 @@ public class FloatSpare extends Property<Float> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        if (flow.isFlag(Flag.FLOAT_AS_BITMAP)) {
-            flow.emit(
-                (float) value, true
-            );
-        } else {
-            flow.emit(
-                (float) value
-            );
-        }
+        flow.emit(
+            (float) value
+        );
     }
 
     @Override

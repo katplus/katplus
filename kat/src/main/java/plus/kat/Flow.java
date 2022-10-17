@@ -19,13 +19,14 @@ import plus.kat.anno.NotNull;
 
 import plus.kat.chain.*;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public interface Flow extends Flag {
+public interface Flow extends Flag, Closeable {
     /**
      * Returns the algo of this {@link Flow}
      *
@@ -243,27 +244,6 @@ public interface Flow extends Flag {
     ) throws IOException;
 
     /**
-     * Concatenates the hexadecimal format of float
-     * value (treated as unsigned) to this {@link Flow}
-     *
-     * <pre>{@code
-     *   Flow flow = ...
-     *   flow.emit(16F, true); // 0x42100000
-     *   flow.emit(16F, false); // 42100000
-     *
-     *   flow.emit(16.32F, true); // 0x41828F5C
-     *   flow.emit(16.32F, false); // 41828F5C
-     * }</pre>
-     *
-     * @param num  the specified number to be appended
-     * @param boot whether to add the boot character {@code '0x'}
-     * @throws IOException If an I/O error occurs
-     */
-    void emit(
-        float num, boolean boot
-    ) throws IOException;
-
-    /**
      * Concatenates the string representation
      * of the double value to this {@link Steam}
      *
@@ -279,27 +259,6 @@ public interface Flow extends Flag {
      */
     void emit(
         double num
-    ) throws IOException;
-
-    /**
-     * Concatenates the hexadecimal format of double
-     * value (treated as unsigned) to this {@link Flow}
-     *
-     * <pre>{@code
-     *   Flow flow = ...
-     *   flow.emit(16D, true); // 0x4030000000000000
-     *   flow.emit(16D, false); // 4030000000000000
-     *
-     *   flow.emit(16.32D, true); // 0x403051EB851EB852
-     *   flow.emit(16.32D, false); // 403051EB851EB852
-     * }</pre>
-     *
-     * @param num  the specified number to be appended
-     * @param boot whether to add the boot character {@code '0x'}
-     * @throws IOException If an I/O error occurs
-     */
-    void emit(
-        double num, boolean boot
     ) throws IOException;
 
     /**
