@@ -289,29 +289,6 @@ public abstract class Steam extends Chain implements Flow {
     }
 
     /**
-     * Concatenates the char value to this
-     * {@link Steam}, conventing it to unicode first
-     *
-     * @param ch the specified char value to be appended
-     */
-    public void save(
-        char ch
-    ) {
-        byte[] it = value;
-        int size = count + 6;
-        if (size > it.length) {
-            grow(size);
-            it = value;
-        }
-        it[count++] = '\\';
-        it[count++] = 'u';
-        it[count++] = upper((ch >> 12) & 0x0F);
-        it[count++] = upper((ch >> 8) & 0x0F);
-        it[count++] = upper((ch >> 4) & 0x0F);
-        it[count++] = upper(ch & 0x0F);
-    }
-
-    /**
      * Concatenates the char value to this {@link Steam},
      * which will be escaped if it is a special character
      *
@@ -326,10 +303,12 @@ public abstract class Steam extends Chain implements Flow {
                 (byte) ch
             );
         } else {
-            if ((flags & 2) == 2) {
-                save(ch);
-            } else {
+            if ((flags & 2) == 0) {
                 concat(ch);
+            } else {
+                concat(
+                    ch, algo().esc()
+                );
             }
         }
     }
@@ -361,40 +340,41 @@ public abstract class Steam extends Chain implements Flow {
         if (0 < l && 0 <= i && k <= data.length) {
             grow(count + l);
             if ((flags & 2) == 2) {
+                byte esc = algo().esc();
                 while (i < k) {
-                    char c = data[i++];
-                    if (c < 0x80) {
-                        emit(
-                            (byte) c
-                        );
-                    } else save(c);
+                    char ch = data[i++];
+                    if (ch < 0x80) {
+                        emit((byte) ch);
+                    } else {
+                        concat(ch, esc);
+                    }
                 }
             } else {
                 asset = 0;
                 while (i < k) {
                     // next char
-                    char c = data[i++];
+                    char ch = data[i++];
 
                     // U+0000 ~ U+007F
-                    if (c < 0x80) {
-                        emit((byte) c);
+                    if (ch < 0x80) {
+                        emit((byte) ch);
                     }
 
                     // U+0080 ~ U+07FF
-                    else if (c < 0x800) {
+                    else if (ch < 0x800) {
                         byte[] it = value;
                         int size = count + 2;
                         if (size > it.length) {
                             grow(size);
                             it = value;
                         }
-                        it[count++] = (byte) ((c >> 6) | 0xC0);
-                        it[count++] = (byte) ((c & 0x3F) | 0x80);
+                        it[count++] = (byte) ((ch >> 6) | 0xC0);
+                        it[count++] = (byte) ((ch & 0x3F) | 0x80);
                     }
 
                     // U+10000 ~ U+10FFFF
                     // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-                    else if (0xD800 <= c && c <= 0xDFFF) {
+                    else if (0xD800 <= ch && ch <= 0xDFFF) {
                         if (k <= i) {
                             emit((byte) '?');
                             break;
@@ -413,7 +393,7 @@ public abstract class Steam extends Chain implements Flow {
                             grow(size);
                             it = value;
                         }
-                        int u = (c << 10) + next - 0x35F_DC00;
+                        int u = (ch << 10) + next - 0x35F_DC00;
                         it[count++] = (byte) ((u >> 18) | 0xF0);
                         it[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
                         it[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
@@ -428,9 +408,9 @@ public abstract class Steam extends Chain implements Flow {
                             grow(size);
                             it = value;
                         }
-                        it[count++] = (byte) ((c >> 12) | 0xE0);
-                        it[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
-                        it[count++] = (byte) ((c & 0x3F) | 0x80);
+                        it[count++] = (byte) ((ch >> 12) | 0xE0);
+                        it[count++] = (byte) (((ch >> 6) & 0x3F) | 0x80);
+                        it[count++] = (byte) ((ch & 0x3F) | 0x80);
                     }
                 }
             }
@@ -464,40 +444,41 @@ public abstract class Steam extends Chain implements Flow {
         if (0 < l && 0 <= i && k <= data.length()) {
             grow(count + l);
             if ((flags & 2) == 2) {
+                byte esc = algo().esc();
                 while (i < k) {
-                    char c = data.charAt(i++);
-                    if (c < 0x80) {
-                        emit(
-                            (byte) c
-                        );
-                    } else save(c);
+                    char ch = data.charAt(i++);
+                    if (ch < 0x80) {
+                        emit((byte) ch);
+                    } else {
+                        concat(ch, esc);
+                    }
                 }
             } else {
                 asset = 0;
                 while (i < k) {
                     // next char
-                    char c = data.charAt(i++);
+                    char ch = data.charAt(i++);
 
                     // U+0000 ~ U+007F
-                    if (c < 0x80) {
-                        emit((byte) c);
+                    if (ch < 0x80) {
+                        emit((byte) ch);
                     }
 
                     // U+0080 ~ U+07FF
-                    else if (c < 0x800) {
+                    else if (ch < 0x800) {
                         byte[] it = value;
                         int size = count + 2;
                         if (size > it.length) {
                             grow(size);
                             it = value;
                         }
-                        it[count++] = (byte) ((c >> 6) | 0xC0);
-                        it[count++] = (byte) ((c & 0x3F) | 0x80);
+                        it[count++] = (byte) ((ch >> 6) | 0xC0);
+                        it[count++] = (byte) ((ch & 0x3F) | 0x80);
                     }
 
                     // U+10000 ~ U+10FFFF
                     // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-                    else if (0xD800 <= c && c <= 0xDFFF) {
+                    else if (0xD800 <= ch && ch <= 0xDFFF) {
                         if (k <= i) {
                             emit((byte) '?');
                             break;
@@ -516,7 +497,7 @@ public abstract class Steam extends Chain implements Flow {
                             grow(size);
                             it = value;
                         }
-                        int u = (c << 10) + next - 0x35F_DC00;
+                        int u = (ch << 10) + next - 0x35F_DC00;
                         it[count++] = (byte) ((u >> 18) | 0xF0);
                         it[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
                         it[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
@@ -531,9 +512,9 @@ public abstract class Steam extends Chain implements Flow {
                             grow(size);
                             it = value;
                         }
-                        it[count++] = (byte) ((c >> 12) | 0xE0);
-                        it[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
-                        it[count++] = (byte) ((c & 0x3F) | 0x80);
+                        it[count++] = (byte) ((ch >> 12) | 0xE0);
+                        it[count++] = (byte) (((ch >> 6) & 0x3F) | 0x80);
+                        it[count++] = (byte) ((ch & 0x3F) | 0x80);
                     }
                 }
             }

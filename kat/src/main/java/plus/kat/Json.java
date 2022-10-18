@@ -405,7 +405,8 @@ public class Json extends Steam implements Chan {
                     }
                     default: {
                         concat(
-                            (char) bt
+                            (char) bt,
+                            (byte) '\\'
                         );
                         return;
                     }

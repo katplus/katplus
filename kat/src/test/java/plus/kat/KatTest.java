@@ -10,6 +10,7 @@ import java.util.*;
 
 import static plus.kat.Flag.*;
 import static plus.kat.Spare.lookup;
+import static plus.kat.stream.Binary.latin;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class KatTest {
@@ -71,11 +72,12 @@ public class KatTest {
     public void test_encode2() {
         Map<Object, Object> data = new HashMap<>();
         data.put("别名", "陆之岇");
+        data.put(latin(new byte[]{0, 1, 6, 9, 32}), null);
         assertEquals(
-            "M{s:别名(陆之岇)}", Kat.encode(data)
+            "M{s:别名(陆之岇)$:^u0000^u0001^u0006^t^s()}", Kat.encode(data)
         );
         assertEquals(
-            "M{s:^u522B^u540D(^u9646^u4E4B^u5C87)}", Kat.encode(data, Flag.UNICODE)
+            "M{s:^u522B^u540D(^u9646^u4E4B^u5C87)$:^u0000^u0001^u0006^t^s()}", Kat.encode(data, Flag.UNICODE)
         );
     }
 

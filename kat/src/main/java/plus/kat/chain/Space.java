@@ -460,24 +460,6 @@ public final class Space extends Alpha implements Type {
     }
 
     /**
-     * @param b the {@code byte} to be compared
-     */
-    public static boolean esc(byte b) {
-        switch (b) {
-            case '^':
-            case '#':
-            case ':':
-            case '(':
-            case ')':
-            case '{':
-            case '}': {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * @author kraity
      * @since 0.0.5
      */

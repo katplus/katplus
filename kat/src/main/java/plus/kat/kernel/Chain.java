@@ -2407,8 +2407,7 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Concatenates the byte to this
-     * {@link Chain}, copy it directly
+     * Concatenates the byte to this {@link Chain}, copy it directly
      *
      * @param b the specified byte value to be appended
      * @since 0.0.5
@@ -2422,63 +2421,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             grow(count + 1);
             asset = 0;
             value[count++] = b;
-        }
-    }
-
-    /**
-     * Concatenates the character to this
-     * {@link Chain}, converting it to UTF-8 first
-     *
-     * @param c the specified character to be appended
-     * @since 0.0.5
-     */
-    protected void concat(char c) {
-        asset = 0;
-        byte[] it = value;
-
-        // U+0000 ~ U+007F
-        if (c < 0x80) {
-            if (count != it.length) {
-                it[count++] = (byte) c;
-            } else {
-                grow(count + 1);
-                value[count++] = (byte) c;
-            }
-        }
-
-        // U+0080 ~ U+07FF
-        else if (c < 0x800) {
-            int size = count + 2;
-            if (size > it.length) {
-                grow(size);
-                it = value;
-            }
-            it[count++] = (byte) ((c >> 6) | 0xC0);
-            it[count++] = (byte) ((c & 0x3F) | 0x80);
-        }
-
-        // U+10000 ~ U+10FFFF
-        // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-        else if (0xD800 <= c && c <= 0xDFFF) {
-            // crippled surrogate pair
-            if (count != it.length) {
-                it[count++] = (byte) '?';
-            } else {
-                grow(count + 1);
-                value[count++] = (byte) '?';
-            }
-        }
-
-        // U+0800 ~ U+FFFF
-        else {
-            int size = count + 3;
-            if (size > it.length) {
-                grow(size);
-                it = value;
-            }
-            it[count++] = (byte) ((c >> 12) | 0xE0);
-            it[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
-            it[count++] = (byte) ((c & 0x3F) | 0x80);
         }
     }
 
@@ -2527,6 +2469,58 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             System.arraycopy(
                 c.value, i, value, d, l
             );
+        }
+    }
+
+    /**
+     * Concatenates the stream to this {@link Chain}, copy it directly
+     *
+     * @param in the specified {@link InputStream} to be appended
+     * @throws IOException If an I/O error occurs
+     * @since 0.0.5
+     */
+    protected void concat(
+        @NotNull InputStream in, int range
+    ) throws IOException {
+        int m, n, size;
+        while (true) {
+            m = in.available();
+            if (m != 0) {
+                m = Math.min(m, range);
+                n = value.length - count;
+
+                if (n < m) {
+                    n = m;
+                    grow(
+                        count + m
+                    );
+                }
+
+                size = in.read(
+                    value, count, n
+                );
+                if (size == -1) {
+                    break;
+                } else {
+                    asset = 0;
+                    count += size;
+                }
+            } else {
+                m = in.read();
+                if (m == -1) {
+                    break;
+                } else {
+                    byte[] it = value;
+                    if (count != it.length) {
+                        asset = 0;
+                        it[count++] = (byte) m;
+                    } else {
+                        grow(count + 1);
+                        asset = 0;
+                        value[count++] = (byte) m;
+                    }
+                }
+            }
         }
     }
 
@@ -2678,54 +2672,172 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Concatenates the stream to this
-     * {@link Chain}, copy it directly
+     * Concatenates the character to this
+     * {@link Chain}, converting it to UTF-8 first
      *
-     * @param in the specified {@link InputStream} to be appended
-     * @throws IOException If an I/O error occurs
+     * @param c the specified character to be appended
+     * @since 0.0.5
+     */
+    protected void concat(char c) {
+        asset = 0;
+        byte[] it = value;
+
+        // U+0000 ~ U+007F
+        if (c < 0x80) {
+            if (count != it.length) {
+                it[count++] = (byte) c;
+            } else {
+                grow(count + 1);
+                value[count++] = (byte) c;
+            }
+        }
+
+        // U+0080 ~ U+07FF
+        else if (c < 0x800) {
+            int size = count + 2;
+            if (size > it.length) {
+                grow(size);
+                it = value;
+            }
+            it[count++] = (byte) ((c >> 6) | 0xC0);
+            it[count++] = (byte) ((c & 0x3F) | 0x80);
+        }
+
+        // U+10000 ~ U+10FFFF
+        // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+        else if (0xD800 <= c && c <= 0xDFFF) {
+            // crippled surrogate pair
+            if (count != it.length) {
+                it[count++] = (byte) '?';
+            } else {
+                grow(count + 1);
+                value[count++] = (byte) '?';
+            }
+        }
+
+        // U+0800 ~ U+FFFF
+        else {
+            int size = count + 3;
+            if (size > it.length) {
+                grow(size);
+                it = value;
+            }
+            it[count++] = (byte) ((c >> 12) | 0xE0);
+            it[count++] = (byte) (((c >> 6) & 0x3F) | 0x80);
+            it[count++] = (byte) ((c & 0x3F) | 0x80);
+        }
+    }
+
+    /**
+     * Concatenates the character to this
+     * {@link Chain}, converting it to unicode first
+     *
+     * @param e the specified escape character
+     * @param c the specified character to be appended
+     * @since 0.0.5
+     */
+    protected void concat(char c, byte e) {
+        byte[] it = value;
+        int size = count + 6;
+        if (size > it.length) {
+            grow(size);
+            it = value;
+        }
+        it[count++] = e;
+        it[count++] = 'u';
+        it[count++] = upper((c >> 12) & 0x0F);
+        it[count++] = upper((c >> 8) & 0x0F);
+        it[count++] = upper((c >> 4) & 0x0F);
+        it[count++] = upper(c & 0x0F);
+    }
+
+    /**
+     * Concatenates the char array to this
+     * {@link Chain}, converting it to UTF-8 first
+     *
+     * @param ch the specified array to be appended
+     * @param i  the specified start index for array
+     * @param l  the specified length of array to concat
      * @since 0.0.5
      */
     protected void concat(
-        @NotNull InputStream in, int range
-    ) throws IOException {
-        int m, n, size;
-        while (true) {
-            m = in.available();
-            if (m != 0) {
-                m = Math.min(m, range);
-                n = value.length - count;
+        @NotNull char[] ch, int i, int l
+    ) {
+        int k = i + l;
+        grow(count + l);
 
-                if (n < m) {
-                    n = m;
-                    grow(
-                        count + m
-                    );
-                }
+        asset = 0;
+        byte[] it = value;
 
-                size = in.read(
-                    value, count, n
-                );
-                if (size == -1) {
-                    break;
-                } else {
-                    asset = 0;
-                    count += size;
+        while (i < k) {
+            // next char
+            char code = ch[i++];
+
+            // U+0000 ~ U+007F
+            if (code < 0x80) {
+                if (count == it.length) {
+                    grow(count + 1);
+                    it = value;
                 }
-            } else {
-                m = in.read();
-                if (m == -1) {
-                    break;
-                } else {
-                    byte[] it = value;
-                    if (count != it.length) {
-                        asset = 0;
-                        it[count++] = (byte) m;
-                    } else {
+                it[count++] = (byte) code;
+            }
+
+            // U+0080 ~ U+07FF
+            else if (code < 0x800) {
+                int size = count + 2;
+                if (size > it.length) {
+                    grow(size);
+                    it = value;
+                }
+                it[count++] = (byte) ((code >> 6) | 0xC0);
+                it[count++] = (byte) ((code & 0x3F) | 0x80);
+            }
+
+            // U+10000 ~ U+10FFFF
+            // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+            else if (0xD800 <= code && code <= 0xDFFF) {
+                if (k <= i) {
+                    if (count == it.length) {
                         grow(count + 1);
-                        asset = 0;
-                        value[count++] = (byte) m;
+                        it = value;
                     }
+                    it[count++] = (byte) '?';
+                    break;
                 }
+
+                char next = ch[i++];
+                if (next < 0xDC00 ||
+                    next > 0xDFFF) {
+                    if (count == it.length) {
+                        grow(count + 1);
+                        it = value;
+                    }
+                    it[count++] = (byte) '?';
+                    continue;
+                }
+
+                int size = count + 4;
+                if (size > it.length) {
+                    grow(size);
+                    it = value;
+                }
+                int unit = (code << 10) + next - 0x35FDC00;
+                it[count++] = (byte) ((unit >> 18) | 0xF0);
+                it[count++] = (byte) (((unit >> 12) & 0x3F) | 0x80);
+                it[count++] = (byte) (((unit >> 6) & 0x3F) | 0x80);
+                it[count++] = (byte) ((unit & 0x3F) | 0x80);
+            }
+
+            // U+0800 ~ U+FFFF
+            else {
+                int size = count + 3;
+                if (size > it.length) {
+                    grow(size);
+                    it = value;
+                }
+                it[count++] = (byte) ((code >> 12) | 0xE0);
+                it[count++] = (byte) (((code >> 6) & 0x3F) | 0x80);
+                it[count++] = (byte) ((code & 0x3F) | 0x80);
             }
         }
     }
@@ -2825,6 +2937,27 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
      * Unsafe method
      *
      * <pre>{@code
+     *  move(1, 1);
+     *  value[1] = 'k';
+     *  move(1, -1);
+     *  value[0] // is 'k'
+     * }</pre>
+     *
+     * @param i the specified offset
+     * @param s the specified shift length
+     */
+    protected void move(
+        int i, int s
+    ) {
+        System.arraycopy(
+            value, i, value, i + s, count - i
+        );
+    }
+
+    /**
+     * Unsafe method
+     *
+     * <pre>{@code
      *  value // kat.plus
      *  swop(1, 6);
      *  value // klp.taus
@@ -2844,27 +2977,6 @@ public abstract class Chain implements CharSequence, Comparable<CharSequence> {
             it[e] = it[i];
             it[i++] = item;
         }
-    }
-
-    /**
-     * Unsafe method
-     *
-     * <pre>{@code
-     *  move(1, 1);
-     *  value[1] = 'k';
-     *  move(1, -1);
-     *  value[0] // is 'k'
-     * }</pre>
-     *
-     * @param i the specified offset
-     * @param s the specified shift length
-     */
-    protected void move(
-        int i, int s
-    ) {
-        System.arraycopy(
-            value, i, value, i + s, count - i
-        );
     }
 
     /**

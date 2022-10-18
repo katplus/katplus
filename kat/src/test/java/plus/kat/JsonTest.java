@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static plus.kat.stream.Binary.latin;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class JsonTest {
@@ -212,11 +213,12 @@ public class JsonTest {
     public void test_encode3() {
         Map<Object, Object> data = new HashMap<>();
         data.put("别名", "陆之岇");
+        data.put(latin(new byte[]{0, 1, 6, 9, 32}), null);
         assertEquals(
-            "{\"别名\":\"陆之岇\"}", Json.encode(data)
+            "{\"别名\":\"陆之岇\",\"\\u0000\\u0001\\u0006\\t \":null}", Json.encode(data)
         );
         assertEquals(
-            "{\"\\u522B\\u540D\":\"\\u9646\\u4E4B\\u5C87\"}", Json.encode(data, Flag.UNICODE)
+            "{\"\\u522B\\u540D\":\"\\u9646\\u4E4B\\u5C87\",\"\\u0000\\u0001\\u0006\\t \":null}", Json.encode(data, Flag.UNICODE)
         );
     }
 

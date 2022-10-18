@@ -364,48 +364,14 @@ public class Kat extends Steam implements Chan {
     }
 
     /**
-     * Concatenates the char value to this {@link Kat},
-     * which will be escaped if it is a special character
-     *
-     * @param ch the specified char value to be appended
-     */
-    @Override
-    public void emit(
-        char ch
-    ) throws IOException {
-        if (ch < 0x80) {
-            emit(
-                (byte) ch
-            );
-        } else {
-            if ((flags & 2) == 0) {
-                concat(ch);
-            } else {
-                byte[] it = value;
-                int size = count + 6;
-                if (size > it.length) {
-                    grow(size);
-                    it = value;
-                }
-                it[count++] = '^';
-                it[count++] = 'u';
-                it[count++] = upper((ch >> 12) & 0x0F);
-                it[count++] = upper((ch >> 8) & 0x0F);
-                it[count++] = upper((ch >> 4) & 0x0F);
-                it[count++] = upper(ch & 0x0F);
-            }
-        }
-    }
-
-    /**
      * Concatenates the string representation
      * of the boolean value to this {@link Kat}
      *
-     * @param bo the specified boolean to be appended
+     * @param bt the specified boolean to be appended
      */
     @Override
     public void emit(
-        boolean bo
+        boolean bt
     ) throws IOException {
         byte[] it = value;
         int size = count + 1;
@@ -414,31 +380,7 @@ public class Kat extends Steam implements Chan {
             it = value;
         }
         asset = 0;
-        it[count++] = bo ? (byte) '1' : (byte) '0';
-    }
-
-    /**
-     * Concatenates the char value to this
-     * {@link Kat}, conventing it to unicode first
-     *
-     * @param ch the specified char value to be appended
-     */
-    @Override
-    public void save(
-        char ch
-    ) {
-        byte[] it = value;
-        int size = count + 6;
-        if (size > it.length) {
-            grow(size);
-            it = value;
-        }
-        it[count++] = '^';
-        it[count++] = 'u';
-        it[count++] = upper((ch >> 12) & 0x0F);
-        it[count++] = upper((ch >> 8) & 0x0F);
-        it[count++] = upper((ch >> 4) & 0x0F);
-        it[count++] = upper(ch & 0x0F);
+        it[count++] = bt ? (byte) '1' : (byte) '0';
     }
 
     /**
@@ -464,8 +406,24 @@ public class Kat extends Steam implements Chan {
                         );
                         break;
                     }
+                    case 0x7C:
+                    case 0x7E: {
+                        break;
+                    }
+                    case 0x7F: {
+                        concat(
+                            bit, (byte) '^'
+                        );
+                        continue;
+                    }
                     default: {
-                        emit(bit);
+                        if ((flags & 2) == 0) {
+                            concat(bit);
+                        } else {
+                            concat(
+                                bit, (byte) '^'
+                            );
+                        }
                         continue;
                     }
                 }
@@ -501,7 +459,9 @@ public class Kat extends Steam implements Chan {
                             break;
                         }
                         default: {
-                            concat(bit);
+                            concat(
+                                bit, (byte) '^'
+                            );
                             continue;
                         }
                     }

@@ -284,8 +284,11 @@ public class Value extends Alpha {
         char[] data
     ) {
         if (data != null) {
-            for (char c : data) {
-                concat(c);
+            int l = data.length;
+            if (l != 0) {
+                concat(
+                    data, 0, l
+                );
             }
         }
     }
@@ -303,13 +306,10 @@ public class Value extends Alpha {
         char[] data, int i, int l
     ) {
         if (data != null && l != 0) {
-            int k = i + l;
-            if (0 <= i && k <= data.length) {
-                while (i < k) {
-                    concat(
-                        data[i++]
-                    );
-                }
+            if (0 <= i && i + l <= data.length) {
+                concat(
+                    data, i, l
+                );
             } else {
                 throw new ArrayIndexOutOfBoundsException(
                     "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
@@ -502,20 +502,6 @@ public class Value extends Alpha {
         return new Value(
             Buffer.INS
         );
-    }
-
-    /**
-     * @param b the {@code byte} to be compared
-     */
-    public static boolean esc(byte b) {
-        switch (b) {
-            case '^':
-            case '(':
-            case ')': {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

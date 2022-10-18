@@ -27,24 +27,35 @@ import java.util.Locale;
 public final class Algo {
 
     public static final Algo
-        KAT = new Algo("kat"),
-        DOC = new Algo("xml"),
-        JSON = new Algo("json");
+        KAT = new Algo((byte) 0x5E, "kat"),
+        DOC = new Algo((byte) 0x5C, "xml"),
+        JSON = new Algo((byte) 0x5C, "json");
 
+    private final byte esc;
     private final String name;
 
     /**
      * Constructs an algo with the specified name
      *
+     * @param esc  the specified esc char
      * @param name the specified algo name
      * @throws NullPointerException If the specified name is null
      */
     public Algo(
+        @NotNull byte esc,
         @NotNull String name
     ) {
+        this.esc = esc;
         this.name = name.toLowerCase(
             Locale.ENGLISH
         );
+    }
+
+    /**
+     * Returns the escape char of this {@link Algo}
+     */
+    public byte esc() {
+        return esc;
     }
 
     /**
