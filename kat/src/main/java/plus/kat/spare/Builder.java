@@ -30,27 +30,20 @@ import java.io.IOException;
  */
 public abstract class Builder<K> {
 
-    private Alias alias;
-    private Builder<?> parent;
-
-    /**
-     * event etc.
-     */
     protected Event<?> event;
+    private Builder<?> parent;
     protected Supplier supplier;
 
     /**
      * @throws IOException If an I/O error occurs
      */
     final void onAttach(
-        @NotNull Alias a,
         @NotNull Event<?> e,
         @NotNull Builder<?> b
     ) throws IOException {
         if (parent == null) {
-            alias = a;
-            parent = b;
             event = e;
+            parent = b;
             supplier = e.getSupplier();
             onCreate();
         } else {
@@ -69,26 +62,39 @@ public abstract class Builder<K> {
     public abstract void onCreate() throws IOException;
 
     /**
-     * Receive according to requirements and then parse
+     * Receive the property of {@link K}
      *
      * @throws IOException If an I/O error occurs
      */
-    public abstract void onReport(@NotNull Alias alias, @NotNull Builder<?> child) throws IOException;
+    public abstract void onAttain(@NotNull Space space, @NotNull Alias alias, @NotNull Value value) throws IOException;
 
     /**
-     * Receive according to requirements and then parse
+     * Receive the property of {@link K}
      *
      * @throws IOException If an I/O error occurs
      */
-    public abstract void onReport(@NotNull Space space, @NotNull Alias alias, @NotNull Value value) throws IOException;
+    public void onDetain(
+        @NotNull Builder<?> child
+    ) throws IOException {
+        throw new ProxyCrash(
+            "Supports for structures is not implemented"
+        );
+    }
 
     /**
-     * Create a branch of this {@link Builder}
+     * Create a builder for the property {@link K}
      *
      * @throws IOException If an I/O error occurs
      */
     @Nullable
-    public abstract Builder<?> onReport(@NotNull Space space, @NotNull Alias alias) throws IOException;
+    public Builder<?> onAttain(
+        @NotNull Space space,
+        @NotNull Alias alias
+    ) throws IOException {
+        throw new ProxyCrash(
+            "Supports for structures is not implemented"
+        );
+    }
 
     /**
      * Returns the result of building {@link K}
@@ -104,16 +110,7 @@ public abstract class Builder<K> {
     /**
      * Close the resources of this {@link Builder}
      */
-    public abstract void onDestroy();
-
-    /**
-     * Returns the alias of this {@link Builder}
-     *
-     * @return {@link Alias} or {@code null}
-     */
-    public final Alias getAlias() {
-        return alias;
-    }
+    public abstract void onDestroy() throws IOException;
 
     /**
      * Returns the parent of this {@link Builder}
@@ -127,9 +124,8 @@ public abstract class Builder<K> {
     /**
      * Destroy the resources of this {@link Builder}
      */
-    final void onDetach() {
+    final void onDetach() throws IOException {
         onDestroy();
-        alias = null;
         event = null;
         parent = null;
         supplier = null;

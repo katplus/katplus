@@ -429,7 +429,7 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onReport(
+        public void onAttain(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -442,26 +442,6 @@ public class ArraySpare extends Property<Object> {
                 bundle, size++, spare.read(
                     event, value
                 )
-            );
-        }
-
-        @Override
-        public void onReport(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) throws IOException {
-            throw new ProxyCrash(
-                "Unexpectedly, operation not supported"
-            );
-        }
-
-        @Override
-        public Builder<?> onReport(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) throws IOException {
-            throw new ProxyCrash(
-                "Unexpectedly, operation not supported"
             );
         }
 
@@ -542,7 +522,7 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onReport(
+        public void onAttain(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -568,8 +548,7 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onReport(
-            @NotNull Alias alias,
+        public void onDetain(
             @NotNull Builder<?> child
         ) throws IOException {
             if (length == size) {
@@ -581,7 +560,7 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public Builder<?> onReport(
+        public Builder<?> onAttain(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
@@ -621,7 +600,7 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onReport(
+        public void onAttain(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -645,21 +624,20 @@ public class ArraySpare extends Property<Object> {
                 }
             } else {
                 throw new ProxyCrash(
-                    "Unexpectedly, the number of elements exceeds the range: " + size
+                    "The number of elements exceeds the range: " + size
                 );
             }
         }
 
         @Override
-        public void onReport(
-            @NotNull Alias alias,
+        public void onDetain(
             @NotNull Builder<?> child
         ) throws IOException {
             bundle[index] = child.onPacket();
         }
 
         @Override
-        public Builder<?> onReport(
+        public Builder<?> onAttain(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
@@ -681,7 +659,7 @@ public class ArraySpare extends Property<Object> {
                 return spare.getBuilder(type);
             } else {
                 throw new ProxyCrash(
-                    "Unexpectedly, the number of elements exceeds the range: " + size
+                    "The number of elements exceeds the range: " + size
                 );
             }
         }

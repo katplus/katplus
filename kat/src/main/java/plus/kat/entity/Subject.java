@@ -636,27 +636,12 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         /**
-         * Receive according to requirements and then parse
+         * Receive the property of {@link K}
          *
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onReport(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) throws IOException {
-            setter.invoke(
-                bean, child.onPacket()
-            );
-        }
-
-        /**
-         * Receive according to requirements and then parse
-         *
-         * @throws IOException If an I/O error occurs
-         */
-        @Override
-        public void onReport(
+        public void onAttain(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -686,12 +671,26 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         /**
-         * Create a branch of this {@link Builder}
+         * Receive the property of {@link K}
+         *
+         * @throws IOException If an I/O error occurs
+         */
+        @Override
+        public void onDetain(
+            @NotNull Builder<?> child
+        ) throws IOException {
+            setter.invoke(
+                bean, child.onPacket()
+            );
+        }
+
+        /**
+         * Create a builder for the property {@link K}
          *
          * @throws IOException If an I/O error occurs
          */
         @Nullable
-        public Builder<?> onReport(
+        public Builder<?> onAttain(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
@@ -765,27 +764,12 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         /**
-         * Receive according to requirements and then parse
+         * Receive the property of {@link K}
          *
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onReport(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) throws IOException {
-            setter.invoke(
-                data, child.onPacket()
-            );
-        }
-
-        /**
-         * Receive according to requirements and then parse
-         *
-         * @throws IOException If an I/O error occurs
-         */
-        @Override
-        public void onReport(
+        public void onAttain(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -815,12 +799,26 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         /**
-         * Create a branch of this {@link Builder}
+         * Receive the property of {@link K}
+         *
+         * @throws IOException If an I/O error occurs
+         */
+        @Override
+        public void onDetain(
+            @NotNull Builder<?> child
+        ) throws IOException {
+            setter.invoke(
+                data, child.onPacket()
+            );
+        }
+
+        /**
+         * Create a builder for the property {@link K}
          *
          * @throws IOException If an I/O error occurs
          */
         @Nullable
-        public Builder<?> onReport(
+        public Builder<?> onAttain(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
@@ -941,38 +939,12 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         /**
-         * Receive according to requirements and then parse
+         * Receive the property of {@link K}
          *
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onReport(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) throws IOException {
-            if (target != null) {
-                target.invoke(
-                    data, child.onPacket()
-                );
-            } else {
-                Cache<K> ca = new Cache<>();
-                ca.setter = setter;
-                ca.value = child.onPacket();
-                if (cache == null) {
-                    cache = ca;
-                } else {
-                    cache.next = ca;
-                }
-            }
-        }
-
-        /**
-         * Receive according to requirements and then parse
-         *
-         * @throws IOException If an I/O error occurs
-         */
-        @Override
-        public void onReport(
+        public void onAttain(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -1030,12 +1002,37 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         /**
-         * Create a branch of this {@link Builder}
+         * Receive the property of {@link K}
+         *
+         * @throws IOException If an I/O error occurs
+         */
+        @Override
+        public void onDetain(
+            @NotNull Builder<?> child
+        ) throws IOException {
+            if (target != null) {
+                target.invoke(
+                    data, child.onPacket()
+                );
+            } else {
+                Cache<K> ca = new Cache<>();
+                ca.setter = setter;
+                ca.value = child.onPacket();
+                if (cache == null) {
+                    cache = ca;
+                } else {
+                    cache.next = ca;
+                }
+            }
+        }
+
+        /**
+         * Create a builder for the property {@link K}
          *
          * @throws IOException If an I/O error occurs
          */
         @Nullable
-        public Builder<?> onReport(
+        public Builder<?> onAttain(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {

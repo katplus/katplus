@@ -309,8 +309,10 @@ public class MapSpare extends Property<Map> {
         protected Class<?> kind;
         protected Type key, val, raw;
 
-        protected Spare<Map> owner;
         protected Map bundle;
+        protected Object attr;
+
+        protected Spare<Map> owner;
         protected Spare<?> spare0, spare1;
 
         public Builder0(
@@ -385,7 +387,7 @@ public class MapSpare extends Property<Map> {
         }
 
         @Override
-        public void onReport(
+        public void onAttain(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -424,31 +426,19 @@ public class MapSpare extends Property<Map> {
         }
 
         @Override
-        public void onReport(
-            @NotNull Alias alias,
+        public void onDetain(
             @NotNull Builder<?> child
         ) throws IOException {
-            Spare<?> s0 = spare0;
-            if (s0 == null) {
-                bundle.put(
-                    alias.toString(),
-                    child.onPacket()
-                );
-            } else {
-                bundle.put(
-                    s0.read(
-                        event, alias
-                    ),
-                    child.onPacket()
-                );
-            }
+            bundle.put(
+                attr, child.onPacket()
+            );
         }
 
         @Override
-        public Builder<?> onReport(
+        public Builder<?> onAttain(
             @NotNull Space space,
             @NotNull Alias alias
-        ) {
+        ) throws IOException {
             Spare<?> s1 = spare1;
             if (s1 == null) {
                 s1 = supplier.search(
@@ -459,7 +449,20 @@ public class MapSpare extends Property<Map> {
                 }
             }
 
-            return s1.getBuilder(val);
+            Builder<?> builder =
+                s1.getBuilder(val);
+
+            if (builder == null) {
+                return null;
+            }
+
+            Spare<?> s0 = spare0;
+            if (s0 == null) {
+                attr = alias.toString();
+            } else {
+                attr = s0.read(event, alias);
+            }
+            return builder;
         }
 
         @Override
@@ -469,6 +472,7 @@ public class MapSpare extends Property<Map> {
 
         @Override
         public void onDestroy() {
+            attr = null;
             bundle = null;
         }
     }

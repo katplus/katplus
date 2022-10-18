@@ -42,8 +42,6 @@ public class Event<T> implements Flag {
     protected long flags;
 
     protected Flag flag;
-    protected Alias alias;
-
     protected Type type;
     protected Spare<?> spare;
 
@@ -510,7 +508,7 @@ public class Event<T> implements Flag {
         @NotNull Alias alias
     ) throws IOException {
         return assign(
-            space, alias.copy()
+            space, alias
         );
     }
 
@@ -525,45 +523,21 @@ public class Event<T> implements Flag {
         @NotNull Space space,
         @NotNull Alias alias
     ) throws IOException {
-        this.alias = alias;
-        Spare<?> spare = this.spare;
-
-        if (spare != null) {
-            return spare;
+        Spare<?> coder = spare;
+        if (coder != null) {
+            return coder;
         }
 
         Supplier supplier = getSupplier();
-        spare = supplier.lookup(type, space);
+        coder = supplier.lookup(type, space);
 
-        if (spare != null) {
-            return spare;
+        if (coder != null) {
+            return coder;
         }
 
         throw new ProxyCrash(
-            "Unexpectedly, the specified spare was not found"
+            "Unexpectedly, the spare of " + alias + " was not found"
         );
-    }
-
-    /**
-     * Sets the alias of this {@link Event}
-     *
-     * @param alias the specified alias
-     * @since 0.0.2
-     */
-    public void setAlias(
-        @Nullable Alias alias
-    ) {
-        this.alias = alias;
-    }
-
-    /**
-     * Returns the {@link Alias} of this {@link Event}
-     *
-     * @since 0.0.2
-     */
-    @Nullable
-    public Alias getAlias() {
-        return alias;
     }
 
     /**

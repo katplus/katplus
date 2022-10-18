@@ -105,7 +105,7 @@ public class ErrorSpare extends Property<Exception> {
         }
 
         @Override
-        public void onReport(
+        public void onAttain(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -119,22 +119,6 @@ public class ErrorSpare extends Property<Exception> {
                     message = value.toString();
                 }
             }
-        }
-
-        @Override
-        public void onReport(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) {
-            // Nothing
-        }
-
-        @Override
-        public Builder<?> onReport(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) {
-            return null;
         }
 
         @Nullable

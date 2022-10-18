@@ -20,7 +20,6 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -122,7 +121,7 @@ public class BitSetSpare extends Property<BitSet> {
         }
 
         @Override
-        public void onReport(
+        public void onAttain(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -133,25 +132,6 @@ public class BitSetSpare extends Property<BitSet> {
             }
         }
 
-        @Override
-        public void onReport(
-            @NotNull Alias alias,
-            @NotNull Builder<?> child
-        ) {
-            // Nothing
-        }
-
-        @Override
-        public Builder<?> onReport(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) throws IOException {
-            throw new ProxyCrash(
-                "Unexpectedly, invalid BitSet value type '" + space + "'"
-            );
-        }
-
-        @Nullable
         @Override
         public BitSet onPacket() {
             return bundle;

@@ -211,17 +211,16 @@ public class Parser implements Proxy, Closeable {
             );
         }
 
-        Alias name = alias.copy();
-        Builder<?> child, parent = active;
-
+        Builder<?> child,
+            parent = active;
         if (depth != 0) {
-            child = active.onReport(
-                space, name
+            child = parent.onAttain(
+                space, alias
             );
         } else {
             Spare<?> spare;
             spare = event.assign(
-                space, name
+                space, alias
             );
 
             child = spare.getBuilder(
@@ -232,7 +231,7 @@ public class Parser implements Proxy, Closeable {
         if (child != null) {
             try {
                 child.onAttach(
-                    name, event, parent
+                    event, parent
                 );
                 ++depth;
                 active = child;
@@ -254,7 +253,7 @@ public class Parser implements Proxy, Closeable {
         @NotNull Value value
     ) throws IOException {
         if (depth != 0) {
-            active.onReport(
+            active.onAttain(
                 space, alias, value
             );
         } else {
@@ -289,9 +288,7 @@ public class Parser implements Proxy, Closeable {
 
         try {
             if (depth != 0) {
-                active.onReport(
-                    child.getAlias(), child
-                );
+                active.onDetain(child);
                 return true;
             } else {
                 bundle = child.onPacket();

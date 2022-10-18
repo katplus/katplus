@@ -311,7 +311,7 @@ public class ListSpare extends Property<List> {
         }
 
         @Override
-        public void onReport(
+        public void onAttain(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -335,8 +335,7 @@ public class ListSpare extends Property<List> {
         }
 
         @Override
-        public void onReport(
-            @NotNull Alias alias,
+        public void onDetain(
             @NotNull Builder<?> child
         ) throws IOException {
             bundle.add(
@@ -345,7 +344,7 @@ public class ListSpare extends Property<List> {
         }
 
         @Override
-        public Builder<?> onReport(
+        public Builder<?> onAttain(
             @NotNull Space space,
             @NotNull Alias alias
         ) {
