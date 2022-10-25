@@ -121,7 +121,9 @@ public class Alpha extends Chain {
     }
 
     /**
-     * Writes all elements of this chan to alpha
+     * Writes this {@link Alpha} to the specified {@link Alpha}
+     *
+     * @throws NullPointerException If the specified alpha is null
      */
     public void each(
         @NotNull Alpha alpha
@@ -132,9 +134,10 @@ public class Alpha extends Chain {
     }
 
     /**
-     * Writes all elements of this chan to stream
+     * Writes this {@link Alpha} to the specified {@link OutputStream}
      *
-     * @throws IOException If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified steam is null
      */
     public void each(
         @NotNull OutputStream stream
@@ -150,9 +153,7 @@ public class Alpha extends Chain {
      *
      * @param num the specified number to be appended
      */
-    public void emit(
-        int num
-    ) {
+    public void emit(int num) {
         int arch = 0x30;
         byte[] it = value;
 
@@ -189,9 +190,7 @@ public class Alpha extends Chain {
      *
      * @param num the specified number to be appended
      */
-    public void emit(
-        long num
-    ) {
+    public void emit(long num) {
         long arch = 0x30L;
         byte[] it = value;
 
