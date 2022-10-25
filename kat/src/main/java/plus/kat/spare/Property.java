@@ -67,6 +67,13 @@ public abstract class Property<T> implements Spare<T> {
     }
 
     @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return null;
+    }
+
+    @Override
     public Class<T> getType() {
         return klass;
     }

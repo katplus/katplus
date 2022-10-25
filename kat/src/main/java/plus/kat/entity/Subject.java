@@ -83,6 +83,16 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     }
 
     /**
+     * Returns the border of {@link K}
+     */
+    @Override
+    default Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return null;
+    }
+
+    /**
      * Check if {@code clazz} is a parent Class of {@link K}
      * or this {@link Subject} can create an instance of {@code clazz}
      */

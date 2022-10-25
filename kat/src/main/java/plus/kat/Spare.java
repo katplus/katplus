@@ -58,6 +58,20 @@ public interface Spare<K> extends Coder<K> {
     Boolean getFlag();
 
     /**
+     * Returns the border of {@link K}
+     *
+     * <pre>{@code
+     *  null  ->  requires on-demand use
+     *  true  ->  requires to use border
+     *  false ->  requires not to use border
+     * }</pre>
+     */
+    @Nullable
+    Boolean getBorder(
+        @NotNull Flag flag
+    );
+
+    /**
      * Check if {@code clazz} is a parent Class of {@link K}
      * or this {@link Spare} can create an instance of {@code clazz}
      *

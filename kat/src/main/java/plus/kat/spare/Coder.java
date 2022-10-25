@@ -30,7 +30,7 @@ import java.lang.reflect.Type;
  */
 public interface Coder<K> {
     /**
-     * Returns the space of {@link Coder}
+     * Returns the space of {@link K}
      */
     @NotNull
     default String getSpace() {
@@ -38,7 +38,7 @@ public interface Coder<K> {
     }
 
     /**
-     * Returns the flag of {@link Coder}
+     * Returns the flag of {@link K}
      */
     @Nullable
     default Boolean getFlag() {
@@ -46,7 +46,7 @@ public interface Coder<K> {
     }
 
     /**
-     * Returns the border of {@link Coder}
+     * Returns the border of {@link K}
      */
     @Nullable
     default Boolean getBorder(
