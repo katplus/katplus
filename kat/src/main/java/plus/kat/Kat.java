@@ -124,7 +124,7 @@ public class Kat extends Steam implements Chan {
     }
 
     /**
-     * Serializes the specified alias and fitter at the current hierarchy
+     * Serializes the specified alias and value at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -132,15 +132,15 @@ public class Kat extends Steam implements Chan {
     @Override
     public boolean set(
         @Nullable String alias,
-        @Nullable Fitter fitter
+        @Nullable Entity value
     ) throws IOException {
         return set(
-            alias, "M", fitter
+            alias, "M", value
         );
     }
 
     /**
-     * Serializes the specified alias, space and fitter at the current hierarchy
+     * Serializes the specified alias, space and value at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -149,13 +149,14 @@ public class Kat extends Steam implements Chan {
     public boolean set(
         @Nullable String alias,
         @Nullable String space,
-        @Nullable Fitter fitter
+        @Nullable Entity value
     ) throws IOException {
         short d = depth;
         if (d > 0) {
             int i = d + 1;
-            grow(count + i * 2);
-            byte[] it = value;
+            byte[] it = grow(
+                count + i * 2
+            );
             it[count++] = '\n';
             while (--i != 0) {
                 it[count++] = ' ';
@@ -164,33 +165,36 @@ public class Kat extends Steam implements Chan {
         }
 
         if (space != null) {
-            escape(space);
+            emit(space);
         }
         if (alias != null) {
-            concat(
+            join(
                 (byte) ':'
             );
-            escape(alias);
+            emit(alias);
         }
 
-        if (fitter == null) {
-            concat(LP);
-            concat(RP);
+        if (value == null) {
+            join(LP);
+            join(RP);
         } else {
-            concat(LB);
+            join(LB);
             if (d < 0) {
-                fitter.accept(this);
+                value.serial(this);
             } else {
                 ++depth;
-                fitter.accept(this);
+                value.serial(this);
                 --depth;
                 if (d == 0) {
-                    grow(count + 2);
-                    value[count++] = '\n';
+                    byte[] it = grow(
+                        count + 2
+                    );
+                    it[count++] = '\n';
                 } else {
                     int i = d + 1;
-                    grow(count + i * 2);
-                    byte[] it = value;
+                    byte[] it = grow(
+                        count + i * 2
+                    );
                     it[count++] = '\n';
                     while (--i != 0) {
                         it[count++] = ' ';
@@ -198,13 +202,13 @@ public class Kat extends Steam implements Chan {
                     }
                 }
             }
-            concat(RB);
+            join(RB);
         }
         return true;
     }
 
     /**
-     * Serializes the specified alias, coder and object at the current hierarchy
+     * Serializes the specified alias, coder and value at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -213,42 +217,42 @@ public class Kat extends Steam implements Chan {
     public boolean set(
         @Nullable String alias,
         @Nullable Coder<?> coder,
-        @Nullable Object object
+        @Nullable Object value
     ) throws IOException {
-        if (object == null) {
+        if (value == null) {
             return set(
                 alias, "$", null
             );
         }
 
         if (coder == null) {
-            // search for the spare of object
+            // search for the spare of value
             coder = supplier.lookup(
-                object.getClass()
+                value.getClass()
             );
 
             // solving the coder problem again
             if (coder == null) {
-                if (object instanceof Fitter) {
+                if (value instanceof Entity) {
                     return set(
-                        alias, (Fitter) object
+                        alias, (Entity) value
                     );
                 }
 
-                if (object instanceof Optional) {
-                    Optional<?> o = (Optional<?>) object;
+                if (value instanceof Optional) {
+                    Optional<?> o = (Optional<?>) value;
                     return set(
                         alias, null, o.orElse(null)
                     );
                 }
 
-                if (object instanceof Exception) {
+                if (value instanceof Exception) {
                     coder = ErrorSpare.INSTANCE;
-                } else if (object instanceof Map) {
+                } else if (value instanceof Map) {
                     coder = MapSpare.INSTANCE;
-                } else if (object instanceof Set) {
+                } else if (value instanceof Set) {
                     coder = SetSpare.INSTANCE;
-                } else if (object instanceof Iterable) {
+                } else if (value instanceof Iterable) {
                     coder = ListSpare.INSTANCE;
                 } else {
                     return set(
@@ -261,8 +265,9 @@ public class Kat extends Steam implements Chan {
         short d = depth;
         if (d > 0) {
             int i = d + 1;
-            grow(count + i * 2);
-            byte[] it = value;
+            byte[] it = grow(
+                count + i * 2
+            );
             it[count++] = '\n';
             while (--i != 0) {
                 it[count++] = ' ';
@@ -270,41 +275,44 @@ public class Kat extends Steam implements Chan {
             }
         }
 
-        escape(
+        emit(
             coder.getSpace()
         );
         if (alias != null) {
-            concat(
+            join(
                 (byte) ':'
             );
-            escape(alias);
+            emit(alias);
         }
 
         if (coder.getFlag() == null) {
-            concat(LP);
+            join(LP);
             coder.write(
-                (Flow) this, object
+                (Flow) this, value
             );
-            concat(RP);
+            join(RP);
         } else {
-            concat(LB);
+            join(LB);
             if (d < 0) {
                 coder.write(
-                    (Chan) this, object
+                    (Chan) this, value
                 );
             } else {
                 ++depth;
                 coder.write(
-                    (Chan) this, object
+                    (Chan) this, value
                 );
                 --depth;
                 if (d == 0) {
-                    grow(count + 2);
-                    value[count++] = '\n';
+                    byte[] it = grow(
+                        count + 2
+                    );
+                    it[count++] = '\n';
                 } else {
                     int i = d + 1;
-                    grow(count + i * 2);
-                    byte[] it = value;
+                    byte[] it = grow(
+                        count + i * 2
+                    );
                     it[count++] = '\n';
                     while (--i != 0) {
                         it[count++] = ' ';
@@ -312,7 +320,7 @@ public class Kat extends Steam implements Chan {
                     }
                 }
             }
-            concat(RB);
+            join(RB);
         }
         return true;
     }
@@ -343,23 +351,23 @@ public class Kat extends Steam implements Chan {
     public void emit(
         byte bt
     ) throws IOException {
+        byte[] it = value;
         switch (bt) {
             case '^':
             case '(':
             case ')': {
-                concat(
-                    (byte) '^'
+                it = grow(
+                    count + 2
                 );
+                it[count++] = '^';
             }
         }
-        byte[] it = value;
         if (count != it.length) {
             asset = 0;
             it[count++] = bt;
         } else {
-            grow(count + 1);
             asset = 0;
-            value[count++] = bt;
+            grow(count + 1)[count++] = bt;
         }
     }
 
@@ -374,10 +382,8 @@ public class Kat extends Steam implements Chan {
         boolean bt
     ) throws IOException {
         byte[] it = value;
-        int size = count + 1;
-        if (size > it.length) {
-            grow(size);
-            it = value;
+        if (count == it.length) {
+            it = grow(count + 1);
         }
         asset = 0;
         it[count++] = bt ? (byte) '1' : (byte) '0';
@@ -389,96 +395,188 @@ public class Kat extends Steam implements Chan {
      *
      * @param data the specified string to be appended
      */
-    private void escape(
+    private void emit(
         @NotNull String data
     ) throws IOException {
-        int i = 0,
-            l = data.length();
-        grow(count + l);
-        for (; i < l; i++) {
-            char bit = data.charAt(i);
-            if (bit > 0x7A) {
-                switch (bit) {
-                    case '{':
-                    case '}': {
-                        concat(
-                            (byte) '^'
-                        );
-                        break;
-                    }
-                    case 0x7C:
-                    case 0x7E: {
-                        break;
-                    }
-                    case 0x7F: {
-                        concat(
-                            bit, (byte) '^'
-                        );
-                        continue;
-                    }
-                    default: {
-                        if ((flags & 2) == 0) {
-                            concat(bit);
-                        } else {
-                            concat(
-                                bit, (byte) '^'
-                            );
-                        }
-                        continue;
-                    }
+        asset = 0;
+        byte[] it = value;
+
+        int l = data.length();
+        for (int i = 0; i < l; i++) {
+            char ch = data.charAt(i);
+            switch (ch) {
+                case 0x23:
+                case 0x28:
+                case 0x29:
+                case 0x3A:
+                case 0x5E:
+                case 0x7B:
+                case 0x7D: {
+                    break;
                 }
-            } else if (bit < 0x5F) {
-                if (bit > 0x20) {
-                    switch (bit) {
-                        case '^':
-                        case '#':
-                        case ':':
-                        case '(':
-                        case ')': {
-                            concat(
-                                (byte) '^'
-                            );
-                        }
+                case 0x09: {
+                    ch = 't';
+                    break;
+                }
+                case 0x0A: {
+                    ch = 'n';
+                    break;
+                }
+                case 0x0D: {
+                    ch = 'r';
+                    break;
+                }
+                case 0x20: {
+                    ch = 's';
+                    break;
+                }
+                case 0x21:
+                case 0x22:
+                case 0x24:
+                case 0x25:
+                case 0x26:
+                case 0x27:
+                case 0x2A:
+                case 0x2B:
+                case 0x2C:
+                case 0x2D:
+                case 0x2E:
+                case 0x2F:
+                case 0x30:
+                case 0x31:
+                case 0x32:
+                case 0x33:
+                case 0x34:
+                case 0x35:
+                case 0x36:
+                case 0x37:
+                case 0x38:
+                case 0x39:
+                case 0x3B:
+                case 0x3C:
+                case 0x3D:
+                case 0x3E:
+                case 0x3F:
+                case 0x40:
+                case 0x41:
+                case 0x42:
+                case 0x43:
+                case 0x44:
+                case 0x45:
+                case 0x46:
+                case 0x47:
+                case 0x48:
+                case 0x49:
+                case 0x4A:
+                case 0x4B:
+                case 0x4C:
+                case 0x4D:
+                case 0x4E:
+                case 0x4F:
+                case 0x50:
+                case 0x51:
+                case 0x52:
+                case 0x53:
+                case 0x54:
+                case 0x55:
+                case 0x56:
+                case 0x57:
+                case 0x58:
+                case 0x59:
+                case 0x5A:
+                case 0x5B:
+                case 0x5C:
+                case 0x5D:
+                case 0x5F:
+                case 0x60:
+                case 0x61:
+                case 0x62:
+                case 0x63:
+                case 0x64:
+                case 0x65:
+                case 0x66:
+                case 0x67:
+                case 0x68:
+                case 0x69:
+                case 0x6A:
+                case 0x6B:
+                case 0x6C:
+                case 0x6D:
+                case 0x6E:
+                case 0x6F:
+                case 0x70:
+                case 0x71:
+                case 0x72:
+                case 0x73:
+                case 0x74:
+                case 0x75:
+                case 0x76:
+                case 0x77:
+                case 0x78:
+                case 0x79:
+                case 0x7A:
+                case 0x7C:
+                case 0x7E: {
+                    if (count == it.length)
+                        it = grow(count + 1);
+                    it[count++] = (byte) ch;
+                    continue;
+                }
+                case 0x00:
+                case 0x01:
+                case 0x02:
+                case 0x03:
+                case 0x04:
+                case 0x05:
+                case 0x06:
+                case 0x07:
+                case 0x08:
+                case 0x0B:
+                case 0x0C:
+                case 0x0E:
+                case 0x0F:
+                case 0x10:
+                case 0x11:
+                case 0x12:
+                case 0x13:
+                case 0x14:
+                case 0x15:
+                case 0x16:
+                case 0x17:
+                case 0x18:
+                case 0x19:
+                case 0x1A:
+                case 0x1B:
+                case 0x1C:
+                case 0x1D:
+                case 0x1E:
+                case 0x1F:
+                case 0x7F: {
+                    int size = count + 6;
+                    if (size > it.length) {
+                        it = grow(size);
                     }
-                } else {
-                    switch (bit) {
-                        case ' ': {
-                            bit = 's';
-                            break;
-                        }
-                        case '\t': {
-                            bit = 't';
-                            break;
-                        }
-                        case '\r': {
-                            bit = 'r';
-                            break;
-                        }
-                        case '\n': {
-                            bit = 'n';
-                            break;
-                        }
-                        default: {
-                            concat(
-                                bit, (byte) '^'
-                            );
-                            continue;
-                        }
-                    }
-                    concat(
-                        (byte) '^'
-                    );
+                    it[count++] = '^';
+                    it[count++] = 'u';
+                    it[count++] = '0';
+                    it[count++] = '0';
+                    it[count++] = upper((ch >> 4) & 0x0F);
+                    it[count++] = upper(ch & 0x0F);
+                    continue;
+                }
+                default: {
+                    emit(ch);
+                    it = value;
+                    continue;
                 }
             }
-            byte[] it = value;
-            if (count != it.length) {
-                asset = 0;
-                it[count++] = (byte) bit;
-            } else {
-                grow(count + 1);
-                asset = 0;
-                value[count++] = (byte) bit;
+
+            int size = count + 2;
+            if (size > it.length) {
+                it = grow(size);
             }
+            it[count++] = '^';
+            it[count++] = (byte) ch;
         }
     }
 

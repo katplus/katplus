@@ -170,7 +170,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     ) throws IOException, HttpMessageNotWritableException {
         try (Chan chan = supplier.telex(algo, plan)) {
             if (chan.set(null, data)) {
-                chan.getSteam().update(
+                chan.getSteam().each(
                     output.getBody()
                 );
             } else {

@@ -56,7 +56,7 @@ public class InputStreamReader extends AbstractReader {
     @Override
     public void close() {
         try {
-            INS.share(
+            INS.join(
                 cache
             );
             value.close();

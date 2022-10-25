@@ -2,12 +2,9 @@ package plus.kat;
 
 import org.junit.jupiter.api.Test;
 import plus.kat.anno.Expose;
-import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -234,52 +231,5 @@ public class SpareTest {
         assertThrows(Collapse.class, () -> spare.apply(Object.class));
         assertThrows(Collapse.class, () -> spare.apply(Entity.class));
         assertThrows(Collapse.class, () -> spare.apply(HashMap.class));
-    }
-
-    @Test
-    public void test_getType() {
-        Type[] types = new Type[]{
-            String.class,
-            Value.class,
-            StringBuilder.class
-        };
-
-        Spare<CharSequence> spare = new Property<CharSequence>(
-            CharSequence.class
-        ) {
-            @Override
-            public CharSequence read(
-                Flag flag,
-                Value value
-            ) throws IOException {
-                Type type = value.getType();
-
-                if (type == String.class) {
-                    return value.toString();
-                }
-
-                if (type == Value.class) {
-                    return new Value(value);
-                }
-
-                if (type == StringBuilder.class) {
-                    return new StringBuilder(
-                        value.toString()
-                    );
-                }
-
-                throw new ProxyCrash("Error");
-            }
-        };
-
-        for (Type type : types) {
-            Event<CharSequence> event =
-                new Event<>("$(test)");
-            event.with(type);
-
-            assertEquals(
-                type, spare.read(event).getClass()
-            );
-        }
     }
 }

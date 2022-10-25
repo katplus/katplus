@@ -32,7 +32,7 @@ import java.util.Map;
  * @author kraity
  * @since 0.0.3
  */
-public abstract class Caller extends Chain {
+public abstract class Caller extends Alpha {
 
     protected Algo algo;
     protected Plan plan;
@@ -57,7 +57,7 @@ public abstract class Caller extends Chain {
     ) {
         byte[] data;
         try {
-            concat(in, 1024);
+            join(in, 1024);
             data = toBytes();
         } catch (Exception e) {
             data = EMPTY_BYTES;
@@ -70,10 +70,9 @@ public abstract class Caller extends Chain {
                 byte[] it = value;
                 value = EMPTY_BYTES;
                 Bucket bt = bucket;
-                if (bt != null) {
-                    if (it.length != 0) {
-                        bt.share(it);
-                    }
+                if (bt != null &&
+                    it.length != 0) {
+                    bt.join(it);
                 }
                 in.close();
             } catch (Exception e) {
@@ -168,7 +167,7 @@ public abstract class Caller extends Chain {
         Algo algo = algo();
         return supplier.solve(
             klass, algo, new Event<T>(
-                reader()
+                value, 0, count
             ).with(plan)
         );
     }
@@ -187,7 +186,7 @@ public abstract class Caller extends Chain {
 
         return supplier.solve(
             klass, algo, new Event<T>(
-                reader()
+                value, 0, count
             ).with(plan)
         );
     }
@@ -207,7 +206,9 @@ public abstract class Caller extends Chain {
 
         return supplier.solve(
             klass, algo, event.with(
-                reader()
+                new ByteReader(
+                    value, 0, count
+                )
             ).with(plan)
         );
     }

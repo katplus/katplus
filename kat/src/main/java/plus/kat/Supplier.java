@@ -1565,7 +1565,7 @@ public interface Supplier extends Cloneable {
             if (embed == null) {
                 if (klass.isInterface() ||
                     Coder.class.isAssignableFrom(klass) ||
-                    Fitter.class.isAssignableFrom(klass) ||
+                    Entity.class.isAssignableFrom(klass) ||
                     Exception.class.isAssignableFrom(klass)) {
                     return null;
                 }

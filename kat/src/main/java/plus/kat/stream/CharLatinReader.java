@@ -17,17 +17,15 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.kernel.*;
-
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class CharAsciiReader extends CharReader {
+public class CharLatinReader extends CharReader {
     /**
      * @throws NullPointerException If the data is null
      */
-    public CharAsciiReader(
+    public CharLatinReader(
         @NotNull CharSequence data
     ) {
         super(data);
@@ -36,7 +34,7 @@ public class CharAsciiReader extends CharReader {
     /**
      * @throws IndexOutOfBoundsException If the index and the length are out of range
      */
-    public CharAsciiReader(
+    public CharLatinReader(
         @NotNull CharSequence data, int index, int length
     ) {
         super(data, index, length);
@@ -71,14 +69,6 @@ public class CharAsciiReader extends CharReader {
             s.getBytes(
                 begin, begin += cap, tmp, 0
             );
-        } else if (value instanceof Chain) {
-            Chain c = (Chain) value;
-            cap = c.getBytes(
-                begin, tmp, 0, cap
-            );
-            if (cap > 0) {
-                begin += cap;
-            }
         } else {
             for (int i = 0; i < cap; i++) {
                 tmp[i] = (byte) value.charAt(begin++);

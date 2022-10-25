@@ -1,7 +1,6 @@
 package plus.kat.chain;
 
 import org.junit.jupiter.api.Test;
-import plus.kat.stream.Bucket;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,31 +15,12 @@ public class ValueTest {
     }
 
     @Test
-    public void test_set() {
-        Value value = new Value("kat.plus");
-        value.set(3, (byte) '+');
-        assertEquals("kat+plus", value.toString());
-        value.set(-5, (byte) '.');
-        assertEquals("kat.plus", value.toString());
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> value.set(8, (byte) '+'));
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> value.set(-9, (byte) '+'));
-    }
-
-    @Test
-    public void test_isFixed() {
-        Value v0 = new Value("陆之岇");
-        assertFalse(v0.isFixed());
-        assertEquals(9, v0.length());
-
-        Value v1 = v0.copy();
-        assertFalse(v1.isFixed());
-
-        assertFalse(new Value(v0).isFixed());
-        assertFalse(new Value(new Value()).isFixed());
-        assertFalse(new Value(v1.toBytes()).isFixed());
-
-        assertFalse(new Value(v0, null).isFixed());
-        assertFalse(new Value((Bucket) null).isFixed());
+    public void test_digest() {
+        String text = "User{i:id(1)s:name(kraity)}";
+        Value value = new Value(text);
+        assertEquals("d41d8cd98f00b204e9800998ecf8427e", new Value(0).digest());
+        assertEquals("d04f45fd1805ea7a98821bdad6894cb4", value.digest());
+        assertEquals("21707be3777f237901b7edcdd73dc8288a81a4d2", value.digest("SHA1"));
     }
 
     @Test

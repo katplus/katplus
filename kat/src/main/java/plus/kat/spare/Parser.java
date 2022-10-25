@@ -48,7 +48,7 @@ public class Parser implements Proxy, Closeable {
      * solver etc.
      */
     protected Radar radar;
-    protected Solver doc, json;
+    protected Solver dotry, sodar;
 
     /**
      * snapshot etc.
@@ -60,21 +60,25 @@ public class Parser implements Proxy, Closeable {
      * default
      */
     public Parser() {
-        radar = new Radar();
+        radar = new Radar(
+            Space.Buffer.INS,
+            Alias.Buffer.INS,
+            Value.Buffer.INS
+        );
     }
 
     /**
-     * @param b1 the specified {@link Bucket} of {@code Space}
-     * @param b2 the specified {@link Bucket} of {@code Alias}
-     * @param b3 the specified {@link Bucket} of {@code Value}
+     * @param bucket1 the specified {@link Bucket} of {@code Space}
+     * @param bucket2 the specified {@link Bucket} of {@code Alias}
+     * @param bucket3 the specified {@link Bucket} of {@code Value}
      */
     public Parser(
-        @NotNull Bucket b1,
-        @NotNull Bucket b2,
-        @NotNull Bucket b3
+        @NotNull Bucket bucket1,
+        @NotNull Bucket bucket2,
+        @NotNull Bucket bucket3
     ) {
         radar = new Radar(
-            b1, b2, b3
+            bucket1, bucket2, bucket3
         );
     }
 
@@ -172,18 +176,18 @@ public class Parser implements Proxy, Closeable {
                 );
             }
             case "xml": {
-                Solver it = doc;
+                Solver it = dotry;
                 if (it == null) {
-                    doc = it = radar.new Motor();
+                    dotry = it = new Dotry(radar);
                 }
                 return read(
                     it, event
                 );
             }
             case "json": {
-                Solver it = json;
+                Solver it = sodar;
                 if (it == null) {
-                    json = it = radar.new Lidar();
+                    sodar = it = new Sodar(radar);
                 }
                 return read(
                     it, event
@@ -222,7 +226,6 @@ public class Parser implements Proxy, Closeable {
             spare = event.assign(
                 space, alias
             );
-
             child = spare.getBuilder(
                 event.getType()
             );
@@ -247,7 +250,7 @@ public class Parser implements Proxy, Closeable {
      * @throws IOException If an I/O error occurs
      */
     @Override
-    public void accept(
+    public void submit(
         @NotNull Space space,
         @NotNull Alias alias,
         @NotNull Value value
@@ -260,10 +263,6 @@ public class Parser implements Proxy, Closeable {
             Spare<?> spare;
             spare = event.accept(
                 space, alias
-            );
-
-            value.setType(
-                event.getType()
             );
             bundle = spare.read(
                 event, value

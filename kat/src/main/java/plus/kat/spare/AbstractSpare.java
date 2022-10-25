@@ -768,7 +768,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         private String name;
         private Medium<K, ?> near;
 
-        protected Type actual;
+        protected Type scope;
         protected Class<?> clazz;
 
         protected int flags;
@@ -818,7 +818,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             clazz = node.clazz;
             index = node.index;
             flags = node.flags;
-            actual = node.actual;
+            scope = node.scope;
             element = node.element;
         }
 
@@ -836,7 +836,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             this(expose);
             element = field;
             Class<?> type = field.getType();
-            actual = field.getGenericType();
+            scope = field.getGenericType();
             if (!type.isPrimitive()) {
                 clazz = type;
             } else {
@@ -861,12 +861,12 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             element = method;
             switch (method.getParameterCount()) {
                 case 0: {
-                    actual = type = method.getReturnType();
+                    scope = type = method.getReturnType();
                     break;
                 }
                 case 1: {
                     type = method.getParameterTypes()[0];
-                    actual = method.getGenericParameterTypes()[0];
+                    scope = method.getGenericParameterTypes()[0];
                     break;
                 }
                 default: {
@@ -966,8 +966,8 @@ public abstract class AbstractSpare<T> implements Subject<T> {
          * Returns the {@link Type} of {@link V}
          */
         @Override
-        public Type getActual() {
-            return actual;
+        public Type getScope() {
+            return scope;
         }
 
         /**
@@ -1136,7 +1136,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             super(index);
             element = field;
             Class<?> type = field.getType();
-            actual = field.getGenericType();
+            scope = field.getGenericType();
             if (!type.isPrimitive()) {
                 clazz = type;
             } else {
@@ -1156,7 +1156,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             Annotation[] annotations
         ) {
             super(index);
-            this.actual = type;
+            this.scope = type;
             if (!kind.isPrimitive()) {
                 clazz = kind;
             } else {

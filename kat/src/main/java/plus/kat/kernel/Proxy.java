@@ -47,7 +47,7 @@ public interface Proxy {
      *
      * @throws IOException If an I/O error occurs
      */
-    void accept(
+    void submit(
         @NotNull Space space,
         @NotNull Alias alias,
         @NotNull Value value

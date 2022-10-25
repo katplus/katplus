@@ -453,7 +453,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                     if (m == Class.class) {
                         args[i] = member.getType();
                     } else if (m == Type.class) {
-                        args[i] = member.getActual();
+                        args[i] = member.getScope();
                     } else if (m == Expose.class) {
                         args[i] = expose;
                     } else if (m == Supplier.class) {
@@ -502,7 +502,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             @NotNull K bean
         ) {
             throw new FatalCrash(
-                "Unsupported"
+                "Not implemented"
             );
         }
 
@@ -518,7 +518,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
             @Nullable V value
         ) {
             throw new FatalCrash(
-                "Unsupported"
+                "Not implemented"
             );
         }
 
@@ -570,7 +570,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * Returns the actual {@link Type} of {@link V}
          */
         @NotNull
-        default Type getActual() {
+        default Type getScope() {
             return getType();
         }
 
@@ -658,9 +658,6 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                     );
 
                 if (coder != null) {
-                    value.setType(
-                        setter.getActual()
-                    );
                     setter.invoke(
                         bean, coder.read(
                             event, value
@@ -707,7 +704,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
 
                 if (coder != null) {
                     return coder.getBuilder(
-                        setter.getActual()
+                        setter.getScope()
                     );
                 }
             }
@@ -786,9 +783,6 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                     );
 
                 if (coder != null) {
-                    value.setType(
-                        setter.getActual()
-                    );
                     setter.invoke(
                         data, coder.read(
                             event, value
@@ -835,7 +829,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
 
                 if (coder != null) {
                     return coder.getBuilder(
-                        setter.getActual()
+                        setter.getScope()
                     );
                 }
             }
@@ -961,9 +955,6 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                     );
 
                 if (coder != null) {
-                    value.setType(
-                        target.getActual()
-                    );
                     target.invoke(
                         data, coder.read(
                             event, value
@@ -982,10 +973,6 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                         );
 
                     if (coder != null) {
-                        value.setType(
-                            setter.getActual()
-                        );
-
                         Cache<K> ca = new Cache<>();
                         ca.setter = setter;
                         ca.value = coder.read(
@@ -1048,7 +1035,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 );
                 if (coder != null) {
                     return coder.getBuilder(
-                        target.getActual()
+                        target.getScope()
                     );
                 }
             } else {
@@ -1062,7 +1049,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                     );
                     if (coder != null) {
                         return coder.getBuilder(
-                            setter.getActual()
+                            setter.getScope()
                         );
                     }
                 }

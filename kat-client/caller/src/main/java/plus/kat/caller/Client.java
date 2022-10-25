@@ -21,12 +21,12 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.Chain;
+import plus.kat.kernel.*;
 
 import java.io.*;
 import java.net.*;
+import java.net.Proxy;
 
-import static plus.kat.kernel.Alpha.Memory;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -594,15 +594,15 @@ public class Client extends Caller {
     }
 
     /**
-     * @param chain the specified chain
+     * @param alpha the specified alpha
      * @throws IOException If an I/O error occurs
      * @since 0.0.4
      */
     public Client put(
-        Chain chain
+        Alpha alpha
     ) throws IOException {
         return request(
-            "PUT", chain
+            "PUT", alpha
         );
     }
 
@@ -657,15 +657,15 @@ public class Client extends Caller {
     }
 
     /**
-     * @param chain the specified chain
+     * @param alpha the specified alpha
      * @throws IOException If an I/O error occurs
      * @since 0.0.4
      */
     public Client post(
-        Chain chain
+        Alpha alpha
     ) throws IOException {
         return request(
-            "POST", chain
+            "POST", alpha
         );
     }
 
@@ -864,12 +864,12 @@ public class Client extends Caller {
     }
 
     /**
+     * @param alpha  the specified alpha
      * @param method the specified method
-     * @param chain  the specified chain
      * @throws IOException If an I/O error occurs
      */
     protected Client request(
-        String method, Chain chain
+        String method, Alpha alpha
     ) throws IOException {
         try {
             conn.setDoInput(true);
@@ -879,9 +879,9 @@ public class Client extends Caller {
             // connect
             conn.connect();
 
-            if (chain != null) {
+            if (alpha != null) {
                 OutputStream out;
-                chain.update(
+                alpha.each(
                     out = conn.getOutputStream()
                 );
                 out.close();

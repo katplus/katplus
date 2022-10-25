@@ -1,7 +1,6 @@
 package plus.kat.chain;
 
 import org.junit.jupiter.api.Test;
-import plus.kat.stream.Bucket;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,32 +12,6 @@ public class SpaceTest {
         Space space = new Space(name);
         assertSame(name, space.toString());
         assertSame(space.toString(), space.toString());
-    }
-
-    @Test
-    public void test_type() {
-        assertEquals("B", new Space(byte[].class, "B").getTypeName());
-        assertEquals("byte[]", new Space(byte[].class).getTypeName());
-        assertEquals("java.lang.String", new Space(String.class).getTypeName());
-        assertEquals("java.lang.Object", new Space(Object.class).getTypeName());
-    }
-
-    @Test
-    public void test_isFixed() {
-        Space s0 = new Space("陆之岇");
-        assertTrue(s0.isFixed());
-        assertEquals(9, s0.length());
-
-        Space s1 = s0.copy();
-        assertTrue(s1.isFixed());
-        assertTrue(Space.EMPTY.isFixed());
-
-        assertTrue(new Space(s0).isFixed());
-        assertTrue(new Space(new Value()).isFixed());
-        assertTrue(new Space(s1.toBytes()).isFixed());
-
-        assertFalse(new Space((Bucket) null).isFixed());
-        assertFalse(new Space(s0, (Bucket) null).isFixed());
     }
 
     @Test

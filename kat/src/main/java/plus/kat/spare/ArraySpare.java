@@ -437,7 +437,6 @@ public class ArraySpare extends Property<Object> {
             if (length == size) {
                 enlarge();
             }
-            value.setType(elem);
             Array.set(
                 bundle, size++, spare.read(
                     event, value
@@ -541,7 +540,6 @@ public class ArraySpare extends Property<Object> {
                 enlarge();
             }
 
-            value.setType(tag);
             Array.set(
                 bundle, size++, spare0.read(event, value)
             );
@@ -617,7 +615,6 @@ public class ArraySpare extends Property<Object> {
                 }
 
                 if (spare != null) {
-                    value.setType(type);
                     bundle[index] = spare.read(
                         event, value
                     );

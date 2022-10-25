@@ -204,7 +204,7 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
                 while (true) {
                     int i = in.read();
                     if (i > 0x20) {
-                        concat(
+                        join(
                             (byte) i
                         );
                         continue;
@@ -217,7 +217,7 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
                     if (get(-1, LF) == LF) {
                         if (i == -1) break;
                     } else {
-                        concat(LF);
+                        join(LF);
                         if (block != 0) {
                             byte[] it = value;
                             byte data = it[block];

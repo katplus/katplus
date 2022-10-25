@@ -24,17 +24,16 @@ import plus.kat.kernel.*;
 
 import static plus.kat.Algo.*;
 import static plus.kat.kernel.Chain.*;
-import static plus.kat.stream.Binary.*;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public final class Convert {
+public interface Convert {
     /**
      * Parses the {@code UTF8} {@code byte[]} as a {@code char} or {@code def} value
      */
-    public static char toChar(
+    static char toChar(
         @NotNull byte[] it, int len, char def
     ) {
         if (len == 0) {
@@ -47,7 +46,9 @@ public final class Convert {
             if (b1 < 0) {
                 return def;
             }
-            return (char) (b1 & 0xFF);
+            return (char) (
+                b1 & 0xFF
+            );
         }
 
         // 110xxxxx 10xxxxxx
@@ -59,7 +60,9 @@ public final class Convert {
                 return def;
             }
 
-            return (char) (((b1 & 0x1F) << 6) | (b2 & 0x3F));
+            return (char) (
+                b1 << 6 & 0xFC0 | b2 & 0x3F
+            );
         }
 
         // 1110xxxx 10xxxxxx 10xxxxxx
@@ -73,7 +76,9 @@ public final class Convert {
                 return def;
             }
 
-            return (char) (((b1 & 0xF) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F));
+            return (char) (
+                b1 << 12 & 0xF000 | b2 << 6 & 0xFC0 | b3 & 0x3F
+            );
         }
 
         return def;
@@ -88,34 +93,93 @@ public final class Convert {
      * @since 0.0.4
      */
     @NotNull
-    public static char[] toChars(
+    static char[] toChars(
         @NotNull byte[] it, int i, int e
     ) {
-        int size = length(
-            it, i, e
-        );
-
-        if (size == 0) {
+        if (e <= i) {
             return EMPTY_CHARS;
         }
 
-        int len = e - i;
-        char[] ch = new char[size];
+        int n = i, size = 0;
+        for (; i < e; size++) {
+            // next byte
+            byte b = it[i++];
 
-        if (size == len) {
-            for (int m = 0, n = i; n < e; ) {
+            // U+0000 ~ U+007F
+            // 0xxxxxxx
+            if (0 <= b) {
+                continue;
+            }
+
+            // U+0080 ~ U+07FF
+            // 110xxxxx 10xxxxxx
+            if ((b >> 5) == -2) {
+                // overflow
+                if (i >= e) {
+                    return EMPTY_CHARS;
+                }
+
+                // check code
+                if ((it[i++] & 0xC0) != 0x80) {
+                    return EMPTY_CHARS;
+                }
+            }
+
+            // U+0800 ~ U+FFFF
+            // 1110xxxx 10xxxxxx 10xxxxxx
+            else if ((b >> 4) == -2) {
+                // overflow
+                if (i + 1 >= e) {
+                    return EMPTY_CHARS;
+                }
+
+                // check code
+                if ((it[i++] & 0xC0) != 0x80 ||
+                    (it[i++] & 0xC0) != 0x80) {
+                    return EMPTY_CHARS;
+                }
+            }
+
+            // U+10000 ~ U+10FFFF
+            // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
+            // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+            else if ((b >> 3) == -2) {
+                // overflow
+                if (i + 2 >= e) {
+                    return EMPTY_CHARS;
+                }
+
+                // check code
+                if ((it[i++] & 0xC0) != 0x80 ||
+                    (it[i++] & 0xC0) != 0x80 ||
+                    (it[i++] & 0xC0) != 0x80) {
+                    return EMPTY_CHARS;
+                }
+
+                size++; // another of the surrogate pair
+            }
+
+            // Out of current range
+            else {
+                return EMPTY_CHARS;
+            }
+        }
+
+        char[] ch = new char[size];
+        if (size == e - n) {
+            for (int m = 0; n < e; ) {
                 ch[m++] = (char) it[n++];
             }
             return ch;
         }
 
-        for (int m = 0, n = i; n < e; ) {
+        for (int m = 0; n < e; ) {
             // next byte
             byte b = it[n++];
 
             // U+0000 ~ U+007F
             // 0xxxxxxx
-            if (b >= 0) {
+            if (0 <= b) {
                 ch[m++] = (char) b;
             }
 
@@ -123,7 +187,7 @@ public final class Convert {
             // 110xxxxx 10xxxxxx
             else if ((b >> 5) == -2) {
                 ch[m++] = (char) (
-                    (b << 6) | (it[n++] & 0x3F)
+                    b << 6 & 0xFC0 | it[n++] & 0x3F
                 );
             }
 
@@ -131,7 +195,7 @@ public final class Convert {
             // 1110xxxx 10xxxxxx 10xxxxxx
             else if ((b >> 4) == -2) {
                 ch[m++] = (char) (
-                    (b << 12) | ((it[n++] & 0x3F) << 6) | (it[n++] & 0x3F)
+                    b << 12 & 0xF000 | it[n++] << 6 & 0xFC0 | it[n++] & 0x3F
                 );
             }
 
@@ -143,19 +207,16 @@ public final class Convert {
                 byte b2 = it[n++];
                 byte b3 = it[n++];
                 ch[m++] = (char) (
-                    ((0xD8 | (b & 0x03)) << 8) |
-                        ((((b2 - 0x10 >> 2)) & 0x0F) << 4) |
-                        (((b2 & 0x03) << 2) | ((b3 >> 4) & 0x03))
+                    0xD800 | b << 8 & 0x300 | b2 << 2 & 0x0C | b2 - 0x10 << 2 & 0xF0 | b3 >> 4 & 0x03
                 );
 
                 byte b4 = it[n++];
                 ch[m++] = (char) (
-                    ((0xDC | ((b3 >> 2) & 0x03)) << 8) |
-                        ((((b3 & 0x3) << 2) | ((b4 >> 4) & 0x03)) << 4) | (b4 & 0x0F)
+                    0xDC00 | b3 << 6 & 0x3C0 | b4 & 0x3F
                 );
             }
 
-            // beyond the current range
+            // Out of current range
             else {
                 return EMPTY_CHARS;
             }
@@ -169,7 +230,7 @@ public final class Convert {
      *
      * @param rad the radix to be used while parsing {@code byte[]}
      */
-    public static int toInt(
+    static int toInt(
         @NotNull byte[] it, int len, int rad, int def
     ) {
         if (len == 0) {
@@ -258,7 +319,7 @@ public final class Convert {
      * @param rad the radix to be used while parsing {@link CharSequence}
      * @see #toInt(byte[], int, int, int)
      */
-    public static int toInt(
+    static int toInt(
         @NotNull CharSequence it, int len, int rad, int def
     ) {
         if (len == 0) {
@@ -346,7 +407,7 @@ public final class Convert {
      *
      * @param rad radix the radix to be used while parsing {@code byte[]}
      */
-    public static long toLong(
+    static long toLong(
         @NotNull byte[] it, int len, long rad, long def
     ) {
         if (len == 0) {
@@ -435,7 +496,7 @@ public final class Convert {
      * @param rad radix the radix to be used while parsing {@link CharSequence}
      * @see #toLong(byte[], int, long, long)
      */
-    public static long toLong(
+    static long toLong(
         @NotNull CharSequence it, int len, long rad, long def
     ) {
         if (len == 0) {
@@ -522,7 +583,7 @@ public final class Convert {
      * Parses the {@code byte[]} as a {@code float} or {@code def} value
      */
     @SuppressWarnings("deprecation")
-    public static float toFloat(
+    static float toFloat(
         @NotNull byte[] it, int len, float def
     ) {
         switch (len) {
@@ -560,7 +621,7 @@ public final class Convert {
      * Parses the {@code byte[]} as a {@code double} or {@code def} value
      */
     @SuppressWarnings("deprecation")
-    public static double toDouble(
+    static double toDouble(
         @NotNull byte[] it, int len, double def
     ) {
         switch (len) {
@@ -600,7 +661,7 @@ public final class Convert {
      */
     @Nullable
     @SuppressWarnings("deprecation")
-    public static Number toNumber(
+    static Number toNumber(
         @NotNull byte[] it, int len, @Nullable Number def
     ) {
         if (len == 0) {
@@ -685,7 +746,7 @@ public final class Convert {
     /**
      * Parses the {@code byte[]} as a {@code boolean} or {@code def} value
      */
-    public static boolean toBoolean(
+    static boolean toBoolean(
         @NotNull byte[] it, int len, boolean def
     ) {
         switch (len) {
@@ -740,7 +801,7 @@ public final class Convert {
     /**
      * Parses the {@link CharSequence} as a {@code boolean} or {@code def} value
      */
-    public static boolean toBoolean(
+    static boolean toBoolean(
         @NotNull CharSequence it, int len, boolean def
     ) {
         switch (len) {
@@ -801,7 +862,7 @@ public final class Convert {
      * @since 0.0.4
      */
     @Nullable
-    public static <T> T toObject(
+    static <T> T toObject(
         @NotNull Spare<T> spare,
         @Nullable CharSequence text
     ) {
@@ -827,7 +888,7 @@ public final class Convert {
      * @since 0.0.4
      */
     @Nullable
-    public static <T> T toObject(
+    static <T> T toObject(
         @NotNull Class<T> clazz,
         @Nullable CharSequence text
     ) {
@@ -856,7 +917,7 @@ public final class Convert {
      * @since 0.0.4
      */
     @Nullable
-    public static <T> T toObject(
+    static <T> T toObject(
         @NotNull Spare<T> spare,
         @NotNull Flag flag,
         @NotNull CharSequence text
@@ -882,7 +943,7 @@ public final class Convert {
      * @since 0.0.4
      */
     @Nullable
-    public static <T> T toObject(
+    static <T> T toObject(
         @NotNull Spare<T> spare,
         @NotNull CharSequence text,
         @Nullable Flag flag,
@@ -974,13 +1035,15 @@ public final class Convert {
 
         Event<T> event;
         if (text instanceof Chain) {
-            Chain c = (Chain) text;
-            event = new Event<>(
-                flag, c.reader(i, e - i)
-            );
-            if (c instanceof Value) {
-                event.with(
-                    ((Value) c).getType()
+            if (text instanceof Value) {
+                Value v = (Value) text;
+                event = new Event<>(
+                    flag, v.asReader(i, e - i)
+                );
+            } else {
+                Chain c = (Chain) text;
+                event = new Event<>(
+                    flag, new ByteReader(Unsafe.value(c), i, e - i)
                 );
             }
         } else {

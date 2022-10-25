@@ -86,7 +86,9 @@ public class ByteSpare extends Property<Byte> {
         @NotNull Flag flag,
         @NotNull Alias alias
     ) {
-        return (byte) alias.toInt();
+        int i = alias.toInt();
+        return i < Byte.MIN_VALUE
+            || i > Byte.MAX_VALUE ? (byte) 0 : (byte) i;
     }
 
     @Override
@@ -94,7 +96,9 @@ public class ByteSpare extends Property<Byte> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return (byte) value.toInt();
+        int i = value.toInt();
+        return i < Byte.MIN_VALUE
+            || i > Byte.MAX_VALUE ? (byte) 0 : (byte) i;
     }
 
     @Override

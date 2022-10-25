@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -69,7 +70,20 @@ public class BigIntegerSpare extends Property<BigInteger> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.toBigInteger();
+        if (!value.isBlank()) {
+            long num = value.toLong();
+            if (num != 0) {
+                return BigInteger.valueOf(num);
+            }
+            try {
+                return new BigInteger(
+                    value.toString()
+                );
+            } catch (Exception e) {
+                // Nothing
+            }
+        }
+        return BigInteger.ZERO;
     }
 
     @Override
@@ -107,7 +121,21 @@ public class BigIntegerSpare extends Property<BigInteger> {
             }
 
             if (data instanceof Value) {
-                return ((Value) data).toBigInteger();
+                Chain chain = (Chain) data;
+                if (!chain.isBlank()) {
+                    long num = chain.toLong();
+                    if (num != 0) {
+                        return BigInteger.valueOf(num);
+                    }
+                    try {
+                        return new BigInteger(
+                            chain.toString()
+                        );
+                    } catch (Exception e) {
+                        // Nothing
+                    }
+                }
+                return BigInteger.ZERO;
             }
 
             if (data instanceof CharSequence) {

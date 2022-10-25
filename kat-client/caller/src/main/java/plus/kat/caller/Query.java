@@ -20,9 +20,9 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
  * @author kraity
  * @since 0.0.4
  */
-public class Query extends Chain {
+public class Query extends Alpha {
 
-    protected int offset;
+    protected int apex;
 
     public Query() {
         super(16);
@@ -35,8 +35,7 @@ public class Query extends Chain {
         @NotNull byte[] src
     ) {
         super(src);
-        count = value.length;
-        if (offset() == 0) offset = -1;
+        if (apex() == 0) apex = -1;
     }
 
     /**
@@ -48,8 +47,8 @@ public class Query extends Chain {
         super();
         int len = url.length();
         if (len != 0) {
-            concat(url, 0, len);
-            if (offset() == 0) offset = -1;
+            join(url, 0, len);
+            if (apex() == 0) apex = -1;
         }
     }
 
@@ -107,16 +106,16 @@ public class Query extends Chain {
     /**
      * Returns the starting index of the parameter
      */
-    public int offset() {
-        int o = offset;
-        if (o > 0) {
-            return o;
+    public int apex() {
+        int i = apex;
+        if (i > 0) {
+            return i;
         }
         int max = count;
         byte[] it = value;
-        while (o < max) {
-            if (it[o++] == '?') {
-                return offset = o;
+        while (i < max) {
+            if (it[i++] == '?') {
+                return apex = i;
             }
         }
         return 0;
@@ -174,11 +173,13 @@ public class Query extends Chain {
     public Query set(
         byte b
     ) {
-        grow(count + 3);
         asset = 0;
-        value[count++] = '%';
-        value[count++] = upper((b & 0xF0) >> 4);
-        value[count++] = upper(b & 0x0F);
+        byte[] it = grow(
+            count + 3
+        );
+        it[count++] = '%';
+        it[count++] = upper((b & 0xF0) >> 4);
+        it[count++] = upper(b & 0x0F);
         return this;
     }
 
@@ -189,29 +190,22 @@ public class Query extends Chain {
         @NotNull String key
     ) {
         if (count > 0) {
-            if (offset != -1) {
-                super.concat(
+            if (apex != -1) {
+                join(
                     (byte) '&'
                 );
             } else {
-                super.concat(
+                join(
                     (byte) '?'
                 );
-                offset = count;
+                apex = count;
             }
         }
 
-        this.add(key);
-        byte[] it = value;
-
-        if (count != it.length) {
-            asset = 0;
-            it[count++] = '=';
-        } else {
-            grow(count + 1);
-            asset = 0;
-            value[count++] = '=';
-        }
+        add(key);
+        join(
+            (byte) '='
+        );
         return this;
     }
 
@@ -224,17 +218,17 @@ public class Query extends Chain {
         if ((0x60 < b && b < 0x7b) ||
             (0x40 < b && b < 0x5b) ||
             (0x2F < b && b < 0x3A)) {
-            concat(b);
+            join(b);
         } else {
             if (b == ' ') {
-                concat(
+                join(
                     (byte) '+'
                 );
             } else if (b == '.' ||
                 b == '_' ||
                 b == '-' ||
                 b == '*') {
-                concat(b);
+                join(b);
             } else {
                 return set(b);
             }
@@ -277,7 +271,7 @@ public class Query extends Chain {
     public Query add(
         int num
     ) {
-        concat(num);
+        emit(num);
         return this;
     }
 
@@ -287,7 +281,7 @@ public class Query extends Chain {
     public Query add(
         long num
     ) {
-        concat(num);
+        emit(num);
         return this;
     }
 
@@ -317,46 +311,52 @@ public class Query extends Chain {
         grow(count + l);
 
         while (i < k) {
-            // next char
             char d = c.charAt(i++);
 
-            // U+0000 ~ U+007F
             if (d < 0x80) {
                 add((byte) d);
             }
 
             // U+0080 ~ U+07FF
             else if (d < 0x800) {
-                set((byte) ((d >> 6) | 0xC0));
-                set((byte) ((d & 0x3F) | 0x80));
+                set((byte) (d >> 6 | 0xC0));
+                set((byte) (d & 0x3F | 0x80));
             }
 
             // U+10000 ~ U+10FFFF
-            // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-            else if (d >= 0xD800 && d <= 0xDFFF) {
-                if (i >= k) {
-                    set((byte) '?');
-                    break;
-                }
-
-                char f = c.charAt(i++);
-                if (f < 0xDC00 || f > 0xDFFF) {
+            else if (0xD7FF < d && d < 0xE000) {
+                if (d > 0xDBFF) {
                     set((byte) '?');
                     continue;
                 }
 
-                int u = (d << 10) + f - 0x35F_DC00;
-                set((byte) ((u >> 18) | 0xF0));
-                set((byte) (((u >> 12) & 0x3F) | 0x80));
-                set((byte) (((u >> 6) & 0x3F) | 0x80));
-                set((byte) ((u & 0x3F) | 0x80));
+                if (k == i) {
+                    set((byte) '?');
+                    break;
+                }
+
+                char a = c.charAt(i);
+                if (a < 0xDC00 ||
+                    a > 0xDFFF) {
+                    set((byte) '?');
+                    continue;
+                }
+
+                int hi = d - 0xD7C0;
+                int lo = a - 0xDC00;
+
+                i++; // 2 chars
+                set((byte) (hi >> 8 | 0xF0));
+                set((byte) (hi >> 2 & 0x3F | 0x80));
+                set((byte) (lo >> 6 | hi << 4 & 0x30 | 0x80));
+                set((byte) (lo & 0x3F | 0x80));
             }
 
             // U+0800 ~ U+FFFF
             else {
-                set((byte) ((d >> 12) | 0xE0));
-                set((byte) (((d >> 6) & 0x3F) | 0x80));
-                set((byte) ((d & 0x3F) | 0x80));
+                set((byte) (d >> 12 | 0xE0));
+                set((byte) (d >> 6 & 0x3F | 0x80));
+                set((byte) (d & 0x3F | 0x80));
             }
         }
 
@@ -517,7 +517,7 @@ public class Query extends Chain {
      * @since 0.0.4
      */
     public static class Parser
-        extends Chain implements Spoiler {
+        extends Alpha implements Spoiler {
 
         private Query query;
         private String string;
@@ -530,7 +530,7 @@ public class Query extends Chain {
         ) {
             query = it;
             b = false;
-            i = it.offset();
+            i = it.apex();
         }
 
         public Parser(
@@ -630,14 +630,14 @@ public class Query extends Chain {
                 byte b = data[i++];
 
                 if (b == '+') {
-                    concat(
+                    join(
                         (byte) 0x20
                     );
                     continue;
                 }
 
                 if (b != '%') {
-                    concat(b);
+                    join(b);
                     continue;
                 }
 
@@ -651,7 +651,7 @@ public class Query extends Chain {
                         d |= (byte) digit(
                             data[i++]
                         );
-                        concat(d);
+                        join(d);
                     } catch (IOException e) {
                         throw new FatalCrash(e);
                     }
@@ -666,14 +666,14 @@ public class Query extends Chain {
                 char b = c.charAt(i++);
 
                 if (b == '+') {
-                    concat(
+                    join(
                         (byte) 0x20
                     );
                     continue;
                 }
 
                 if (b != '%') {
-                    concat(b);
+                    join(b);
                     continue;
                 }
 
@@ -687,7 +687,7 @@ public class Query extends Chain {
                         d |= (byte) digit(
                             (byte) c.charAt(i++)
                         );
-                        concat(d);
+                        join(d);
                     } catch (IOException e) {
                         throw new FatalCrash(e);
                     }

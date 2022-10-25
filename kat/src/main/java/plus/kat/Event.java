@@ -619,27 +619,27 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * @see CharAsciiReader#CharAsciiReader(CharSequence)
+     * @see CharLatinReader#CharLatinReader(CharSequence)
      */
     @NotNull
-    public static <T> Event<T> ascii(
+    public static <T> Event<T> latin(
         @NotNull CharSequence data
     ) {
         return new Event<>(
-            new CharAsciiReader(data)
+            new CharLatinReader(data)
         );
     }
 
     /**
      * @throws IndexOutOfBoundsException If the index and the length are out of range
-     * @see CharAsciiReader#CharAsciiReader(CharSequence, int, int)
+     * @see CharLatinReader#CharLatinReader(CharSequence, int, int)
      */
     @NotNull
-    public static <T> Event<T> ascii(
+    public static <T> Event<T> latin(
         @NotNull CharSequence data, int index, int length
     ) {
         return new Event<>(
-            new CharAsciiReader(
+            new CharLatinReader(
                 data, index, length
             )
         );

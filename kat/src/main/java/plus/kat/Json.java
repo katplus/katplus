@@ -29,6 +29,7 @@ import java.util.Set;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
+import static plus.kat.stream.Binary.upper;
 
 /**
  * @author kraity
@@ -125,7 +126,7 @@ public class Json extends Steam implements Chan {
     }
 
     /**
-     * Serializes the specified alias and fitter at the current hierarchy
+     * Serializes the specified alias and value at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -133,15 +134,15 @@ public class Json extends Steam implements Chan {
     @Override
     public boolean set(
         @Nullable String alias,
-        @Nullable Fitter fitter
+        @Nullable Entity value
     ) throws IOException {
         return set(
-            alias, "M", fitter
+            alias, "M", value
         );
     }
 
     /**
-     * Serializes the specified alias, space and fitter at the current hierarchy
+     * Serializes the specified alias, space and value at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -150,12 +151,12 @@ public class Json extends Steam implements Chan {
     public boolean set(
         @Nullable String alias,
         @Nullable String space,
-        @Nullable Fitter fitter
+        @Nullable Entity value
     ) throws IOException {
         if (blank) {
             blank = false;
         } else {
-            concat(
+            join(
                 (byte) ','
             );
         }
@@ -163,8 +164,9 @@ public class Json extends Steam implements Chan {
         short d = depth;
         if (d > 0) {
             int i = d + 1;
-            grow(count + i * 2);
-            byte[] it = value;
+            byte[] it = grow(
+                count + i * 2
+            );
             it[count++] = '\n';
             while (--i != 0) {
                 it[count++] = ' ';
@@ -173,37 +175,42 @@ public class Json extends Steam implements Chan {
         }
 
         if (alias != null) {
-            concat((byte) '"');
+            join((byte) '"');
             emit(alias);
-            concat((byte) '"');
-            concat((byte) ':');
+            join((byte) '"');
+            join((byte) ':');
         }
 
-        if (fitter == null) {
-            grow(count + 4);
+        if (value == null) {
             asset = 0;
-            value[count++] = 'n';
-            value[count++] = 'u';
-            value[count++] = 'l';
-            value[count++] = 'l';
+            byte[] it = grow(
+                count + 4
+            );
+            it[count++] = 'n';
+            it[count++] = 'u';
+            it[count++] = 'l';
+            it[count++] = 'l';
             return true;
         }
 
-        concat(LB);
+        join(LB);
         blank = true;
         if (d < 0) {
-            fitter.accept(this);
+            value.serial(this);
         } else {
             ++depth;
-            fitter.accept(this);
+            value.serial(this);
             --depth;
             if (d == 0) {
-                grow(count + 1);
-                value[count++] = '\n';
+                byte[] it = grow(
+                    count + 2
+                );
+                it[count++] = '\n';
             } else {
                 int i = d + 1;
-                grow(count + i * 2);
-                byte[] it = value;
+                byte[] it = grow(
+                    count + i * 2
+                );
                 it[count++] = '\n';
                 while (--i != 0) {
                     it[count++] = ' ';
@@ -211,12 +218,12 @@ public class Json extends Steam implements Chan {
                 }
             }
         }
-        concat(RB);
+        join(RB);
         return true;
     }
 
     /**
-     * Serializes the specified alias, coder and object at the current hierarchy
+     * Serializes the specified alias, coder and value at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -225,42 +232,42 @@ public class Json extends Steam implements Chan {
     public boolean set(
         @Nullable String alias,
         @Nullable Coder<?> coder,
-        @Nullable Object object
+        @Nullable Object value
     ) throws IOException {
-        if (object == null) {
+        if (value == null) {
             return set(
                 alias, "$", null
             );
         }
 
         if (coder == null) {
-            // search for the spare of object
+            // search for the spare of value
             coder = supplier.lookup(
-                object.getClass()
+                value.getClass()
             );
 
             // solving the coder problem again
             if (coder == null) {
-                if (object instanceof Fitter) {
+                if (value instanceof Entity) {
                     return set(
-                        alias, (Fitter) object
+                        alias, (Entity) value
                     );
                 }
 
-                if (object instanceof Optional) {
-                    Optional<?> o = (Optional<?>) object;
+                if (value instanceof Optional) {
+                    Optional<?> o = (Optional<?>) value;
                     return set(
                         alias, null, o.orElse(null)
                     );
                 }
 
-                if (object instanceof Exception) {
+                if (value instanceof Exception) {
                     coder = ErrorSpare.INSTANCE;
-                } else if (object instanceof Map) {
+                } else if (value instanceof Map) {
                     coder = MapSpare.INSTANCE;
-                } else if (object instanceof Set) {
+                } else if (value instanceof Set) {
                     coder = SetSpare.INSTANCE;
-                } else if (object instanceof Iterable) {
+                } else if (value instanceof Iterable) {
                     coder = ListSpare.INSTANCE;
                 } else {
                     return set(
@@ -273,7 +280,7 @@ public class Json extends Steam implements Chan {
         if (blank) {
             blank = false;
         } else {
-            concat(
+            join(
                 (byte) ','
             );
         }
@@ -281,8 +288,9 @@ public class Json extends Steam implements Chan {
         short d = depth;
         if (d > 0) {
             int i = d + 1;
-            grow(count + i * 2);
-            byte[] it = value;
+            byte[] it = grow(
+                count + i * 2
+            );
             it[count++] = '\n';
             while (--i != 0) {
                 it[count++] = ' ';
@@ -291,10 +299,10 @@ public class Json extends Steam implements Chan {
         }
 
         if (alias != null) {
-            concat((byte) '"');
+            join((byte) '"');
             emit(alias);
-            concat((byte) '"');
-            concat((byte) ':');
+            join((byte) '"');
+            join((byte) ':');
         }
 
         Boolean flag = coder.getFlag();
@@ -302,37 +310,40 @@ public class Json extends Steam implements Chan {
             if (Boolean.FALSE ==
                 coder.getBorder(this)) {
                 coder.write(
-                    (Flow) this, object
+                    (Flow) this, value
                 );
             } else {
-                concat((byte) '"');
+                join((byte) '"');
                 coder.write(
-                    (Flow) this, object
+                    (Flow) this, value
                 );
-                concat((byte) '"');
+                join((byte) '"');
             }
         } else {
-            concat(
+            join(
                 flag ? LB : LP
             );
             blank = true;
             if (d < 0) {
                 coder.write(
-                    (Chan) this, object
+                    (Chan) this, value
                 );
             } else {
                 ++depth;
                 coder.write(
-                    (Chan) this, object
+                    (Chan) this, value
                 );
                 --depth;
                 if (d == 0) {
-                    grow(count + 1);
-                    value[count++] = '\n';
+                    byte[] it = grow(
+                        count + 2
+                    );
+                    it[count++] = '\n';
                 } else {
                     int i = d + 1;
-                    grow(count + i * 2);
-                    byte[] it = value;
+                    byte[] it = grow(
+                        count + i * 2
+                    );
                     it[count++] = '\n';
                     while (--i != 0) {
                         it[count++] = ' ';
@@ -340,7 +351,7 @@ public class Json extends Steam implements Chan {
                     }
                 }
             }
-            concat(
+            join(
                 flag ? RB : RP
             );
         }
@@ -367,65 +378,186 @@ public class Json extends Steam implements Chan {
      * Concatenates the byte value to this {@link Json},
      * which will be escaped if it is a special character
      *
-     * @param bt the specified byte value to be appended
+     * @param data the specified byte value to be appended
      */
     @Override
     public void emit(
-        byte bt
+        byte data
     ) throws IOException {
-        if (bt < 0x5D) {
-            if (bt > 0x1F) {
-                if (bt == '"' ||
-                    bt == '\\') {
-                    concat(
-                        (byte) '\\'
-                    );
+        asset = 0;
+        byte[] it = value;
+
+        switch (data) {
+            case 0x5C:
+            case 0x22: {
+                break;
+            }
+            case 0x08: {
+                data = 'b';
+                break;
+            }
+            case 0x09: {
+                data = 't';
+                break;
+            }
+            case 0x0A: {
+                data = 'n';
+                break;
+            }
+            case 0x0C: {
+                data = 'f';
+                break;
+            }
+            case 0x0D: {
+                data = 'r';
+                break;
+            }
+            case 0x20:
+            case 0x21:
+            case 0x23:
+            case 0x24:
+            case 0x25:
+            case 0x26:
+            case 0x27:
+            case 0x28:
+            case 0x29:
+            case 0x2A:
+            case 0x2B:
+            case 0x2C:
+            case 0x2D:
+            case 0x2E:
+            case 0x2F:
+            case 0x30:
+            case 0x31:
+            case 0x32:
+            case 0x33:
+            case 0x34:
+            case 0x35:
+            case 0x36:
+            case 0x37:
+            case 0x38:
+            case 0x39:
+            case 0x3A:
+            case 0x3B:
+            case 0x3C:
+            case 0x3D:
+            case 0x3E:
+            case 0x3F:
+            case 0x40:
+            case 0x41:
+            case 0x42:
+            case 0x43:
+            case 0x44:
+            case 0x45:
+            case 0x46:
+            case 0x47:
+            case 0x48:
+            case 0x49:
+            case 0x4A:
+            case 0x4B:
+            case 0x4C:
+            case 0x4D:
+            case 0x4E:
+            case 0x4F:
+            case 0x50:
+            case 0x51:
+            case 0x52:
+            case 0x53:
+            case 0x54:
+            case 0x55:
+            case 0x56:
+            case 0x57:
+            case 0x58:
+            case 0x59:
+            case 0x5A:
+            case 0x5B:
+            case 0x5D:
+            case 0x5E:
+            case 0x5F:
+            case 0x60:
+            case 0x61:
+            case 0x62:
+            case 0x63:
+            case 0x64:
+            case 0x65:
+            case 0x66:
+            case 0x67:
+            case 0x68:
+            case 0x69:
+            case 0x6A:
+            case 0x6B:
+            case 0x6C:
+            case 0x6D:
+            case 0x6E:
+            case 0x6F:
+            case 0x70:
+            case 0x71:
+            case 0x72:
+            case 0x73:
+            case 0x74:
+            case 0x75:
+            case 0x76:
+            case 0x77:
+            case 0x78:
+            case 0x79:
+            case 0x7A:
+            case 0x7B:
+            case 0x7C:
+            case 0x7D:
+            case 0x7E: {
+                if (count == it.length)
+                    it = grow(count + 1);
+                it[count++] = data;
+                return;
+            }
+            case 0x00:
+            case 0x01:
+            case 0x02:
+            case 0x03:
+            case 0x04:
+            case 0x05:
+            case 0x06:
+            case 0x07:
+            case 0x0B:
+            case 0x0E:
+            case 0x0F:
+            case 0x10:
+            case 0x11:
+            case 0x12:
+            case 0x13:
+            case 0x14:
+            case 0x15:
+            case 0x16:
+            case 0x17:
+            case 0x18:
+            case 0x19:
+            case 0x1A:
+            case 0x1B:
+            case 0x1C:
+            case 0x1D:
+            case 0x1E:
+            case 0x1F:
+            case 0x7F: {
+                int size = count + 6;
+                if (size > it.length) {
+                    it = grow(size);
                 }
-            } else {
-                switch (bt) {
-                    case '\b': {
-                        bt = 'b';
-                        break;
-                    }
-                    case '\f': {
-                        bt = 'f';
-                        break;
-                    }
-                    case '\t': {
-                        bt = 't';
-                        break;
-                    }
-                    case '\r': {
-                        bt = 'r';
-                        break;
-                    }
-                    case '\n': {
-                        bt = 'n';
-                        break;
-                    }
-                    default: {
-                        concat(
-                            (char) bt,
-                            (byte) '\\'
-                        );
-                        return;
-                    }
-                }
-                concat(
-                    (byte) '\\'
-                );
+                it[count++] = '\\';
+                it[count++] = 'u';
+                it[count++] = '0';
+                it[count++] = '0';
+                it[count++] = upper((data >> 4) & 0x0F);
+                it[count++] = upper(data & 0x0F);
+                return;
             }
         }
 
-        byte[] it = value;
-        if (count != it.length) {
-            asset = 0;
-            it[count++] = bt;
-        } else {
-            grow(count + 1);
-            asset = 0;
-            value[count++] = bt;
+        int size = count + 2;
+        if (size > it.length) {
+            it = grow(size);
         }
+        it[count++] = '\\';
+        it[count++] = data;
     }
 
     /**

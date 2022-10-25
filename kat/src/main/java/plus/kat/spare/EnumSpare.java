@@ -161,7 +161,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
                 }
             }
 
-            if (alias.isNotBlank()) {
+            if (!alias.isBlank()) {
                 for (K em : e) {
                     if (alias.equals(em.name())) {
                         return em;
@@ -186,7 +186,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
                 }
             }
 
-            if (value.isNotBlank()) {
+            if (!value.isBlank()) {
                 for (K em : e) {
                     if (value.equals(em.name())) {
                         return em;
@@ -243,7 +243,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
                 K[] e = enums;
                 if (e != null) {
                     Chain c = (Chain) data;
-                    if (c.isNotBlank()) {
+                    if (!c.isBlank()) {
                         for (K em : e) {
                             if (c.equals(em.name())) {
                                 return em;

@@ -24,36 +24,36 @@ import plus.kat.crash.*;
  */
 public interface Bucket {
     /**
-     * Share the specified old buffer array with bucket
+     * Shares the specified old buffer array to bucket
      *
      * @param old the specified array that will be shared
      * @return {@code true} if successful
      */
-    boolean share(
+    boolean join(
         @NotNull byte[] old
     );
 
     /**
-     * Return old buffer array and return small buffer array
+     * Releases the old buffer array and returns small buffer array
      *
      * @param old the specified array that will be released
      */
     @NotNull
-    byte[] swop(
+    byte[] swap(
         @NotNull byte[] old
     );
 
     /**
-     * Apply for a buffer array of the minimum size and copy
-     * it from old buffer array, and then recycle the old buffer array
+     * Requests for a buffer array of the specified minimum size and
+     * copy it from the old buffer array, and then recycles the old buffer array
      *
      * @param old  the specified array that will be released
-     * @param len  the specified length of buffer array
+     * @param len  the specified length of old buffer array
      * @param size the specified minimum size of buffer array
      * @throws FatalCrash If a fatal error occurs in the process
      */
     @NotNull
-    byte[] apply(
+    byte[] alloc(
         @NotNull byte[] old, int len, int size
     );
 }

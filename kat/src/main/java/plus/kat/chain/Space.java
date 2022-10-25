@@ -20,8 +20,6 @@ import plus.kat.anno.Nullable;
 
 import java.lang.reflect.*;
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
 
 import plus.kat.crash.*;
 import plus.kat.kernel.*;
@@ -34,71 +32,27 @@ import static java.nio.charset.StandardCharsets.*;
  * @author kraity
  * @since 0.0.1
  */
-public final class Space extends Alpha implements Type {
+public class Space extends Alpha implements Type {
     /**
-     * empty space
+     * Constructs an empty space
      */
-    public static final Space
-        EMPTY = new Space();
-
-    public static final Space $ = new Space(Object.class, "$");
-    public static final Space $s = new Space(String.class, "s");
-    public static final Space $M = new Space(Map.class, "M");
-    public static final Space $L = new Space(List.class, "L");
-
-    /**
-     * For internal use
-     */
-    private Space() {
-        super(true);
+    public Space() {
+        super();
     }
 
     /**
-     * Constructs a final fixed space
+     * Constructs a mutable space
      *
-     * @param type the specified type
-     */
-    public Space(
-        @NotNull Type type
-    ) {
-        this(
-            type, type.getTypeName()
-        );
-    }
-
-    /**
-     * Constructs a final fixed space
-     *
-     * @param type the specified type
-     * @param name the specified name of type
-     */
-    public Space(
-        @NotNull Type type,
-        @NotNull String name
-    ) {
-        super(
-            Binary.latin(name)
-        );
-        backup = name;
-        asset |= 0x80000002;
-        this.type = type;
-        this.count = value.length;
-    }
-
-    /**
-     * Constructs a final fixed space
-     *
-     * @param data the initial byte array
+     * @param data the specified array to be used
      */
     public Space(
         @NotNull byte[] data
     ) {
         super(data);
-        asset |= Integer.MIN_VALUE;
     }
 
     /**
-     * Constructs a final fixed space
+     * Constructs a mutable space
      *
      * @param chain the specified chain to be used
      */
@@ -106,11 +60,10 @@ public final class Space extends Alpha implements Type {
         @NotNull Chain chain
     ) {
         super(chain);
-        asset |= Integer.MIN_VALUE;
     }
 
     /**
-     * Constructs a final fixed space
+     * Constructs a mutable space
      *
      * @param space the specified space to be used
      */
@@ -118,7 +71,6 @@ public final class Space extends Alpha implements Type {
         @NotNull Space space
     ) {
         super(space);
-        asset |= Integer.MIN_VALUE;
     }
 
     /**
@@ -135,28 +87,12 @@ public final class Space extends Alpha implements Type {
     /**
      * Constructs a mutable space
      *
-     * @param chain  the specified chain to be used
-     * @param bucket the specified bucket to be used
-     */
-    public Space(
-        @NotNull Chain chain,
-        @Nullable Bucket bucket
-    ) {
-        super(
-            chain, bucket
-        );
-    }
-
-    /**
-     * Constructs a final fixed space
-     *
      * @param sequence the specified sequence to be used
      */
     public Space(
         @Nullable CharSequence sequence
     ) {
         super(sequence);
-        asset |= Integer.MIN_VALUE;
     }
 
     /**
@@ -184,22 +120,99 @@ public final class Space extends Alpha implements Type {
     }
 
     /**
-     * Returns a string describing this {@link Space}
+     * Uses this space directly
+     * as the specified name {@link Space}
+     *
+     * <pre>{@code
+     *   Space space = ...
+     *   space.as((byte) 'M'); // the space: M
+     *   space.as((byte) 'L'); // the space: L
+     * }</pre>
+     *
+     * @param name the specified name
      */
-    @Override
-    public String getTypeName() {
-        return toString();
+    public Space as(byte name) {
+        count = 0;
+        join(name);
+        return this;
     }
 
     /**
-     * Returns true if and only if
-     * the chain is describing class
+     * Uses this space directly
+     * as the specified name {@link Space}
      *
-     * @since 0.0.5
+     * <pre>{@code
+     *   Space space = ...
+     *   space.as('M'); // the space: M
+     *   space.as('L'); // the space: L
+     * }</pre>
+     *
+     * @param name the specified name
      */
-    @Override
-    public boolean isSpace() {
-        return true;
+    public Space as(char name) {
+        count = 0;
+        join(name);
+        return this;
+    }
+
+    /**
+     * Uses this space directly
+     * as the specified name {@link Space}
+     *
+     * <pre>{@code
+     *   Space space = ...
+     *   space.as("plus.kat.User"); // the space: plus.kat.User
+     *   space.as("plus.kat.Entity"); // the space: plus.kat.Entity
+     * }</pre>
+     *
+     * @param name the specified name
+     */
+    public Space as(CharSequence name) {
+        count = 0;
+        join(
+            name, 0, name.length()
+        );
+        return this;
+    }
+
+    /**
+     * Returns a true only
+     * if this chain is {@code '$'}
+     */
+    public boolean isAny() {
+        return count == 1 && value[0] == '$';
+    }
+
+    /**
+     * Returns a true only
+     * if this chain is {@code 'M'}
+     */
+    public boolean isMap() {
+        return count == 1 && value[0] == 'M';
+    }
+
+    /**
+     * Returns a true only
+     * if this chain is {@code 'S'}
+     */
+    public boolean isSet() {
+        return count == 1 && value[0] == 'S';
+    }
+
+    /**
+     * Returns a true only
+     * if this chain is {@code 'L'}
+     */
+    public boolean isList() {
+        return count == 1 && value[0] == 'L';
+    }
+
+    /**
+     * Returns a true only
+     * if this chain is {@code 'A'}
+     */
+    public boolean isArray() {
+        return count == 1 && value[0] == 'A';
     }
 
     /**
@@ -370,87 +383,6 @@ public final class Space extends Alpha implements Type {
     }
 
     /**
-     * Returns a true only
-     * if this chain is the name
-     *
-     * @param name the name to be compared
-     */
-    @Override
-    public boolean is(
-        byte name
-    ) {
-        return count == 1 &&
-            value[0] == name;
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is the name
-     *
-     * @param name the name to be compared
-     */
-    @Override
-    public boolean is(
-        char name
-    ) {
-        return count == 1 &&
-            value[0] == name;
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is {@code '$'}
-     */
-    public boolean isAny() {
-        return count == 1 &&
-            value[0] == '$';
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is {@code 'M'}
-     */
-    public boolean isMap() {
-        return count == 1 &&
-            value[0] == 'M';
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is {@code 'S'}
-     */
-    public boolean isSet() {
-        return count == 1 &&
-            value[0] == 'S';
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is {@code 'L'}
-     */
-    public boolean isList() {
-        return count == 1 &&
-            value[0] == 'L';
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is {@code 'A'}
-     */
-    public boolean isArray() {
-        return count == 1 &&
-            value[0] == 'A';
-    }
-
-    /**
-     * Returns a fixed space of clone this {@link Space}
-     */
-    @NotNull
-    public Space copy() {
-        return count == 0 ? EMPTY : new Space(this);
-    }
-
-    /**
      * @see Space#Space(Bucket)
      */
     public static Space apply() {
@@ -477,21 +409,21 @@ public final class Space extends Alpha implements Type {
             INS = new Buffer();
 
         @Override
-        public boolean share(
+        public boolean join(
             @NotNull byte[] it
         ) {
             return false;
         }
 
         @Override
-        public byte[] swop(
+        public byte[] swap(
             @NotNull byte[] it
         ) {
             return it;
         }
 
         @Override
-        public byte[] apply(
+        public byte[] alloc(
             @NotNull byte[] it, int len, int size
         ) {
             if (size <= RANGE) {

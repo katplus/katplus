@@ -69,7 +69,16 @@ public class BigDecimalSpare extends Property<BigDecimal> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.toBigDecimal();
+        if (!value.isBlank()) {
+            try {
+                return new BigDecimal(
+                    value.toString()
+                );
+            } catch (Exception e) {
+                // Nothing
+            }
+        }
+        return BigDecimal.ZERO;
     }
 
     @Override
@@ -113,10 +122,6 @@ public class BigDecimalSpare extends Property<BigDecimal> {
 
             if (data instanceof Boolean) {
                 return ((boolean) data) ? BigDecimal.ONE : BigDecimal.ZERO;
-            }
-
-            if (data instanceof Value) {
-                return ((Value) data).toBigDecimal();
             }
 
             if (data instanceof CharSequence) {

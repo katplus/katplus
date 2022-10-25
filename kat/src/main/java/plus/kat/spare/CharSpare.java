@@ -22,9 +22,12 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.kernel.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author kraity
@@ -78,7 +81,9 @@ public class CharSpare extends Property<Character> {
         @NotNull Flag flag,
         @NotNull Alias alias
     ) {
-        return alias.toChar();
+        return Convert.toChar(
+            Unsafe.value(alias), alias.length(), '\0'
+        );
     }
 
     @NotNull
@@ -87,7 +92,9 @@ public class CharSpare extends Property<Character> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.toChar();
+        return Convert.toChar(
+            Unsafe.value(value), value.length(), '\0'
+        );
     }
 
     @Override
@@ -119,7 +126,18 @@ public class CharSpare extends Property<Character> {
             }
 
             if (data instanceof Chain) {
-                return ((Chain) data).toChar();
+                Chain chain = (Chain) data;
+                int len = chain.length();
+                if (chain.charset() != UTF_8) {
+                    if (len != 1) {
+                        return '\0';
+                    }
+                    return chain.charAt(0);
+                } else {
+                    return Convert.toChar(
+                        Unsafe.value(chain), len, '\0'
+                    );
+                }
             }
 
             if (data instanceof CharSequence) {

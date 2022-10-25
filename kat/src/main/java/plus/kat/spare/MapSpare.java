@@ -402,9 +402,7 @@ public class MapSpare extends Property<Map> {
                 }
             }
 
-            value.setType(val);
             Spare<?> s0 = spare0;
-
             if (s0 == null) {
                 bundle.put(
                     alias.toString(),
@@ -413,7 +411,6 @@ public class MapSpare extends Property<Map> {
                     )
                 );
             } else {
-                alias.setType(key);
                 bundle.put(
                     s0.read(
                         event, alias

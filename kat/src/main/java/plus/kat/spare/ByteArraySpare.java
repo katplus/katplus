@@ -62,7 +62,7 @@ public class ByteArraySpare extends Property<byte[]> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.decrypt(
+        return value.decode(
             Base64.mime()
         );
     }

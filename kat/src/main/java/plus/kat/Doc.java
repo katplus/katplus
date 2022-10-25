@@ -119,7 +119,7 @@ public class Doc extends Steam implements Chan {
     }
 
     /**
-     * Serializes the specified alias and fitter at the current hierarchy
+     * Serializes the specified alias and value at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -127,15 +127,15 @@ public class Doc extends Steam implements Chan {
     @Override
     public boolean set(
         @Nullable String alias,
-        @Nullable Fitter fitter
+        @Nullable Entity value
     ) throws IOException {
         return set(
-            alias, "items", fitter
+            alias, "items", value
         );
     }
 
     /**
-     * Serializes the specified alias, space and fitter at the current hierarchy
+     * Serializes the specified alias, space and value at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -144,7 +144,7 @@ public class Doc extends Steam implements Chan {
     public boolean set(
         @Nullable String alias,
         @Nullable String space,
-        @Nullable Fitter fitter
+        @Nullable Entity value
     ) throws IOException {
         if (alias == null) {
             if (space == null) {
@@ -159,8 +159,9 @@ public class Doc extends Steam implements Chan {
             ++depth;
             if (d != 0) {
                 int i = d + 1;
-                grow(count + i * 2);
-                byte[] it = value;
+                byte[] it = grow(
+                    count + i * 2
+                );
                 it[count++] = '\n';
                 while (--i != 0) {
                     it[count++] = ' ';
@@ -169,23 +170,25 @@ public class Doc extends Steam implements Chan {
             }
         }
 
-        concat((byte) '<');
+        join((byte) '<');
         emit(alias);
-        concat((byte) '>');
+        join((byte) '>');
 
-        if (fitter != null) {
-            fitter.accept(this);
+        if (value != null) {
+            value.serial(this);
         }
 
         if (0 <= d) {
             --depth;
             if (d == 0) {
-                grow(count + 1);
-                value[count++] = '\n';
+                byte[] it = grow(
+                    count + 2
+                );
+                it[count++] = '\n';
             } else {
                 int i = d + 1;
                 grow(count + i * 2);
-                byte[] it = value;
+                byte[] it = this.value;
                 it[count++] = '\n';
                 while (--i != 0) {
                     it[count++] = ' ';
@@ -194,15 +197,15 @@ public class Doc extends Steam implements Chan {
             }
         }
 
-        concat((byte) '<');
-        concat((byte) '/');
+        join((byte) '<');
+        join((byte) '/');
         emit(alias);
-        concat((byte) '>');
+        join((byte) '>');
         return true;
     }
 
     /**
-     * Serializes the specified alias, coder and object at the current hierarchy
+     * Serializes the specified alias, coder and value at the current hierarchy
      *
      * @return {@code true} if successful
      * @throws IOException If an I/O error occurs
@@ -211,42 +214,42 @@ public class Doc extends Steam implements Chan {
     public boolean set(
         @Nullable String alias,
         @Nullable Coder<?> coder,
-        @Nullable Object object
+        @Nullable Object value
     ) throws IOException {
-        if (object == null) {
+        if (value == null) {
             return set(
                 alias, "item", null
             );
         }
 
         if (coder == null) {
-            // search for the spare of object
+            // search for the spare of value
             coder = supplier.lookup(
-                object.getClass()
+                value.getClass()
             );
 
             // solving the coder problem again
             if (coder == null) {
-                if (object instanceof Fitter) {
+                if (value instanceof Entity) {
                     return set(
-                        alias, (Fitter) object
+                        alias, (Entity) value
                     );
                 }
 
-                if (object instanceof Optional) {
-                    Optional<?> o = (Optional<?>) object;
+                if (value instanceof Optional) {
+                    Optional<?> o = (Optional<?>) value;
                     return set(
                         alias, null, o.orElse(null)
                     );
                 }
 
-                if (object instanceof Exception) {
+                if (value instanceof Exception) {
                     coder = ErrorSpare.INSTANCE;
-                } else if (object instanceof Map) {
+                } else if (value instanceof Map) {
                     coder = MapSpare.INSTANCE;
-                } else if (object instanceof Set) {
+                } else if (value instanceof Set) {
                     coder = SetSpare.INSTANCE;
-                } else if (object instanceof Iterable) {
+                } else if (value instanceof Iterable) {
                     coder = ListSpare.INSTANCE;
                 } else {
                     return set(
@@ -266,8 +269,9 @@ public class Doc extends Steam implements Chan {
             if (flag != null) ++depth;
             if (d != 0) {
                 int i = d + 1;
-                grow(count + i * 2);
-                byte[] it = value;
+                byte[] it = grow(
+                    count + i * 2
+                );
                 it[count++] = '\n';
                 while (--i != 0) {
                     it[count++] = ' ';
@@ -276,27 +280,30 @@ public class Doc extends Steam implements Chan {
             }
         }
 
-        concat((byte) '<');
+        join((byte) '<');
         emit(alias);
-        concat((byte) '>');
+        join((byte) '>');
 
         if (flag == null) {
             coder.write(
-                (Flow) this, object
+                (Flow) this, value
             );
         } else {
             coder.write(
-                (Chan) this, object
+                (Chan) this, value
             );
             if (0 <= d) {
                 --depth;
                 if (d == 0) {
-                    grow(count + 1);
-                    value[count++] = '\n';
+                    byte[] it = grow(
+                        count + 2
+                    );
+                    it[count++] = '\n';
                 } else {
                     int i = d + 1;
-                    grow(count + i * 2);
-                    byte[] it = value;
+                    byte[] it = grow(
+                        count + i * 2
+                    );
                     it[count++] = '\n';
                     while (--i != 0) {
                         it[count++] = ' ';
@@ -306,10 +313,10 @@ public class Doc extends Steam implements Chan {
             }
         }
 
-        concat((byte) '<');
-        concat((byte) '/');
+        join((byte) '<');
+        join((byte) '/');
         emit(alias);
-        concat((byte) '>');
+        join((byte) '>');
         return true;
     }
 
@@ -342,8 +349,9 @@ public class Doc extends Steam implements Chan {
         asset = 0;
         switch (bt) {
             case '<': {
-                grow(count + 4);
-                byte[] it = value;
+                byte[] it = grow(
+                    count + 4
+                );
                 it[count++] = '&';
                 it[count++] = 'l';
                 it[count++] = 't';
@@ -351,8 +359,9 @@ public class Doc extends Steam implements Chan {
                 return;
             }
             case '>': {
-                grow(count + 4);
-                byte[] it = value;
+                byte[] it = grow(
+                    count + 4
+                );
                 it[count++] = '&';
                 it[count++] = 'g';
                 it[count++] = 't';
@@ -360,8 +369,9 @@ public class Doc extends Steam implements Chan {
                 return;
             }
             case '&': {
-                grow(count + 5);
-                byte[] it = value;
+                byte[] it = grow(
+                    count + 4
+                );
                 it[count++] = '&';
                 it[count++] = 'a';
                 it[count++] = 'm';
@@ -374,8 +384,7 @@ public class Doc extends Steam implements Chan {
                 if (count != it.length) {
                     it[count++] = bt;
                 } else {
-                    grow(count + 1);
-                    value[count++] = bt;
+                    grow(count + 1)[count++] = bt;
                 }
             }
         }

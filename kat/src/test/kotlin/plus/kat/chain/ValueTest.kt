@@ -14,6 +14,6 @@ class ValueKtTest {
 
         assertFalse(value.`is`('k'))
         assertTrue(value.`is`(3, '.'))
-        assertTrue(value.`is`("kat.plus"))
+        assertFalse(value.`is`(3, '@'))
     }
 }

@@ -24,14 +24,15 @@ import java.io.IOException;
  * @since 0.0.5
  */
 @FunctionalInterface
-public interface Fitter {
+public interface Entity {
     /**
      * Serializes this at the current hierarchy
      *
      * @throws IOException If an I/O error occurs
-     * @see Chan#set(String, Fitter)
+     * @see Chan#set(String, Entity)
+     * @see Chan#set(String, String, Entity)
      */
-    void accept(
+    void serial(
         @NotNull Chan chan
     ) throws IOException;
 }

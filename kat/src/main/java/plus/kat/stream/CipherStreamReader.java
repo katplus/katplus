@@ -105,7 +105,7 @@ public class CipherStreamReader extends AbstractReader {
     @Override
     public void close() {
         try {
-            INS.share(
+            INS.join(
                 buffer
             );
             value.close();

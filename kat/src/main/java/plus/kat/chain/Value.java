@@ -23,10 +23,20 @@ import plus.kat.kernel.*;
 import plus.kat.stream.*;
 import plus.kat.utils.*;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
+import java.security.SignatureException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.IvParameterSpec;
+
+import static plus.kat.stream.Binary.toLower;
 
 /**
  * @author kraity
@@ -87,21 +97,6 @@ public class Value extends Alpha {
     /**
      * Constructs a mutable value
      *
-     * @param chain  the specified chain to be used
-     * @param bucket the specified bucket to be used
-     */
-    public Value(
-        @NotNull Chain chain,
-        @Nullable Bucket bucket
-    ) {
-        super(
-            chain, bucket
-        );
-    }
-
-    /**
-     * Constructs a mutable value
-     *
      * @param sequence the specified sequence to be used
      */
     public Value(
@@ -127,305 +122,410 @@ public class Value extends Alpha {
     }
 
     /**
-     * Concatenates the string representation
-     * of the integer value to this {@link Value}
+     * Returns a lowercase {@code MD5} of this {@link Chain}
      *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.add(1024); // 1024
-     * }</pre>
-     *
-     * @param num the specified int value
-     * @since 0.0.5
+     * @throws FatalCrash If the MD5 algo is not supported
      */
-    public void add(
-        int num
-    ) {
-        concat(num);
+    @NotNull
+    public String digest() {
+        return digest(
+            "MD5", 0, count
+        );
     }
 
     /**
-     * Concatenates the string representation
-     * of the long value to this {@link Value}
+     * Returns a lowercase message digest of this {@link Chain}
      *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.add(1024L); // 1024
-     * }</pre>
-     *
-     * @param num the specified long value
-     * @since 0.0.5
+     * @param algo the name of the algorithm requested
+     * @throws FatalCrash If the specified algo is not supported
+     * @see MessageDigest
+     * @see Binary#toLower(byte[])
+     * @see Value#digest(String, int, int)
      */
-    public void add(
-        long num
+    @NotNull
+    public String digest(
+        @NotNull String algo
     ) {
-        concat(num);
+        return digest(
+            algo, 0, count
+        );
     }
 
     /**
-     * Concatenates the string representation
-     * of the float value to this {@link Value}
+     * Returns a lowercase message digest of this {@link Chain}
      *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.add(10.24F); // 10.24
-     * }</pre>
-     *
-     * @param num the specified float value
-     * @since 0.0.5
+     * @param algo the name of the algorithm requested
+     * @param i    the specified offset
+     * @param l    the specified length
+     * @throws FatalCrash               If the specified algo is not supported
+     * @throws IllegalArgumentException If the length out of range
+     * @see MessageDigest
+     * @see Binary#toLower(byte[])
      */
-    public void add(
-        float num
+    @NotNull
+    public String digest(
+        @NotNull String algo, int i, int l
     ) {
-        concat(num);
-    }
+        if (i <= count - l && 0 <= i && 0 <= l) {
+            try {
+                MessageDigest md =
+                    MessageDigest
+                        .getInstance(algo);
 
-    /**
-     * Concatenates the string representation
-     * of the double value to this {@link Value}
-     *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.add(10.24D); // 10.24
-     * }</pre>
-     *
-     * @param num the specified double value
-     * @since 0.0.5
-     */
-    public void add(
-        double num
-    ) {
-        concat(num);
-    }
+                md.update(
+                    value, i, l
+                );
 
-    /**
-     * Concatenates the string representation
-     * of the boolean value to this {@link Value}
-     *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.add(true); // true
-     * }</pre>
-     *
-     * @param b the specified boolean value
-     * @since 0.0.5
-     */
-    public void add(
-        boolean b
-    ) {
-        concat(b);
-    }
-
-    /**
-     * Concatenates the char value to this {@link Value}
-     *
-     * <pre>{@code
-     *   Value value = ...
-     *   value.add('k');
-     * }</pre>
-     *
-     * @param ch the specified char value
-     * @since 0.0.5
-     */
-    public void add(
-        char ch
-    ) {
-        concat(ch);
-    }
-
-    /**
-     * Concatenates the byte array to this {@link Value}
-     *
-     * @param data the specified byte array
-     * @since 0.0.5
-     */
-    public void add(
-        byte[] data
-    ) {
-        if (data != null) {
-            concat(
-                data, 0, data.length
+                return toLower(
+                    md.digest()
+                );
+            } catch (NoSuchAlgorithmException e) {
+                throw new FatalCrash(
+                    algo + " is not supported", e
+                );
+            }
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
             );
         }
     }
 
     /**
-     * Concatenates the byte array to this {@link Value}
+     * Completes the {@link Base64} using the internal value of this {@link Chain}
      *
-     * @param data the specified byte array
-     * @param i    the specified index
-     * @param l    the specified length
-     * @throws ArrayIndexOutOfBoundsException If the index or length out of range
+     * @throws NullPointerException     If the specified {@code base64} is null
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @see Base64#encode(byte[], int, int)
      * @since 0.0.5
      */
-    public void add(
-        byte[] data, int i, int l
+    @NotNull
+    public byte[] encode(
+        @NotNull Base64 base64
     ) {
-        if (data != null && l != 0) {
-            if (i >= 0 && i + l <= data.length) {
-                concat(
-                    data, i, l
-                );
-            } else {
-                throw new ArrayIndexOutOfBoundsException(
-                    "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
-                );
-            }
+        return base64.encode(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Completes the {@link Base64} using the internal value of this {@link Chain}
+     *
+     * @param i the specified offset
+     * @param l the specified length
+     * @throws NullPointerException      If the specified {@code base64} is null
+     * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
+     * @see Base64#encode(byte[], int, int)
+     * @since 0.0.5
+     */
+    @NotNull
+    public byte[] encode(
+        @NotNull Base64 base64, int i, int l
+    ) {
+        if (i <= count - l && 0 <= i && 0 <= l) {
+            return base64.encode(
+                value, i, l
+            );
+        } else {
+            throw new IndexOutOfBoundsException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
         }
     }
 
     /**
-     * Concatenates the char array to this {@link Value}
+     * Completes the {@link Base64} using the internal value of this {@link Chain}
      *
-     * @param data the specified char array
+     * @throws NullPointerException If the specified {@code base64} is null
+     * @see Base64#decode(byte[], int, int)
      * @since 0.0.5
      */
-    public void add(
-        char[] data
+    @NotNull
+    public byte[] decode(
+        @NotNull Base64 base64
     ) {
-        if (data != null) {
-            int l = data.length;
-            if (l != 0) {
-                concat(
-                    data, 0, l
-                );
-            }
+        return base64.decode(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Completes the {@link Base64} using the internal value of this {@link Chain}
+     *
+     * @param i the specified offset
+     * @param l the specified length
+     * @throws NullPointerException      If the specified {@code base64} is null
+     * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
+     * @see Base64#decode(byte[], int, int)
+     * @since 0.0.5
+     */
+    @NotNull
+    public byte[] decode(
+        @NotNull Base64 base64, int i, int l
+    ) {
+        if (i <= count - l && 0 <= i && 0 <= l) {
+            return base64.decode(
+                value, i, l
+            );
+        } else {
+            throw new IndexOutOfBoundsException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
         }
     }
 
     /**
-     * Concatenates the char array to this {@link Value}
+     * Updates the {@link Mac} using the internal value of this {@link Chain}
      *
-     * @param data the specified byte array
-     * @param i    the specified index
-     * @param l    the specified length
-     * @throws ArrayIndexOutOfBoundsException If the index or length out of range
-     * @since 0.0.5
+     * @throws NullPointerException If the specified {@code mac} is null
+     * @see Mac#update(byte[], int, int)
      */
-    public void add(
-        char[] data, int i, int l
+    public void update(
+        @NotNull Mac m
     ) {
-        if (data != null && l != 0) {
-            if (0 <= i && i + l <= data.length) {
-                concat(
-                    data, i, l
-                );
-            } else {
-                throw new ArrayIndexOutOfBoundsException(
-                    "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
-                );
-            }
+        m.update(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Updates the {@link Mac} using the internal value of this {@link Chain}
+     *
+     * @param i the specified offset
+     * @param l the specified length
+     * @throws NullPointerException     If the specified {@code mac} is null
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @see Mac#update(byte[], int, int)
+     */
+    public void update(
+        @NotNull Mac m, int i, int l
+    ) {
+        if (i <= count - l) {
+            m.update(
+                value, i, l
+            );
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
         }
     }
 
     /**
-     * Concatenates the {@link InputStream} to this {@link Value}
+     * Updates the {@link Signature} using the internal value of this {@link Chain}
      *
-     * <pre>{@code
-     *  Value value = ...
-     *  InputStream in = ...
-     *  value.add(in); // auto close
-     * }</pre>
-     *
-     * @param in the specified {@link InputStream} will be used and closed
-     * @since 0.0.5
+     * @throws NullPointerException If the specified {@code signature} is null
+     * @see Signature#update(byte[], int, int)
      */
-    public void add(
-        InputStream in
-    ) {
-        if (in != null) {
-            try {
-                concat(in, 128);
-            } catch (Exception e) {
-                // Nothing
-            } finally {
-                try {
-                    in.close();
-                } catch (Exception e) {
-                    // Nothing
-                }
-            }
+    public void update(
+        @NotNull Signature s
+    ) throws SignatureException {
+        s.update(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Updates the {@link Signature} using the internal value of this {@link Chain}
+     *
+     * @param i the specified offset
+     * @param l the specified length
+     * @throws NullPointerException     If the specified {@code signature} is null
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @see Signature#update(byte[], int, int)
+     */
+    public void update(
+        @NotNull Signature s, int i, int l
+    ) throws SignatureException {
+        if (i <= count - l) {
+            s.update(
+                value, i, l
+            );
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
         }
     }
 
     /**
-     * Concatenates the {@link InputStream} to this {@link Value}
+     * Updates the {@link MessageDigest} using the internal value of this {@link Chain}
      *
-     * <pre>{@code
-     *  Value value = ...
-     *  InputStream in = ...
-     *  value.add(in, 512);
-     *  in.close(); // close it
-     *
-     *  // or
-     *  try (InputStream in = ...) {
-     *      value.add(in, 512);
-     *  }
-     * }</pre>
-     *
-     * @param range the specified range
-     * @param in    the specified {@link InputStream} will be used but will not be closed
-     * @throws IOException If an I/O error occurs
-     * @since 0.0.5
+     * @throws NullPointerException If the specified {@code digest} is null
+     * @see MessageDigest#update(byte[], int, int)
      */
-    public void add(
-        InputStream in, int range
-    ) throws IOException {
-        if (in != null) {
-            if (range > 0) {
-                concat(
-                    in, range
-                );
-            } else {
-                throw new IOException(
-                    "Unexpectedly, the range is not a positive number"
-                );
-            }
+    public void update(
+        @NotNull MessageDigest m
+    ) {
+        m.update(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Updates the {@link MessageDigest} using the internal value of this {@link Chain}
+     *
+     * @param i the specified offset
+     * @param l the specified length
+     * @throws NullPointerException     If the specified {@code digest} is null
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @see MessageDigest#update(byte[], int, int)
+     */
+    public void update(
+        @NotNull MessageDigest m, int i, int l
+    ) {
+        if (i <= count - l) {
+            m.update(
+                value, i, l
+            );
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
         }
     }
 
     /**
-     * Concatenates the {@link CharSequence} to this {@link Value}
+     * Updates the {@link Cipher} using the internal value of this {@link Chain}
      *
-     * @param data the specified char array
-     * @since 0.0.5
+     * @throws NullPointerException If the specified {@code cipher} is null
+     * @see Cipher#update(byte[], int, int)
      */
-    public void add(
-        CharSequence data
+    @Nullable
+    public byte[] update(
+        @NotNull Cipher c
     ) {
-        if (data != null) {
-            int len = data.length();
-            if (len != 0) {
-                concat(
-                    data, 0, len
-                );
-            }
+        return c.update(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Updates the {@link Cipher} using the internal value of this {@link Chain}
+     *
+     * @param i the specified offset
+     * @param l the specified length
+     * @throws NullPointerException     If the specified {@code cipher} is null
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @see Cipher#update(byte[], int, int)
+     */
+    @Nullable
+    public byte[] update(
+        @NotNull Cipher c, int i, int l
+    ) {
+        if (i <= count - l) {
+            return c.update(
+                value, i, l
+            );
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
         }
     }
 
     /**
-     * Concatenates the {@link CharSequence} to this {@link Value}
+     * Completes the {@link Cipher} using the internal value of this {@link Chain}
      *
-     * @param data the specified byte array
-     * @param i    the specified index
-     * @param l    the specified length
-     * @throws ArrayIndexOutOfBoundsException If the index or length out of range
+     * @throws NullPointerException If the specified {@code cipher} is null
+     * @see Cipher#doFinal(byte[], int, int)
+     */
+    @Nullable
+    public byte[] doFinal(
+        @NotNull Cipher c
+    ) throws IllegalBlockSizeException, BadPaddingException {
+        return c.doFinal(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Completes the {@link Cipher} using the internal value of this {@link Chain}
+     *
+     * @param i the specified offset
+     * @param l the specified length
+     * @throws NullPointerException     If the specified {@code cipher} is null
+     * @throws IllegalArgumentException If the offset is negative or the length out of range
+     * @see Cipher#doFinal(byte[], int, int)
+     */
+    @Nullable
+    public byte[] doFinal(
+        @NotNull Cipher c, int i, int l
+    ) throws IllegalBlockSizeException, BadPaddingException {
+        if (i <= count - l) {
+            return c.doFinal(
+                value, i, l
+            );
+        } else {
+            throw new IllegalArgumentException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
+    }
+
+    /**
+     * Returns a {@link Reader} of this {@link Chain}
+     *
+     * @see Reader
+     * @see ByteReader
+     */
+    @NotNull
+    public Reader asReader() {
+        return new ByteReader(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Returns a {@link Reader} of this {@link Chain}
+     *
+     * @param index  the specified index
+     * @param length the specified length
+     * @throws IndexOutOfBoundsException If the index is negative or the length out of range
+     * @see Reader
+     * @see ByteReader
+     */
+    @NotNull
+    public Reader asReader(
+        int index, int length
+    ) {
+        return new ByteReader(
+            value, index, length
+        );
+    }
+
+    /**
+     * Returns this {@link Alpha} as an {@link InputStream}
+     *
      * @since 0.0.5
      */
-    public void add(
-        CharSequence data, int i, int l
+    @NotNull
+    public InputStream asInputStream() {
+        return new ByteArrayInputStream(
+            value, 0, count
+        );
+    }
+
+    /**
+     * Returns this {@link Alpha} as an {@link InputStream}
+     *
+     * @since 0.0.5
+     */
+    @NotNull
+    public InputStream asInputStream(
+        int index, int length
     ) {
-        if (data != null && l != 0) {
-            if (0 <= i && i + l <= data.length()) {
-                concat(
-                    data, i, l
-                );
-            } else {
-                throw new ArrayIndexOutOfBoundsException(
-                    "Out of bounds, i:" + i + " l:" + l + " length:" + data.length()
-                );
-            }
-        }
+        return new ByteArrayInputStream(
+            value, index, length
+        );
     }
 
     /**
@@ -488,14 +588,6 @@ public class Value extends Alpha {
     }
 
     /**
-     * Returns a mutable value of clone this {@link Value}
-     */
-    @NotNull
-    public Value copy() {
-        return new Value(this);
-    }
-
-    /**
      * @see Value#Value(Bucket)
      */
     public static Value apply() {
@@ -538,7 +630,7 @@ public class Value extends Alpha {
             bucket = new byte[SIZE][];
 
         @Override
-        public boolean share(
+        public boolean join(
             @NotNull byte[] it
         ) {
             int i = it.length / SCALE;
@@ -552,7 +644,7 @@ public class Value extends Alpha {
         }
 
         @Override
-        public byte[] swop(
+        public byte[] swap(
             @NotNull byte[] it
         ) {
             int i = it.length / SCALE;
@@ -572,7 +664,7 @@ public class Value extends Alpha {
         }
 
         @Override
-        public byte[] apply(
+        public byte[] alloc(
             @NotNull byte[] it, int len, int size
         ) {
             byte[] data;

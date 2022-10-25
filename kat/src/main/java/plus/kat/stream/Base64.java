@@ -10,7 +10,7 @@ import static plus.kat.kernel.Chain.EMPTY_BYTES;
  */
 public class Base64 {
 
-    private final int en, de;
+    private final int E, D;
     private final byte[] ENCO, DECO;
 
     /**
@@ -49,8 +49,8 @@ public class Base64 {
         @NotNull byte[] enco, int e,
         @NotNull byte[] deco, int d
     ) {
-        en = e;
-        de = d;
+        E = e;
+        D = d;
         ENCO = enco;
         DECO = deco;
     }
@@ -91,7 +91,7 @@ public class Base64 {
             int t2 = l / 3;
 
             int b1, b2, b3;
-            int b = 0, m = en,
+            int b = 0, m = E,
                 c = t2 * 3 + i;
 
             byte[] it,
@@ -193,7 +193,7 @@ public class Base64 {
         }
 
         try {
-            int r, m = de,
+            int r, m = D,
                 n = i + l;
             if (m != 0) {
                 int u = i + m;

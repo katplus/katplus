@@ -18,9 +18,6 @@ package plus.kat.kernel;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.crash.*;
-import plus.kat.stream.*;
-
 /**
  * @author kraity
  * @since 0.0.1
@@ -35,25 +32,6 @@ public final class Unsafe {
     public static byte[] value(
         @NotNull Chain c
     ) {
-        return c.isFixed() ? null : c.value;
-    }
-
-    /**
-     * Unsafe method, and may be removed
-     *
-     * @throws FatalCrash           If the chain is finally fixed
-     * @throws NullPointerException If the specified chain is null
-     */
-    public static void bucket(
-        @NotNull Chain c,
-        @Nullable Bucket b
-    ) {
-        if (!c.isFixed()) {
-            c.bucket = b;
-        } else {
-            throw new FatalCrash(
-                "Unexpectedly, the chain is finally fixed"
-            );
-        }
+        return c.value;
     }
 }

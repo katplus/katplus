@@ -86,7 +86,7 @@ public class ByteBufReader extends AbstractReader {
 
     @Override
     public void close() {
-        INS.share(cache);
+        INS.join(cache);
         value = null;
         cache = null;
         offset = -1;

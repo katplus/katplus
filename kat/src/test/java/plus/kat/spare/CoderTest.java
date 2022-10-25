@@ -23,7 +23,7 @@ public class CoderTest {
             Spare.lookup(Note.class);
 
         Note note = spare.read(
-            Event.ascii(
+            Event.latin(
                 "Note{i:id(101)s:title(kat+)s:status(PUBLISH)}"
             )
         );
@@ -73,11 +73,11 @@ public class CoderTest {
             @NotNull Flag flag,
             @NotNull Value value
         ) {
-            if (value.is("PUBLISH")) {
+            if (value.equals("PUBLISH")) {
                 return "open";
             }
 
-            if (value.is("RECYCLE")) {
+            if (value.equals("RECYCLE")) {
                 return "spam";
             }
 

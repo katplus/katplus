@@ -10,7 +10,6 @@ import java.util.*;
 
 import static plus.kat.Flag.*;
 import static plus.kat.Spare.lookup;
-import static plus.kat.stream.Binary.latin;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class KatTest {
@@ -72,7 +71,7 @@ public class KatTest {
     public void test_encode2() {
         Map<Object, Object> data = new HashMap<>();
         data.put("别名", "陆之岇");
-        data.put(latin(new byte[]{0, 1, 6, 9, 32}), null);
+        data.put("\u0000\u0001\u0006\u0009\u0020", null);
         assertEquals(
             "M{s:别名(陆之岇)$:^u0000^u0001^u0006^t^s()}", Kat.encode(data)
         );
@@ -176,7 +175,7 @@ public class KatTest {
         String text = "plus.kat.User{i:id(1)s:name(kraity)b:blocked(1)}";
 
         User user = spare.read(
-            Event.ascii(text)
+            Event.latin(text)
         );
 
         assertNotNull(user);
@@ -192,7 +191,7 @@ public class KatTest {
         Supplier supplier = Supplier.ins();
 
         User user = supplier.read(
-            User.class, Event.ascii(
+            User.class, Event.latin(
                 "User{i:id(1)s:name(kraity)M:m{i:i(123)M:m{d:d()}}b:disabled(1)}"
             )
         );
@@ -237,7 +236,7 @@ public class KatTest {
         Supplier supplier = Supplier.ins();
 
         Map<String, Object> user = supplier.read(
-            Map.class, Event.ascii(
+            Map.class, Event.latin(
                 "User{:id(1):name(kraity):blocked(true)}"
             )
         );

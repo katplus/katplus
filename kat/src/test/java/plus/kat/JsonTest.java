@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
+import plus.kat.stream.Binary;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static plus.kat.stream.Binary.latin;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class JsonTest {
@@ -51,7 +51,7 @@ public class JsonTest {
         Supplier supplier = Supplier.ins();
 
         User user = supplier.parse(
-            User.class, Event.ascii(
+            User.class, Event.latin(
                 "{\"id\":1,\"name\":\"kraity\",\"extra\":[123,456,789,{\"key\":\"val\"}],\"disabled\":true}"
             )
         );
@@ -97,7 +97,7 @@ public class JsonTest {
         Supplier supplier = Supplier.ins();
 
         User user = supplier.parse(
-            User.class, Event.ascii(
+            User.class, Event.latin(
                 "{'id':1,'name':'kraity','disabled':true}"
             )
         );
@@ -213,7 +213,7 @@ public class JsonTest {
     public void test_encode3() {
         Map<Object, Object> data = new HashMap<>();
         data.put("别名", "陆之岇");
-        data.put(latin(new byte[]{0, 1, 6, 9, 32}), null);
+        data.put("\u0000\u0001\u0006\u0009\u0020", null);
         assertEquals(
             "{\"别名\":\"陆之岇\",\"\\u0000\\u0001\\u0006\\t \":null}", Json.encode(data)
         );

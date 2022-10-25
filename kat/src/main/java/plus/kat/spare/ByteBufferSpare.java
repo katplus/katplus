@@ -80,7 +80,7 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
             buf.get(cache, 0, len);
             flow.emit(cache, 0, len);
         }
-        INS.share(cache);
+        INS.join(cache);
     }
 
     @Override

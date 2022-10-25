@@ -26,7 +26,7 @@ import java.io.IOException
 import kotlin.jvm.Throws
 
 /**
- * Serialize the fitter to Kat [String]
+ * Serialize the entity to Kat [String]
  *
  * E.g.
  * ```
@@ -40,10 +40,10 @@ import kotlin.jvm.Throws
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun kat(fitter: Fitter) = Kat(null, fitter).use { it.toString() }
+fun kat(entity: Entity) = Kat(null, entity).use { it.toString() }
 
 /**
- * Serialize the fitter to Kat [String]
+ * Serialize the entity to Kat [String]
  *
  * E.g.
  * ```
@@ -57,10 +57,10 @@ fun kat(fitter: Fitter) = Kat(null, fitter).use { it.toString() }
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun kat(space: String?, fitter: Fitter) = Kat(space, fitter).use { it.toString() }
+fun kat(space: String?, entity: Entity) = Kat(space, entity).use { it.toString() }
 
 /**
- * Serialize the fitter to Kat
+ * Serialize the entity to Kat
  *
  * E.g.
  * ```
@@ -74,7 +74,7 @@ fun kat(space: String?, fitter: Fitter) = Kat(space, fitter).use { it.toString()
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Kat(space: String?, fitter: Fitter) = Kat(Plan.DEF).also { it[null, space] = fitter }
+fun Kat(space: String?, entity: Entity) = Kat(Plan.DEF).also { it[null, space] = entity }
 
 /**
  * Serialize [Any]? to Kat [String]
@@ -105,7 +105,7 @@ inline fun Any?.toKat() = Kat.encode(null, this)
 inline fun Any?.toKat(flags: Long) = Kat.encode(null, this, flags)
 
 /**
- * Serialize the fitter to Doc [String]
+ * Serialize the entity to Doc [String]
  *
  * E.g.
  * ```
@@ -119,10 +119,10 @@ inline fun Any?.toKat(flags: Long) = Kat.encode(null, this, flags)
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun doc(name: String?, fitter: Fitter) = Doc(name, fitter).use { it.toString() }
+fun doc(name: String?, entity: Entity) = Doc(name, entity).use { it.toString() }
 
 /**
- * Serialize the fitter to [Doc]
+ * Serialize the entity to [Doc]
  *
  * E.g.
  * ```
@@ -136,7 +136,7 @@ fun doc(name: String?, fitter: Fitter) = Doc(name, fitter).use { it.toString() }
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Doc(name: String?, fitter: Fitter) = Doc(Plan.DEF).also { it[name] = fitter }
+fun Doc(name: String?, entity: Entity) = Doc(Plan.DEF).also { it[name] = entity }
 
 /**
  * Serialize [Any]? to Doc [String]
@@ -167,7 +167,7 @@ inline fun Any?.toDoc(): String = Doc.encode(null, this)
 inline fun Any?.toDoc(flags: Long): String = Doc.encode(null, this, flags)
 
 /**
- * Serialize the fitter to Json [String]
+ * Serialize the entity to Json [String]
  *
  * E.g.
  * ```
@@ -181,10 +181,10 @@ inline fun Any?.toDoc(flags: Long): String = Doc.encode(null, this, flags)
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun json(fitter: Fitter) = Json(fitter).use { it.toString() }
+fun json(entity: Entity) = Json(entity).use { it.toString() }
 
 /**
- * Serialize the fitter to [Json]
+ * Serialize the entity to [Json]
  *
  * E.g.
  * ```
@@ -198,7 +198,7 @@ fun json(fitter: Fitter) = Json(fitter).use { it.toString() }
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Json(fitter: Fitter) = Json(Plan.DEF).also { it[null] = fitter }
+fun Json(entity: Entity) = Json(Plan.DEF).also { it[null] = entity }
 
 /**
  * Serialize [Any]? to Json [String]

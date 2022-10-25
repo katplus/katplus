@@ -326,7 +326,6 @@ public class ListSpare extends Property<List> {
                 }
             }
 
-            value.setType(tag);
             bundle.add(
                 spare.read(
                     event, value

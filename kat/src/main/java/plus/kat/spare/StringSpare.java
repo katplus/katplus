@@ -30,6 +30,7 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.1
  */
+@SuppressWarnings("deprecation")
 public class StringSpare extends Property<String> {
 
     public static final StringSpare
@@ -117,10 +118,15 @@ public class StringSpare extends Property<String> {
         }
 
         if (data instanceof byte[]) {
-            return Binary.latin(
-                Base64.base().encode(
+            byte[] it = Base64.base()
+                .encode(
                     (byte[]) data
-                )
+                );
+            if (it.length == 0) {
+                return "";
+            }
+            return new String(
+                it, 0, 0, it.length
             );
         }
 

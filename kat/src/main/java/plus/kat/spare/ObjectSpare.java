@@ -55,20 +55,7 @@ public class ObjectSpare extends Property<Object> {
         @NotNull Flag flag,
         @NotNull Alias alias
     ) throws IOException {
-        Type type = alias.getType();
-        if (type == null ||
-            type == Object.class) {
-            return solve(alias);
-        } else {
-            Spare<?> spare = supplier.lookup(type, null);
-            if (spare == null) {
-                return null;
-            }
-            if (spare == this) {
-                return solve(alias);
-            }
-            return spare.read(flag, alias);
-        }
+        return solve(alias);
     }
 
     @Override
@@ -76,20 +63,7 @@ public class ObjectSpare extends Property<Object> {
         @NotNull Flag flag,
         @NotNull Value value
     ) throws IOException {
-        Type type = value.getType();
-        if (type == null ||
-            type == Object.class) {
-            return solve(value);
-        } else {
-            Spare<?> spare = supplier.lookup(type, null);
-            if (spare == null) {
-                return null;
-            }
-            if (spare == this) {
-                return solve(value);
-            }
-            return spare.read(flag, value);
-        }
+        return solve(value);
     }
 
     @Override
@@ -122,91 +96,91 @@ public class ObjectSpare extends Property<Object> {
 
     @Nullable
     private Object solve(
-        @NotNull Chain chain
+        @NotNull Chain ch
     ) {
-        int length = chain.length();
+        int length = ch.length();
 
         if (length == 0) {
             return null;
         }
 
-        byte b = chain.at(0);
+        byte b = ch.at(0);
 
         if (b < 0x3A) {
-            Number num = chain.toNumber();
+            Number num = ch.toNumber();
             if (num != null) {
                 return num;
             }
-            return chain.toString();
+            return ch.toString();
         }
 
         switch (length) {
             case 4: {
                 // true
                 if (b == 't') {
-                    if (chain.at(1) == 'r' &&
-                        chain.at(2) == 'u' &&
-                        chain.at(3) == 'e') {
+                    if (ch.at(1) == 'r' &&
+                        ch.at(2) == 'u' &&
+                        ch.at(3) == 'e') {
                         return Boolean.TRUE;
                     }
                 }
 
                 // TRUE/True
                 else if (b == 'T') {
-                    byte c = chain.at(1);
+                    byte c = ch.at(1);
                     if (c == 'R') {
-                        if (chain.at(2) == 'U' &&
-                            chain.at(3) == 'E') {
+                        if (ch.at(2) == 'U' &&
+                            ch.at(3) == 'E') {
                             return Boolean.TRUE;
                         }
                     }
 
                     // True
                     else if (c == 'r') {
-                        if (chain.at(2) == 'u' &&
-                            chain.at(3) == 'e') {
+                        if (ch.at(2) == 'u' &&
+                            ch.at(3) == 'e') {
                             return Boolean.TRUE;
                         }
                     }
                 }
-                return chain.toString();
+                return ch.toString();
             }
             case 5: {
                 // false
                 if (b == 'f') {
-                    if (chain.at(1) == 'a' &&
-                        chain.at(2) == 'l' &&
-                        chain.at(3) == 's' &&
-                        chain.at(4) == 'e') {
+                    if (ch.at(1) == 'a' &&
+                        ch.at(2) == 'l' &&
+                        ch.at(3) == 's' &&
+                        ch.at(4) == 'e') {
                         return Boolean.FALSE;
                     }
                 }
 
                 // FALSE/False
                 else if (b == 'F') {
-                    byte c = chain.at(1);
+                    byte c = ch.at(1);
                     if (c == 'A') {
-                        if (chain.at(2) == 'L' &&
-                            chain.at(3) == 'S' &&
-                            chain.at(4) == 'E') {
+                        if (ch.at(2) == 'L' &&
+                            ch.at(3) == 'S' &&
+                            ch.at(4) == 'E') {
                             return Boolean.FALSE;
                         }
                     }
 
                     // False
                     else if (c == 'a') {
-                        if (chain.at(2) == 'l' &&
-                            chain.at(3) == 's' &&
-                            chain.at(4) == 'e') {
+                        if (ch.at(2) == 'l' &&
+                            ch.at(3) == 's' &&
+                            ch.at(4) == 'e') {
                             return Boolean.FALSE;
                         }
                     }
                 }
-                return chain.toString();
+                return ch.toString();
             }
         }
 
-        return chain.toString();
+        return ch.toString();
     }
 
     @Override

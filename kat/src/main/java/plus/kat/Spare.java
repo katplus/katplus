@@ -69,16 +69,16 @@ public interface Spare<K> extends Coder<K> {
     );
 
     /**
-     * Returns the supplier of {@link K}
-     */
-    @NotNull
-    Supplier getSupplier();
-
-    /**
      * Returns the {@link Class} of {@link K}
      */
     @NotNull
-    Class<? extends K> getType();
+    Class<K> getType();
+
+    /**
+     * Returns the {@link Supplier} of {@link K}
+     */
+    @NotNull
+    Supplier getSupplier();
 
     /**
      * Create a {@link Builder} of {@link K}

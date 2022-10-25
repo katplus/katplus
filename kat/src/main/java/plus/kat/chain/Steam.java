@@ -20,7 +20,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.*;
 import plus.kat.kernel.*;
 import plus.kat.stream.*;
-import plus.kat.utils.Config;
+import plus.kat.utils.*;
 
 import java.io.IOException;
 
@@ -30,7 +30,7 @@ import static plus.kat.stream.Binary.*;
  * @author kraity
  * @since 0.0.5
  */
-public abstract class Steam extends Chain implements Flow {
+public abstract class Steam extends Alpha implements Flow {
 
     protected long flags;
     protected short depth;
@@ -63,19 +63,6 @@ public abstract class Steam extends Chain implements Flow {
     }
 
     /**
-     * Concatenates the string representation
-     * of the integer value to this {@link Steam}
-     *
-     * @param num the specified number to be appended
-     */
-    @Override
-    public void emit(
-        int num
-    ) throws IOException {
-        concat(num);
-    }
-
-    /**
      * Concatenates the format an integer value
      * (treated as unsigned) to this {@link Steam}
      *
@@ -86,15 +73,29 @@ public abstract class Steam extends Chain implements Flow {
         int num, int s
     ) throws IOException {
         if (0 < s && s < 6) {
-            int mark = count;
-            int mask = (1 << s) - 1;
+            asset = 0;
+            byte[] it = value;
+
+            int i = count;
+            int arch = (1 << s) - 1;
             do {
-                concat(lower(
-                    (num & mask)
-                ));
-                num >>>= s;
-            } while (num != 0);
-            swop(mark, count);
+                if (count == it.length) {
+                    it = grow(count + 1);
+                }
+                it[count++] = lower((num & arch));
+            } while (
+                (num >>>= s) != 0
+            );
+
+            arch = count;
+            for (byte j; i < --arch; it[i++] = j) {
+                j = it[arch];
+                it[arch] = it[i];
+            }
+        } else {
+            throw new IOException(
+                "The specified shift is not in [0, 5]"
+            );
         }
     }
 
@@ -109,29 +110,29 @@ public abstract class Steam extends Chain implements Flow {
         int num, int s, int l
     ) throws IOException {
         if (0 < s && s < 6) {
-            int mark = count;
-            int mask = (1 << s) - 1;
+            asset = 0;
+            byte[] it = value;
+
+            int i = count;
+            int arch = (1 << s) - 1;
             while (--l != -1) {
-                concat(lower(
-                    (num & mask)
-                ));
+                if (count == it.length) {
+                    it = grow(count + 1);
+                }
+                it[count++] = lower((num & arch));
                 num >>>= s;
             }
-            swop(mark, count);
-        }
-    }
 
-    /**
-     * Concatenates the string representation
-     * of the long value to this {@link Steam}
-     *
-     * @param num the specified number to be appended
-     */
-    @Override
-    public void emit(
-        long num
-    ) throws IOException {
-        concat(num);
+            arch = count;
+            for (byte j; i < --arch; it[i++] = j) {
+                j = it[arch];
+                it[arch] = it[i];
+            }
+        } else {
+            throw new IOException(
+                "The specified shift is not in [0, 5]"
+            );
+        }
     }
 
     /**
@@ -145,15 +146,29 @@ public abstract class Steam extends Chain implements Flow {
         long num, int s
     ) throws IOException {
         if (0 < s && s < 6) {
-            int mark = count;
-            long mask = (1L << s) - 1L;
+            asset = 0;
+            byte[] it = value;
+
+            int i = count;
+            long arch = (1L << s) - 1L;
             do {
-                concat(lower(
-                    (int) (num & mask)
-                ));
-                num >>>= s;
-            } while (num != 0L);
-            swop(mark, count);
+                if (count == it.length) {
+                    it = grow(count + 1);
+                }
+                it[count++] = lower((int) (num & arch));
+            } while (
+                (num >>>= s) != 0L
+            );
+
+            int apex = count;
+            for (byte j; i < --apex; it[i++] = j) {
+                j = it[apex];
+                it[apex] = it[i];
+            }
+        } else {
+            throw new IOException(
+                "The specified shift is not in [0, 5]"
+            );
         }
     }
 
@@ -168,15 +183,28 @@ public abstract class Steam extends Chain implements Flow {
         long num, int s, int l
     ) throws IOException {
         if (0 < s && s < 6) {
-            int mark = count;
-            long mask = (1L << s) - 1L;
+            asset = 0;
+            byte[] it = value;
+
+            int i = count;
+            long arch = (1L << s) - 1L;
             while (--l != -1) {
-                concat(lower(
-                    (int) (num & mask)
-                ));
+                if (count == it.length) {
+                    it = grow(count + 1);
+                }
+                it[count++] = lower((int) (num & arch));
                 num >>>= s;
             }
-            swop(mark, count);
+
+            int apex = count;
+            for (byte j; i < --apex; it[i++] = j) {
+                j = it[apex];
+                it[apex] = it[i];
+            }
+        } else {
+            throw new IOException(
+                "The specified shift is not in [0, 5]"
+            );
         }
     }
 
@@ -186,42 +214,63 @@ public abstract class Steam extends Chain implements Flow {
      *
      * @param num the specified number to be appended
      */
-    @Override
     public void emit(
         short num
     ) throws IOException {
-        concat(num);
+        emit((int) num);
     }
 
     /**
      * Concatenates the string representation
-     * of the float value to this {@link Steam}
+     * of the float value to this {@link Alpha}
      *
      * @param num the specified number to be appended
      */
-    @Override
+    @SuppressWarnings("deprecation")
     public void emit(
         float num
-    ) throws IOException {
-        concat(num);
+    ) {
+        String data =
+            Float.toString(num);
+        int len = data.length();
+        int now = count;
+        int size = now + len;
+        byte[] it = value;
+        if (size > it.length) {
+            it = grow(size);
+        }
+        asset = 0;
+        count = size;
+        data.getBytes(0, len, it, now);
     }
 
     /**
      * Concatenates the string representation
-     * of the double value to this {@link Steam}
+     * of the double value to this {@link Alpha}
      *
      * @param num the specified number to be appended
      */
-    @Override
+    @SuppressWarnings("deprecation")
     public void emit(
         double num
-    ) throws IOException {
-        concat(num);
+    ) {
+        String data =
+            Double.toString(num);
+        int len = data.length();
+        int now = count;
+        int size = now + len;
+        byte[] it = value;
+        if (size > it.length) {
+            it = grow(size);
+        }
+        asset = 0;
+        count = size;
+        data.getBytes(0, len, it, now);
     }
 
     /**
      * Concatenates the string representation
-     * of the boolean value to this {@link Steam}
+     * of the boolean value to this {@link Alpha}
      *
      * @param bool the specified boolean to be appended
      */
@@ -229,7 +278,27 @@ public abstract class Steam extends Chain implements Flow {
     public void emit(
         boolean bool
     ) throws IOException {
-        concat(bool);
+        asset = 0;
+        byte[] it = value;
+        if (bool) {
+            int size = count + 4;
+            if (size > it.length) {
+                it = grow(size);
+            }
+            it[count++] = 't';
+            it[count++] = 'r';
+            it[count++] = 'u';
+        } else {
+            int size = count + 5;
+            if (size > it.length) {
+                it = grow(size);
+            }
+            it[count++] = 'f';
+            it[count++] = 'a';
+            it[count++] = 'l';
+            it[count++] = 's';
+        }
+        it[count++] = 'e';
     }
 
     /**
@@ -256,11 +325,14 @@ public abstract class Steam extends Chain implements Flow {
         @NotNull byte[] data, int i, int l
     ) throws IOException {
         int k = i + l;
-        if (0 < l && 0 <= i && k <= data.length) {
-            grow(count + l);
+        if (0 <= i && 0 <= l && k <= data.length) {
             while (i < k) {
                 emit(data[i++]);
             }
+        } else {
+            throw new IOException(
+                "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
+            );
         }
     }
 
@@ -274,17 +346,24 @@ public abstract class Steam extends Chain implements Flow {
         @NotNull byte[] data, char t, int i, int l
     ) throws IOException {
         int k = i + l;
-        if (0 < l && 0 <= i && k <= data.length) {
-            if (t == 'B') {
-                concat(
-                    data, i, l
-                );
-            } else {
-                grow(count + l);
-                while (i < k) {
-                    emit(data[i++]);
+        if (0 <= i && 0 <= l && k <= data.length) {
+            if (l != 0) {
+                if (t == 'B') {
+                    System.arraycopy(
+                        data, i, grow(count + l), count, l
+                    );
+                    asset = 0;
+                    count += l;
+                } else {
+                    while (i < k) {
+                        emit(data[i++]);
+                    }
                 }
             }
+        } else {
+            throw new IOException(
+                "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
+            );
         }
     }
 
@@ -299,16 +378,22 @@ public abstract class Steam extends Chain implements Flow {
         char ch
     ) throws IOException {
         if (ch < 0x80) {
-            emit(
-                (byte) ch
-            );
+            emit((byte) ch);
         } else {
             if ((flags & 2) == 0) {
-                concat(ch);
+                join(ch);
             } else {
-                concat(
-                    ch, algo().esc()
-                );
+                byte[] it = value;
+                int size = count + 6;
+                if (size > it.length) {
+                    it = grow(size);
+                }
+                it[count++] = algo().esc();
+                it[count++] = 'u';
+                it[count++] = upper(ch >> 12 & 0x0F);
+                it[count++] = upper(ch >> 8 & 0x0F);
+                it[count++] = upper(ch >> 4 & 0x0F);
+                it[count++] = upper(ch & 0x0F);
             }
         }
     }
@@ -337,83 +422,102 @@ public abstract class Steam extends Chain implements Flow {
         @NotNull char[] data, int i, int l
     ) throws IOException {
         int k = i + l;
-        if (0 < l && 0 <= i && k <= data.length) {
-            grow(count + l);
-            if ((flags & 2) == 2) {
-                byte esc = algo().esc();
-                while (i < k) {
-                    char ch = data[i++];
-                    if (ch < 0x80) {
-                        emit((byte) ch);
-                    } else {
-                        concat(ch, esc);
-                    }
-                }
-            } else {
+        if (0 <= i && 0 <= l && k <= data.length) {
+            if (l != 0) {
                 asset = 0;
-                while (i < k) {
-                    // next char
-                    char ch = data[i++];
-
-                    // U+0000 ~ U+007F
-                    if (ch < 0x80) {
-                        emit((byte) ch);
-                    }
-
-                    // U+0080 ~ U+07FF
-                    else if (ch < 0x800) {
-                        byte[] it = value;
-                        int size = count + 2;
-                        if (size > it.length) {
-                            grow(size);
-                            it = value;
+                if ((flags & 2) == 2) {
+                    byte esc = algo().esc();
+                    do {
+                        char ch = data[i++];
+                        if (ch < 0x80) {
+                            emit((byte) ch);
+                        } else {
+                            byte[] it = value;
+                            int size = count + 6;
+                            if (size > it.length) {
+                                it = grow(size);
+                            }
+                            it[count++] = esc;
+                            it[count++] = 'u';
+                            it[count++] = upper(ch >> 12 & 0x0F);
+                            it[count++] = upper(ch >> 8 & 0x0F);
+                            it[count++] = upper(ch >> 4 & 0x0F);
+                            it[count++] = upper(ch & 0x0F);
                         }
-                        it[count++] = (byte) ((ch >> 6) | 0xC0);
-                        it[count++] = (byte) ((ch & 0x3F) | 0x80);
-                    }
+                    } while (i < k);
+                } else {
+                    do {
+                        // next char
+                        char code = data[i++];
 
-                    // U+10000 ~ U+10FFFF
-                    // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-                    else if (0xD800 <= ch && ch <= 0xDFFF) {
-                        if (k <= i) {
-                            emit((byte) '?');
-                            break;
-                        }
-
-                        char next = data[i++];
-                        if (next < 0xDC00 ||
-                            next > 0xDFFF) {
-                            emit((byte) '?');
-                            continue;
+                        // U+0000 ~ U+007F
+                        if (code < 0x80) {
+                            emit((byte) code);
                         }
 
-                        byte[] it = value;
-                        int size = count + 4;
-                        if (size > it.length) {
-                            grow(size);
-                            it = value;
+                        // U+0080 ~ U+07FF
+                        else if (code < 0x800) {
+                            byte[] it = value;
+                            int size = count + 2;
+                            if (size > it.length) {
+                                it = grow(size);
+                            }
+                            it[count++] = (byte) (code >> 6 | 0xC0);
+                            it[count++] = (byte) (code & 0x3F | 0x80);
                         }
-                        int u = (ch << 10) + next - 0x35F_DC00;
-                        it[count++] = (byte) ((u >> 18) | 0xF0);
-                        it[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
-                        it[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
-                        it[count++] = (byte) ((u & 0x3F) | 0x80);
-                    }
 
-                    // U+0800 ~ U+FFFF
-                    else {
-                        byte[] it = value;
-                        int size = count + 3;
-                        if (size > it.length) {
-                            grow(size);
-                            it = value;
+                        // U+10000 ~ U+10FFFF
+                        else if (0xD7FF < code && code < 0xE000) {
+                            if (code > 0xDBFF) {
+                                emit((byte) '?');
+                                continue;
+                            }
+
+                            if (k == i) {
+                                emit((byte) '?');
+                                break;
+                            }
+
+                            char arch = data[i];
+                            if (arch < 0xDC00 ||
+                                arch > 0xDFFF) {
+                                emit((byte) '?');
+                                continue;
+                            }
+
+                            int hi = code - 0xD7C0;
+                            int lo = arch - 0xDC00;
+
+                            byte[] it = value;
+                            int size = count + 4;
+                            if (size > it.length) {
+                                it = grow(size);
+                            }
+                            i++; // 2 chars
+                            it[count++] = (byte) (hi >> 8 | 0xF0);
+                            it[count++] = (byte) (hi >> 2 & 0x3F | 0x80);
+                            it[count++] = (byte) (lo >> 6 | hi << 4 & 0x30 | 0x80);
+                            it[count++] = (byte) (lo & 0x3F | 0x80);
                         }
-                        it[count++] = (byte) ((ch >> 12) | 0xE0);
-                        it[count++] = (byte) (((ch >> 6) & 0x3F) | 0x80);
-                        it[count++] = (byte) ((ch & 0x3F) | 0x80);
-                    }
+
+                        // U+0800 ~ U+FFFF
+                        else {
+                            byte[] it = value;
+                            int size = count + 3;
+                            if (size > it.length) {
+                                it = grow(size);
+                            }
+                            it[count++] = (byte) (code >> 12 | 0xE0);
+                            it[count++] = (byte) (code >> 6 & 0x3F | 0x80);
+                            it[count++] = (byte) (code & 0x3F | 0x80);
+                        }
+                    } while (i < k);
                 }
             }
+        } else {
+            throw new IOException(
+                "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
+            );
         }
     }
 
@@ -441,99 +545,102 @@ public abstract class Steam extends Chain implements Flow {
         @NotNull CharSequence data, int i, int l
     ) throws IOException {
         int k = i + l;
-        if (0 < l && 0 <= i && k <= data.length()) {
-            grow(count + l);
-            if ((flags & 2) == 2) {
-                byte esc = algo().esc();
-                while (i < k) {
-                    char ch = data.charAt(i++);
-                    if (ch < 0x80) {
-                        emit((byte) ch);
-                    } else {
-                        concat(ch, esc);
-                    }
-                }
-            } else {
+        if (0 <= i && 0 <= l && k <= data.length()) {
+            if (l != 0) {
                 asset = 0;
-                while (i < k) {
-                    // next char
-                    char ch = data.charAt(i++);
-
-                    // U+0000 ~ U+007F
-                    if (ch < 0x80) {
-                        emit((byte) ch);
-                    }
-
-                    // U+0080 ~ U+07FF
-                    else if (ch < 0x800) {
-                        byte[] it = value;
-                        int size = count + 2;
-                        if (size > it.length) {
-                            grow(size);
-                            it = value;
+                if ((flags & 2) == 2) {
+                    byte esc = algo().esc();
+                    do {
+                        char ch = data.charAt(i++);
+                        if (ch < 0x80) {
+                            emit((byte) ch);
+                        } else {
+                            byte[] it = value;
+                            int size = count + 6;
+                            if (size > it.length) {
+                                it = grow(size);
+                            }
+                            it[count++] = esc;
+                            it[count++] = 'u';
+                            it[count++] = upper(ch >> 12 & 0x0F);
+                            it[count++] = upper(ch >> 8 & 0x0F);
+                            it[count++] = upper(ch >> 4 & 0x0F);
+                            it[count++] = upper(ch & 0x0F);
                         }
-                        it[count++] = (byte) ((ch >> 6) | 0xC0);
-                        it[count++] = (byte) ((ch & 0x3F) | 0x80);
-                    }
+                    } while (i < k);
+                } else {
+                    do {
+                        // next char
+                        char code = data.charAt(i++);
 
-                    // U+10000 ~ U+10FFFF
-                    // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-                    else if (0xD800 <= ch && ch <= 0xDFFF) {
-                        if (k <= i) {
-                            emit((byte) '?');
-                            break;
-                        }
-
-                        char next = data.charAt(i++);
-                        if (next < 0xDC00 ||
-                            next > 0xDFFF) {
-                            emit((byte) '?');
-                            continue;
+                        // U+0000 ~ U+007F
+                        if (code < 0x80) {
+                            emit((byte) code);
                         }
 
-                        byte[] it = value;
-                        int size = count + 4;
-                        if (size > it.length) {
-                            grow(size);
-                            it = value;
+                        // U+0080 ~ U+07FF
+                        else if (code < 0x800) {
+                            byte[] it = value;
+                            int size = count + 2;
+                            if (size > it.length) {
+                                it = grow(size);
+                            }
+                            it[count++] = (byte) (code >> 6 | 0xC0);
+                            it[count++] = (byte) (code & 0x3F | 0x80);
                         }
-                        int u = (ch << 10) + next - 0x35F_DC00;
-                        it[count++] = (byte) ((u >> 18) | 0xF0);
-                        it[count++] = (byte) (((u >> 12) & 0x3F) | 0x80);
-                        it[count++] = (byte) (((u >> 6) & 0x3F) | 0x80);
-                        it[count++] = (byte) ((u & 0x3F) | 0x80);
-                    }
 
-                    // U+0800 ~ U+FFFF
-                    else {
-                        byte[] it = value;
-                        int size = count + 3;
-                        if (size > it.length) {
-                            grow(size);
-                            it = value;
+                        // U+10000 ~ U+10FFFF
+                        else if (0xD7FF < code && code < 0xE000) {
+                            if (code > 0xDBFF) {
+                                emit((byte) '?');
+                                continue;
+                            }
+
+                            if (k == i) {
+                                emit((byte) '?');
+                                break;
+                            }
+
+                            char arch = data.charAt(i);
+                            if (arch < 0xDC00 ||
+                                arch > 0xDFFF) {
+                                emit((byte) '?');
+                                continue;
+                            }
+
+                            int hi = code - 0xD7C0;
+                            int lo = arch - 0xDC00;
+
+                            byte[] it = value;
+                            int size = count + 4;
+                            if (size > it.length) {
+                                it = grow(size);
+                            }
+                            i++; // 2 chars
+                            it[count++] = (byte) (hi >> 8 | 0xF0);
+                            it[count++] = (byte) (hi >> 2 & 0x3F | 0x80);
+                            it[count++] = (byte) (lo >> 6 | hi << 4 & 0x30 | 0x80);
+                            it[count++] = (byte) (lo & 0x3F | 0x80);
                         }
-                        it[count++] = (byte) ((ch >> 12) | 0xE0);
-                        it[count++] = (byte) (((ch >> 6) & 0x3F) | 0x80);
-                        it[count++] = (byte) ((ch & 0x3F) | 0x80);
-                    }
+
+                        // U+0800 ~ U+FFFF
+                        else {
+                            byte[] it = value;
+                            int size = count + 3;
+                            if (size > it.length) {
+                                it = grow(size);
+                            }
+                            it[count++] = (byte) (code >> 12 | 0xE0);
+                            it[count++] = (byte) (code >> 6 & 0x3F | 0x80);
+                            it[count++] = (byte) (code & 0x3F | 0x80);
+                        }
+                    } while (i < k);
                 }
             }
-        }
-    }
-
-    /**
-     * Close this {@link Steam}
-     */
-    @Override
-    public void close() {
-        byte[] it = value;
-        if (it.length != 0) {
-            asset = 0;
-            count = 0;
-            backup = null;
-            value = EMPTY_BYTES;
-            Bucket bt = bucket;
-            if (bt != null) bt.share(it);
+        } else {
+            throw new IOException(
+                "Out of bounds, i:" + i + " l:" + l + " length:" + data.length()
+            );
         }
     }
 
@@ -564,7 +671,7 @@ public abstract class Steam extends Chain implements Flow {
             bucket = new byte[SIZE * GROUP][];
 
         @Override
-        public boolean share(
+        public boolean join(
             @NotNull byte[] it
         ) {
             int i = it.length / SCALE;
@@ -581,15 +688,15 @@ public abstract class Steam extends Chain implements Flow {
         }
 
         @Override
-        public byte[] swop(
+        public byte[] swap(
             @NotNull byte[] it
         ) {
-            this.share(it);
+            this.join(it);
             return EMPTY_BYTES;
         }
 
         @Override
-        public byte[] apply(
+        public byte[] alloc(
             @NotNull byte[] it, int len, int size
         ) {
             byte[] data;

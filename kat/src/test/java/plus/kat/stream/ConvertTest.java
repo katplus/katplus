@@ -75,5 +75,8 @@ public class ConvertTest {
 
         byte[] d3 = "陆之岇+😀+katplus".getBytes(UTF_8);
         assertEquals("陆之岇+😀+katplus", new String(toChars(d3, 0, d3.length)));
+
+        byte[] d4 = "@L©µŁƎʪ˩Σ『陆之岇』🧬🏷⛰️🌏".getBytes(UTF_8);
+        assertEquals("@L©µŁƎʪ˩Σ『陆之岇』🧬🏷⛰️🌏", new String(toChars(d4, 0, d4.length)));
     }
 }

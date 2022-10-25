@@ -18,7 +18,6 @@ package plus.kat.utils;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.chain.*;
 import plus.kat.reflex.*;
 
 import java.lang.reflect.*;
@@ -226,13 +225,6 @@ public final class Find {
             ParameterizedType p = (ParameterizedType) type;
             return clazz(
                 p.getRawType()
-            );
-        }
-
-        if (type instanceof Space) {
-            Space s = (Space) type;
-            return clazz(
-                s.getType()
             );
         }
 

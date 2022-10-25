@@ -54,7 +54,7 @@ public interface Chan extends Flag, Closeable {
     ) throws IOException;
 
     /**
-     * Serializes the specified alias and fitter at the current hierarchy
+     * Serializes the specified alias and value at the current hierarchy
      *
      * <pre>{@code
      *  Chan chan = ...
@@ -73,11 +73,11 @@ public interface Chan extends Flag, Closeable {
      */
     boolean set(
         @Nullable String alias,
-        @Nullable Fitter fitter
+        @Nullable Entity value
     ) throws IOException;
 
     /**
-     * Serializes the specified alias, space and fitter at the current hierarchy
+     * Serializes the specified alias, space and value at the current hierarchy
      *
      * <pre>{@code
      *  Chan chan = ...
@@ -93,7 +93,7 @@ public interface Chan extends Flag, Closeable {
     boolean set(
         @Nullable String alias,
         @Nullable String space,
-        @Nullable Fitter fitter
+        @Nullable Entity value
     ) throws IOException;
 
     /**

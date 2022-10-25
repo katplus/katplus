@@ -72,8 +72,8 @@ public class CharReader extends AbstractReader {
             return -1;
         }
 
-        byte[] tmp = cache;
-        if (tmp == null) {
+        byte[] it = cache;
+        if (it == null) {
             int r = range;
             if (r == 0) {
                 r = 128;
@@ -81,54 +81,61 @@ public class CharReader extends AbstractReader {
             if ((cap *= 3) < r) {
                 r = cap;
             }
-            cache = tmp = new byte[r];
+            cache = it = new byte[r];
         }
 
-        int i = 0, l = tmp.length;
+        int i = 0, l = it.length;
         for (; i < l && begin < end; begin++) {
             // next char
-            char c = value.charAt(begin);
+            char code = value.charAt(begin);
 
             // U+0000 ~ U+007F
-            if (c < 0x80) {
-                tmp[i++] = (byte) c;
+            if (code < 0x80) {
+                it[i++] = (byte) code;
             }
 
             // U+0080 ~ U+07FF
-            else if (c < 0x800) {
+            else if (code < 0x800) {
                 if (i + 2 > l) break;
-                tmp[i++] = (byte) ((c >> 6) | 0xC0);
-                tmp[i++] = (byte) ((c & 0x3F) | 0x80);
+                it[i++] = (byte) (code >> 6 | 0xC0);
+                it[i++] = (byte) (code & 0x3F | 0x80);
             }
 
             // U+10000 ~ U+10FFFF
-            // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-            else if (c >= 0xD800 && c <= 0xDFFF) {
+            else if (0xD7FF < code && code < 0xE000) {
                 if (i + 4 > l) break;
-                if (++begin >= end) {
-                    tmp[i++] = '?';
-                    break;
-                }
-
-                char d = value.charAt(begin);
-                if (d < 0xDC00 || d > 0xDFFF) {
-                    tmp[i++] = '?';
+                if (code > 0xDBFF) {
+                    it[i++] = '?';
                     continue;
                 }
 
-                int u = (c << 10) + d - 0x35F_DC00;
-                tmp[i++] = (byte) ((u >> 18) | 0xF0);
-                tmp[i++] = (byte) (((u >> 12) & 0x3F) | 0x80);
-                tmp[i++] = (byte) (((u >> 6) & 0x3F) | 0x80);
-                tmp[i++] = (byte) ((u & 0x3F) | 0x80);
+                if (end == ++begin) {
+                    it[i++] = '?';
+                    break;
+                }
+
+                char arch = value.charAt(begin);
+                if (arch < 0xDC00 ||
+                    arch > 0xDFFF) {
+                    it[i++] = '?';
+                    continue;
+                }
+
+                int hi = code - 0xD7C0;
+                int lo = arch - 0xDC00;
+
+                it[i++] = (byte) (hi >> 8 | 0xF0);
+                it[i++] = (byte) (hi >> 2 & 0x3F | 0x80);
+                it[i++] = (byte) (lo >> 6 | hi << 4 & 0x30 | 0x80);
+                it[i++] = (byte) (lo & 0x3F | 0x80);
             }
 
             // U+0800 ~ U+FFFF
             else {
                 if (i + 3 > l) break;
-                tmp[i++] = (byte) ((c >> 12) | 0xE0);
-                tmp[i++] = (byte) (((c >> 6) & 0x3F) | 0x80);
-                tmp[i++] = (byte) ((c & 0x3F) | 0x80);
+                it[i++] = (byte) (code >> 12 | 0xE0);
+                it[i++] = (byte) (code >> 6 & 0x3F | 0x80);
+                it[i++] = (byte) (code & 0x3F | 0x80);
             }
         }
 

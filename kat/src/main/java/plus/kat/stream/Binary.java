@@ -17,8 +17,6 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.kernel.*;
-
 import java.io.IOException;
 
 /**
@@ -45,6 +43,41 @@ public final class Binary {
         'O', 'P', 'Q', 'R', 'S', 'T',
         'U', 'V', 'W', 'X', 'Y', 'Z'
     };
+
+    /**
+     * Convert the ascii character to a hexadecimal number
+     *
+     * <pre>{@code
+     *   Binary.digit((byte) '0'); // 0
+     *   Binary.digit((byte) '6'); // 6
+     *   Binary.digit((byte) 'a'); // 10
+     *   Binary.digit((byte) 'C'); // 12
+     *   Binary.digit((byte) '-'); // IOException
+     *   Binary.digit((byte) 'L'); // IOException
+     * }</pre>
+     *
+     * @param b the specified {@code b} to be converted
+     * @return {@code [0, 16)}
+     * @since 0.0.4
+     */
+    public static int digit(
+        @NotNull byte b
+    ) throws IOException {
+        if (b > 0x2F) {
+            if (b < 0x3A) {
+                return b - 0x30;
+            }
+            if (b > 0x60 && b < 0x67) {
+                return b - 0x57;
+            }
+            if (b > 0x40 && b < 0x47) {
+                return b - 0x37;
+            }
+        }
+        throw new IOException(
+            "Unexpectedly, " + (char) b + " is not a hexadecimal number"
+        );
+    }
 
     /**
      * Convert the number to lowercase thirty-six-decimal character
@@ -192,163 +225,5 @@ public final class Binary {
         return new String(
             it, 0, 0, k
         );
-    }
-
-    /**
-     * Convert the ascii character to a hexadecimal number
-     *
-     * <pre>{@code
-     *   Binary.digit((byte) '0'); // 0
-     *   Binary.digit((byte) '6'); // 6
-     *   Binary.digit((byte) 'a'); // 10
-     *   Binary.digit((byte) 'C'); // 12
-     *   Binary.digit((byte) '-'); // IOException
-     *   Binary.digit((byte) 'L'); // IOException
-     * }</pre>
-     *
-     * @param b the specified {@code b} to be converted
-     * @return {@code [0, 16)}
-     * @since 0.0.4
-     */
-    public static int digit(
-        @NotNull byte b
-    ) throws IOException {
-        if (b > 0x2F) {
-            if (b < 0x3A) {
-                return b - 0x30;
-            }
-            if (b > 0x60 && b < 0x67) {
-                return b - 0x57;
-            }
-            if (b > 0x40 && b < 0x47) {
-                return b - 0x37;
-            }
-        }
-        throw new IOException(
-            "Unexpectedly, " + (char) b + " is not a hexadecimal number"
-        );
-    }
-
-    /**
-     * Convert the string to an ascii byte array
-     *
-     * @param d the specified {@code d} to be converted
-     * @throws NullPointerException If the specified {@code chars} is null
-     * @since 0.0.4
-     */
-    @NotNull
-    public static byte[] latin(
-        @NotNull String d
-    ) {
-        int len = d.length();
-        if (len != 0) {
-            byte[] it = new byte[len];
-            d.getBytes(0, len, it, 0);
-            return it;
-        }
-        return Chain.EMPTY_BYTES;
-    }
-
-    /**
-     * Convert the byte array to an ascii string
-     *
-     * @param d the specified {@code d} to be converted
-     * @throws NullPointerException If the specified {@code bytes} is null
-     * @since 0.0.4
-     */
-    @NotNull
-    public static String latin(
-        @NotNull byte[] d
-    ) {
-        if (d.length == 0) {
-            return "";
-        }
-        return new String(
-            d, 0, 0, d.length
-        );
-    }
-
-    /**
-     * Returns the length of UTF-8 {@code byte[]}.
-     * Strictly check UTF-8 code, if illegal returns {@code 0}
-     *
-     * @param i the specified begin index, include
-     * @param e the specified end index, exclude
-     * @return {@code [0, +∞)}
-     * @since 0.0.4
-     */
-    public static int length(
-        @NotNull byte[] it, int i, int e
-    ) {
-        if (e <= i) {
-            return 0;
-        }
-
-        int size = 0;
-        for (; i < e; size++) {
-            // next byte
-            byte b = it[i++];
-
-            // U+0000 ~ U+007F
-            // 0xxxxxxx
-            if (b >= 0) {
-                continue;
-            }
-
-            // U+0080 ~ U+07FF
-            // 110xxxxx 10xxxxxx
-            if ((b >> 5) == -2) {
-                // overflow
-                if (i >= e) {
-                    return 0;
-                }
-
-                // check code
-                if ((it[i++] & 0xC0) != 0x80) {
-                    return 0;
-                }
-            }
-
-            // U+0800 ~ U+FFFF
-            // 1110xxxx 10xxxxxx 10xxxxxx
-            else if ((b >> 4) == -2) {
-                // overflow
-                if (i + 1 >= e) {
-                    return 0;
-                }
-
-                // check code
-                if ((it[i++] & 0xC0) != 0x80 ||
-                    (it[i++] & 0xC0) != 0x80) {
-                    return 0;
-                }
-            }
-
-            // U+10000 ~ U+10FFFF
-            // U+D800 ~ U+DBFF & U+DC00 ~ U+DFFF
-            // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-            else if ((b >> 3) == -2) {
-                // overflow
-                if (i + 2 >= e) {
-                    return 0;
-                }
-
-                // check code
-                if ((it[i++] & 0xC0) != 0x80 ||
-                    (it[i++] & 0xC0) != 0x80 ||
-                    (it[i++] & 0xC0) != 0x80) {
-                    return 0;
-                }
-
-                size++; // another of the surrogate pair
-            }
-
-            // Not the current computing category
-            else {
-                return 0;
-            }
-        }
-
-        return size;
     }
 }

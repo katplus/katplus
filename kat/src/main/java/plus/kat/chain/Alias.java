@@ -27,34 +27,27 @@ import plus.kat.utils.*;
  * @author kraity
  * @since 0.0.1
  */
-public final class Alias extends Alpha {
+public class Alias extends Alpha {
     /**
-     * empty alias
+     * Constructs an empty alias
      */
-    public static final Alias
-        EMPTY = new Alias();
-
-    /**
-     * For internal use
-     */
-    private Alias() {
-        super(true);
+    public Alias() {
+        super();
     }
 
     /**
-     * Constructs a final fixed alias
+     * Constructs a mutable alias
      *
-     * @param data the initial byte array
+     * @param data the specified array to be used
      */
     public Alias(
         @NotNull byte[] data
     ) {
         super(data);
-        asset |= Integer.MIN_VALUE;
     }
 
     /**
-     * Constructs a final fixed alias
+     * Constructs a mutable alias
      *
      * @param chain the specified chain to be used
      */
@@ -62,7 +55,6 @@ public final class Alias extends Alpha {
         @NotNull Chain chain
     ) {
         super(chain);
-        asset |= Integer.MIN_VALUE;
     }
 
     /**
@@ -79,28 +71,12 @@ public final class Alias extends Alpha {
     /**
      * Constructs a mutable alias
      *
-     * @param chain  the specified chain to be used
-     * @param bucket the specified bucket to be used
-     */
-    public Alias(
-        @NotNull Chain chain,
-        @Nullable Bucket bucket
-    ) {
-        super(
-            chain, bucket
-        );
-    }
-
-    /**
-     * Constructs a final fixed alias
-     *
      * @param sequence the specified sequence to be used
      */
     public Alias(
         @Nullable CharSequence sequence
     ) {
         super(sequence);
-        asset |= Integer.MIN_VALUE;
     }
 
     /**
@@ -191,14 +167,6 @@ public final class Alias extends Alpha {
     }
 
     /**
-     * Returns a fixed alias of clone this {@link Alias}
-     */
-    @NotNull
-    public Alias copy() {
-        return count == 0 ? EMPTY : new Alias(this);
-    }
-
-    /**
      * @see Alias#Alias(Bucket)
      */
     public static Alias apply() {
@@ -225,21 +193,21 @@ public final class Alias extends Alpha {
             INS = new Buffer();
 
         @Override
-        public boolean share(
+        public boolean join(
             @NotNull byte[] it
         ) {
             return false;
         }
 
         @Override
-        public byte[] swop(
+        public byte[] swap(
             @NotNull byte[] it
         ) {
             return it;
         }
 
         @Override
-        public byte[] apply(
+        public byte[] alloc(
             @NotNull byte[] it, int len, int size
         ) {
             if (size <= RANGE) {

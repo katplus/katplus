@@ -67,7 +67,7 @@ public abstract class Property<T> implements Spare<T> {
     }
 
     @Override
-    public Class<? extends T> getType() {
+    public Class<T> getType() {
         return klass;
     }
 
