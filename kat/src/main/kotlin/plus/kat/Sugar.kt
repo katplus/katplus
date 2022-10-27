@@ -40,7 +40,8 @@ import kotlin.jvm.Throws
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun kat(entity: Entity) = Kat(null, entity).use { it.toString() }
+fun kat(entity: Entity) = Kat(Plan.DEF)
+    .also { it[null] = entity }.use { it.toString() }
 
 /**
  * Serialize the entity to Kat [String]
@@ -515,11 +516,11 @@ inline fun <reified T : Any>
  *  val result = supplier.mark(data, alias)
  * ```
  *
- * @return [Doc]
+ * @return [Chan]
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Supplier?.mark(value: Any?, alias: String?) = Doc(Plan.DEF, this).also { it[alias] = value }
+fun Supplier?.mark(value: Any?, alias: String?): Chan = Doc(Plan.DEF, this).also { it[alias] = value }
 
 /**
  * E.g.
@@ -534,4 +535,4 @@ fun Supplier?.mark(value: Any?, alias: String?) = Doc(Plan.DEF, this).also { it[
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Supplier?.write(value: Any?, alias: String?) = Kat(Plan.DEF, this).also { it[alias] = value }
+fun Supplier?.write(value: Any?, alias: String?): Chan = Kat(Plan.DEF, this).also { it[alias] = value }

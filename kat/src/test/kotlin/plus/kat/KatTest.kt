@@ -11,6 +11,13 @@ class KatKtTest {
     @Test
     fun test_kat() {
         assertEquals(
+            "M{i:id(1)s:name(kraity)}",
+            kat {
+                it["id"] = 1
+                it["name"] = "kraity"
+            }
+        )
+        assertEquals(
             "User{i:id(1)s:name(kraity)}",
             kat("User") {
                 it["id"] = 1

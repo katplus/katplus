@@ -19,7 +19,7 @@ public class SugarTest {
         user.id = 1;
         user.name = "kraity";
 
-        try (Doc doc = Sugar.mark(
+        try (Chan doc = Sugar.mark(
             supplier, user, "Master"
         )) {
             assertEquals("<Master><id>1</id><name>kraity</name></Master>", doc.toString());
