@@ -24,7 +24,7 @@ import plus.kat.*;
  * @author kraity
  * @since 0.0.1
  */
-public class Crash extends Exception {
+public class Crash extends RuntimeException {
     /**
      * code
      */

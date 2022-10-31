@@ -6,6 +6,7 @@ import plus.kat.*;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 import plus.kat.anno.Format;
+import plus.kat.kernel.Alpha;
 import plus.kat.reflex.ArrayType;
 
 import java.io.File;
@@ -556,6 +557,17 @@ public class SpareTest {
         byte[] bytes = "kraity".getBytes();
         assertSame(bytes, spare.cast(bytes));
         assertArrayEquals(bytes, spare.cast("a3JhaXR5"));
+    }
+
+    @Test
+    public void test_alpha() {
+        AlphaSpare spare = AlphaSpare.INSTANCE;
+        Alpha alpha = spare.cast(null);
+        assertNotNull(alpha);
+        assertEquals(0, alpha.length());
+
+        alpha.join("kat.plus");
+        assertEquals("s(kat.plus)", Kat.encode(alpha));
     }
 
     @Test

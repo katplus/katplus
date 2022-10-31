@@ -18,6 +18,7 @@ package plus.kat;
 import plus.kat.anno.*;
 import plus.kat.spare.*;
 import plus.kat.crash.*;
+import plus.kat.kernel.*;
 import plus.kat.reflex.*;
 import plus.kat.utils.*;
 
@@ -1645,6 +1646,16 @@ public interface Supplier extends Cloneable {
                     spare.embed(this);
                     return spare;
                 }
+            }
+
+            if (Alpha.class.isAssignableFrom(klass)) {
+                if (klass == Alpha.class) {
+                    spare = AlphaSpare.INSTANCE;
+                } else {
+                    spare = new AlphaSpare(klass);
+                }
+                spare.embed(this);
+                return spare;
             }
 
             try {

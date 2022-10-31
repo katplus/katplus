@@ -40,8 +40,24 @@ import kotlin.jvm.Throws
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun kat(entity: Entity) = Kat(Plan.DEF)
-    .also { it[null] = entity }.use { it.toString() }
+fun kat(entity: Entity) = Kat(entity).use { it.toString() }
+
+/**
+ * Serialize the entity to Kat
+ *
+ * E.g.
+ * ```
+ *  Kat {
+ *    it["id"] = 1
+ *    it["name"] = "kraity"
+ *  }
+ * ```
+ *
+ * @return [Kat]
+ * @since 0.0.4
+ */
+@Throws(IOException::class)
+fun Kat(entity: Entity) = Kat(Plan.DEF).also { it[null] = entity }
 
 /**
  * Serialize the entity to Kat [String]

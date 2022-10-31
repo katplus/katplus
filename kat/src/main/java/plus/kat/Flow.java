@@ -18,6 +18,7 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 
 import plus.kat.chain.*;
+import plus.kat.kernel.*;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -330,6 +331,64 @@ public interface Flow extends Flag, Closeable {
      */
     void emit(
         @NotNull char[] data, int offset, int length
+    ) throws IOException;
+
+    /**
+     * Concatenates the chain to this {@link Flow},
+     * which will be escaped if it contains special characters
+     *
+     * <pre>{@code
+     *   Flow flow = ...
+     *   // literally
+     *   Alpha data = new Alpha(
+     *      new char[]{
+     *          ^, k, t, ", \
+     *      }
+     *   );
+     *
+     *   // kat
+     *   flow.emit(data); // escape: ^^, k, t, ", \
+     *
+     *   // json
+     *   flow.emit(data); // escape: ^, k, t, \", \\
+     * }</pre>
+     *
+     * @param data the specified source to be appended
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified data is null
+     */
+    void emit(
+        @NotNull Chain data
+    ) throws IOException;
+
+    /**
+     * Concatenates the chain to this {@link Flow},
+     * which will be escaped if it contains special characters
+     *
+     * <pre>{@code
+     *   Flow flow = ...
+     *   // literally
+     *   Alpha data = new Alpha(
+     *      new char[]{
+     *          ^, k, t, ", \
+     *      }
+     *   );
+     *
+     *   // kat
+     *   flow.emit(data, 0, 5); // escape: ^^, k, t, ", \
+     *
+     *   // json
+     *   flow.emit(data, 0, 5); // escape: ^, k, t, \", \\
+     * }</pre>
+     *
+     * @param data   the specified source to be appended
+     * @param offset the specified start index for chain
+     * @param length the specified length of chain to concat
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified data is null
+     */
+    void emit(
+        @NotNull Chain data, int offset, int length
     ) throws IOException;
 
     /**

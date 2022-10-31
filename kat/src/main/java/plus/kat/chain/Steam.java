@@ -522,6 +522,49 @@ public abstract class Steam extends Alpha implements Flow {
     }
 
     /**
+     * Concatenates the chain to this {@link Steam},
+     * which will be escaped if it contains special characters
+     *
+     * @param data the specified chain to be appended
+     */
+    @Override
+    public void emit(
+        @NotNull Chain data
+    ) throws IOException {
+        int size = data.length();
+        if (size != 0) {
+            int i = 0;
+            byte[] it = Unsafe.value(data);
+            while (i < size) {
+                emit(it[i++]);
+            }
+        }
+    }
+
+    /**
+     * Concatenates the chain to this {@link Steam},
+     * which will be escaped if it contains special characters
+     *
+     * @param data the specified chain to be appended
+     */
+    @Override
+    public void emit(
+        @NotNull Chain data, int i, int l
+    ) throws IOException {
+        int k = i + l;
+        if (0 <= i && 0 <= l && k <= data.length()) {
+            byte[] it = Unsafe.value(data);
+            while (i < k) {
+                emit(it[i++]);
+            }
+        } else {
+            throw new IOException(
+                "Out of bounds, i:" + i + " l:" + l + " length:" + data.length()
+            );
+        }
+    }
+
+    /**
      * Concatenates the sequence to this {@link Steam},
      * which will be escaped if it contains special characters
      *
