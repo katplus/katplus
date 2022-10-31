@@ -31,6 +31,8 @@ import java.lang.reflect.Type;
 public interface Coder<K> {
     /**
      * Returns the space of {@link K}
+     *
+     * @see Spare#getSpace()
      */
     @NotNull
     default String getSpace() {
@@ -39,6 +41,8 @@ public interface Coder<K> {
 
     /**
      * Returns the flag of {@link K}
+     *
+     * @see Spare#getFlag()
      */
     @Nullable
     default Boolean getFlag() {
@@ -47,6 +51,8 @@ public interface Coder<K> {
 
     /**
      * Returns the border of {@link K}
+     *
+     * @see Spare#getBorder(Flag)
      */
     @Nullable
     default Boolean getBorder(
@@ -57,6 +63,8 @@ public interface Coder<K> {
 
     /**
      * Create a {@link Builder} of {@link K}
+     *
+     * @see Spare#getBuilder(Type)
      */
     @Nullable
     default Builder<? extends K> getBuilder(
@@ -66,6 +74,8 @@ public interface Coder<K> {
     }
 
     /**
+     * Reads the {@link Alias} as {@link K}
+     *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the flag or alias is null
      */
@@ -78,6 +88,8 @@ public interface Coder<K> {
     }
 
     /**
+     * Reads the {@link Value} as {@link K}
+     *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the flag or value is null
      */
@@ -90,6 +102,8 @@ public interface Coder<K> {
     }
 
     /**
+     * Writes the {@code value} to {@link Chan}
+     *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the chan or value is null
      */
@@ -101,6 +115,8 @@ public interface Coder<K> {
     }
 
     /**
+     * Writes the {@code value} to {@link Flow}
+     *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the flow or value is null
      */

@@ -1648,42 +1648,37 @@ public interface Supplier extends Cloneable {
                 }
             }
 
-            if (Alpha.class.isAssignableFrom(klass)) {
-                if (klass == Alpha.class) {
-                    spare = AlphaSpare.INSTANCE;
-                } else {
-                    spare = new AlphaSpare(klass);
-                }
-                spare.embed(this);
-                return spare;
-            }
-
             try {
-                Class<?> sc = klass.getSuperclass();
-                if (sc == Enum.class) {
-                    spare = new EnumSpare(
-                        embed, klass, this
-                    );
+                if (Alpha.class.isAssignableFrom(klass)) {
+                    if (klass == Alpha.class) {
+                        spare = AlphaSpare.INSTANCE;
+                    } else {
+                        spare = new AlphaSpare(klass);
+                    }
                 } else {
-                    String sn = sc.getName();
-                    if (sn.equals("java.lang.Record")) {
-                        spare = new RecordSpare<>(
+                    Class<?> sc = klass.getSuperclass();
+                    if (sc == Enum.class) {
+                        spare = new EnumSpare(
                             embed, klass, this
                         );
                     } else {
-                        spare = new ReflectSpare<>(
-                            embed, klass, this
-                        );
+                        String sn = sc.getName();
+                        if (sn.equals("java.lang.Record")) {
+                            spare = new RecordSpare<>(
+                                embed, klass, this
+                            );
+                        } else {
+                            spare = new ReflectSpare<>(
+                                embed, klass, this
+                            );
+                        }
                     }
                 }
-
                 spare.embed(this);
-                return spare;
             } catch (Exception e) {
                 // Nothing
             }
-
-            return null;
+            return spare;
         }
 
         @Override
