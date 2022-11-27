@@ -3,9 +3,9 @@ package plus.kat.caller;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
-import plus.kat.kernel.*;
 
 import java.io.*;
 import java.net.*;
@@ -20,7 +20,7 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
  * @author kraity
  * @since 0.0.4
  */
-public class Query extends Alpha {
+public class Query extends Chain {
 
     protected int apex;
 
@@ -61,21 +61,9 @@ public class Query extends Alpha {
         super(32);
         for (Map.Entry<?, ?> it : map.entrySet()) {
             Object key = it.getKey();
-            if (key == null) {
-                continue;
-            }
-            Object val = it.getValue();
-            if (val == null) {
-                set(key.toString(), null);
-            } else if (val instanceof String) {
-                set(key.toString(), (String) val);
-            } else if (val instanceof Integer) {
-                set(key.toString(), (int) val);
-            } else if (val instanceof Long) {
-                set(key.toString(), (long) val);
-            } else {
-                set(key.toString(), val.toString());
-            }
+            if (key != null) set(
+                key.toString(), it.getValue()
+            );
         }
     }
 
@@ -127,28 +115,6 @@ public class Query extends Alpha {
      */
     public Query set(
         @NotNull String key,
-        @Nullable int value
-    ) {
-        return set(key).add(value);
-    }
-
-    /**
-     * @param key   the specified key
-     * @param value the specified value
-     */
-    public Query set(
-        @NotNull String key,
-        @Nullable long value
-    ) {
-        return set(key).add(value);
-    }
-
-    /**
-     * @param key   the specified key
-     * @param value the specified value
-     */
-    public Query set(
-        @NotNull String key,
         @Nullable String value
     ) {
         return set(key).add(value);
@@ -162,8 +128,12 @@ public class Query extends Alpha {
         @NotNull String key,
         @Nullable Object val
     ) {
+        if (val == null) {
+            return set(key);
+        }
+        String data = val.toString();
         return set(key).add(
-            val.toString()
+            data, 0, data.length()
         );
     }
 
@@ -266,52 +236,32 @@ public class Query extends Alpha {
     }
 
     /**
-     * @param num the specified data
+     * @param data the specified data
      */
     public Query add(
-        int num
+        @Nullable CharSequence data
     ) {
-        emit(num);
-        return this;
-    }
-
-    /**
-     * @param num the specified data
-     */
-    public Query add(
-        long num
-    ) {
-        emit(num);
-        return this;
-    }
-
-    /**
-     * @param c the specified data
-     */
-    public Query add(
-        @Nullable CharSequence c
-    ) {
-        if (c == null) {
+        if (data == null) {
             return this;
         }
         return add(
-            c, 0, c.length()
+            data, 0, data.length()
         );
     }
 
     /**
-     * @param c the specified data
-     * @param i the start index
-     * @param l the specified length
+     * @param data the specified data
+     * @param i    the start index
+     * @param l    the specified length
      */
     public Query add(
-        @NotNull CharSequence c, int i, int l
+        @NotNull CharSequence data, int i, int l
     ) {
         int k = i + l;
         grow(count + l);
 
         while (i < k) {
-            char d = c.charAt(i++);
+            char d = data.charAt(i++);
 
             if (d < 0x80) {
                 add((byte) d);
@@ -335,7 +285,7 @@ public class Query extends Alpha {
                     break;
                 }
 
-                char a = c.charAt(i);
+                char a = data.charAt(i);
                 if (a < 0xDC00 ||
                     a > 0xDFFF) {
                     set((byte) '?');
@@ -517,7 +467,7 @@ public class Query extends Alpha {
      * @since 0.0.4
      */
     public static class Parser
-        extends Alpha implements Spoiler {
+        extends Value implements Spoiler {
 
         private Query query;
         private String string;

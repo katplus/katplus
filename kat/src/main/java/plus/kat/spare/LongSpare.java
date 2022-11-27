@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -47,31 +46,22 @@ public class LongSpare extends Property<Long> {
 
     @Override
     public Long apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
-        if (type == long.class ||
+        if (type == null ||
+            type == long.class ||
             type == Long.class) {
             return 0L;
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
     @Override
     public String getSpace() {
         return "l";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == long.class
-            || clazz == Long.class
-            || clazz == Number.class
-            || clazz == Object.class;
     }
 
     @Override
@@ -84,9 +74,9 @@ public class LongSpare extends Property<Long> {
     @Override
     public Long read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        return alias.toLong();
+        return chain.toLong();
     }
 
     @Override
@@ -102,40 +92,43 @@ public class LongSpare extends Property<Long> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.emit(
-            (long) value
-        );
+        flow.emit((long) value);
     }
 
     @Override
     public Long cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Long) {
-                return (Long) data;
-            }
-
-            if (data instanceof Number) {
-                return ((Number) data).longValue();
-            }
-
-            if (data instanceof Boolean) {
-                return ((boolean) data) ? 1L : 0L;
-            }
-
-            if (data instanceof Chain) {
-                return ((Chain) data).toLong();
-            }
-
-            if (data instanceof CharSequence) {
-                CharSequence num = (CharSequence) data;
-                return Convert.toLong(
-                    num, num.length(), 10L, 0L
-                );
-            }
+        if (object == null) {
+            return 0L;
         }
-        return 0L;
+
+        if (object instanceof Long) {
+            return (Long) object;
+        }
+
+        if (object instanceof Number) {
+            return ((Number) object).longValue();
+        }
+
+        if (object instanceof Boolean) {
+            return ((boolean) object) ? 1L : 0L;
+        }
+
+        if (object instanceof Chain) {
+            return ((Chain) object).toLong();
+        }
+
+        if (object instanceof CharSequence) {
+            CharSequence num = (CharSequence) object;
+            return Convert.toLong(
+                num, num.length(), 10L, 0L
+            );
+        }
+
+        throw new IllegalStateException(
+            object + " cannot be converted to Long"
+        );
     }
 }

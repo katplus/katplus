@@ -50,15 +50,56 @@ public abstract class Property<T> implements Spare<T> {
     }
 
     @Override
-    public String getSpace() {
-        return klass.getName();
+    public T apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        Object obj = resultSet
+            .getObject(1);
+        T value = cast(
+            obj, supplier
+        );
+
+        if (value != null) {
+            return value;
+        }
+
+        throw new SQLCrash(
+            "Cannot convert the type from "
+                + obj + " to " + klass
+        );
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz.isAssignableFrom(klass);
+    public T apply(
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) throws Collapse {
+        if (spoiler.hasNext()) {
+            Object obj = spoiler
+                .getValue();
+            T value = cast(
+                obj, supplier
+            );
+
+            if (value != null) {
+                return value;
+            }
+
+            throw new Collapse(
+                "Cannot convert the type from "
+                    + obj + " to " + klass
+            );
+        } else {
+            throw new Collapse(
+                "The spoiler doesn't have a next data value"
+            );
+        }
+    }
+
+    @Override
+    public String getSpace() {
+        return klass.getName();
     }
 
     @Override
@@ -79,58 +120,23 @@ public abstract class Property<T> implements Spare<T> {
     }
 
     @Override
-    public void embed(
+    public Spare<T> join(
         @NotNull Supplier supplier
     ) {
-        supplier.embed(klass, this);
+        supplier.embed(
+            klass, this
+        );
+        return this;
     }
 
     @Override
-    public T apply(
-        @NotNull Spoiler spoiler,
+    public Spare<T> drop(
         @NotNull Supplier supplier
-    ) throws Collapse {
-        if (!spoiler.hasNext()) {
-            throw new Collapse(
-                "No data source"
-            );
-        }
-
-        Object obj = spoiler
-            .getValue();
-        T value = cast(
-            obj, supplier
+    ) {
+        supplier.revoke(
+            klass, this
         );
-
-        if (value != null) {
-            return value;
-        }
-
-        throw new Collapse(
-            "Cannot convert the type from "
-                + obj + " to " + klass
-        );
-    }
-
-    @Override
-    public T apply(
-        @NotNull Supplier supplier,
-        @NotNull ResultSet resultSet
-    ) throws SQLException {
-        Object obj = resultSet
-            .getObject(1);
-        T value = cast(
-            obj, supplier
-        );
-
-        if (value != null) {
-            return value;
-        }
-
-        throw new SQLCrash(
-            "Cannot convert the type from "
-                + obj + " to " + klass
-        );
+        return this;
     }
 
     @Override

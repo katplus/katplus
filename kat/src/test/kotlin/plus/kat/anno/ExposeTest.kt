@@ -27,7 +27,7 @@ class ExposeKtTest {
         var id: Number? = 1
 
         @set:Expose(
-            require = NotNull
+            require = NOTNULL
         )
         var tag: Number? = 2
     }

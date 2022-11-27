@@ -15,17 +15,19 @@
  */
 package plus.kat;
 
-import plus.kat.anno.*;
-import plus.kat.spare.*;
+import plus.kat.anno.Embed;
+import plus.kat.anno.NotNull;
+import plus.kat.anno.Nullable;
+
+import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
-import plus.kat.reflex.*;
+import plus.kat.spare.*;
 import plus.kat.utils.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import java.lang.annotation.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -33,7 +35,6 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
@@ -43,7 +44,7 @@ import java.util.concurrent.atomic.*;
  * @since 0.0.1
  */
 @SuppressWarnings("unchecked")
-public interface Supplier extends Cloneable {
+public interface Supplier extends Converter {
     /**
      * Register the {@link Spare} of {@code klass}
      * and returns the previous value associated with {@code klass}
@@ -58,7 +59,7 @@ public interface Supplier extends Cloneable {
      * @param spare the specified spare to be embedded
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Impl#embed(Class, Spare)
+     * @see Supplier#revoke(Class, Spare)
      * @since 0.0.2
      */
     @Nullable
@@ -73,17 +74,21 @@ public interface Supplier extends Cloneable {
      *
      * <pre>{@code
      *  Supplier supplier = ...
-     *  supplier.revoke(User.class);
+     *  supplier.revoke(User.class, null); // removes the spare of the User.class
+     *  supplier.revoke(User.class, getSpare()); // removes the specified klass and spare
      * }</pre>
      *
      * @param klass the specified klass for revoke
+     * @param spare the specified spare to be removed
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Impl#revoke(Class)
+     * @see Supplier#embed(Class, Spare)
+     * @since 0.0.5
      */
     @Nullable
     Spare<?> revoke(
-        @NotNull Class<?> klass
+        @NotNull Class<?> klass,
+        @Nullable Spare<?> spare
     );
 
     /**
@@ -102,7 +107,7 @@ public interface Supplier extends Cloneable {
      * @param spare the specified spare to be embedded
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} or {@code spare} is null
-     * @see Impl#embed(CharSequence, Spare)
+     * @see Supplier#revoke(CharSequence, Spare)
      */
     @Nullable
     Spare<?> embed(
@@ -116,19 +121,23 @@ public interface Supplier extends Cloneable {
      *
      * <pre>{@code
      *  Supplier supplier = ...
-     *  supplier.revoke(
-     *      "plus.kat.entity.User"
-     *  );
+     *  String klass = "plus.kat.entity.User"
+     *
+     *  supplier.revoke(klass, null); // removes the spare of the specified klass
+     *  supplier.revoke(klass, getSpare()); // removes the specified klass and spare
      * }</pre>
      *
      * @param klass the specified klass for revoke
+     * @param spare the specified spare to be removed
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Impl#revoke(CharSequence)
+     * @see Supplier#embed(CharSequence, Spare)
+     * @since 0.0.5
      */
     @Nullable
     Spare<?> revoke(
-        @NotNull CharSequence klass
+        @NotNull CharSequence klass,
+        @Nullable Spare<?> spare
     );
 
     /**
@@ -143,7 +152,6 @@ public interface Supplier extends Cloneable {
      * @param klass the specified klass for lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Impl#lookup(Class)
      */
     @Nullable <T>
     Spare<T> lookup(
@@ -151,8 +159,7 @@ public interface Supplier extends Cloneable {
     );
 
     /**
-     * Returns the {@link Spare} of {@code klass}
-     * and then call {@link Spare#accept(Class)} to check.
+     * Returns the {@link Spare} of {@code klass}.
      * If there is no cache, use the {@link Provider} to search for it
      *
      * <pre>{@code
@@ -165,37 +172,10 @@ public interface Supplier extends Cloneable {
      * @param klass the specified klass for lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Impl#lookup(CharSequence)
      */
     @Nullable <T>
     Spare<T> lookup(
         @NotNull CharSequence klass
-    );
-
-    /**
-     * Returns the {@link Spare} of {@code type}.
-     * If the spare of the type does not exist, search according to klass
-     *
-     * <pre>{@code
-     *  Supplier supplier = ...
-     *  Type type = User.class;
-     *  Spare<User> spare = supplier.lookup(
-     *      type, "plus.kat.entity.User"
-     *  );
-     * }</pre>
-     *
-     * @param type  the specified type for lookup
-     * @param klass the specified alternate klass
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
-     * @see Spare#accept(Class)
-     * @see Impl#lookup(Type, CharSequence)
-     * @since 0.0.4
-     */
-    @Nullable <T>
-    Spare<T> lookup(
-        @Nullable Type type,
-        @Nullable CharSequence klass
     );
 
     /**
@@ -213,8 +193,6 @@ public interface Supplier extends Cloneable {
      * @param klass the specified alternate klass
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Spare#accept(Class)
-     * @see Impl#lookup(Class, CharSequence)
      * @since 0.0.4
      */
     @Nullable <T>
@@ -224,8 +202,7 @@ public interface Supplier extends Cloneable {
     );
 
     /**
-     * Returns the {@link Spare} of {@code klass}
-     * and then call {@link Spare#accept(Class)} to check. If there is no cache,
+     * Returns the {@link Spare} of {@code klass}. If there is no cache,
      * use the {@link Provider} to search for it, if null try to search as class name
      *
      * <pre>{@code
@@ -238,9 +215,6 @@ public interface Supplier extends Cloneable {
      * @param klass the specified klass for search
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Spare#accept(Class)
-     * @see Impl#search(CharSequence)
-     * @see Supplier#search(Class, CharSequence)
      * @since 0.0.4
      */
     @Nullable <T>
@@ -249,36 +223,7 @@ public interface Supplier extends Cloneable {
     );
 
     /**
-     * Returns the {@link Spare} of {@code type}.
-     * Find the class of the type as the parent class, and then
-     * look for an alternative to the klass. If there is no cache,
-     * use the {@link Provider} to search for it, if null try to search as class name
-     *
-     * <pre>{@code
-     *  Supplier supplier = ...
-     *  Type type = User.class;
-     *  Spare<UserVO> spare = supplier.search(type, "plus.kat.entity.UserVO");
-     * }</pre>
-     *
-     * @param type  the specified parent type
-     * @param klass the specified actual type
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
-     * @see Spare#accept(Class)
-     * @see Impl#search(Type, CharSequence)
-     * @see Supplier#search(Class, CharSequence)
-     * @since 0.0.4
-     */
-    @Nullable <T>
-    Spare<T> search(
-        @Nullable Type type,
-        @Nullable CharSequence klass
-    );
-
-    /**
-     * Returns the {@link Spare} of {@code klass}
-     * and then call {@link Spare#accept(Class)} to check.
-     * <p>
+     * Returns the {@link Spare} of {@code klass}.
      * If not cached first through uses the {@link Provider} to search for it,
      * if not found, then use {@link Class#forName(String, boolean, ClassLoader)}
      * to find and judge whether it is a subclass of {@code type} and then find its {@link Spare}.
@@ -293,8 +238,6 @@ public interface Supplier extends Cloneable {
      * @param klass the specified actual class
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Spare#accept(Class)
-     * @see Impl#search(Class, CharSequence)
      * @since 0.0.4
      */
     @Nullable <K, T extends K>
@@ -338,7 +281,7 @@ public interface Supplier extends Cloneable {
             return spare.apply(klass);
         } else {
             throw new FatalCrash(
-                "No spare of " + klass
+                "Not found the spare of " + klass
             );
         }
     }
@@ -371,13 +314,15 @@ public interface Supplier extends Cloneable {
     ) throws Collapse {
         Spare<E> spare = lookup(klass);
 
-        if (spare == null) {
+        if (spare != null) {
+            return spare.apply(
+                spoiler, this
+            );
+        } else {
             throw new FatalCrash(
-                "No spare of " + klass
+                "Not found the spare of " + klass
             );
         }
-
-        return spare.apply(spoiler, this);
     }
 
     /**
@@ -415,86 +360,102 @@ public interface Supplier extends Cloneable {
     ) throws SQLException {
         Spare<E> spare = lookup(klass);
 
-        if (spare == null) {
+        if (spare != null) {
+            return spare.apply(
+                this, result
+            );
+        } else {
             throw new FatalCrash(
-                "No spare of " + klass
+                "Not found the spare of " + klass
             );
         }
-
-        return spare.apply(this, result);
     }
 
     /**
-     * Convert the {@link Object} to {@code K}
+     * Converts the {@link Object} to {@link E}
      *
      * <pre>{@code
      *  Class<User> clazz = ...
      *  Supplier supplier = ...
      *
-     *  User user = spare.supplier(
+     *  User user = supplier.cast(
      *      clazz, "{:id(1):name(kraity)}"
      *  );
-     *  User user = spare.cast(
+     *  User user = supplier.cast(
      *      clazz, Map.of("id", 1, "name", "kraity")
      *  );
      * }</pre>
      *
-     * @param klass the specified klass for lookup
-     * @param data  the specified data to be converted
+     * @param klass  the specified klass for lookup
+     * @param object the specified data to be converted
      * @return {@link E} or {@code null}
+     * @throws Collapse              If a build error occurs
+     * @throws FatalCrash            If no spare available for klass is found
+     * @throws IllegalStateException If the object cannot be converted to {@link E}
      * @see Spare#cast(Object, Supplier)
      */
     @Nullable
     default <E> E cast(
         @NotNull Class<E> klass,
-        @NotNull Object data
+        @Nullable Object object
     ) {
         Spare<E> spare = lookup(klass);
 
-        if (spare == null) {
-            return null;
+        if (spare != null) {
+            return spare.cast(
+                object, this
+            );
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + klass
+            );
         }
-
-        return spare.cast(data, this);
     }
 
     /**
-     * Convert the {@link Object} to {@code K}
+     * Converts the {@link Object} to {@link E}
      *
      * <pre>{@code
      *  String clazz = "plus.kat.entity.User"
      *  Supplier supplier = ...
      *
-     *  User user = spare.supplier(
+     *  User user = supplier.cast(
      *      clazz, "{:id(1):name(kraity)}"
      *  );
-     *  User user = spare.cast(
+     *  User user = supplier.cast(
      *      clazz, Map.of("id", 1, "name", "kraity")
      *  );
      * }</pre>
      *
-     * @param klass the specified klass for lookup
-     * @param data  the specified data to be converted
+     * @param klass  the specified klass for lookup
+     * @param object the specified data to be converted
      * @return {@link E} or {@code null}
-     * @throws ClassCastException If {@link E} is not an instance of {@code klass}
+     * @throws Collapse              If a build error occurs
+     * @throws FatalCrash            If no spare available for klass is found
+     * @throws ClassCastException    If {@link E} is not an instance of the klass
+     * @throws IllegalStateException If the object cannot be converted to {@link E}
      * @see Spare#cast(Object, Supplier)
      */
     @Nullable
     default <E> E cast(
         @NotNull CharSequence klass,
-        @NotNull Object data
+        @Nullable Object object
     ) {
         Spare<E> spare = search(klass);
 
-        if (spare == null) {
-            return null;
+        if (spare != null) {
+            return spare.cast(
+                object, this
+            );
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + klass
+            );
         }
-
-        return spare.cast(data, this);
     }
 
     /**
-     * If {@link K} is a Bean, then returns
+     * If {@link T} is a Bean, then returns
      * a spoiler over all elements of the {@code bean}
      *
      * <pre>{@code
@@ -509,26 +470,29 @@ public interface Supplier extends Cloneable {
      *
      * @param bean the specified bean to be flattened
      * @return {@link Spoiler} or {@code null}
+     * @throws FatalCrash           If no spare available for bean is found
      * @throws NullPointerException If the specified bean is null
      * @since 0.0.3
      */
     @Nullable
-    default <K> Spoiler flat(
-        @NotNull K bean
+    default <T> Spoiler flat(
+        @NotNull T bean
     ) {
-        Class<K> klass = (Class<K>)
+        Class<T> klass = (Class<T>)
             bean.getClass();
-        Spare<K> spare = lookup(klass);
+        Spare<T> spare = lookup(klass);
 
-        if (spare == null) {
-            return null;
+        if (spare != null) {
+            return spare.flat(bean);
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + klass
+            );
         }
-
-        return spare.flat(bean);
     }
 
     /**
-     * If {@link K} is a Bean, then perform a given
+     * If {@link T} is a Bean, then perform a given
      * visitor in each item until all entries are processed
      *
      * <pre>{@code
@@ -547,23 +511,28 @@ public interface Supplier extends Cloneable {
      * @param bean    the specified bean to be flattened
      * @param visitor the specified visitor used to access bean
      * @return {@code true} if the bean can be flattened otherwise {@code false}
+     * @throws FatalCrash           If no spare available for bean is found
      * @throws NullPointerException If the {@code bean} or {@code visitor} is null
      * @see Spare#flat(Object, Visitor)
      * @since 0.0.3
      */
-    default <K> boolean flat(
-        @NotNull K bean,
+    default <T> boolean flat(
+        @NotNull T bean,
         @NotNull Visitor visitor
     ) {
-        Class<K> klass = (Class<K>)
+        Class<T> klass = (Class<T>)
             bean.getClass();
-        Spare<K> spare = lookup(klass);
+        Spare<T> spare = lookup(klass);
 
-        if (spare == null) {
-            return false;
+        if (spare != null) {
+            return spare.flat(
+                bean, visitor
+            );
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + klass
+            );
         }
-
-        return spare.flat(bean, visitor);
     }
 
     /**
@@ -579,23 +548,28 @@ public interface Supplier extends Cloneable {
      *
      * @param bean    the specified bean to be updated
      * @param spoiler the specified spoiler as data source
-     * @return {@code true} if successful update
-     * @throws NullPointerException If the parameters contains null
+     * @return the number of rows affected
+     * @throws FatalCrash           If no spare available for bean is found
+     * @throws NullPointerException If the specified parameters contains null
      * @since 0.0.4
      */
-    default <K> boolean update(
-        @NotNull K bean,
+    default <T> int update(
+        @NotNull T bean,
         @NotNull Spoiler spoiler
     ) {
-        Class<K> klass = (Class<K>)
+        Class<T> klass = (Class<T>)
             bean.getClass();
-        Spare<K> spare = lookup(klass);
+        Spare<T> spare = lookup(klass);
 
-        if (spare == null) {
-            return false;
+        if (spare != null) {
+            return spare.update(
+                bean, spoiler, this
+            );
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + klass
+            );
         }
-
-        return spare.update(bean, spoiler, this) != 0;
     }
 
     /**
@@ -611,24 +585,29 @@ public interface Supplier extends Cloneable {
      *
      * @param bean      the specified bean to be updated
      * @param resultSet the specified spoiler as data source
-     * @return {@code true} if successful update
+     * @return the number of rows affected
      * @throws SQLException         If a database access error occurs
-     * @throws NullPointerException If the parameters contains null
+     * @throws FatalCrash           If no spare available for bean is found
+     * @throws NullPointerException If the specified parameters contains null
      * @since 0.0.4
      */
-    default <K> boolean update(
-        @NotNull K bean,
+    default <T> int update(
+        @NotNull T bean,
         @NotNull ResultSet resultSet
     ) throws SQLException {
-        Class<K> klass = (Class<K>)
+        Class<T> klass = (Class<T>)
             bean.getClass();
-        Spare<K> spare = lookup(klass);
+        Spare<T> spare = lookup(klass);
 
-        if (spare == null) {
-            return false;
+        if (spare != null) {
+            return spare.update(
+                bean, this, resultSet
+            );
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + klass
+            );
         }
-
-        return spare.update(bean, this, resultSet) != 0;
     }
 
     /**
@@ -644,12 +623,13 @@ public interface Supplier extends Cloneable {
      *
      * @param target the specified target to be updated
      * @param source the specified source as data source
-     * @return {@code true} if successful update
-     * @throws NullPointerException If the parameters contains null
+     * @return the number of rows affected
+     * @throws FatalCrash           If no spare available for beans is found
+     * @throws NullPointerException If the specified parameters contains null
      * @see Spare#update(Object, Spoiler, Supplier)
      * @since 0.0.4
      */
-    default <S, T> boolean mutate(
+    default <S, T> int mutate(
         @NotNull S source,
         @NotNull T target
     ) {
@@ -657,19 +637,32 @@ public interface Supplier extends Cloneable {
             (Class<S>) source.getClass()
         );
         if (spare0 == null) {
-            return false;
+            throw new FatalCrash(
+                "Not found the spare of " + source
+            );
         }
 
-        Spoiler spoiler = spare0.flat(source);
+        Spoiler spoiler =
+            spare0.flat(source);
         if (spoiler == null) {
-            return false;
+            throw new FatalCrash(
+                "The spoiler is null"
+            );
         }
 
         Spare<T> spare = lookup(
             (Class<T>) target.getClass()
         );
 
-        return spare != null && spare.update(target, spoiler, this) != 0;
+        if (spare != null) {
+            return spare.update(
+                target, spoiler, this
+            );
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + target
+            );
+        }
     }
 
     /**
@@ -708,7 +701,7 @@ public interface Supplier extends Cloneable {
      *
      *   User user = supplier.read(
      *      event.with(
-     *         Flag.STRING_AS_OBJECT
+     *         Flag.VALUE_AS_BEAN
      *      )
      *   );
      * }</pre>
@@ -818,7 +811,7 @@ public interface Supplier extends Cloneable {
      *
      *   User user = supplier.down(
      *      event.with(
-     *         Flag.STRING_AS_OBJECT
+     *         Flag.VALUE_AS_BEAN
      *      )
      *   );
      * }</pre>
@@ -928,7 +921,7 @@ public interface Supplier extends Cloneable {
      *
      *   User user = supplier.parse(
      *      event.with(
-     *         Flag.STRING_AS_OBJECT
+     *         Flag.VALUE_AS_BEAN
      *      )
      *   );
      * }</pre>
@@ -1101,61 +1094,11 @@ public interface Supplier extends Cloneable {
      *   Supplier supplier = ...
      *
      *   Algo algo = ...
-     *   User user = supplier.solve(
-     *      algo, event.with(
-     *         Flag.STRING_AS_OBJECT
-     *      )
-     *   );
-     * }</pre>
-     *
-     * @param algo  the specified algo for solve
-     * @param event the specified event to be handled
-     * @throws Collapse             If parsing fails or the result is null
-     * @throws FatalCrash           If no spare available for klass is found
-     * @throws NullPointerException If the specified algo or the event is null
-     * @see Spare#solve(Algo, Event)
-     * @since 0.0.4
-     */
-    @NotNull
-    default <T> T solve(
-        @NotNull Algo algo,
-        @NotNull Event<T> event
-    ) {
-        Spare<T> spare = (Spare<T>)
-            event.getSpare();
-
-        if (spare != null) {
-            event.prepare(this);
-            return spare.solve(
-                algo, event
-            );
-        } else {
-            Type type = event.getType();
-            if (type != null) {
-                return solve(
-                    type, algo, event
-                );
-            } else {
-                return solve(
-                    Object.class, algo, event
-                );
-            }
-        }
-    }
-
-    /**
-     * Resolve the {@link Event} and convert the result to {@link T}
-     *
-     * <pre>{@code
-     *   Event<User> event = ...
-     *   Supplier supplier = ...
-     *
-     *   Algo algo = ...
      *   String type = "plus.kat.entity.User";
      *
      *   User user = supplier.solve(
      *      type, algo, event.with(
-     *         Flag.STRING_AS_OBJECT
+     *         Flag.VALUE_AS_BEAN
      *      )
      *   );
      * }</pre>
@@ -1177,14 +1120,15 @@ public interface Supplier extends Cloneable {
     ) {
         Spare<T> spare = search(klass);
 
-        if (spare == null) {
+        if (spare != null) {
+            return spare.solve(
+                algo, event.with(this)
+            );
+        } else {
             throw new FatalCrash(
-                "No spare of " + klass
+                "Not found the spare of " + klass
             );
         }
-
-        event.with(this);
-        return spare.solve(algo, event);
     }
 
     /**
@@ -1199,7 +1143,7 @@ public interface Supplier extends Cloneable {
      *
      *   User user = supplier.solve(
      *      type, algo, event.with(
-     *         Flag.STRING_AS_OBJECT
+     *         Flag.VALUE_AS_BEAN
      *      )
      *   );
      * }</pre>
@@ -1219,18 +1163,25 @@ public interface Supplier extends Cloneable {
         @NotNull Algo algo,
         @NotNull Event<T> event
     ) {
-        Spare<T> spare = lookup(type, null);
-
-        if (spare == null) {
+        Class<T> clazz = Space.wipe(type);
+        if (clazz == null) {
             throw new FatalCrash(
-                "No spare of " + type
+                "Not found the class of " + type
             );
         }
 
-        event.with(this);
-        event.prepare(type);
+        Spare<T> spare = lookup(clazz);
 
-        return spare.solve(algo, event);
+        if (spare != null) {
+            event.with(this);
+            return spare.solve(
+                algo, event.setup(type)
+            );
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + type
+            );
+        }
     }
 
     /**
@@ -1245,7 +1196,7 @@ public interface Supplier extends Cloneable {
      *
      *   User user = supplier.solve(
      *      type, algo, event.with(
-     *         Flag.STRING_AS_OBJECT
+     *         Flag.VALUE_AS_BEAN
      *      )
      *   );
      * }</pre>
@@ -1267,16 +1218,16 @@ public interface Supplier extends Cloneable {
     ) {
         Spare<E> spare = lookup(klass);
 
-        if (spare == null) {
+        if (spare != null) {
+            event.with(this);
+            return spare.solve(
+                algo, event.setup(klass)
+            );
+        } else {
             throw new FatalCrash(
-                "No spare of " + klass
+                "Not found the spare of " + klass
             );
         }
-
-        event.with(this);
-        event.prepare(klass);
-
-        return spare.solve(algo, event);
     }
 
     /**
@@ -1298,14 +1249,13 @@ public interface Supplier extends Cloneable {
         static {
             INS = new Impl(
                 Config.get(
-                    "kat.sponsor.capacity", 24
+                    "kat.supplier.weight", 32
                 ),
                 Config.get(
-                    "kat.supplier.capacity", 32
+                    "kat.supplier.capacity", 64
                 )
             );
 
-            INS.put(Object.class, ObjectSpare.INSTANCE);
             INS.put(String.class, StringSpare.INSTANCE);
             INS.put(int.class, IntegerSpare.INSTANCE);
             INS.put(Integer.class, IntegerSpare.INSTANCE);
@@ -1321,41 +1271,39 @@ public interface Supplier extends Cloneable {
             INS.put(Byte.class, ByteSpare.INSTANCE);
             INS.put(short.class, ShortSpare.INSTANCE);
             INS.put(Short.class, ShortSpare.INSTANCE);
-            INS.put(char.class, CharSpare.INSTANCE);
-            INS.put(Character.class, CharSpare.INSTANCE);
-            INS.put(Number.class, NumberSpare.INSTANCE);
-            INS.put(byte[].class, ByteArraySpare.INSTANCE);
-            INS.put(Object[].class, ArraySpare.INSTANCE);
             INS.put(Map.class, MapSpare.INSTANCE);
             INS.put(Set.class, SetSpare.INSTANCE);
             INS.put(List.class, ListSpare.INSTANCE);
             INS.put(void.class, VoidSpare.INSTANCE);
             INS.put(Void.class, VoidSpare.INSTANCE);
-            INS.put(CharSequence.class, StringSpare.INSTANCE);
+            INS.put(char.class, CharSpare.INSTANCE);
+            INS.put(Character.class, CharSpare.INSTANCE);
+            INS.put(Number.class, NumberSpare.INSTANCE);
+            INS.put(Object.class, ObjectSpare.INSTANCE);
+            INS.put(byte[].class, ByteArraySpare.INSTANCE);
+            INS.put(Object[].class, ArraySpare.INSTANCE);
             INS.put(BigInteger.class, BigIntegerSpare.INSTANCE);
             INS.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
-            INS.put(StringBuffer.class, StringBufferSpare.INSTANCE);
-            INS.put(StringBuilder.class, StringBuilderSpare.INSTANCE);
 
-            INS.table.put("$", ObjectSpare.INSTANCE);
-            INS.table.put("s", StringSpare.INSTANCE);
-            INS.table.put("b", BooleanSpare.INSTANCE);
-            INS.table.put("i", IntegerSpare.INSTANCE);
-            INS.table.put("l", LongSpare.INSTANCE);
-            INS.table.put("f", FloatSpare.INSTANCE);
-            INS.table.put("d", DoubleSpare.INSTANCE);
-            INS.table.put("c", CharSpare.INSTANCE);
-            INS.table.put("o", ByteSpare.INSTANCE);
-            INS.table.put("u", ShortSpare.INSTANCE);
-            INS.table.put("M", MapSpare.INSTANCE);
-            INS.table.put("A", ArraySpare.INSTANCE);
-            INS.table.put("L", ListSpare.INSTANCE);
-            INS.table.put("S", SetSpare.INSTANCE);
-            INS.table.put("E", ErrorSpare.INSTANCE);
-            INS.table.put("B", ByteArraySpare.INSTANCE);
-            INS.table.put("I", BigIntegerSpare.INSTANCE);
-            INS.table.put("D", BigDecimalSpare.INSTANCE);
-            INS.table.put("", ObjectSpare.INSTANCE);
+            INS.extra.put("", ObjectSpare.INSTANCE);
+            INS.extra.put("$", ObjectSpare.INSTANCE);
+            INS.extra.put("s", StringSpare.INSTANCE);
+            INS.extra.put("b", BooleanSpare.INSTANCE);
+            INS.extra.put("i", IntegerSpare.INSTANCE);
+            INS.extra.put("l", LongSpare.INSTANCE);
+            INS.extra.put("f", FloatSpare.INSTANCE);
+            INS.extra.put("d", DoubleSpare.INSTANCE);
+            INS.extra.put("c", CharSpare.INSTANCE);
+            INS.extra.put("o", ByteSpare.INSTANCE);
+            INS.extra.put("u", ShortSpare.INSTANCE);
+            INS.extra.put("n", NumberSpare.INSTANCE);
+            INS.extra.put("M", MapSpare.INSTANCE);
+            INS.extra.put("A", ArraySpare.INSTANCE);
+            INS.extra.put("L", ListSpare.INSTANCE);
+            INS.extra.put("S", SetSpare.INSTANCE);
+            INS.extra.put("B", ByteArraySpare.INSTANCE);
+            INS.extra.put("I", BigIntegerSpare.INSTANCE);
+            INS.extra.put("D", BigDecimalSpare.INSTANCE);
 
             try (KatLoader<Provider> loader =
                      new KatLoader<>(Provider.class)) {
@@ -1380,48 +1328,49 @@ public interface Supplier extends Cloneable {
                     for (; i < size; i++) {
                         Provider P = PS[i];
                         try {
-                            if (P.accept(INS)) {
+                            if (P.alive(INS)) {
                                 PS[k++] = P;
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            throw new Error(
+                                "Failed to activate " + P, e
+                            );
                         }
                     }
 
                     if (k != i) {
                         Provider[] RS = new Provider[k];
                         System.arraycopy(
-                            PS, 0, RS, 0, k
+                            PS, 0, PS = RS, 0, k
                         );
-                        PS = RS;
                     }
 
-                    PRO = PS;
                     if (k != 1) {
                         Arrays.sort(
-                            PRO, Collections.reverseOrder()
+                            PS, Collections.reverseOrder()
                         );
                     }
+                    PRO = PS;
                 } else {
                     PRO = new Provider[]{INS};
                 }
             } catch (Exception e) {
                 throw new Error(
-                    "Unexpectedly, cannot be loaded", e
+                    "Failed to load the external providers", e
                 );
             }
         }
 
         /**
-         * default relationship table
+         * default extra mapping table
          */
-        protected final Map<Object, Spare<?>> table;
+        protected final Map<Object, Spare<?>> extra;
 
         public Impl(
-            int sponsor, int capacity
+            int weight, int capacity
         ) {
             super(capacity);
-            table = new ConcurrentHashMap<>(sponsor);
+            extra = new ConcurrentHashMap<>(weight);
         }
 
         @Override
@@ -1441,9 +1390,13 @@ public interface Supplier extends Cloneable {
 
         @Override
         public Spare<?> revoke(
-            @NotNull Class<?> klass
+            @NotNull Class<?> klass,
+            @Nullable Spare<?> spare
         ) {
-            return remove(klass);
+            if (spare == null) {
+                return remove(klass);
+            }
+            return remove(klass, spare) ? spare : null;
         }
 
         @Override
@@ -1451,16 +1404,20 @@ public interface Supplier extends Cloneable {
             @NotNull CharSequence klass,
             @NotNull Spare<?> spare
         ) {
-            return table.put(
+            return extra.put(
                 klass, spare
             );
         }
 
         @Override
         public Spare<?> revoke(
-            @NotNull CharSequence klass
+            @NotNull CharSequence klass,
+            @Nullable Spare<?> spare
         ) {
-            return table.remove(klass);
+            if (spare == null) {
+                return extra.remove(klass);
+            }
+            return extra.remove(klass, spare) ? spare : null;
         }
 
         @Override
@@ -1502,12 +1459,77 @@ public interface Supplier extends Cloneable {
 
         @Override
         public <T> Spare<T> lookup(
-            @Nullable Type type,
+            @Nullable Class<T> type,
             @Nullable CharSequence klass
         ) {
-            return lookup(
-                (Class<T>) Find.clazz(type), klass
+            if (type == null) {
+                return search(
+                    null, klass
+                );
+            }
+
+            Spare<T> spare = lookup(type);
+            if (spare != null ||
+                klass == null) {
+                return spare;
+            } else {
+                return search(type, klass);
+            }
+        }
+
+        @Override
+        public <T> Spare<T> search(
+            @NotNull CharSequence klass
+        ) {
+            return search(
+                Object.class, klass
             );
+        }
+
+        @Override
+        public <K, T extends K> Spare<T> search(
+            @Nullable Class<K> type,
+            @Nullable CharSequence klass
+        ) {
+            if (klass == null) {
+                return null;
+            }
+
+            Spare<?> spare = extra.get(klass);
+            if (spare != null) {
+                if (type == null ||
+                    type.isAssignableFrom(
+                        spare.getType()
+                    )) {
+                    return (Spare<T>) spare;
+                }
+                return null;
+            }
+
+            int i = klass.length();
+            if (i < 2 || i > 127) {
+                return null;
+            }
+
+            Provider[] PS = PRO;
+            if (PS != null) {
+                String name = klass.toString();
+                for (Provider p : PS) {
+                    try {
+                        spare = p.search(
+                            type, name, this
+                        );
+                    } catch (Collapse e) {
+                        return null;
+                    }
+
+                    if (spare != null) {
+                        return (Spare<T>) spare;
+                    }
+                }
+            }
+
+            return null;
         }
 
         @Override
@@ -1515,13 +1537,11 @@ public interface Supplier extends Cloneable {
             @NotNull Class<?> klass,
             @NotNull Supplier supplier
         ) {
-            Spare<?> spare = null;
             String name = klass.getName();
-
             switch (name.charAt(0)) {
                 case 'j': {
                     if (name.startsWith("java.")) {
-                        return onJava(
+                        return sought(
                             name, klass
                         );
                     }
@@ -1554,9 +1574,7 @@ public interface Supplier extends Cloneable {
                 }
                 case '[': {
                     if (klass.isArray()) {
-                        spare = new ArraySpare(klass);
-                        spare.embed(this);
-                        return spare;
+                        return new ArraySpare(klass).join(this);
                     }
                 }
             }
@@ -1567,24 +1585,33 @@ public interface Supplier extends Cloneable {
                 if (klass.isInterface() ||
                     Coder.class.isAssignableFrom(klass) ||
                     Entity.class.isAssignableFrom(klass) ||
-                    Exception.class.isAssignableFrom(klass)) {
+                    Throwable.class.isAssignableFrom(klass)) {
                     return null;
+                }
+                if (Chain.class.isAssignableFrom(klass)) {
+                    if (klass == Chain.class) {
+                        return ChainSpare.INSTANCE.join(this);
+                    } else {
+                        return new ChainSpare(klass).join(this);
+                    }
                 }
             } else {
                 Class<?> clazz = embed.with();
                 if (clazz != Spare.class) {
-                    // Pointing to clazz?
                     if (!Spare.class.
                         isAssignableFrom(clazz)) {
-                        spare = lookup(clazz);
+                        Spare<?> spare = lookup(clazz);
                         if (spare != null) {
                             putIfAbsent(
                                 klass, spare
                             );
                         }
-                    } else try {
+                        return spare;
+                    }
+
+                    try {
                         // double-checking
-                        spare = get(klass);
+                        Spare<?> spare = get(klass);
 
                         // check for cache
                         if (spare != null ||
@@ -1619,7 +1646,7 @@ public interface Supplier extends Cloneable {
                                 } else if (m == Supplier.class) {
                                     args[i] = this;
                                 } else if (m.isPrimitive()) {
-                                    args[i] = Find.value(m);
+                                    args[i] = lookup(m).apply();
                                 } else if (m.isAnnotation()) {
                                     args[i] = klass.getAnnotation(
                                         (Class<? extends Annotation>) m
@@ -1631,137 +1658,43 @@ public interface Supplier extends Cloneable {
                         if (!c.isAccessible()) {
                             c.setAccessible(true);
                         }
-                        spare = (Spare<?>) c.newInstance(args);
-                        spare.embed(this);
+                        return ((Spare<?>)
+                            c.newInstance(args)
+                        ).join(this);
                     } catch (Exception e) {
-                        // Nothing
+                        throw new FatalCrash(
+                            "Failed to build the '"
+                                + klass + "' coder: " + clazz, e
+                        );
                     }
-                    return spare;
                 }
 
                 if (klass.isInterface()) {
-                    spare = new ProxySpare(
+                    return new ProxySpare(embed, klass, this).join(this);
+                }
+            }
+
+            Spare<?> spare;
+            Class<?> sc = klass.getSuperclass();
+
+            if (sc == Enum.class) {
+                spare = new EnumSpare(
+                    embed, klass, this
+                );
+            } else {
+                String sn = sc.getName();
+                if (sn.equals("java.lang.Record")) {
+                    spare = new RecordSpare<>(
                         embed, klass, this
                     );
-                    spare.embed(this);
-                    return spare;
-                }
-            }
-
-            try {
-                if (Alpha.class.isAssignableFrom(klass)) {
-                    if (klass == Alpha.class) {
-                        spare = AlphaSpare.INSTANCE;
-                    } else {
-                        spare = new AlphaSpare(klass);
-                    }
                 } else {
-                    Class<?> sc = klass.getSuperclass();
-                    if (sc == Enum.class) {
-                        spare = new EnumSpare(
-                            embed, klass, this
-                        );
-                    } else {
-                        String sn = sc.getName();
-                        if (sn.equals("java.lang.Record")) {
-                            spare = new RecordSpare<>(
-                                embed, klass, this
-                            );
-                        } else {
-                            spare = new ReflectSpare<>(
-                                embed, klass, this
-                            );
-                        }
-                    }
-                }
-                spare.embed(this);
-            } catch (Exception e) {
-                // Nothing
-            }
-            return spare;
-        }
-
-        @Override
-        public <T> Spare<T> lookup(
-            @Nullable Class<T> type,
-            @Nullable CharSequence klass
-        ) {
-            if (type == null) {
-                return search(
-                    null, klass
-                );
-            }
-
-            Spare<T> spare = lookup(type);
-            if (spare != null ||
-                klass == null) {
-                return spare;
-            }
-
-            return search(type, klass);
-        }
-
-        @Override
-        public <T> Spare<T> search(
-            @NotNull CharSequence klass
-        ) {
-            return search(
-                Object.class, klass
-            );
-        }
-
-        @Override
-        public <T> Spare<T> search(
-            @Nullable Type type,
-            @Nullable CharSequence klass
-        ) {
-            return search(
-                (Class<T>) Find.clazz(type), klass
-            );
-        }
-
-        @Override
-        public <K, T extends K> Spare<T> search(
-            @Nullable Class<K> type,
-            @Nullable CharSequence klass
-        ) {
-            if (klass == null) {
-                return null;
-            }
-
-            Spare<?> spare = table.get(klass);
-            if (spare != null) {
-                if (type == null ||
-                    spare.accept(type)) {
-                    return (Spare<T>) spare;
-                }
-                return null;
-            }
-
-            int i = klass.length();
-            if (i < 2 || i > 191) {
-                return null;
-            }
-
-            Provider[] PS = PRO;
-            if (PS != null) {
-                String name = klass.toString();
-                for (Provider p : PS) {
-                    try {
-                        spare = p.search(
-                            type, name, this
-                        );
-                    } catch (Collapse e) {
-                        return null;
-                    }
-
-                    if (spare != null) {
-                        return (Spare<T>) spare;
-                    }
+                    spare = new ReflectSpare<>(
+                        embed, klass, this
+                    );
                 }
             }
 
-            return null;
+            return spare.join(this);
         }
 
         @Override
@@ -1808,7 +1741,7 @@ public interface Supplier extends Cloneable {
                 if (type.isAssignableFrom(child)) {
                     Spare<?> spare = lookup(child);
                     if (spare != null) {
-                        table.putIfAbsent(
+                        extra.putIfAbsent(
                             name, spare
                         );
                     }
@@ -1820,7 +1753,7 @@ public interface Supplier extends Cloneable {
         }
 
         @Nullable
-        protected <T> Spare<T> onJava(
+        protected <T> Spare<T> sought(
             @NotNull String name,
             @NotNull Class<T> klass
         ) {
@@ -1859,18 +1792,18 @@ public interface Supplier extends Cloneable {
                     this.put(klass, spare);
                     return (Spare<T>) spare;
                 }
-                // java.time
-                case 't': {
-                    if (klass == Instant.class) {
-                        spare = InstantSpare.INSTANCE;
-                    } else if (klass == LocalDate.class) {
-                        spare = LocalDateSpare.INSTANCE;
-                    } else if (klass == LocalTime.class) {
-                        spare = LocalTimeSpare.INSTANCE;
-                    } else if (klass == LocalDateTime.class) {
-                        spare = LocalDateTimeSpare.INSTANCE;
-                    } else if (klass == ZonedDateTime.class) {
-                        spare = ZonedDateTimeSpare.INSTANCE;
+                // java.lang
+                case 'l': {
+                    if (klass == Class.class) {
+                        spare = ClassSpare.INSTANCE;
+                    } else if (klass == Iterable.class) {
+                        spare = ListSpare.INSTANCE;
+                    } else if (klass == CharSequence.class) {
+                        spare = StringSpare.INSTANCE;
+                    } else if (klass == StringBuffer.class) {
+                        spare = StringBufferSpare.INSTANCE;
+                    } else if (klass == StringBuilder.class) {
+                        spare = StringBuilderSpare.INSTANCE;
                     } else {
                         return null;
                     }
@@ -1887,12 +1820,16 @@ public interface Supplier extends Cloneable {
                                 spare = DateSpare.INSTANCE;
                             } else if (klass == UUID.class) {
                                 spare = UUIDSpare.INSTANCE;
-                            } else if (klass == BitSet.class) {
-                                spare = BitSetSpare.INSTANCE;
                             } else if (klass == Currency.class) {
                                 spare = CurrencySpare.INSTANCE;
                             } else if (klass == Locale.class) {
                                 spare = LocaleSpare.INSTANCE;
+                            } else if (klass == Queue.class) {
+                                spare = lookup(LinkedList.class);
+                            } else if (klass == Deque.class) {
+                                spare = lookup(LinkedList.class);
+                            } else if (klass == Collection.class) {
+                                spare = ListSpare.INSTANCE;
                             } else if (Map.class.isAssignableFrom(klass)) {
                                 if (klass == Map.class ||
                                     klass == LinkedHashMap.class) {

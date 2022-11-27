@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.kernel;
+package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
+import plus.kat.anno.Nullable;
 
 import plus.kat.chain.*;
 
@@ -25,41 +26,39 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public interface Proxy {
+public interface Pipage {
     /**
-     * {@link Solver} commands this {@code proxy} creates
-     * the next receiver according to the {@code space} and
-     * {@code alias}, activate use it and push on receiver stack
+     * Opens a sub pipage of this pipage and returns the sub pipage
      *
-     * @return {@code true} if successful
+     * @return the sub pipage, may be null
      * @throws IOException If an I/O error occurs
      */
-    boolean attach(
+    @Nullable
+    Pipage onOpen(
         @NotNull Space space,
         @NotNull Alias alias
     ) throws IOException;
 
     /**
-     * {@link Solver} requests the receiver
-     * at the top of the receiver stack of this
-     * {@code proxy} to update its attributes according
-     * to the {@code space}, {@code alias} and {@code value}
+     * Reads the spare, alias and value from the solver
      *
      * @throws IOException If an I/O error occurs
      */
-    void submit(
+    void onEmit(
         @NotNull Space space,
         @NotNull Alias alias,
         @NotNull Value value
     ) throws IOException;
 
     /**
-     * {@link Solver} commands this {@code proxy}
-     * to finish updating attributes on the receiver at the
-     * top of the receiver stack and remove it from the receiver stack
+     * Closes the transport of this pipage and returns the parent pipage
      *
-     * @return {@code true} if successful
+     * @return the parent pipage, may be null
      * @throws IOException If an I/O error occurs
      */
-    boolean detach() throws IOException;
+    @Nullable
+    Pipage onClose(
+        @NotNull boolean state,
+        @NotNull boolean alarm
+    ) throws IOException;
 }

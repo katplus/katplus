@@ -25,64 +25,62 @@ import java.util.*;
 
 /**
  * @author kraity
- * @since 0.0.4
+ * @since 0.0.5
  */
-public interface Agent {
+public interface Bridge {
     /**
-     * Copy the property values of the given source bean into this {@link Agent}
+     * Copy the property values of the given source bean into this {@link Bridge}
      *
      * <pre>{@code
      *  Object source = ...
-     *  Agent target = ...
+     *  Bridge target = ...
      *  target.combine(source);
      * }</pre>
      *
      * @param source the specified source bean
-     * @return {@code true} if successful update
+     * @return the number of rows affected
      * @throws NullPointerException If the parameters contains null
      * @see Supplier#mutate(Object, Object)
      */
-    default boolean combine(
+    default int combine(
         @NotNull Object source
     ) {
-        Supplier supplier = Supplier.ins();
-        return supplier.mutate(source, this);
+        return Supplier.ins().mutate(source, this);
     }
 
     /**
-     * Copy the property values of the specified spoiler into this {@link Agent}
+     * Copy the property values of the specified spoiler into this {@link Bridge}
      *
      * <pre>{@code
      *  Spoiler spoiler = ...
-     *  Agent agent = ...
-     *  agent.update(spoiler);
+     *  Bridge bridge = ...
+     *  bridge.update(spoiler);
      * }</pre>
      *
-     * @return {@code true} if successful update
+     * @return the number of rows affected
      * @throws NullPointerException If the parameters contains null
      * @see Supplier#update(Object, Spoiler)
      */
-    default boolean update(
+    default int update(
         @NotNull Spoiler spoiler
     ) {
-        Supplier supplier = Supplier.ins();
-        return supplier.update(this, spoiler);
+        return Supplier.ins().update(this, spoiler);
     }
 
     /**
-     * Copy the all values of the specified source into this {@link Agent}
+     * Copy the all values of the specified source into this {@link Bridge}
      *
      * <pre>{@code
      *  Map source = ...
-     *  Agent agent = ...
-     *  agent.update(source);
+     *  Bridge bridge = ...
+     *  bridge.update(source);
      * }</pre>
      *
-     * @return {@code true} if successful update
+     * @return the number of rows affected
      * @throws NullPointerException If the parameters contains null
      * @see Supplier#update(Object, Spoiler)
      */
-    default boolean update(
+    default int update(
         @NotNull Map<?, ?> source
     ) {
         return update(
@@ -91,44 +89,42 @@ public interface Agent {
     }
 
     /**
-     * Copy the property values of the specified spoiler into this {@link Agent}
+     * Copy the property values of the specified spoiler into this {@link Bridge}
      *
      * <pre>{@code
      *  ResultSet resultSet = ...
-     *  Agent agent = ...
-     *  agent.update(resultSet);
+     *  Bridge bridge = ...
+     *  bridge.update(resultSet);
      * }</pre>
      *
-     * @return {@code true} if successful update
+     * @return the number of rows affected
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the parameters contains null
      * @see Supplier#update(Object, Spoiler)
      */
-    default boolean update(
+    default int update(
         @NotNull ResultSet resultSet
     ) throws SQLException {
-        Supplier supplier = Supplier.ins();
-        return supplier.update(this, resultSet);
+        return Supplier.ins().update(this, resultSet);
     }
 
     /**
-     * Copy the property values of this {@link Agent} into the given target bean
+     * Copy the property values of this {@link Bridge} into the given target bean
      *
      * <pre>{@code
-     *  Agent source = ...
+     *  Bridge source = ...
      *  Object target = ...
      *  source.migrate(target);
      * }</pre>
      *
      * @param target the specified target bean
-     * @return {@code true} if successful update
+     * @return the number of rows affected
      * @throws NullPointerException If the parameters contains null
      * @see Supplier#mutate(Object, Object)
      */
-    default boolean migrate(
+    default int migrate(
         @NotNull Object target
     ) {
-        Supplier supplier = Supplier.ins();
-        return supplier.mutate(this, target);
+        return Supplier.ins().mutate(this, target);
     }
 }

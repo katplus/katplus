@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.spare.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
-import plus.kat.stream.*;
 
 import java.sql.*;
 import java.io.IOException;
@@ -29,7 +28,6 @@ import java.lang.reflect.Type;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
-import static plus.kat.utils.Find.clazz;
 import static plus.kat.spare.Parser.Group;
 
 /**
@@ -37,28 +35,28 @@ import static plus.kat.spare.Parser.Group;
  * @since 0.0.1
  */
 @SuppressWarnings("unchecked")
-public interface Spare<K> extends Coder<K> {
+public interface Spare<T> extends Coder<T> {
     /**
-     * Returns the space of {@link K}.
-     * Generally, it is class name, or custom name
+     * Returns the space of {@link T}.
+     * Normally, it's a class name or a custom name
      */
     @NotNull
     String getSpace();
 
     /**
-     * Returns the flag of {@link K}
+     * Returns the flag of {@link T}
      *
      * <pre>{@code
-     *  null  ->  the K is a attribute
-     *  true  ->  the K is a bean object
-     *  false ->  the K is a list or array
+     *  null  ->  the T is a attribute
+     *  true  ->  the T is a bean object
+     *  false ->  the T is a list or array
      * }</pre>
      */
     @Nullable
     Boolean getFlag();
 
     /**
-     * Returns the border of {@link K}
+     * Returns the border of {@link T}
      *
      * <pre>{@code
      *  null  ->  requires on-demand use
@@ -72,35 +70,25 @@ public interface Spare<K> extends Coder<K> {
     );
 
     /**
-     * Check if {@code clazz} is a parent Class of {@link K}
-     * or this {@link Spare} can create an instance of {@code clazz}
-     *
-     * @param clazz the specified clazz to be compared
-     * @throws NullPointerException If the specified {@code clazz} is null
-     */
-    boolean accept(
-        @NotNull Class<?> clazz
-    );
-
-    /**
-     * Returns the {@link Class} of {@link K}
+     * Returns the {@link Class} of {@link T}
      */
     @NotNull
-    Class<K> getType();
+    Class<T> getType();
 
     /**
-     * Returns the {@link Supplier} of {@link K}
+     * Returns the {@link Supplier} of {@link T}.
+     * Normally, this spare is loaded by the supplier
      */
     @NotNull
     Supplier getSupplier();
 
     /**
-     * Create a {@link Builder} of {@link K}
+     * Create a {@link Builder} of {@link T}
      *
      * @param type the specified actual type
      */
     @Nullable
-    Builder<? extends K> getBuilder(
+    Builder<? extends T> getBuilder(
         @Nullable Type type
     );
 
@@ -108,12 +96,12 @@ public interface Spare<K> extends Coder<K> {
      * If this {@link Spare} can create an instance,
      * it returns it, otherwise it will return {@code null}
      *
-     * @return {@link K} or {@code null}
+     * @return {@link T} or {@code null}
      * @throws Collapse If a build error occurs
      * @since 0.0.3
      */
     @Nullable
-    default K apply() {
+    default T apply() {
         return null;
     }
 
@@ -122,65 +110,39 @@ public interface Spare<K> extends Coder<K> {
      * subclass type, it returns it, otherwise it will throw collapse
      *
      * @param type the specified actual subclass type
-     * @return {@link K} or throws collapse
+     * @return {@link T} or throws collapse
      * @throws Collapse If failed to build an instance of a subclass
-     *                  or the {@code type} is not a subclass of {@link K}
+     *                  or the {@code type} is not a subclass of {@link T}
      * @since 0.0.4
      */
     @NotNull
-    default K apply(
-        @NotNull Type type
+    default T apply(
+        @Nullable Type type
     ) {
-        Class<?> klass = getType();
-        if (type == klass) {
-            // default value
-            K it = apply();
-
-            // check for null
-            if (it != null) {
-                return it;
+        if (type == null ||
+            type == getType()
+        ) {
+            T bean = apply();
+            if (bean != null) {
+                return bean;
             }
 
             throw new Collapse(
-                "Failed to create"
+                "Failed to apply"
             );
-        }
-
-        // Find the class of the type
-        Class<?> clazz = clazz(type);
-        if (clazz == null) {
-            throw new Collapse(
-                "Can't find class of " + type
-            );
-        }
-
-        // Check if subclass of the kind
-        if (klass.isAssignableFrom(clazz)) {
-            // Using this spare's Supplier
-            Supplier supplier = getSupplier();
-
-            // Find the spare of the subclass
-            Spare<K> spare = supplier.lookup(
-                (Class<K>) clazz
-            );
-
-            if (spare != null &&
-                spare != this) {
-                return spare.apply(type);
-            }
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
     /**
      * If this spare can be built with spiller,
-     * then perform a given {@link Spoiler} to create a {@link K}
+     * then perform a given {@link Spoiler} to create a {@link T}
      *
      * @param spoiler the specified spoiler as source
-     * @return {@link K}, it is not null
+     * @return {@link T}, it is not null
      * @throws Collapse             If a build error occurs
      * @throws NullPointerException If the specified spoiler is null
      * @see Spare#apply(Spoiler, Supplier)
@@ -189,7 +151,7 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.4
      */
     @NotNull
-    default K apply(
+    default T apply(
         @NotNull Spoiler spoiler
     ) throws Collapse {
         return apply(
@@ -199,7 +161,7 @@ public interface Spare<K> extends Coder<K> {
 
     /**
      * If this spare can be built with spiller,
-     * then perform a given {@link Spoiler} to create a {@link K}
+     * then perform a given {@link Spoiler} to create a {@link T}
      *
      * <pre>{@code
      *  Spare<User> spare = ...
@@ -212,28 +174,28 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param spoiler  the specified spoiler as source
      * @param supplier the specified supplier as the loader
-     * @return {@link K}, it is not null
+     * @return {@link T}, it is not null
      * @throws Collapse             If a build error occurs
      * @throws NullPointerException If the specified supplier or the spoiler is null
      * @see AbstractSpare#apply(Spoiler, Supplier)
      * @since 0.0.4
      */
     @NotNull
-    default K apply(
+    default T apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
     ) throws Collapse {
         throw new Collapse(
-            "Unexpectedly, '" + getType() + "' not a Bean"
+            "'" + getType() + "' not a Bean"
         );
     }
 
     /**
      * If this spare can be built with resultSet,
-     * then perform a given {@link ResultSet} to create a {@link K}
+     * then perform a given {@link ResultSet} to create a {@link T}
      *
      * @param resultSet the specified result as data source
-     * @return {@link K}, it is not null
+     * @return {@link T}, it is not null
      * @throws SQLCrash             If a build error occurs
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the specified resultSet is null
@@ -243,7 +205,7 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.3
      */
     @NotNull
-    default K apply(
+    default T apply(
         @NotNull ResultSet resultSet
     ) throws SQLException {
         return apply(
@@ -253,7 +215,7 @@ public interface Spare<K> extends Coder<K> {
 
     /**
      * If this spare can be built with resultSet,
-     * then perform a given {@link ResultSet} to create a {@link K}
+     * then perform a given {@link ResultSet} to create a {@link T}
      *
      * <pre>{@code
      *  ResultSet rs = stmt.executeQuery(sql);
@@ -269,7 +231,7 @@ public interface Spare<K> extends Coder<K> {
      *
      * @param supplier  the specified supplier as the loader
      * @param resultSet the specified resultSet as data source
-     * @return {@link K}, it is not null
+     * @return {@link T}, it is not null
      * @throws SQLCrash             If a build error occurs
      * @throws SQLException         If a database access error occurs
      * @throws NullPointerException If the specified supplier or the resultSet is null
@@ -277,12 +239,12 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.3
      */
     @NotNull
-    default K apply(
+    default T apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
         throw new SQLCrash(
-            "Unexpectedly, '" + getType() + "' not a Bean"
+            "'" + getType() + "' not a Bean"
         );
     }
 
@@ -290,27 +252,74 @@ public interface Spare<K> extends Coder<K> {
      * Register to the specified supplier
      *
      * <pre>{@code
-     *   supplier.embed(getType(), this);
-     *   supplier.embed("plus.kat.entity.User", this);
+     *   public Spare<T> join(
+     *       Supplier supplier
+     *   ) {
+     *       supplier.embed(getType(), this);
+     *       supplier.embed("plus.kat.entity.User", this);
      *
-     *   String[] spaces = ...
-     *   for (String space : spaces) {
-     *      if (space.indexOf('.', 1) != -1) {
-     *         supplier.embed(space, this);
-     *      }
+     *       String[] spaces = ...
+     *       for (String space : spaces) {
+     *          if (space.indexOf('.', 1) != -1) {
+     *             supplier.embed(space, this);
+     *          }
+     *       }
+     *       return this;
      *   }
      * }</pre>
      *
      * @param supplier the specified supplier to be loaded
-     * @see AbstractSpare#embed(Supplier)
-     * @since 0.0.4
+     * @return this {@link Spare}
+     * @see AbstractSpare#join(Supplier)
+     * @see Supplier#embed(Class, Spare)
+     * @see Supplier#embed(CharSequence, Spare)
+     * @since 0.0.5
      */
-    default void embed(
+    @NotNull
+    default Spare<T> join(
         @NotNull Supplier supplier
     ) {
         supplier.embed(
             getType(), this
         );
+        return this;
+    }
+
+    /**
+     * Removes from the specified supplier
+     *
+     * <pre>{@code
+     *   public Spare<T> drop(
+     *       Supplier supplier
+     *   ) {
+     *       supplier.revoke(getType(), this);
+     *       supplier.revoke("plus.kat.entity.User", this);
+     *
+     *       String[] spaces = ...
+     *       for (String space : spaces) {
+     *          if (space.indexOf('.', 1) != -1) {
+     *             supplier.revoke(space, this);
+     *          }
+     *       }
+     *       return this;
+     *   }
+     * }</pre>
+     *
+     * @param supplier the specified supplier to be purged
+     * @return this {@link Spare}
+     * @see AbstractSpare#drop(Supplier)
+     * @see Supplier#revoke(Class, Spare)
+     * @see Supplier#revoke(CharSequence, Spare)
+     * @since 0.0.5
+     */
+    @NotNull
+    default Spare<T> drop(
+        @NotNull Supplier supplier
+    ) {
+        supplier.revoke(
+            getType(), this
+        );
+        return this;
     }
 
     /**
@@ -323,14 +332,14 @@ public interface Spare<K> extends Coder<K> {
      *  spare.set("name").invoke(user, "kraity");
      * }</pre>
      *
-     * @param key the property name of the bean
+     * @param name the property name of the bean
      * @return {@link Setter} or {@code null}
      * @throws NullPointerException If the specified key is null
      * @since 0.0.4
      */
     @Nullable
-    default Setter<K, ?> set(
-        @NotNull Object key
+    default Setter<T, ?> set(
+        @NotNull CharSequence name
     ) {
         return null;
     }
@@ -345,20 +354,20 @@ public interface Spare<K> extends Coder<K> {
      *  Object name = spare.get("name").invoke(user);
      * }</pre>
      *
-     * @param key the property name of the bean
+     * @param name the property name of the bean
      * @return {@link Getter} or {@code null}
      * @throws NullPointerException If the specified key is null
      * @since 0.0.4
      */
     @Nullable
-    default Getter<K, ?> get(
-        @NotNull Object key
+    default Getter<T, ?> get(
+        @NotNull CharSequence name
     ) {
         return null;
     }
 
     /**
-     * If {@link K} is a Bean, then returns
+     * If {@link T} is a Bean, then returns
      * a spoiler over all elements of the {@code bean}
      *
      * <pre>{@code
@@ -378,13 +387,13 @@ public interface Spare<K> extends Coder<K> {
      */
     @Nullable
     default Spoiler flat(
-        @NotNull K bean
+        @NotNull T bean
     ) {
         return null;
     }
 
     /**
-     * If {@link K} is a Bean, then perform a given
+     * If {@link T} is a Bean, then perform a given
      * visitor in each item until all entries are processed
      *
      * <pre>{@code
@@ -407,14 +416,14 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.3
      */
     default boolean flat(
-        @NotNull K bean,
+        @NotNull T bean,
         @NotNull Visitor visitor
     ) {
         return false;
     }
 
     /**
-     * Resolve the Kat {@code text} and convert the result to {@link K}
+     * Resolve the Kat {@code text} and convert the result to {@link T}
      *
      * <pre>{@code
      *   Spare<User> spare = ...
@@ -427,7 +436,7 @@ public interface Spare<K> extends Coder<K> {
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
-    default K read(
+    default T read(
         @NotNull CharSequence text
     ) {
         return read(
@@ -436,7 +445,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Resolve the Kat {@link Event} and convert the result to {@link K}
+     * Resolve the Kat {@link Event} and convert the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -444,7 +453,7 @@ public interface Spare<K> extends Coder<K> {
      *
      *   User user = spare.read(
      *      event.with(
-     *         Flag.STRING_AS_OBJECT
+     *         Flag.VALUE_AS_BEAN
      *      )
      *   );
      * }</pre>
@@ -454,8 +463,8 @@ public interface Spare<K> extends Coder<K> {
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
-    default <T extends K> T read(
-        @NotNull Event<T> event
+    default <V extends T> V read(
+        @NotNull Event<V> event
     ) {
         return solve(
             Algo.KAT, event
@@ -480,7 +489,7 @@ public interface Spare<K> extends Coder<K> {
      */
     @NotNull
     default Chan write(
-        @Nullable K value
+        @Nullable T value
     ) throws IOException {
         return write(
             value, DEF.writeFlags
@@ -506,7 +515,7 @@ public interface Spare<K> extends Coder<K> {
      */
     @NotNull
     default Chan write(
-        @Nullable K value, long flags
+        @Nullable T value, long flags
     ) throws IOException {
         Chan chan = new Kat(flags);
         chan.set(null, this, value);
@@ -514,7 +523,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Resolve the Doc {@code text} and convert the result to {@link K}
+     * Resolve the Doc {@code text} and convert the result to {@link T}
      *
      * <pre>{@code
      *   Spare<User> spare = ...
@@ -527,7 +536,7 @@ public interface Spare<K> extends Coder<K> {
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
-    default K down(
+    default T down(
         @NotNull CharSequence text
     ) {
         return down(
@@ -536,7 +545,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Resolve the Doc {@link Event} and convert the result to {@link K}
+     * Resolve the Doc {@link Event} and convert the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -544,7 +553,7 @@ public interface Spare<K> extends Coder<K> {
      *
      *   User user = spare.down(
      *      event.with(
-     *         Flag.STRING_AS_OBJECT
+     *         Flag.VALUE_AS_BEAN
      *      )
      *   );
      * }</pre>
@@ -554,8 +563,8 @@ public interface Spare<K> extends Coder<K> {
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
-    default <T extends K> T down(
-        @NotNull Event<T> event
+    default <V extends T> V down(
+        @NotNull Event<V> event
     ) {
         return solve(
             Algo.DOC, event
@@ -580,7 +589,7 @@ public interface Spare<K> extends Coder<K> {
      */
     @NotNull
     default Chan mark(
-        @Nullable K value
+        @Nullable T value
     ) throws IOException {
         return mark(
             value, DEF.writeFlags
@@ -606,7 +615,7 @@ public interface Spare<K> extends Coder<K> {
      */
     @NotNull
     default Chan mark(
-        @Nullable K value, long flags
+        @Nullable T value, long flags
     ) throws IOException {
         Chan chan = new Doc(flags);
         chan.set(null, this, value);
@@ -614,7 +623,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Resolve the Json {@code text} and convert the result to {@link K}
+     * Resolve the Json {@code text} and convert the result to {@link T}
      *
      * <pre>{@code
      *   Spare<User> spare = ...
@@ -627,7 +636,7 @@ public interface Spare<K> extends Coder<K> {
      * @throws NullPointerException If the specified {@code text} is null
      */
     @NotNull
-    default K parse(
+    default T parse(
         @NotNull CharSequence text
     ) {
         return parse(
@@ -636,7 +645,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Resolve the Json {@link Event} and convert the result to {@link K}
+     * Resolve the Json {@link Event} and convert the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -644,7 +653,7 @@ public interface Spare<K> extends Coder<K> {
      *
      *   User user = spare.parse(
      *      event.with(
-     *         Flag.STRING_AS_OBJECT
+     *         Flag.VALUE_AS_BEAN
      *      )
      *   );
      * }</pre>
@@ -654,8 +663,8 @@ public interface Spare<K> extends Coder<K> {
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
-    default <T extends K> T parse(
-        @NotNull Event<T> event
+    default <V extends T> V parse(
+        @NotNull Event<V> event
     ) {
         return solve(
             Algo.JSON, event
@@ -680,7 +689,7 @@ public interface Spare<K> extends Coder<K> {
      */
     @NotNull
     default Chan serial(
-        @Nullable K value
+        @Nullable T value
     ) throws IOException {
         return serial(
             value, DEF.writeFlags
@@ -706,7 +715,7 @@ public interface Spare<K> extends Coder<K> {
      */
     @NotNull
     default Chan serial(
-        @Nullable K value, long flags
+        @Nullable T value, long flags
     ) throws IOException {
         Chan chan = new Json(flags);
         chan.set(null, this, value);
@@ -714,7 +723,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Convert the {@link Object} to {@code K}
+     * Converts the {@link Object} to {@code T}
      *
      * <pre>{@code
      *  Spare<User> spare = ...
@@ -726,21 +735,23 @@ public interface Spare<K> extends Coder<K> {
      *  );
      * }</pre>
      *
-     * @param data the specified data to be to converted
-     * @return {@link K} or {@code null}
+     * @param object the specified object to be to converted
+     * @return {@link T} or {@code null}
+     * @throws Collapse              If a build error occurs
+     * @throws IllegalStateException If the object cannot be converted to {@link T}
      * @see Spare#cast(Object, Supplier)
      */
     @Nullable
-    default K cast(
-        @Nullable Object data
+    default T cast(
+        @Nullable Object object
     ) {
         return cast(
-            data, getSupplier()
+            object, getSupplier()
         );
     }
 
     /**
-     * Convert the {@link Object} to {@code K}
+     * Converts the {@link Object} to {@code T}
      *
      * <pre>{@code
      *  Spare<User> spare = ...
@@ -755,29 +766,29 @@ public interface Spare<K> extends Coder<K> {
      * }</pre>
      *
      * @param supplier the specified supplier to be used
-     * @param data     the specified data to be to converted
-     * @return {@link K} or {@code null}
+     * @param object   the specified object to be to converted
+     * @return {@link T} or {@code null}
+     * @throws Collapse              If a build error occurs
+     * @throws NullPointerException  If the specified supplier is null
+     * @throws IllegalStateException If the object cannot be converted to {@link T}
      */
     @Nullable
-    default K cast(
-        @Nullable Object data,
+    default T cast(
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
-            return apply();
+        if (object == null) {
+            return null;
         }
 
-        if (getType().isInstance(data)) {
-            return (K) data;
+        Class<?> clazz = getType();
+        if (clazz.isInstance(object)) {
+            return (T) object;
         }
 
-        if (data instanceof CharSequence) {
-            return Convert.toObject(
-                this, (CharSequence) data, null, supplier
-            );
-        }
-
-        return null;
+        throw new IllegalStateException(
+            object + " cannot be converted to " + clazz
+        );
     }
 
     /**
@@ -791,7 +802,7 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.4
      */
     default int update(
-        @NotNull K bean,
+        @NotNull T bean,
         @NotNull Spoiler spoiler
     ) {
         return update(
@@ -822,7 +833,7 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.4
      */
     default int update(
-        @NotNull K bean,
+        @NotNull T bean,
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
     ) {
@@ -840,7 +851,7 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.4
      */
     default int update(
-        @NotNull K bean,
+        @NotNull T bean,
         @NotNull ResultSet resultSet
     ) throws SQLException {
         return update(
@@ -874,7 +885,7 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.4
      */
     default int update(
-        @NotNull K bean,
+        @NotNull T bean,
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
@@ -882,7 +893,7 @@ public interface Spare<K> extends Coder<K> {
     }
 
     /**
-     * Parse {@link Event} and convert result to {@link K}
+     * Parse {@link Event} and convert result to {@link T}
      *
      * @param algo  the specified algo for solve
      * @param event the specified event to be handled
@@ -891,9 +902,9 @@ public interface Spare<K> extends Coder<K> {
      * @since 0.0.2
      */
     @NotNull
-    default <T extends K> T solve(
+    default <V extends T> V solve(
         @NotNull Algo algo,
-        @NotNull Event<T> event
+        @NotNull Event<V> event
     ) {
         // parser pool
         Group group = Group.INS;
@@ -904,7 +915,7 @@ public interface Spare<K> extends Coder<K> {
         try {
             event.with(this);
             return parser.read(
-                algo, event
+                algo, event.setup(INS)
             );
         } catch (Collapse error) {
             throw error;
@@ -947,23 +958,27 @@ public interface Spare<K> extends Coder<K> {
      * and returns the previous value associated with {@code klass}
      *
      * <pre>{@code
-     *  Spare.revoke(User.class);
+     *  Spare.revoke(User.class, null);
+     *  Spare.revoke(User.class, getSpare());
      * }</pre>
      *
      * @param klass the specified klass for revoke
+     * @param spare the specified spare to be removed
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code type} is null
      */
     @Nullable
     static Spare<?> revoke(
-        @NotNull Class<?> klass
+        @NotNull Class<?> klass,
+        @Nullable Spare<?> spare
     ) {
-        return INS.revoke(klass);
+        return INS.revoke(
+            klass, spare
+        );
     }
 
     /**
-     * Returns the {@link Spare} of {@code klass}, if not cached first through
-     * the custom {@link Provider} set and then through default {@link Supplier} final lookup
+     * Returns the {@link Spare} of {@code klass}
      *
      * <pre>{@code
      *  Spare<User> spare = Spare.lookup(User.class);
@@ -972,11 +987,32 @@ public interface Spare<K> extends Coder<K> {
      * @param klass the specified klass for lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
+     * @see Supplier#lookup(Class)
      */
     @Nullable
     static <T> Spare<T> lookup(
         @NotNull Class<T> klass
     ) {
         return INS.lookup(klass);
+    }
+
+    /**
+     * Returns the {@link Spare} of {@code klass}
+     *
+     * <pre>{@code
+     *  Spare<User> spare = Spare.search("plus.kat.entity.User");
+     * }</pre>
+     *
+     * @param klass the specified klass for search
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @see Supplier#search(CharSequence)
+     * @since 0.0.5
+     */
+    @Nullable
+    static <T> Spare<T> search(
+        @NotNull CharSequence klass
+    ) {
+        return INS.search(klass);
     }
 }

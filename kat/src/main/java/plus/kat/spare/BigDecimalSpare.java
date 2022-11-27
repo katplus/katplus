@@ -49,15 +49,6 @@ public class BigDecimalSpare extends Property<BigDecimal> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == BigDecimal.class
-            || clazz == Number.class
-            || clazz == Object.class;
-    }
-
-    @Override
     public Boolean getBorder(
         @NotNull Flag flag
     ) {
@@ -67,12 +58,12 @@ public class BigDecimalSpare extends Property<BigDecimal> {
     @Override
     public BigDecimal read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Chain chain
     ) {
-        if (!value.isBlank()) {
+        if (!chain.isBlank()) {
             try {
                 return new BigDecimal(
-                    value.toString()
+                    chain.toString()
                 );
             } catch (Exception e) {
                 // Nothing
@@ -93,47 +84,58 @@ public class BigDecimalSpare extends Property<BigDecimal> {
 
     @Override
     public BigDecimal cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof BigDecimal) {
-                return (BigDecimal) data;
-            }
+        if (object == null) {
+            return BigDecimal.ZERO;
+        }
 
-            if (data instanceof Number) {
-                if (data instanceof BigInteger) {
-                    return new BigDecimal(
-                        (BigInteger) data
-                    );
-                }
+        if (object instanceof BigDecimal) {
+            return (BigDecimal) object;
+        }
 
-                if (data instanceof Float
-                    || data instanceof Double) {
-                    return new BigDecimal(
-                        data.toString()
-                    );
-                }
-
-                return BigDecimal.valueOf(
-                    ((Number) data).longValue()
+        if (object instanceof Number) {
+            if (object instanceof BigInteger) {
+                return new BigDecimal(
+                    (BigInteger) object
                 );
             }
 
-            if (data instanceof Boolean) {
-                return ((boolean) data) ? BigDecimal.ONE : BigDecimal.ZERO;
+            if (object instanceof Float
+                || object instanceof Double) {
+                return new BigDecimal(
+                    object.toString()
+                );
             }
 
-            if (data instanceof CharSequence) {
-                try {
-                    return new BigDecimal(
-                        data.toString()
-                    );
-                } catch (Exception e) {
-                    // Nothing
-                }
+            return BigDecimal.valueOf(
+                ((Number) object).longValue()
+            );
+        }
+
+        if (object instanceof Boolean) {
+            return ((boolean) object) ? BigDecimal.ONE : BigDecimal.ZERO;
+        }
+
+        if (object instanceof Chain) {
+            return read(
+                null, (Chain) object
+            );
+        }
+
+        if (object instanceof CharSequence) {
+            try {
+                return new BigDecimal(
+                    object.toString()
+                );
+            } catch (Exception e) {
+                return BigDecimal.ZERO;
             }
         }
-        return BigDecimal.ZERO;
+
+        throw new IllegalStateException(
+            object + " cannot be converted to " + klass
+        );
     }
 }

@@ -22,7 +22,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -33,14 +33,14 @@ import java.lang.reflect.Type;
  * @since 0.0.1
  */
 @SuppressWarnings("unchecked")
-public class EnumSpare<K extends Enum<K>> extends Property<K> {
+public class EnumSpare<T extends Enum<T>> extends Property<T> {
 
     protected String[] spaces;
-    private K[] enums;
+    private T[] enums;
     private final String space;
 
     public EnumSpare(
-        @NotNull Class<K> klass,
+        @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
         this(
@@ -50,7 +50,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
 
     public EnumSpare(
         @Nullable Embed embed,
-        @NotNull Class<K> klass,
+        @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
         this(embed, null, klass, supplier);
@@ -58,8 +58,8 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
 
     public EnumSpare(
         @Nullable Embed embed,
-        @Nullable K[] enums,
-        @NotNull Class<K> klass,
+        @Nullable T[] enums,
+        @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
         super(klass, supplier);
@@ -71,7 +71,7 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
             if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
-            this.enums = (K[]) method.invoke(null);
+            this.enums = (T[]) method.invoke(null);
         } catch (Exception e) {
             // Nothing
         }
@@ -89,8 +89,8 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
     }
 
     @Override
-    public K apply() {
-        K[] e = enums;
+    public T apply() {
+        T[] e = enums;
         if (e != null &&
             e.length != 0) {
             return e[0];
@@ -99,22 +99,23 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
     }
 
     @Override
-    public K apply(
-        @NotNull Type type
+    public T apply(
+        @Nullable Type type
     ) {
-        if (type == klass) {
-            K[] e = enums;
+        if (type == null ||
+            type == klass) {
+            T[] e = enums;
             if (e != null &&
                 e.length != 0) {
                 return e[0];
             }
             throw new Collapse(
-                "Failed to create"
+                "Failed to apply"
             );
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
@@ -134,10 +135,12 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
     }
 
     @Override
-    public void embed(
+    public Spare<T> join(
         @NotNull Supplier supplier
     ) {
-        supplier.embed(klass, this);
+        supplier.embed(
+            klass, this
+        );
         if (spaces != null) {
             for (String space : spaces) {
                 if (space.indexOf('.', 1) != -1) {
@@ -145,52 +148,42 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
                 }
             }
         }
+        return this;
     }
 
     @Override
-    public K read(
-        @NotNull Flag flag,
-        @NotNull Alias alias
+    public Spare<T> drop(
+        @NotNull Supplier supplier
     ) {
-        K[] e = enums;
-        if (e != null) {
-            if (flag.isFlag(Flag.INDEX_AS_ENUM)) {
-                int i = alias.toInt(-1);
-                if (i >= 0 && i < e.length) {
-                    return e[i];
-                }
-            }
-
-            if (!alias.isBlank()) {
-                for (K em : e) {
-                    if (alias.equals(em.name())) {
-                        return em;
-                    }
+        supplier.revoke(
+            klass, this
+        );
+        if (spaces != null) {
+            for (String space : spaces) {
+                if (space.indexOf('.', 1) != -1) {
+                    supplier.revoke(space, this);
                 }
             }
         }
-        return null;
+        return this;
     }
 
     @Override
-    public K read(
+    public T read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Chain chain
     ) {
-        K[] e = enums;
-        if (e != null) {
+        T[] e = enums;
+        if (e != null && !chain.isBlank()) {
             if (flag.isFlag(Flag.INDEX_AS_ENUM)) {
-                int i = value.toInt(-1);
-                if (i >= 0 && i < e.length) {
+                int i = chain.toInt(-1);
+                if (-1 < i && i < e.length) {
                     return e[i];
                 }
             }
-
-            if (!value.isBlank()) {
-                for (K em : e) {
-                    if (value.equals(em.name())) {
-                        return em;
-                    }
+            for (T em : e) {
+                if (chain.equals(em.name())) {
+                    return em;
                 }
             }
         }
@@ -208,65 +201,62 @@ public class EnumSpare<K extends Enum<K>> extends Property<K> {
                 e.ordinal()
             );
         } else {
-            flow.emit(
-                e.name()
-            );
+            flow.emit(e.name());
         }
     }
 
     @Override
-    public K cast(
-        @Nullable Object data,
+    public T cast(
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (klass.isInstance(data)) {
-                return (K) data;
-            }
-
-            if (data instanceof String) {
-                K[] e = enums;
-                if (e != null) {
-                    String key = (String) data;
-                    if (!key.isEmpty()) {
-                        for (K em : e) {
-                            if (key.equals(em.name())) {
-                                return em;
-                            }
-                        }
-                    }
-                }
-                return null;
-            }
-
-            if (data instanceof Chain) {
-                K[] e = enums;
-                if (e != null) {
-                    Chain c = (Chain) data;
-                    if (!c.isBlank()) {
-                        for (K em : e) {
-                            if (c.equals(em.name())) {
-                                return em;
-                            }
-                        }
-                    }
-                }
-                return null;
-            }
-
-            if (data instanceof Number) {
-                K[] e = enums;
-                if (e != null) {
-                    Number num = (Number) data;
-                    int index = num.intValue();
-                    if (index >= 0 &&
-                        index < e.length) {
-                        return e[index];
-                    }
-                }
-                return null;
-            }
+        if (object == null) {
+            return null;
         }
-        return null;
+
+        if (klass.isInstance(object)) {
+            return (T) object;
+        }
+
+        if (object instanceof Number) {
+            T[] e = enums;
+            if (e != null) {
+                Number num = (Number) object;
+                int index = num.intValue();
+                if (index > -1 &&
+                    index < e.length) {
+                    return e[index];
+                }
+            }
+            return null;
+        }
+
+        if (object instanceof CharSequence) {
+            T[] e = enums;
+            if (e != null) {
+                CharSequence key =
+                    (CharSequence) object;
+                int l = key.length();
+                if (l != 0) {
+                    int i = Convert.toInt(
+                        key, l, 10, -1
+                    );
+                    if (-1 < i && i < e.length) {
+                        return e[i];
+                    }
+
+                    for (T em : e) {
+                        if (key.equals(em.name())) {
+                            return em;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        throw new IllegalStateException(
+            object + " cannot be converted to " + klass
+        );
     }
 }

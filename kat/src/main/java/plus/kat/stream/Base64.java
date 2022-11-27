@@ -2,7 +2,11 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import static plus.kat.kernel.Chain.EMPTY_BYTES;
+import plus.kat.chain.*;
+import plus.kat.crash.*;
+
+import static plus.kat.chain.Chain.EMPTY_BYTES;
+import static plus.kat.chain.Chain.Unsafe.value;
 
 /**
  * @author kraity
@@ -11,18 +15,18 @@ import static plus.kat.kernel.Chain.EMPTY_BYTES;
 public class Base64 {
 
     private final int E, D;
-    private final byte[] ENCO, DECO;
+    private final byte[] ENCODE, DECODE;
 
     /**
-     * @param enco the specified encode table
-     * @param deco the specified decode table
+     * @param encode the specified encode table
+     * @param decode the specified decode table
      */
     public Base64(
-        @NotNull byte[] enco,
-        @NotNull byte[] deco
+        @NotNull byte[] encode,
+        @NotNull byte[] decode
     ) {
         this(
-            enco, 0, deco, 0
+            encode, 0, decode, 0
         );
     }
 
@@ -35,24 +39,24 @@ public class Base64 {
         Base64 b, int e, int d
     ) {
         this(
-            b.ENCO, e, b.DECO, d
+            b.ENCODE, e, b.DECODE, d
         );
     }
 
     /**
-     * @param enco the specified encode table
-     * @param e    the pair num of lines encoded
-     * @param deco the specified decode table
-     * @param d    the pair num of lines decoded
+     * @param encode the specified encode table
+     * @param e      the pair num of lines encoded
+     * @param decode the specified decode table
+     * @param d      the pair num of lines decoded
      */
     public Base64(
-        @NotNull byte[] enco, int e,
-        @NotNull byte[] deco, int d
+        @NotNull byte[] encode, int e,
+        @NotNull byte[] decode, int d
     ) {
         E = e;
         D = d;
-        ENCO = enco;
-        DECO = deco;
+        ENCODE = encode;
+        DECODE = decode;
     }
 
     /**
@@ -60,6 +64,7 @@ public class Base64 {
      * containing the resulting encoded bytes
      *
      * @param data the byte array to encode
+     * @throws FatalCrash If encoding byte array as base64 fails
      */
     @NotNull
     public final byte[] encode(
@@ -74,9 +79,53 @@ public class Base64 {
      * Returns a newly-allocated byte array
      * containing the resulting encoded bytes
      *
+     * @param data the specified chain to encode
+     * @throws FatalCrash If encoding byte array as base64 fails
+     */
+    @NotNull
+    public final byte[] encode(
+        @NotNull Chain data
+    ) {
+        return encode(
+            value(data), 0, data.length()
+        );
+    }
+
+    /**
+     * Returns a newly-allocated byte array
+     * containing the resulting encoded bytes
+     *
+     * @param data the specified chain to encode
+     * @param i    the specified index
+     * @param l    the specified length of array
+     * @throws FatalCrash                If encoding byte array as base64 fails
+     * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
+     */
+    @NotNull
+    public final byte[] encode(
+        @NotNull Chain data, int i, int l
+    ) {
+        int count = data.length();
+        if (i <= count - l && 0 <= i && 0 <= l) {
+            return encode(
+                value(data), i, l
+            );
+        } else {
+            throw new IndexOutOfBoundsException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
+    }
+
+    /**
+     * Returns a newly-allocated byte array
+     * containing the resulting encoded bytes
+     *
      * @param data the byte array to encode
      * @param i    the specified index
      * @param l    the specified length of array
+     * @throws FatalCrash If encoding byte array as base64 fails
      */
     @NotNull
     public final byte[] encode(
@@ -95,7 +144,7 @@ public class Base64 {
                 c = t2 * 3 + i;
 
             byte[] it,
-                table = ENCO;
+                table = ENCODE;
 
             if (m == 0) {
                 if (t1 == 0) {
@@ -157,7 +206,9 @@ public class Base64 {
 
             return it;
         } catch (Exception e) {
-            return EMPTY_BYTES;
+            throw new FatalCrash(
+                "Failed to encode byte array as base64", e
+            );
         }
     }
 
@@ -166,6 +217,7 @@ public class Base64 {
      * containing the resulting decoded bytes
      *
      * @param data the byte array to decode
+     * @throws FatalCrash If decoding byte array from base64 fails
      */
     @NotNull
     public final byte[] decode(
@@ -181,8 +233,52 @@ public class Base64 {
      * containing the resulting decoded bytes
      *
      * @param data the byte array to decode
+     * @throws FatalCrash If decoding byte array from base64 fails
+     */
+    @NotNull
+    public final byte[] decode(
+        @NotNull Chain data
+    ) {
+        return decode(
+            value(data), 0, data.length()
+        );
+    }
+
+    /**
+     * Returns a newly-allocated byte array
+     * containing the resulting decoded bytes
+     *
+     * @param data the specified chain to decode
      * @param i    the specified index
      * @param l    the specified length of array
+     * @throws FatalCrash                If decoding byte array from base64 fails
+     * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
+     */
+    @NotNull
+    public final byte[] decode(
+        @NotNull Chain data, int i, int l
+    ) {
+        int count = data.length();
+        if (i <= count - l && 0 <= i && 0 <= l) {
+            return decode(
+                value(data), i, l
+            );
+        } else {
+            throw new IndexOutOfBoundsException(
+                "Specified offset(" + i + ")/length("
+                    + l + ") index is out of bounds: " + count
+            );
+        }
+    }
+
+    /**
+     * Returns a newly-allocated byte array
+     * containing the resulting decoded bytes
+     *
+     * @param data the byte array to decode
+     * @param i    the specified index
+     * @param l    the specified length of array
+     * @throws FatalCrash If decoding byte array from base64 fails
      */
     @NotNull
     public final byte[] decode(
@@ -225,7 +321,7 @@ public class Base64 {
             }
 
             int b1, b2, b3, b4;
-            byte[] it = new byte[s], table = DECO;
+            byte[] it = new byte[s], table = DECODE;
 
             for (int k = 0; (r = s - k) > 0; i++) {
                 b1 = table[data[i] & 0xFF];
@@ -290,7 +386,9 @@ public class Base64 {
 
             return it;
         } catch (Exception e) {
-            return EMPTY_BYTES;
+            throw new FatalCrash(
+                "Failed to decode byte array from base64", e
+            );
         }
     }
 
@@ -322,23 +420,11 @@ public class Base64 {
         BASE, MIME, SAFE;
 
     static {
-        // REC4648|Basic
-        BASE = new Base64(new byte[]{
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
-        }, new byte[]{
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 00-0f
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 10-1f
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, // 20-2f + /
-            52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, // 30-3f 0-9
-            -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,           // 40-4f A-O
-            15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, // 50-5f P-Z
-            -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, // 60-6f a-o
-            41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51                      // 70-7a p-z
-        });
+        // RFC4648|Basic
+        BASE = new Base64(
+            Binary.Unsafe.RFC4648_ENCODE,
+            Binary.Unsafe.RFC4648_DECODE
+        );
 
         // RFC2045|MIME
         // en = 19, 76 = 19 * 4
@@ -348,21 +434,9 @@ public class Base64 {
         );
 
         // RFC4648_SAFE|URL/Filename Safe
-        SAFE = new Base64(new byte[]{
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_'
-        }, new byte[]{
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 00-0f
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 10-1f
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, // 20-2f -
-            52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, // 30-3f 0-9
-            -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,           // 40-4f A-O
-            15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, 63, // 50-5f P-Z _
-            -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, // 60-6f a-o
-            41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51                      // 70-7a p-z
-        });
+        SAFE = new Base64(
+            Binary.Unsafe.RFC4648_SAFE_ENCODE,
+            Binary.Unsafe.RFC4648_SAFE_DECODE
+        );
     }
 }

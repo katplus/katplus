@@ -19,6 +19,29 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings("unchecked")
 public class SupplierTest {
 
+    @Embed("plus.kat.It")
+    static class It {
+        public int id;
+    }
+
+    @Test
+    public void test_embed() {
+        Supplier supplier = Supplier.ins();
+        Spare<?> spare = supplier.lookup(It.class);
+
+        assertNotNull(supplier.revoke(It.class, null));
+        assertNotNull(supplier.revoke("plus.kat.It", null));
+
+        Spare<?> spare1 = supplier.lookup(It.class);
+        assertNotSame(spare, spare1);
+
+        assertNull(supplier.revoke(It.class, spare));
+        assertSame(spare1, supplier.revoke(It.class, spare1));
+
+        assertNull(supplier.revoke("plus.kat.It", spare));
+        assertSame(spare1, supplier.revoke("plus.kat.It", spare1));
+    }
+
     @Test
     public void test_embed1() {
         String[] list = new String[]{
@@ -295,6 +318,8 @@ public class SupplierTest {
         Supplier supplier = Supplier.ins();
 
         Class<List<Object>>[] cls = new Class[]{
+            Iterable.class,
+            Collection.class,
             AbstractList.class,
             List.class,
             ArrayList.class,
@@ -404,26 +429,22 @@ public class SupplierTest {
     public void test_lookup_read() {
         Supplier supplier = Supplier.ins();
 
-        Service s0 = supplier.read(
+        assertThrows(Collapse.class, () -> supplier.read(
             Service.class, new Event<>(
                 "{:model{:id(1):name(kraity)}:version(1)}"
             )
-        );
-        assertNotNull(s0);
-        assertNull(s0.model);
-        assertEquals(1, s0.version);
-        assertEquals("{\"model\":null,\"version\":1}", Json.encode(s0));
+        ));
 
-        Service s1 = supplier.read(
+        Service bean = supplier.read(
             Service.class, new Event<>(
                 "{plus.kat.SupplierTest$Entity:model{:id(1):name(kraity)}:version()}"
             )
         );
-        assertNotNull(s1);
-        assertNotNull(s1.model);
-        assertNull(s1.version);
-        assertEquals(1, s1.model.getId());
-        assertEquals("kraity", s1.model.getName());
+        assertNotNull(bean);
+        assertNotNull(bean.model);
+        assertNull(bean.version);
+        assertEquals(1, bean.model.getId());
+        assertEquals("kraity", bean.model.getName());
     }
 
     @Test
@@ -495,27 +516,27 @@ public class SupplierTest {
     public void test_compare_spare() {
         Supplier supplier = Supplier.ins();
 
-        Type type = User.class;
-        Type object = Object.class;
+        Class<?> user = User.class;
+        Class<?> object = Object.class;
 
         Spare<User> spare1 = supplier.lookup(User.class);
         Spare<UserVO> spare2 = supplier.lookup(UserVO.class);
 
-        assertNull(supplier.search(type, ""));
-        assertNull(supplier.search(type, "A"));
-        assertNull(supplier.search(type, "M"));
+        assertNull(supplier.search(user, ""));
+        assertNull(supplier.search(user, "A"));
+        assertNull(supplier.search(user, "M"));
 
-        assertNull(supplier.search(type, "SuperUser"));
-        assertSame(spare1, supplier.lookup(type, "SuperUser"));
+        assertNull(supplier.search(user, "SuperUser"));
+        assertSame(spare1, supplier.lookup(user, "SuperUser"));
 
         assertNull(supplier.search(UserVO.class, "plus.kat.supplier.User"));
         assertNotNull(supplier.lookup(UserVO.class, "plus.kat.supplier.User"));
 
-        assertSame(spare1, supplier.lookup(type, "plus.kat.supplier.User"));
-        assertSame(spare1, supplier.search(type, "plus.kat.supplier.User"));
+        assertSame(spare1, supplier.lookup(user, "plus.kat.supplier.User"));
+        assertSame(spare1, supplier.search(user, "plus.kat.supplier.User"));
 
-        assertSame(spare1, supplier.lookup(type, "plus.kat.supplier.UserVO"));
-        assertSame(spare2, supplier.search(type, "plus.kat.supplier.UserVO"));
+        assertSame(spare1, supplier.lookup(user, "plus.kat.supplier.UserVO"));
+        assertSame(spare2, supplier.search(user, "plus.kat.supplier.UserVO"));
 
         assertSame(spare1, supplier.lookup(User.class, "plus.kat.supplier.User"));
         assertSame(spare1, supplier.search(User.class, "plus.kat.supplier.User"));

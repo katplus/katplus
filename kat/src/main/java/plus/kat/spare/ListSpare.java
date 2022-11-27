@@ -30,7 +30,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
-import plus.kat.utils.*;
 
 /**
  * @author kraity
@@ -68,9 +67,13 @@ public class ListSpare extends Property<List> {
         @NotNull Flag flag,
         @NotNull Value value
     ) throws IOException {
-        if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
-            return Convert.toObject(
-                this, flag, value
+        if (flag.isFlag(Flag.VALUE_AS_BEAN)) {
+            Algo algo = Algo.of(value);
+            if (algo == null) {
+                return null;
+            }
+            return solve(
+                algo, new Event<List>(value).with(flag)
             );
         }
         return null;
@@ -91,11 +94,23 @@ public class ListSpare extends Property<List> {
 
     @Override
     public List apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
+        if (type == null) {
+            type = klass;
+        }
+
         if (type == List.class ||
-            type == ArrayList.class) {
+            type == Iterable.class ||
+            type == ArrayList.class ||
+            type == Collection.class) {
             return new ArrayList<>();
+        }
+
+        if (type == Queue.class ||
+            type == Deque.class ||
+            type == LinkedList.class) {
+            return new LinkedList<>();
         }
 
         if (type == Stack.class) {
@@ -106,17 +121,13 @@ public class ListSpare extends Property<List> {
             return new Vector<>();
         }
 
-        if (type == LinkedList.class ||
-            type == AbstractSequentialList.class) {
-            return new LinkedList<>();
+        if (type == AbstractList.class ||
+            type == AbstractCollection.class) {
+            return new ArrayList<>();
         }
 
         if (type == CopyOnWriteArrayList.class) {
             return new CopyOnWriteArrayList<>();
-        }
-
-        if (type == AbstractList.class) {
-            return new ArrayList<>();
         }
 
         throw new Collapse(
@@ -159,82 +170,94 @@ public class ListSpare extends Property<List> {
 
     @Override
     public List cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
+        if (object == null) {
             return null;
         }
 
-        if (klass.isInstance(data)) {
-            return (List) data;
+        if (klass.isInstance(object)) {
+            return (List) object;
         }
 
-        if (data instanceof Collection) {
+        if (object instanceof Collection) {
             List list = apply();
             list.addAll(
-                (Collection) data
+                (Collection) object
             );
             return list;
         }
 
-        if (data instanceof Map) {
+        if (object instanceof Map) {
             List list = apply();
             list.addAll(
-                ((Map) data).values()
+                ((Map) object).values()
             );
             return list;
         }
 
-        if (data instanceof Iterable) {
+        if (object instanceof Iterable) {
             List list = apply();
-            for (Object o : (Iterable) data) {
+            for (Object o : (Iterable) object) {
                 list.add(o);
             }
             return list;
         }
 
-        if (data instanceof CharSequence) {
-            return Convert.toObject(
-                this, (CharSequence) data, null, supplier
+        if (object instanceof CharSequence) {
+            CharSequence cs =
+                (CharSequence) object;
+            Algo algo = Algo.of(cs);
+            if (algo == null) {
+                return null;
+            }
+            return solve(
+                algo, new Event<List>(cs).with(supplier)
             );
         }
 
-        if (data.getClass().isArray()) {
+        if (object.getClass().isArray()) {
             List list = apply();
-            int size = Array.getLength(data);
+            int size = Array.getLength(object);
 
             for (int i = 0; i < size; i++) {
                 list.add(
-                    Array.get(data, i)
+                    Array.get(object, i)
                 );
             }
             return list;
         }
 
-        if (data instanceof Spoiler) {
+        if (object instanceof Spoiler) {
             return apply(
                 (Spoiler) supplier, supplier
             );
         }
 
-        if (data instanceof ResultSet) {
+        if (object instanceof ResultSet) {
             try {
                 return apply(
-                    supplier, (ResultSet) data
+                    supplier, (ResultSet) object
                 );
-            } catch (Exception e) {
-                return null;
+            } catch (SQLException e) {
+                throw new IllegalStateException(
+                    object + " cannot be converted to " + klass, e
+                );
             }
         }
 
         Spoiler spoiler =
-            supplier.flat(data);
-        if (spoiler == null) {
-            return null;
+            supplier.flat(object);
+        if (spoiler != null) {
+            return apply(
+                spoiler, supplier
+            );
+        } else {
+            throw new IllegalStateException(
+                object + " cannot be converted to " + klass
+            );
         }
-
-        return apply(spoiler, supplier);
     }
 
     @Override
@@ -246,7 +269,7 @@ public class ListSpare extends Property<List> {
         );
     }
 
-    public static class Builder0<T extends Collection> extends Builder<T> {
+    public static class Builder0<T extends Collection> extends Builder<T> implements Callback {
 
         protected Type tag, raw;
         protected Class<?> kind;
@@ -286,7 +309,7 @@ public class ListSpare extends Property<List> {
 
             // other
             else {
-                Class<?> cls = Find.clazz(type);
+                Class<?> cls = Space.wipe(type);
                 if (cls != null &&
                     cls != Object.class) {
                     raw = cls;
@@ -297,10 +320,10 @@ public class ListSpare extends Property<List> {
         }
 
         @Override
-        public void onCreate() {
+        public void onOpen() {
             Type tv = tag;
             if (tv != null) {
-                Class<?> cls = Find.clazz(tv);
+                Class<?> cls = Space.wipe(tv);
                 if (cls != null &&
                     cls != Object.class) {
                     kind = cls;
@@ -311,7 +334,40 @@ public class ListSpare extends Property<List> {
         }
 
         @Override
-        public void onAttain(
+        public Pipage onOpen(
+            @NotNull Space space,
+            @NotNull Alias alias
+        ) throws IOException {
+            Spare<?> spare = spare0;
+            if (spare == null) {
+                spare = supplier.search(
+                    kind, space
+                );
+                if (spare == null) {
+                    return null;
+                }
+            }
+
+            Builder<?> child =
+                spare.getBuilder(tag);
+
+            if (child == null) {
+                return null;
+            }
+
+            return child.init(this, this);
+        }
+
+        @Override
+        public void onEmit(
+            @NotNull Pipage pipage,
+            @Nullable Object result
+        ) throws IOException {
+            bundle.add(result);
+        }
+
+        @Override
+        public void onEmit(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -328,45 +384,18 @@ public class ListSpare extends Property<List> {
 
             bundle.add(
                 spare.read(
-                    event, value
+                    flag, value
                 )
             );
         }
 
         @Override
-        public void onDetain(
-            @NotNull Builder<?> child
-        ) throws IOException {
-            bundle.add(
-                child.onPacket()
-            );
-        }
-
-        @Override
-        public Builder<?> onAttain(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) {
-            Spare<?> spare = spare0;
-            if (spare == null) {
-                spare = supplier.search(
-                    kind, space
-                );
-                if (spare == null) {
-                    return null;
-                }
-            }
-
-            return spare.getBuilder(tag);
-        }
-
-        @Override
-        public T onPacket() {
+        public T build() {
             return bundle;
         }
 
         @Override
-        public void onDestroy() {
+        public void onClose() {
             bundle = null;
         }
     }

@@ -16,7 +16,6 @@
 package plus.kat.retrofit;
 
 import plus.kat.*;
-import plus.kat.crash.*;
 import plus.kat.okhttp.*;
 
 import okhttp3.RequestBody;
@@ -56,17 +55,12 @@ public class MutableRequestBodyConverter<T> implements Converter<T, RequestBody>
         try (Chan chan = supplier.telex(algo, plan)) {
             if (chan.set(null, value)) {
                 return new RequestPaper(
-                    chan.getSteam(), MediaTypes.of(algo)
+                    chan, MediaTypes.of(algo)
                 );
             }
-        } catch (Collapse e) {
-            throw new IOException(
-                "Converter didn't find " + algo + "'s Chan"
-            );
         }
-
         throw new IOException(
-            "Unexpectedly, Cannot serialize " + value + " to " + algo.name()
+            "Failed to serialize " + value + " to " + algo
         );
     }
 }

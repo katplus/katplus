@@ -20,7 +20,6 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.kernel.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -50,15 +49,6 @@ public class BigIntegerSpare extends Property<BigInteger> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == BigInteger.class
-            || clazz == Number.class
-            || clazz == Object.class;
-    }
-
-    @Override
     public Boolean getBorder(
         @NotNull Flag flag
     ) {
@@ -68,16 +58,16 @@ public class BigIntegerSpare extends Property<BigInteger> {
     @Override
     public BigInteger read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Chain chain
     ) {
-        if (!value.isBlank()) {
-            long num = value.toLong();
+        if (!chain.isBlank()) {
+            long num = chain.toLong();
             if (num != 0) {
                 return BigInteger.valueOf(num);
             }
             try {
                 return new BigInteger(
-                    value.toString()
+                    chain.toString()
                 );
             } catch (Exception e) {
                 // Nothing
@@ -98,56 +88,49 @@ public class BigIntegerSpare extends Property<BigInteger> {
 
     @Override
     public BigInteger cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof BigInteger) {
-                return (BigInteger) data;
+        if (object == null) {
+            return BigInteger.ZERO;
+        }
+
+        if (object instanceof BigInteger) {
+            return (BigInteger) object;
+        }
+
+        if (object instanceof Number) {
+            if (object instanceof BigDecimal) {
+                return ((BigDecimal) object).toBigInteger();
             }
 
-            if (data instanceof Number) {
-                if (data instanceof BigDecimal) {
-                    return ((BigDecimal) data).toBigInteger();
-                }
+            return BigInteger.valueOf(
+                ((Number) object).longValue()
+            );
+        }
 
-                return BigInteger.valueOf(
-                    ((Number) data).longValue()
+        if (object instanceof Boolean) {
+            return ((boolean) object) ? BigInteger.ONE : BigInteger.ZERO;
+        }
+
+        if (object instanceof Value) {
+            return read(
+                null, (Chain) object
+            );
+        }
+
+        if (object instanceof CharSequence) {
+            try {
+                return new BigInteger(
+                    object.toString()
                 );
-            }
-
-            if (data instanceof Boolean) {
-                return ((boolean) data) ? BigInteger.ONE : BigInteger.ZERO;
-            }
-
-            if (data instanceof Value) {
-                Chain chain = (Chain) data;
-                if (!chain.isBlank()) {
-                    long num = chain.toLong();
-                    if (num != 0) {
-                        return BigInteger.valueOf(num);
-                    }
-                    try {
-                        return new BigInteger(
-                            chain.toString()
-                        );
-                    } catch (Exception e) {
-                        // Nothing
-                    }
-                }
+            } catch (Exception e) {
                 return BigInteger.ZERO;
             }
-
-            if (data instanceof CharSequence) {
-                try {
-                    return new BigInteger(
-                        data.toString()
-                    );
-                } catch (Exception e) {
-                    // Nothing
-                }
-            }
         }
-        return BigInteger.ZERO;
+
+        throw new IllegalStateException(
+            object + " cannot be converted to " + klass
+        );
     }
 }

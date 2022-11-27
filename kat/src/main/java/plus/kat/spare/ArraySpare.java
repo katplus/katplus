@@ -20,10 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
-import plus.kat.reflex.*;
 import plus.kat.stream.*;
-import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.lang.reflect.*;
@@ -71,6 +68,10 @@ public class ArraySpare extends Property<Object> {
         Class<?> e = elem;
         if (e == Object.class) {
             return EMPTY = EMPTY_ARRAY;
+        } else if (e == byte[].class) {
+            return EMPTY = Chain.EMPTY_BYTES;
+        } else if (e == char[].class) {
+            return EMPTY = Chain.EMPTY_CHARS;
         } else {
             return EMPTY = Array.newInstance(e, 0);
         }
@@ -91,9 +92,13 @@ public class ArraySpare extends Property<Object> {
         @NotNull Flag flag,
         @NotNull Value value
     ) throws IOException {
-        if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
-            return Convert.toObject(
-                this, flag, value
+        if (flag.isFlag(Flag.VALUE_AS_BEAN)) {
+            Algo algo = Algo.of(value);
+            if (algo == null) {
+                return null;
+            }
+            return solve(
+                algo, new Event<>(value).with(flag)
             );
         }
         return null;
@@ -182,23 +187,23 @@ public class ArraySpare extends Property<Object> {
         ResultSetMetaData meta =
             resultSet.getMetaData();
 
-        int count = meta.getColumnCount();
-        if (count == 0) {
+        int size = meta.getColumnCount();
+        if (size == 0) {
             return apply();
         }
 
         Class<?> e = elem;
         if (e == Object.class) {
-            Object[] data = new Object[count];
-            for (int i = 0; i < count; ) {
+            Object[] data = new Object[size];
+            for (int i = 0; i < size; ) {
                 data[i++] = resultSet.getObject(i);
             }
             return data;
         } else {
             Spare<?> spare = null;
-            Object data = Array.newInstance(e, count);
+            Object data = Array.newInstance(e, size);
 
-            for (int i = 0; i < count; ) {
+            for (int i = 0; i < size; ) {
                 int k = i++;
                 Object val = resultSet.getObject(i);
                 if (!e.isInstance(val)) {
@@ -216,19 +221,19 @@ public class ArraySpare extends Property<Object> {
 
     @Override
     public Object cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
+        if (object == null) {
             return null;
         }
 
-        if (klass.isInstance(data)) {
-            return data;
+        if (klass.isInstance(object)) {
+            return object;
         }
 
-        if (data.getClass().isArray()) {
-            int size = Array.getLength(data);
+        if (object.getClass().isArray()) {
+            int size = Array.getLength(object);
             if (size == 0) {
                 return apply();
             }
@@ -238,7 +243,7 @@ public class ArraySpare extends Property<Object> {
                 Object[] array = new Object[size];
                 //noinspection SuspiciousSystemArraycopy
                 System.arraycopy(
-                    data, 0, array, 0, size
+                    object, 0, array, 0, size
                 );
                 return array;
             }
@@ -247,7 +252,7 @@ public class ArraySpare extends Property<Object> {
             Object array = Array.newInstance(e, size);
 
             for (int i = 0; i < size; i++) {
-                Object val = Array.get(data, i);
+                Object val = Array.get(object, i);
                 if (!e.isInstance(val)) {
                     if (spare == null) {
                         spare = supplier.lookup(e);
@@ -260,8 +265,8 @@ public class ArraySpare extends Property<Object> {
             return array;
         }
 
-        if (data instanceof Collection) {
-            Collection col = (Collection) data;
+        if (object instanceof Collection) {
+            Collection col = (Collection) object;
             int size = col.size();
             if (size == 0) {
                 return apply();
@@ -289,8 +294,20 @@ public class ArraySpare extends Property<Object> {
             return array;
         }
 
-        if (data instanceof Map) {
-            Map map = (Map) data;
+        if (object instanceof CharSequence) {
+            CharSequence cs =
+                (CharSequence) object;
+            Algo algo = Algo.of(cs);
+            if (algo == null) {
+                return null;
+            }
+            return solve(
+                algo, new Event<>(cs).with(supplier)
+            );
+        }
+
+        if (object instanceof Map) {
+            Map map = (Map) object;
 
             int size = map.size();
             if (size == 0) {
@@ -319,35 +336,35 @@ public class ArraySpare extends Property<Object> {
             return array;
         }
 
-        if (data instanceof CharSequence) {
-            return Convert.toObject(
-                this, (CharSequence) data, null, supplier
-            );
-        }
-
-        if (data instanceof Spoiler) {
+        if (object instanceof Spoiler) {
             return apply(
                 (Spoiler) supplier, supplier
             );
         }
 
-        if (data instanceof ResultSet) {
+        if (object instanceof ResultSet) {
             try {
                 return apply(
-                    supplier, (ResultSet) data
+                    supplier, (ResultSet) object
                 );
-            } catch (Exception e) {
-                return null;
+            } catch (SQLException e) {
+                throw new IllegalStateException(
+                    object + " cannot be converted to " + klass, e
+                );
             }
         }
 
         Spoiler spoiler =
-            supplier.flat(data);
-        if (spoiler == null) {
-            return null;
+            supplier.flat(object);
+        if (spoiler != null) {
+            return apply(
+                spoiler, supplier
+            );
+        } else {
+            throw new IllegalStateException(
+                object + " cannot be converted to " + klass
+            );
         }
-
-        return apply(spoiler, supplier);
     }
 
     @Override
@@ -376,15 +393,16 @@ public class ArraySpare extends Property<Object> {
             }
         }
 
-        if (type instanceof ArrayType) {
+        if (type instanceof ParameterizedType) {
+            ParameterizedType p = (ParameterizedType) type;
             return new Builder2(
-                (ArrayType) type
+                p.getActualTypeArguments()
             );
         }
 
         if (type instanceof GenericArrayType) {
             GenericArrayType g = (GenericArrayType) type;
-            Class<?> cls = Find.clazz(
+            Class<?> cls = Space.wipe(
                 type = g.getGenericComponentType()
             );
             return new Builder1(
@@ -413,7 +431,7 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onCreate() throws IOException {
+        public void onOpen() throws IOException {
             spare = supplier.lookup(elem);
             if (spare != null) {
                 size = 0;
@@ -422,14 +440,14 @@ public class ArraySpare extends Property<Object> {
                     elem, length = 1
                 );
             } else {
-                throw new ProxyCrash(
+                throw new IOException(
                     "Can't lookup the Spare of '" + elem + "'"
                 );
             }
         }
 
         @Override
-        public void onAttain(
+        public void onEmit(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -438,9 +456,7 @@ public class ArraySpare extends Property<Object> {
                 enlarge();
             }
             Array.set(
-                bundle, size++, spare.read(
-                    event, value
-                )
+                bundle, size++, spare.read(flag, value)
             );
         }
 
@@ -471,28 +487,28 @@ public class ArraySpare extends Property<Object> {
             bundle = make;
         }
 
-        @Nullable
         @Override
-        public Object onPacket() {
+        public Object build() {
             if (length == size) {
                 return bundle;
             }
 
-            Object ary = Array.newInstance(elem, size);
+            Object data = Array
+                .newInstance(elem, size);
             //noinspection SuspiciousSystemArraycopy
             System.arraycopy(
-                bundle, 0, ary, 0, size
+                bundle, 0, data, 0, size
             );
-            return ary;
+            return data;
         }
 
         @Override
-        public void onDestroy() {
+        public void onClose() {
             bundle = null;
         }
     }
 
-    public static class Builder1 extends Builder0 {
+    public static class Builder1 extends Builder0 implements Callback {
 
         protected Type tag;
         protected Class<?> kind;
@@ -506,7 +522,7 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onCreate() {
+        public void onOpen() {
             Class<?> clazz = elem;
             if (clazz != Object.class) {
                 kind = clazz;
@@ -521,7 +537,45 @@ public class ArraySpare extends Property<Object> {
         }
 
         @Override
-        public void onAttain(
+        public Pipage onOpen(
+            @NotNull Space space,
+            @NotNull Alias alias
+        ) throws IOException {
+            Spare<?> spare0 = spare;
+            if (spare0 == null) {
+                spare0 = supplier.search(
+                    kind, space
+                );
+                if (spare0 == null) {
+                    return null;
+                }
+            }
+
+            Builder<?> child =
+                spare0.getBuilder(tag);
+
+            if (child == null) {
+                return null;
+            }
+
+            return child.init(this, this);
+        }
+
+        @Override
+        public void onEmit(
+            @NotNull Pipage pipage,
+            @Nullable Object result
+        ) throws IOException {
+            if (length == size) {
+                enlarge();
+            }
+            Array.set(
+                bundle, size++, result
+            );
+        }
+
+        @Override
+        public void onEmit(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -541,106 +595,44 @@ public class ArraySpare extends Property<Object> {
             }
 
             Array.set(
-                bundle, size++, spare0.read(event, value)
+                bundle, size++, spare0.read(flag, value)
             );
         }
 
         @Override
-        public void onDetain(
-            @NotNull Builder<?> child
-        ) throws IOException {
-            if (length == size) {
-                enlarge();
-            }
-            Array.set(
-                bundle, size++, child.onPacket()
-            );
-        }
-
-        @Override
-        public Builder<?> onAttain(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) {
-            Spare<?> spare0 = spare;
-            if (spare0 == null) {
-                spare0 = supplier.search(
-                    kind, space
-                );
-                if (spare0 == null) {
-                    return null;
-                }
-            }
-
-            return spare0.getBuilder(tag);
+        public void onClose() {
+            tag = null;
+            bundle = null;
         }
     }
 
-    public static class Builder2 extends Builder<Object> {
+    public static class Builder2 extends Builder<Object> implements Callback {
 
-        protected int size;
         protected int index;
-
-        protected ArrayType tag;
+        protected Type[] tag;
         protected Object[] bundle;
 
         public Builder2(
-            ArrayType type
+            Type[] types
         ) {
-            tag = type;
-            size = tag.size();
+            tag = types;
         }
 
         @Override
-        public void onCreate() {
+        public void onOpen() {
             index = -1;
-            bundle = new Object[size];
+            bundle = new Object[tag.length];
         }
 
         @Override
-        public void onAttain(
-            @NotNull Space space,
-            @NotNull Alias alias,
-            @NotNull Value value
-        ) throws IOException {
-            if (++index < size) {
-                Type type = tag.getType(index);
-                Class<?> clazz = Find.clazz(type);
-
-                Spare<?> spare;
-                if (clazz == Object.class) {
-                    spare = supplier.lookup(space);
-                } else {
-                    spare = supplier.lookup(clazz, space);
-                }
-
-                if (spare != null) {
-                    bundle[index] = spare.read(
-                        event, value
-                    );
-                }
-            } else {
-                throw new ProxyCrash(
-                    "The number of elements exceeds the range: " + size
-                );
-            }
-        }
-
-        @Override
-        public void onDetain(
-            @NotNull Builder<?> child
-        ) throws IOException {
-            bundle[index] = child.onPacket();
-        }
-
-        @Override
-        public Builder<?> onAttain(
+        public Pipage onOpen(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            if (++index < size) {
-                Type type = tag.getType(index);
-                Class<?> clazz = Find.clazz(type);
+            Type[] types = tag;
+            if (++index < types.length) {
+                Type type = types[index];
+                Class<?> clazz = Space.wipe(type);
 
                 Spare<?> spare;
                 if (clazz == Object.class) {
@@ -653,21 +645,68 @@ public class ArraySpare extends Property<Object> {
                     return null;
                 }
 
-                return spare.getBuilder(type);
+                Builder<?> child =
+                    spare.getBuilder(type);
+
+                if (child == null) {
+                    return null;
+                }
+
+                return child.init(this, this);
             } else {
-                throw new ProxyCrash(
-                    "The number of elements exceeds the range: " + size
+                throw new IOException(
+                    "The number of elements exceeds the range: " + types.length
                 );
             }
         }
 
         @Override
-        public Object[] onPacket() {
+        public void onEmit(
+            @NotNull Pipage pipage,
+            @Nullable Object result
+        ) throws IOException {
+            bundle[index] = result;
+        }
+
+        @Override
+        public void onEmit(
+            @NotNull Space space,
+            @NotNull Alias alias,
+            @NotNull Value value
+        ) throws IOException {
+            Type[] types = tag;
+            if (++index < types.length) {
+                Class<?> clazz = Space.wipe(
+                    types[index]
+                );
+
+                Spare<?> spare;
+                if (clazz == Object.class) {
+                    spare = supplier.lookup(space);
+                } else {
+                    spare = supplier.lookup(clazz, space);
+                }
+
+                if (spare != null) {
+                    bundle[index] =
+                        spare.read(
+                            flag, value
+                        );
+                }
+            } else {
+                throw new IOException(
+                    "The number of elements exceeds the range: " + types.length
+                );
+            }
+        }
+
+        @Override
+        public Object[] build() {
             return bundle;
         }
 
         @Override
-        public void onDestroy() {
+        public void onClose() {
             bundle = null;
         }
     }

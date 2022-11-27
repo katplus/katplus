@@ -19,8 +19,6 @@ import plus.kat.crash.*;
 
 import java.io.IOException;
 
-import static plus.kat.kernel.Alpha.Memory;
-
 /**
  * @author kraity
  * @since 0.0.3
@@ -28,7 +26,7 @@ import static plus.kat.kernel.Alpha.Memory;
 public abstract class AbstractReader implements Reader {
 
     protected int index;
-    protected int offset;
+    protected int limit;
 
     protected int range;
     protected int scale;
@@ -100,37 +98,20 @@ public abstract class AbstractReader implements Reader {
     }
 
     /**
-     * Apply for buffer based on range
-     */
-    protected byte[] alloc() {
-        int r = range;
-        if (r == 0) {
-            return Memory.INS.alloc();
-        } else {
-            int s = Memory.SCALE;
-            if (r > s) {
-                return new byte[r];
-            } else {
-                return Memory.INS.alloc();
-            }
-        }
-    }
-
-    /**
      * Checks {@link Reader} for readable bytes
      *
      * @throws IOException If this has been closed or I/O error occurs
      */
     @Override
     public boolean also() throws IOException {
-        if (index < offset) {
+        if (index < limit) {
             return true;
         }
 
-        if (offset != -1) {
-            offset = load();
-            if (offset <= 0) {
-                offset = -1;
+        if (limit != -1) {
+            limit = load();
+            if (limit <= 0) {
+                limit = -1;
             } else {
                 index = 0;
                 return true;
@@ -157,22 +138,23 @@ public abstract class AbstractReader implements Reader {
      */
     @Override
     public byte next() throws IOException {
-        if (index < offset) {
+        if (index < limit) {
             return cache[index++];
         }
 
-        if (offset != -1) {
-            offset = load();
-            if (offset <= 0) {
-                offset = -1;
+        if (limit != -1) {
+            limit = load();
+            if (limit <= 0) {
+                limit = -1;
             } else {
                 index = 1;
                 return cache[0];
             }
         }
 
-        throw new ReaderCrash(
-            "Unexpectedly, no readable byte"
+        throw new FlowCrash(
+            "No readable byte, please " +
+                "check whether the stream is damaged"
         );
     }
 }

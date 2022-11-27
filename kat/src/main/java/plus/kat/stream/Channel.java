@@ -13,34 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.crash;
+package plus.kat.stream;
 
-import java.io.IOException;
+import plus.kat.*;
+import plus.kat.anno.*;
 
 /**
  * @author kraity
  * @since 0.0.5
  */
-public class ReaderCrash extends IOException {
+public interface Channel extends Pipage {
     /**
-     * @param m the detail message
+     * Returns the flag of this {@link Channel}
+     *
+     * @return {@link Flag} or {@code null}
      */
-    public ReaderCrash(String m) {
-        super(m);
-    }
+    @Nullable
+    Flag flag();
 
     /**
-     * @param e the specified cause to saved
+     * Returns the holder of this {@link Channel}
+     *
+     * @return {@link Channel} or {@code null}
      */
-    public ReaderCrash(Throwable e) {
-        super(e);
-    }
+    @Nullable
+    Channel holder();
 
     /**
-     * @param m the detail message
-     * @param e the specified cause to saved
+     * Returns the supplier of this {@link Channel}
+     *
+     * @return {@link Supplier} or {@code null}
      */
-    public ReaderCrash(String m, Throwable e) {
-        super(m, e);
-    }
+    @Nullable
+    Supplier supplier();
 }

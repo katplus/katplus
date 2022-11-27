@@ -50,13 +50,14 @@ public interface Reader extends Closeable {
             return read();
         }
 
-        throw new ReaderCrash(
-            "Unexpectedly, no readable byte"
+        throw new FlowCrash(
+            "No readable byte, please " +
+                "check whether the stream is damaged"
         );
     }
 
     /**
-     * Close this {@link Reader}
+     * Closes this {@link Reader}
      */
     @Override
     default void close() {

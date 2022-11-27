@@ -159,7 +159,7 @@ public abstract class KatCluster<T> {
     }
 
     /**
-     * Close this {@link KatCluster}
+     * Closes this {@link KatCluster}
      */
     public void close() {
         grow = 0;

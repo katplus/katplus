@@ -16,13 +16,15 @@
 package plus.kat.okhttp;
 
 import plus.kat.*;
-import plus.kat.chain.*;
+import plus.kat.stream.Stream;
 
 import okio.BufferedSink;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
 import java.io.IOException;
+
+import static plus.kat.okhttp.MediaTypes.of;
 
 /**
  * @author kraity
@@ -35,35 +37,36 @@ public class RequestPaper extends RequestBody {
 
     public RequestPaper(
         Chan chan
-    ) {
+    ) throws IOException {
         this(
-            chan.getSteam()
+            chan, of(chan.algo())
         );
     }
 
     public RequestPaper(
         Chan chan,
         MediaType mediaType
+    ) throws IOException {
+        try (Chan in = chan) {
+            this.data = in.toBytes();
+            this.mediaType = mediaType;
+        }
+    }
+
+    public RequestPaper(
+        Stream stream
     ) {
         this(
-            chan.getSteam(), mediaType
+            stream, of(stream.algo())
         );
     }
 
     public RequestPaper(
-        Steam steam
-    ) {
-        this(
-            steam, MediaTypes.of(steam.algo())
-        );
-    }
-
-    public RequestPaper(
-        Steam steam,
+        Stream stream,
         MediaType mediaType
     ) {
-        try (Steam ch = steam) {
-            this.data = ch.toBytes();
+        try (Stream in = stream) {
+            this.data = in.toBytes();
             this.mediaType = mediaType;
         }
     }

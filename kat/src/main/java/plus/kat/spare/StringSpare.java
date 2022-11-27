@@ -47,14 +47,15 @@ public class StringSpare extends Property<String> {
 
     @Override
     public String apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
-        if (type == String.class) {
-            return apply();
+        if (type == null ||
+            type == String.class) {
+            return "";
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
@@ -64,20 +65,11 @@ public class StringSpare extends Property<String> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == String.class
-            || clazz == Object.class
-            || clazz == CharSequence.class;
-    }
-
-    @Override
     public String read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        return alias.toString();
+        return chain.toString();
     }
 
     @Override
@@ -100,36 +92,35 @@ public class StringSpare extends Property<String> {
 
     @Override
     public String cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
-            return apply();
+        if (object == null) {
+            return "";
         }
 
-        if (data instanceof String) {
-            return (String) data;
+        if (object instanceof String) {
+            return (String) object;
         }
 
-        if (data instanceof char[]) {
+        if (object instanceof char[]) {
             return new String(
-                (char[]) data
+                (char[]) object
             );
         }
 
-        if (data instanceof byte[]) {
+        if (object instanceof byte[]) {
             byte[] it = Base64.base()
-                .encode(
-                    (byte[]) data
-                );
+                .encode((byte[]) object);
             if (it.length == 0) {
                 return "";
+            } else {
+                return new String(
+                    it, 0, 0, it.length
+                );
             }
-            return new String(
-                it, 0, 0, it.length
-            );
         }
 
-        return data.toString();
+        return object.toString();
     }
 }

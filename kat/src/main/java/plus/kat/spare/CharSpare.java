@@ -21,12 +21,12 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 
+import static plus.kat.chain.Chain.Unsafe.value;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -49,15 +49,16 @@ public class CharSpare extends Property<Character> {
 
     @Override
     public Character apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
-        if (type == char.class ||
+        if (type == null ||
+            type == char.class ||
             type == Character.class) {
             return '\0';
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
@@ -67,34 +68,21 @@ public class CharSpare extends Property<Character> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == char.class
-            || clazz == Character.class
-            || clazz == Object.class;
-    }
-
-    @NotNull
-    @Override
     public Character read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        return Convert.toChar(
-            Unsafe.value(alias), alias.length(), '\0'
-        );
-    }
-
-    @NotNull
-    @Override
-    public Character read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) {
-        return Convert.toChar(
-            Unsafe.value(value), value.length(), '\0'
-        );
+        int len = chain.length();
+        if (chain.charset() != UTF_8) {
+            if (len != 1) {
+                return '\0';
+            }
+            return chain.charAt(0);
+        } else {
+            return Convert.toChar(
+                value(chain), len, '\0'
+            );
+        }
     }
 
     @Override
@@ -102,51 +90,47 @@ public class CharSpare extends Property<Character> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.emit(
-            (char) value
-        );
+        flow.emit((char) value);
     }
 
     @Override
     public Character cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Character) {
-                return (Character) data;
-            }
+        if (object == null) {
+            return '\0';
+        }
 
-            if (data instanceof Number) {
-                return (char) ((Number) data).intValue();
-            }
+        if (object instanceof Character) {
+            return (Character) object;
+        }
 
-            if (data instanceof Boolean) {
-                return ((boolean) data) ? '1' : '0';
-            }
+        if (object instanceof Number) {
+            return (char) ((Number) object).intValue();
+        }
 
-            if (data instanceof Chain) {
-                Chain chain = (Chain) data;
-                int len = chain.length();
-                if (chain.charset() != UTF_8) {
-                    if (len != 1) {
-                        return '\0';
-                    }
-                    return chain.charAt(0);
-                } else {
-                    return Convert.toChar(
-                        Unsafe.value(chain), len, '\0'
-                    );
-                }
-            }
+        if (object instanceof Boolean) {
+            return ((boolean) object) ? '1' : '0';
+        }
 
-            if (data instanceof CharSequence) {
-                CharSequence ch = (CharSequence) data;
-                if (ch.length() == 1) {
-                    return ch.charAt(0);
-                }
+        if (object instanceof Chain) {
+            return read(
+                null, (Chain) object
+            );
+        }
+
+        if (object instanceof CharSequence) {
+            CharSequence ch = (CharSequence) object;
+            if (ch.length() != 1) {
+                return '\0';
+            } else {
+                return ch.charAt(0);
             }
         }
-        return '\0';
+
+        throw new IllegalStateException(
+            object + " cannot be converted to Character"
+        );
     }
 }

@@ -46,14 +46,15 @@ public class LocaleSpare extends Property<Locale> {
 
     @Override
     public Locale apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
-        if (type == Locale.class) {
+        if (type == null ||
+            type == Locale.class) {
             return Locale.getDefault();
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
@@ -63,27 +64,11 @@ public class LocaleSpare extends Property<Locale> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == Locale.class
-            || clazz == Object.class;
-    }
-
-    @Override
     public Locale read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        return lookup(alias);
-    }
-
-    @Override
-    public Locale read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) {
-        return lookup(value);
+        return lookup(chain);
     }
 
     @Override
@@ -98,32 +83,30 @@ public class LocaleSpare extends Property<Locale> {
 
     @Override
     public Locale cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Locale) {
-                return (Locale) data;
-            }
-
-            if (data instanceof CharSequence) {
-                try {
-                    return lookup(
-                        (CharSequence) data
-                    );
-                } catch (Exception e) {
-                    return null;
-                }
-            }
+        if (object == null) {
+            return null;
         }
-        return null;
+
+        if (object instanceof Locale) {
+            return (Locale) object;
+        }
+
+        if (object instanceof CharSequence) {
+            return lookup(
+                (CharSequence) object
+            );
+        }
+
+        throw new IllegalStateException(
+            object + " cannot be converted to " + klass
+        );
     }
 
-    /**
-     * @since 0.0.3
-     */
     @Nullable
-    public static Locale lookup(
+    static Locale lookup(
         @NotNull CharSequence c
     ) {
         int len = c.length();
@@ -259,21 +242,5 @@ public class LocaleSpare extends Property<Locale> {
             new String(ch, ++d1, d2 - d1),
             new String(ch, ++d2, len - d2)
         );
-    }
-
-    /**
-     * @since 0.0.3
-     */
-    @NotNull
-    public static Locale lookup(
-        @NotNull CharSequence c,
-        @NotNull Locale.Category category
-    ) {
-        Locale locale = lookup(c);
-        if (locale != null) {
-            return locale;
-        }
-
-        return Locale.getDefault(category);
     }
 }

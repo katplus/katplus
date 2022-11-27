@@ -7,7 +7,7 @@ User{
     # status
     b:blocked(0)
 
-    # extra data
+    # extras
     M:resource{
         I:age(6)
         D:devote(1024)

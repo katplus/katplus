@@ -49,20 +49,10 @@ public class StringBuilderSpare extends Property<StringBuilder> {
     @Override
     public StringBuilder read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
         return new StringBuilder(
-            alias.toString()
-        );
-    }
-
-    @Override
-    public StringBuilder read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) {
-        return new StringBuilder(
-            value.toString()
+            chain.toString()
         );
     }
 
@@ -78,19 +68,19 @@ public class StringBuilderSpare extends Property<StringBuilder> {
 
     @Override
     public StringBuilder cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
-            return apply();
+        if (object == null) {
+            return null;
         }
 
-        if (data instanceof CharSequence) {
+        if (object instanceof CharSequence) {
             return new StringBuilder(
-                (CharSequence) data
+                (CharSequence) object
             );
         }
 
-        return new StringBuilder(data.toString());
+        return new StringBuilder(object.toString());
     }
 }

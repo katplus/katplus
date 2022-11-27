@@ -1,4 +1,4 @@
-package plus.kat.kernel;
+package plus.kat.chain;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,21 +11,33 @@ public class ChainTest {
 
     @Test
     public void test_is() {
-        assertTrue(new Alpha("$").is('$'));
-        assertTrue(new Alpha("kat.plus").is(3, '.'));
-        assertTrue(new Alpha("kat.plus").is(3, (byte) '.'));
-        assertFalse(new Alpha("$").is('@'));
-        assertFalse(new Alpha("$$").is('$'));
-        assertFalse(new Alpha("//kat.plus").is(5, '$'));
-        assertFalse(new Alpha("//kat.plus").is(5, (byte) '$'));
+        assertTrue(new Chain("$").is('$'));
+        assertTrue(new Chain("kat.plus").is(3, '.'));
+        assertTrue(new Chain("kat.plus").is(3, (byte) '.'));
+        assertFalse(new Chain("$").is('@'));
+        assertFalse(new Chain("$$").is('$'));
+        assertFalse(new Chain("//kat.plus").is(5, '$'));
+        assertFalse(new Chain("//kat.plus").is(5, (byte) '$'));
 
         String text = "@\uDFFF\uDEEE@L©µŁƎʪ˩Σ『陆之岇』🧬🏷⛰️🌏";
-        assertArrayEquals(text.getBytes(UTF_8), new Alpha(text).toBytes());
+        assertArrayEquals(text.getBytes(UTF_8), new Chain(text).toBytes());
+    }
+
+    @Test
+    public void test_set() {
+        Chain c = new Chain("kat");
+        c.set(1, (byte) 'i');
+        assertEquals("kit", c.toString());
+        c.set(-3, (byte) '$');
+        assertEquals("$it", c.toString());
+
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.set(3, (byte) 'i'));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> c.set(-4, (byte) 'i'));
     }
 
     @Test
     public void test_get() {
-        Alpha c = new Alpha("kat");
+        Chain c = new Chain("kat");
         byte def = '$';
         assertEquals((byte) 'k', c.get(0, def));
         assertEquals((byte) 'a', c.get(1, def));
@@ -47,8 +59,23 @@ public class ChainTest {
     }
 
     @Test
+    public void test_slip() {
+        Chain c = new Chain("plus.kat");
+        assertEquals(8, c.length());
+
+        assertThrows(IndexOutOfBoundsException.class, () -> c.slip(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> c.slip(12));
+
+        c.slip(3);
+        assertEquals(3, c.length());
+        c.slip(0);
+        assertTrue(c.isEmpty());
+        assertEquals(0, c.length());
+    }
+
+    @Test
     public void test_byteAt() {
-        Alpha c = new Alpha("kat");
+        Chain c = new Chain("kat");
         assertEquals((byte) 'k', c.at(0));
         assertEquals((byte) 'a', c.at(1));
         assertEquals((byte) 't', c.at(2));
@@ -58,7 +85,7 @@ public class ChainTest {
 
     @Test
     public void test_charAt() {
-        Alpha c = new Alpha("kat");
+        Chain c = new Chain("kat");
         assertEquals('k', c.charAt(0));
         assertEquals('a', c.charAt(1));
         assertEquals('t', c.charAt(2));
@@ -80,7 +107,7 @@ public class ChainTest {
 
     @Test
     public void test_toString() {
-        Alpha v = new Alpha("plus");
+        Chain v = new Chain("plus");
         assertEquals(3444122, v.hashCode());
         assertSame(v.toString(), v.toString());
 
@@ -106,26 +133,26 @@ public class ChainTest {
 
     @Test
     public void test_isEmpty() {
-        assertTrue(new Alpha().isEmpty());
-        assertTrue(new Alpha("").isEmpty());
-        assertFalse(new Alpha(" ").isEmpty());
-        assertFalse(new Alpha("kat").isEmpty());
-        assertFalse(new Alpha("  kat  ").isEmpty());
+        assertTrue(new Chain().isEmpty());
+        assertTrue(new Chain("").isEmpty());
+        assertFalse(new Chain(" ").isEmpty());
+        assertFalse(new Chain("kat").isEmpty());
+        assertFalse(new Chain("  kat  ").isEmpty());
     }
 
     @Test
     public void test_isBlank() {
-        assertTrue(new Alpha().isBlank());
-        assertTrue(new Alpha("").isBlank());
-        assertTrue(new Alpha(" ").isBlank());
-        assertFalse(new Alpha("kat").isBlank());
-        assertFalse(new Alpha("  kat  ").isBlank());
+        assertTrue(new Chain().isBlank());
+        assertTrue(new Chain("").isBlank());
+        assertTrue(new Chain(" ").isBlank());
+        assertFalse(new Chain("kat").isBlank());
+        assertFalse(new Chain("  kat  ").isBlank());
     }
 
     @Test
     public void test_indexOf() {
         String string = "plus.kat.plus";
-        Alpha value = new Alpha(string);
+        Chain value = new Chain(string);
 
         assertEquals(0, value.indexOf((byte) 'p'));
         assertEquals(4, value.indexOf((byte) '.'));
@@ -139,7 +166,7 @@ public class ChainTest {
     @Test
     public void test_lastIndexOf() {
         String string = "plus.kat.plus";
-        Alpha value = new Alpha(string);
+        Chain value = new Chain(string);
 
         assertEquals(string.lastIndexOf('.'), value.lastIndexOf((byte) '.'));
         assertEquals(string.lastIndexOf('k'), value.lastIndexOf((byte) 'k'));
@@ -151,7 +178,7 @@ public class ChainTest {
     @Test
     public void test_compareTo() {
         String s = "kat.plus";
-        Alpha v = new Alpha(s);
+        Chain v = new Chain(s);
 
         assertEquals(0, v.compareTo("kat.plus"));
         assertEquals(s.compareTo("+kat.plus"), v.compareTo("+kat.plus"));
@@ -161,7 +188,7 @@ public class ChainTest {
 
     @Test
     public void test_InputStream() throws IOException {
-        Alpha v1 = new Alpha();
+        Chain v1 = new Chain();
         try (InputStream in = new ByteArrayInputStream(
             "kat.plus".getBytes(UTF_8)
         )) {
@@ -172,7 +199,7 @@ public class ChainTest {
         for (int i = 0; i < 128; i++) {
             v1.join(".kat.plus");
         }
-        Alpha v2 = new Alpha();
+        Chain v2 = new Chain();
         try (InputStream in = new ByteArrayInputStream(
             v1.value, 0, v1.count
         )) {
@@ -187,7 +214,7 @@ public class ChainTest {
 
     @Test
     public void test_chain_InputStream() throws IOException {
-        Alpha value = new Alpha();
+        Chain value = new Chain();
 
         try (InputStream in = new ByteArrayInputStream("kraity".getBytes(UTF_8))) {
             value.join(in, 128);
@@ -199,7 +226,7 @@ public class ChainTest {
 
     @Test
     public void test_grow() {
-        Alpha a = new Alpha();
+        Chain a = new Chain();
         byte[] b = "kat.plus".getBytes(ISO_8859_1);
 
         a.value = b;

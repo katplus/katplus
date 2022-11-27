@@ -11,6 +11,20 @@ import static java.nio.charset.StandardCharsets.*;
 public class BinaryTest {
 
     @Test
+    public void test_lower_byte() {
+        assertEquals((byte) '6', Binary.lower(6));
+        assertEquals((byte) 'a', Binary.lower(10));
+        assertEquals((byte) 'v', Binary.lower(31));
+    }
+
+    @Test
+    public void test_upper_byte() {
+        assertEquals((byte) '6', Binary.upper(6));
+        assertEquals((byte) 'A', Binary.upper(10));
+        assertEquals((byte) 'V', Binary.upper(31));
+    }
+
+    @Test
     public void test_lower_array() {
         byte[] b0 = new byte[]{'k', 'a', 't'};
         assertEquals("6b6174", Binary.toLower(b0));

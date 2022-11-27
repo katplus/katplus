@@ -17,28 +17,39 @@ package plus.kat.utils;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.stream.*;
+import java.util.Properties;
+
+import static plus.kat.stream.Convert.*;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
 public class Config {
+
+    private final static Properties
+        props = System.getProperties();
+
+    private Config() {
+        throw new IllegalStateException();
+    }
+
     /**
      * Returns the attribute indicated by the specified key
      */
     public static String get(
         @NotNull String key, String def
     ) {
+        String s;
         try {
-            String s = System.getProperty(key);
+            s = props.getProperty(key);
             if (s == null) {
                 return def;
             }
-            return s.isEmpty() ? def : s;
         } catch (Exception e) {
             return def;
         }
+        return s.isEmpty() ? def : s;
     }
 
     /**
@@ -50,7 +61,7 @@ public class Config {
         int l;
         String s;
         try {
-            s = System.getProperty(key);
+            s = props.getProperty(key);
             if (s == null) {
                 return def;
             }
@@ -62,9 +73,7 @@ public class Config {
             return def;
         }
 
-        return Convert.toInt(
-            s, l, 10, def
-        );
+        return toInt(s, l, 10, def);
     }
 
     /**
@@ -76,7 +85,7 @@ public class Config {
         int l;
         String s;
         try {
-            s = System.getProperty(key);
+            s = props.getProperty(key);
             if (s == null) {
                 return def;
             }
@@ -88,9 +97,7 @@ public class Config {
             return def;
         }
 
-        return Convert.toLong(
-            s, l, 10L, def
-        );
+        return toLong(s, l, 10L, def);
     }
 
     /**
@@ -102,7 +109,7 @@ public class Config {
         int l;
         String s;
         try {
-            s = System.getProperty(key);
+            s = props.getProperty(key);
             if (s == null) {
                 return def;
             }
@@ -114,8 +121,6 @@ public class Config {
             return def;
         }
 
-        return Convert.toBoolean(
-            s, l, def
-        );
+        return toBoolean(s, l, def);
     }
 }

@@ -25,12 +25,10 @@ import java.nio.file.*;
 import javax.crypto.Cipher;
 
 import plus.kat.chain.*;
-import plus.kat.crash.*;
+import plus.kat.spare.*;
 import plus.kat.stream.*;
 import plus.kat.stream.Reader;
 import plus.kat.stream.InputStreamReader;
-
-import static plus.kat.Supplier.Impl.INS;
 
 /**
  * @author kraity
@@ -38,51 +36,52 @@ import static plus.kat.Supplier.Impl.INS;
  */
 public class Event<T> implements Flag {
 
-    protected int range;
-    protected long flags;
-
     protected Flag flag;
     protected Type type;
-    protected Spare<?> spare;
+    protected long flags;
 
     protected Reader reader;
+    protected Coder<?> coder;
     protected Supplier supplier;
 
     /**
-     * For example
-     * <pre>{@code
-     *   Event<User> event = new Event<>();
-     *   Reader reader = ...;
-     *   event.with(reader);
-     * }</pre>
+     * Constructs an empty event and gets
+     * the generic type of this {@link Event}
      */
     public Event() {
-        this(Event.class);
-    }
-
-    /**
-     * @param impl the specified {@link Class} that needs to be compared
-     */
-    public Event(
-        @NotNull Class<?> impl
-    ) {
-        Class<?> klass = getClass();
-        if (klass != impl) {
-            type = ((ParameterizedType) klass.getGenericSuperclass()).getActualTypeArguments()[0];
+        Class<?> clazz = getClass();
+        if (clazz != Event.class) {
+            Type visa = clazz.getGenericSuperclass();
+            if (visa instanceof ParameterizedType) {
+                type = ((ParameterizedType) visa).getActualTypeArguments()[0];
+            }
         }
     }
 
     /**
+     * For example
+     * <pre>{@code
+     *   Reader reader = ...;
+     *   Event<User> event = new Event<>(reader);
+     * }</pre>
+     *
      * @param reader the specified {@link Reader} to be used
      */
     public Event(
         @Nullable Reader reader
     ) {
-        this(Event.class);
+        this();
         this.reader = reader;
     }
 
     /**
+     * For example
+     * <pre>{@code
+     *   Flag flag = ...;
+     *   Reader reader = ...;
+     *   Event<User> event = new Event<>(flag, reader);
+     * }</pre>
+     *
      * @param flag   the specified {@link Flag} to be used
      * @param reader the specified {@link Reader} to be used
      * @since 0.0.2
@@ -91,7 +90,7 @@ public class Event<T> implements Flag {
         @Nullable Flag flag,
         @Nullable Reader reader
     ) {
-        this(Event.class);
+        this();
         this.flag = flag;
         this.reader = reader;
     }
@@ -109,35 +108,31 @@ public class Event<T> implements Flag {
     public Event(
         @NotNull byte[] data
     ) {
-        this(Event.class);
+        this();
         reader = new ByteReader(data);
     }
 
     /**
      * For example
      * <pre>{@code
-     *   byte[] data = ...;
-     *   Cipher cipher = ...;
-     *   Event<User> event = new Event<>(data, cipher);
+     *   Chain data = ...;
+     *   Event<User> event = new Event<>(data);
      * }</pre>
      *
-     * @throws NullPointerException If the specified {@code data} or {@code cipher} is null
-     * @see CipherByteReader#CipherByteReader(byte[], Cipher)
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see ByteReader#ByteReader(Chain)
      */
     public Event(
-        @NotNull byte[] data,
-        @NotNull Cipher cipher
+        @NotNull Chain data
     ) {
-        this(Event.class);
-        reader = new CipherByteReader(
-            data, cipher
-        );
+        this();
+        reader = new ByteReader(data);
     }
 
     /**
      * For example
      * <pre>{@code
-     *   byte[] data = ...;
+     *   String data = ...;
      *   Event<User> event = new Event<>(data);
      * }</pre>
      *
@@ -145,13 +140,60 @@ public class Event<T> implements Flag {
      * @see CharReader#CharReader(CharSequence)
      */
     public Event(
-        @NotNull CharSequence data
+        @NotNull String data
     ) {
-        this(Event.class);
+        this();
         reader = new CharReader(data);
     }
 
     /**
+     * For example
+     * <pre>{@code
+     *   CharSequence data = ...;
+     *   Event<User> event = new Event<>(data);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see ByteReader#ByteReader(Chain)
+     * @see CharReader#CharReader(CharSequence)
+     */
+    public Event(
+        @NotNull CharSequence data
+    ) {
+        this();
+        if (data instanceof Chain) {
+            reader = new ByteReader(
+                (Chain) data
+            );
+        } else {
+            reader = new CharReader(data);
+        }
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   InputStream stream = ...;
+     *   Event<User> event = new Event<>(stream);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code stream} is null
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    public Event(
+        @NotNull InputStream stream
+    ) {
+        this();
+        reader = new InputStreamReader(stream);
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   byte[] data = ...;
+     *   Event<User> event = new Event<>(data, 0, 6);
+     * }</pre>
+     *
      * @throws NullPointerException      If the specified {@code data} is null
      * @throws IndexOutOfBoundsException If the index and the length are out of range
      * @see ByteReader#ByteReader(byte[], int, int)
@@ -159,24 +201,77 @@ public class Event<T> implements Flag {
     public Event(
         @NotNull byte[] data, int index, int length
     ) {
-        this(Event.class);
+        this();
         reader = new ByteReader(
             data, index, length
         );
     }
 
     /**
+     * For example
+     * <pre>{@code
+     *   Chain data = ...;
+     *   Event<User> event = new Event<>(data, 0, 6);
+     * }</pre>
+     *
+     * @throws NullPointerException      If the specified {@code data} is null
+     * @throws IndexOutOfBoundsException If the index and the length are out of range
+     * @see ByteReader#ByteReader(Chain, int, int)
+     */
+    public Event(
+        @NotNull Chain data, int index, int length
+    ) {
+        this();
+        reader = new ByteReader(
+            data, index, length
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   String data = ...;
+     *   Event<User> event = new Event<>(data, 0, 6);
+     * }</pre>
+     *
      * @throws NullPointerException      If the specified {@code data} is null
      * @throws IndexOutOfBoundsException If the index and the length are out of range
      * @see CharReader#CharReader(CharSequence, int, int)
      */
     public Event(
-        @NotNull CharSequence data, int index, int length
+        @NotNull String data, int index, int length
     ) {
-        this(Event.class);
+        this();
         reader = new CharReader(
             data, index, length
         );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   CharSequence data = ...;
+     *   Event<User> event = new Event<>(data, 0, 6);
+     * }</pre>
+     *
+     * @throws NullPointerException      If the specified {@code data} is null
+     * @throws IndexOutOfBoundsException If the index and the length are out of range
+     * @see ByteReader#ByteReader(Chain, int, int)
+     * @see CharReader#CharReader(CharSequence, int, int)
+     */
+    public Event(
+        @NotNull CharSequence data, int index, int length
+    ) {
+        this();
+        if (data instanceof Chain) {
+            reader = new ByteReader(
+                (Chain) data, index, length
+            );
+        } else {
+            reader = new CharReader(
+                data, index, length
+            );
+        }
     }
 
     /**
@@ -194,8 +289,7 @@ public class Event<T> implements Flag {
     public Event(
         @NotNull URL url
     ) throws IOException {
-        this(Event.class);
-        reader = new InputStreamReader(
+        this(
             url.openStream()
         );
     }
@@ -215,11 +309,8 @@ public class Event<T> implements Flag {
     public Event(
         @NotNull File file
     ) throws IOException {
-        this(Event.class);
-        reader = new InputStreamReader(
-            Files.newInputStream(
-                file.toPath()
-            )
+        this(
+            file.toPath()
         );
     }
 
@@ -238,7 +329,7 @@ public class Event<T> implements Flag {
     public Event(
         @NotNull Path path
     ) throws IOException {
-        this(Event.class);
+        this();
         reader = new InputStreamReader(
             Files.newInputStream(path)
         );
@@ -260,8 +351,7 @@ public class Event<T> implements Flag {
     public Event(
         @NotNull URLConnection conn
     ) throws IOException {
-        this(Event.class);
-        reader = new InputStreamReader(
+        this(
             conn.getInputStream()
         );
     }
@@ -269,23 +359,35 @@ public class Event<T> implements Flag {
     /**
      * For example
      * <pre>{@code
-     *   InputStream stream = ...;
-     *   Event<User> event = new Event<>(stream);
+     *   Cipher cipher = ...;
+     *   cipher.init(
+     *      Cipher.DECRYPT_MODE,
+     *      new SecretKeySpec(
+     *         "key".getBytes(), "AES"
+     *      ),
+     *      new IvParameterSpec(
+     *         "iv".getBytes()
+     *      )
+     *   );
+     *   byte[] data = ...;
+     *   Event<User> event = new Event<>(data, cipher);
      * }</pre>
      *
-     * @throws NullPointerException If the specified {@code stream} is null
-     * @see InputStreamReader#InputStreamReader(InputStream)
+     * @throws NullPointerException If the specified {@code data} or {@code cipher} is null
+     * @see CipherByteReader#CipherByteReader(byte[], Cipher)
      */
     public Event(
-        @NotNull InputStream stream
+        @NotNull byte[] data,
+        @NotNull Cipher cipher
     ) {
-        this(Event.class);
-        reader = new InputStreamReader(stream);
+        this();
+        reader = new CipherByteReader(data, cipher);
     }
 
     /**
      * For example
      * <pre>{@code
+     *   Cipher cipher = ...;
      *   cipher.init(
      *      Cipher.DECRYPT_MODE,
      *      new SecretKeySpec(
@@ -306,10 +408,8 @@ public class Event<T> implements Flag {
         @NotNull InputStream stream,
         @NotNull Cipher cipher
     ) {
-        this(Event.class);
-        reader = new CipherStreamReader(
-            stream, cipher
-        );
+        this();
+        reader = new CipherStreamReader(stream, cipher);
     }
 
     /**
@@ -352,12 +452,12 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Use the specified feature {@code flag}
+     * Uses the specified feature {@code flag}
      *
      * <pre>{@code
      *  Event<User> event = ...
      *  event.with(Flag.INDEX_AS_ENUM);
-     *  event.with(Flag.INDEX_AS_ENUM | Flag.STRING_AS_OBJECT);
+     *  event.with(Flag.INDEX_AS_ENUM | Flag.VALUE_AS_BEAN);
      * }</pre>
      *
      * @param flag the specified {@code flag}
@@ -370,7 +470,7 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Use the specified feature {@link Plan}
+     * Uses the specified feature {@link Plan}
      *
      * <pre>{@code
      *  Plan plan = ...
@@ -391,7 +491,24 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Use the specified {@link Type}
+     * Uses the specified feature {@link Flag}
+     *
+     * <pre>{@code
+     *  Event<User> event = ...
+     *  event.with(other.getFlag());
+     * }</pre>
+     *
+     * @param flag the specified {@link Flag}
+     */
+    public Event<T> with(
+        @Nullable Flag flag
+    ) {
+        this.flag = flag;
+        return this;
+    }
+
+    /**
+     * Uses the specified {@link Type}
      *
      * <pre>{@code
      *  Event<User> event = ...
@@ -413,7 +530,7 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Use the specified {@link Reader}
+     * Uses the specified {@link Reader}
      *
      * <pre>{@code
      *  Reader reader = ...
@@ -431,20 +548,20 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Use the specified {@link Spare}
+     * Uses the specified {@link Coder}
      *
      * <pre>{@code
-     *  Spare<User> spare = ...
+     *  Coder<User> coder = ...
      *  Event<User> event = ...
-     *  event.with(spare);
+     *  event.with(coder);
      * }</pre>
      *
-     * @param spare the specified spare
+     * @param coder the specified coder
      */
     public Event<T> with(
-        @Nullable Spare<?> spare
+        @Nullable Coder<?> coder
     ) {
-        this.spare = spare;
+        this.coder = coder;
         return this;
     }
 
@@ -467,120 +584,60 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Use the specified {@link Type}
-     * If this {@link Event} does not have {@code type}
+     * If no type is set for this event,
+     * the candidate {@link Type} will be used
      *
-     * @param expected the specified type may be used
-     * @since 0.0.2
+     * @param candidate the specified candidate type
      */
-    public void prepare(
-        @Nullable Type expected
+    public Event<T> setup(
+        @Nullable Type candidate
     ) {
         if (type == null) {
-            type = expected;
+            type = candidate;
         }
+        return this;
     }
 
     /**
-     * Use the specified {@link Supplier}
-     * If this {@link Event} does not have {@code supplier}
+     * If no coder is set for this event,
+     * the candidate {@link Coder} will be used
      *
-     * @param expected the specified supplier
-     * @since 0.0.2
+     * @param candidate the specified candidate type
      */
-    public void prepare(
-        @Nullable Supplier expected
+    public Event<T> setup(
+        @Nullable Coder<?> candidate
+    ) {
+        if (coder == null) {
+            coder = candidate;
+        }
+        return this;
+    }
+
+    /**
+     * If no supplier is set for this event,
+     * the candidate {@link Supplier} will be used
+     *
+     * @param candidate the specified candidate supplier
+     */
+    public Event<T> setup(
+        @Nullable Supplier candidate
     ) {
         if (supplier == null) {
-            supplier = expected;
+            supplier = candidate;
         }
-    }
-
-    /**
-     * Returns the specified {@link Spare} being used
-     *
-     * @throws IOException If the specified coder was not found
-     * @since 0.0.4
-     */
-    @NotNull
-    public Spare<?> accept(
-        @NotNull Space space,
-        @NotNull Alias alias
-    ) throws IOException {
-        return assign(
-            space, alias
-        );
-    }
-
-    /**
-     * Returns the specified {@link Spare} being used
-     *
-     * @throws IOException If the specified coder was not found
-     * @since 0.0.4
-     */
-    @NotNull
-    public Spare<?> assign(
-        @NotNull Space space,
-        @NotNull Alias alias
-    ) throws IOException {
-        Spare<?> coder = spare;
-        if (coder != null) {
-            return coder;
-        }
-
-        Supplier supplier = getSupplier();
-        coder = supplier.lookup(type, space);
-
-        if (coder != null) {
-            return coder;
-        }
-
-        throw new ProxyCrash(
-            "Unexpectedly, the spare of " + alias + " was not found"
-        );
-    }
-
-    /**
-     * Returns the specified range
-     */
-    public int getRange() {
-        int r = range;
-        return r > 0 ? r : 8;
-    }
-
-    /**
-     * @param range the specified range
-     */
-    public void setRange(
-        int range
-    ) {
-        this.range = range;
+        return this;
     }
 
     /**
      * Returns the specified {@link Flag} being used
      */
-    @NotNull
+    @Nullable
     public Flag getFlag() {
-        Flag f = flag;
-        return f != null ? f : this;
-    }
-
-    /**
-     * @param flag the specified {@link Flag} to be used
-     */
-    public void setFlag(
-        Flag flag
-    ) {
-        if (flag != this) {
-            this.flag = flag;
-        }
+        return flag;
     }
 
     /**
      * Returns the specified {@link Type} being used
-     *
-     * @since 0.0.2
      */
     @Nullable
     public Type getType() {
@@ -588,19 +645,15 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Returns the specified {@link Spare} being used
-     *
-     * @since 0.0.2
+     * Returns the {@link Coder} of this {@link Event}
      */
     @Nullable
-    public Spare<?> getSpare() {
-        return spare;
+    public Coder<?> getCoder() {
+        return coder;
     }
 
     /**
-     * Returns the specified {@link Reader} being read
-     *
-     * @return {@link Reader} or null
+     * Returns the {@link Reader} of this {@link Event}
      */
     @Nullable
     public Reader getReader() {
@@ -608,14 +661,11 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Returns the specified {@link Supplier} being used
-     *
-     * @since 0.0.2
+     * Returns the {@link Supplier} of this {@link Event}
      */
-    @NotNull
+    @Nullable
     public Supplier getSupplier() {
-        Supplier s = supplier;
-        return s != null ? s : INS;
+        return supplier;
     }
 
     /**

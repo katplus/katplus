@@ -21,12 +21,12 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
+import plus.kat.stream.*;
 
 import java.io.*;
 import java.net.*;
-import java.net.Proxy;
 
+import static plus.kat.chain.Chain.Unsafe.value;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -44,7 +44,7 @@ public class Client extends Caller {
      * @since 0.0.4
      */
     protected Client() {
-        super(Memory.INS);
+        super(Stream.Buffer.INS);
     }
 
     /**
@@ -118,7 +118,7 @@ public class Client extends Caller {
     public Client(
         @NotNull URLConnection conn
     ) throws IOException {
-        super(Memory.INS);
+        super(Stream.Buffer.INS);
         if (conn instanceof HttpURLConnection) {
             this.conn = (HttpURLConnection) conn;
         } else {
@@ -135,7 +135,7 @@ public class Client extends Caller {
     public Client(
         @NotNull HttpURLConnection conn
     ) throws IOException {
-        super(Memory.INS);
+        super(Stream.Buffer.INS);
         if (conn != null) {
             this.conn = conn;
             this.supplier = Supplier.ins();
@@ -594,15 +594,15 @@ public class Client extends Caller {
     }
 
     /**
-     * @param alpha the specified alpha
+     * @param chain the specified chain
      * @throws IOException If an I/O error occurs
      * @since 0.0.4
      */
     public Client put(
-        Alpha alpha
+        Chain chain
     ) throws IOException {
         return request(
-            "PUT", alpha
+            "PUT", chain
         );
     }
 
@@ -613,9 +613,23 @@ public class Client extends Caller {
     public Client put(
         Chan chan
     ) throws IOException {
-        return put(
-            chan.getSteam()
-        );
+        try {
+            contentType(
+                chan.algo()
+            );
+            Flow flow = chan.getFlow();
+            if (flow instanceof Chan) {
+                return put(
+                    (Chain) flow
+                );
+            } else {
+                return put(
+                    chan.toBytes()
+                );
+            }
+        } finally {
+            chan.close();
+        }
     }
 
     /**
@@ -623,7 +637,7 @@ public class Client extends Caller {
      * @throws IOException If an I/O error occurs
      */
     public Client put(
-        Steam flow
+        Stream flow
     ) throws IOException {
         try {
             contentType(
@@ -657,15 +671,15 @@ public class Client extends Caller {
     }
 
     /**
-     * @param alpha the specified alpha
+     * @param chain the specified chain
      * @throws IOException If an I/O error occurs
      * @since 0.0.4
      */
     public Client post(
-        Alpha alpha
+        Chain chain
     ) throws IOException {
         return request(
-            "POST", alpha
+            "POST", chain
         );
     }
 
@@ -688,9 +702,23 @@ public class Client extends Caller {
     public Client post(
         Chan chan
     ) throws IOException {
-        return post(
-            chan.getSteam()
-        );
+        try {
+            contentType(
+                chan.algo()
+            );
+            Flow flow = chan.getFlow();
+            if (flow instanceof Chan) {
+                return post(
+                    (Chain) flow
+                );
+            } else {
+                return post(
+                    chan.toBytes()
+                );
+            }
+        } finally {
+            chan.close();
+        }
     }
 
     /**
@@ -698,7 +726,7 @@ public class Client extends Caller {
      * @throws IOException If an I/O error occurs
      */
     public Client post(
-        Steam flow
+        Stream flow
     ) throws IOException {
         try {
             contentType(
@@ -864,33 +892,30 @@ public class Client extends Caller {
     }
 
     /**
-     * @param alpha  the specified alpha
+     * @param chain  the specified chain
      * @param method the specified method
      * @throws IOException If an I/O error occurs
      */
     protected Client request(
-        String method, Alpha alpha
+        String method, Chain chain
     ) throws IOException {
         try {
             conn.setDoInput(true);
             conn.setDoOutput(true);
             conn.setRequestMethod(method);
 
-            // connect
             conn.connect();
-
-            if (alpha != null) {
-                OutputStream out;
-                alpha.each(
-                    out = conn.getOutputStream()
+            if (chain != null) {
+                OutputStream out
+                    = conn.getOutputStream();
+                out.write(
+                    value(chain), 0, chain.length()
                 );
+                out.flush();
                 out.close();
             }
-
-            // resolve
             resolve(conn);
         } finally {
-            // disconnect
             conn.disconnect();
         }
         return this;
@@ -909,22 +934,18 @@ public class Client extends Caller {
             conn.setDoOutput(true);
             conn.setRequestMethod(method);
 
-            // connect
             conn.connect();
-
             if (data != null) {
                 OutputStream out =
                     conn.getOutputStream();
                 out.write(
                     data, i, l
                 );
+                out.flush();
                 out.close();
             }
-
-            // resolve
             resolve(conn);
         } finally {
-            // disconnect
             conn.disconnect();
         }
         return this;

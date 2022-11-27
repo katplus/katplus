@@ -24,8 +24,9 @@ import plus.kat.crash.*;
  * @author kraity
  * @since 0.0.1
  */
+@SuppressWarnings("unchecked")
 @FunctionalInterface
-public interface Getter<K, V> {
+public interface Getter<T, V> {
     /**
      * Gets the property of the bean
      *
@@ -34,7 +35,7 @@ public interface Getter<K, V> {
      */
     @Nullable
     V apply(
-        @NotNull K bean
+        @NotNull T bean
     );
 
     /**
@@ -45,13 +46,12 @@ public interface Getter<K, V> {
      * @see Getter#apply(Object)
      */
     @Nullable
-    @SuppressWarnings("unchecked")
     default V invoke(
         @NotNull Object bean
     ) {
         try {
             return apply(
-                (K) bean
+                (T) bean
             );
         } catch (ClassCastException e) {
             throw new FatalCrash(

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.kernel;
+package plus.kat.solver;
 
 import plus.kat.anno.NotNull;
 
@@ -32,27 +32,25 @@ public interface Solver extends Closeable {
     /**
      * Returns the algo of this {@link Solver}
      *
-     * @return {@link Algo}, NotNull
+     * @return {@link Algo} and not null
      */
     Algo algo();
 
     /**
-     * {@link Reader} as the data source and {@link Proxy} as the data consumer.
-     * This {@link Solver} uses reader to read the source, translate it and then stream it to share.
+     * {@link Reader} as the data source and {@link Pipage} as the data pipeline
      *
-     * @param proxy  the specified data transfer pipeline
+     * @param pipage the specified data transfer pipeline
      * @param reader the specified data source to be parsed
-     * @throws ReaderCrash If an I/O error occurs by reader
-     * @throws ProxyCrash  If an I/O error occurs by proxy
+     * @throws FlowCrash   If an I/O error occurs by reader
      * @throws SolverCrash If an I/O error occurs by solver
      */
     void read(
-        @NotNull Proxy proxy,
-        @NotNull Reader reader
+        @NotNull Reader reader,
+        @NotNull Pipage pipage
     ) throws IOException;
 
     /**
-     * Clear this {@link Solver}
+     * Clears this {@link Solver}
      */
     default void clear() {
         // Nothing

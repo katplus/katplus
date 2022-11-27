@@ -49,20 +49,10 @@ public class StringBufferSpare extends Property<StringBuffer> {
     @Override
     public StringBuffer read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
         return new StringBuffer(
-            alias.toString()
-        );
-    }
-
-    @Override
-    public StringBuffer read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) {
-        return new StringBuffer(
-            value.toString()
+            chain.toString()
         );
     }
 
@@ -78,19 +68,19 @@ public class StringBufferSpare extends Property<StringBuffer> {
 
     @Override
     public StringBuffer cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
-            return apply();
+        if (object == null) {
+            return null;
         }
 
-        if (data instanceof CharSequence) {
+        if (object instanceof CharSequence) {
             return new StringBuffer(
-                (CharSequence) data
+                (CharSequence) object
             );
         }
 
-        return new StringBuffer(data.toString());
+        return new StringBuffer(object.toString());
     }
 }

@@ -69,7 +69,7 @@ public class ExposeTest {
     static class User {
         @Expose(
             value = "date",
-            require = NotNull
+            require = NOTNULL
         )
         private Date date = new Date(1645539742000L);
 
@@ -77,7 +77,7 @@ public class ExposeTest {
 
         @Expose(
             value = "time",
-            require = NotNull
+            require = NOTNULL
         )
         public void setTime(
             Date time
@@ -97,25 +97,25 @@ public class ExposeTest {
 
         @Expose(
             value = "size",
-            require = Excluded
+            require = EXCLUDED
         )
         public int size;
 
         @Expose(
             value = "salt",
-            require = Readonly
+            require = READONLY
         )
         public String salt;
 
         @Expose(
             value = "trace",
-            require = Internal
+            require = INTERNAL
         )
         public String trace;
 
         @Expose(
             value = "uid",
-            require = Excluded
+            require = EXCLUDED
         )
         public void setUId(
             int uid
@@ -125,7 +125,7 @@ public class ExposeTest {
 
         @Expose(
             value = "uid",
-            require = Excluded
+            require = EXCLUDED
         )
         public int getUId() {
             return id;

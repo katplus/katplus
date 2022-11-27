@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -46,31 +45,22 @@ public class FloatSpare extends Property<Float> {
 
     @Override
     public Float apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
-        if (type == float.class ||
+        if (type == null ||
+            type == float.class ||
             type == Float.class) {
             return 0F;
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
     @Override
     public String getSpace() {
         return "f";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == float.class
-            || clazz == Float.class
-            || clazz == Number.class
-            || clazz == Object.class;
     }
 
     @Override
@@ -83,9 +73,9 @@ public class FloatSpare extends Property<Float> {
     @Override
     public Float read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        return alias.toFloat();
+        return chain.toFloat();
     }
 
     @Override
@@ -101,43 +91,49 @@ public class FloatSpare extends Property<Float> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.emit(
-            (float) value
-        );
+        flow.emit((float) value);
     }
 
     @Override
     public Float cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Float) {
-                return (Float) data;
-            }
+        if (object == null) {
+            return 0F;
+        }
 
-            if (data instanceof Number) {
-                return ((Number) data).floatValue();
-            }
+        if (object instanceof Float) {
+            return (Float) object;
+        }
 
-            if (data instanceof Boolean) {
-                return ((boolean) data) ? 1F : 0F;
-            }
+        if (object instanceof Number) {
+            return ((Number) object).floatValue();
+        }
 
-            if (data instanceof Chain) {
-                return ((Chain) data).toFloat();
-            }
+        if (object instanceof Boolean) {
+            return ((boolean) object) ? 1F : 0F;
+        }
 
-            if (data instanceof CharSequence) {
-                try {
-                    return Float.parseFloat(
-                        data.toString()
-                    );
-                } catch (Exception e) {
-                    // Nothing
-                }
+        if (object instanceof Chain) {
+            return ((Chain) object).toFloat();
+        }
+
+        if (object instanceof CharSequence) {
+            String s = object.toString();
+            if (s.isEmpty() ||
+                "null".equalsIgnoreCase(s)) {
+                return 0F;
+            }
+            try {
+                return Float.parseFloat(s);
+            } catch (Exception e) {
+                return 0F;
             }
         }
-        return 0F;
+
+        throw new IllegalStateException(
+            object + " cannot be converted to Float"
+        );
     }
 }

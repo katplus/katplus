@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.InputStream;
@@ -32,7 +31,7 @@ import java.util.Map;
  * @author kraity
  * @since 0.0.3
  */
-public abstract class Caller extends Alpha {
+public abstract class Caller extends Chain {
 
     protected Algo algo;
     protected Plan plan;

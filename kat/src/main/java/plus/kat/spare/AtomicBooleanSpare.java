@@ -44,15 +44,7 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> {
 
     @Override
     public String getSpace() {
-        return "AtomicBoolean";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == AtomicBoolean.class
-            || clazz == Object.class;
+        return "b";
     }
 
     @Override
@@ -65,20 +57,10 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> {
     @Override
     public AtomicBoolean read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
         return new AtomicBoolean(
-            alias.toBoolean()
-        );
-    }
-
-    @Override
-    public AtomicBoolean read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) {
-        return new AtomicBoolean(
-            value.toBoolean()
+            chain.toBoolean()
         );
     }
 
@@ -94,20 +76,20 @@ public class AtomicBooleanSpare extends Property<AtomicBoolean> {
 
     @Override
     public AtomicBoolean cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
-            return apply();
+        if (object == null) {
+            return null;
         }
 
-        if (data instanceof AtomicBoolean) {
-            return (AtomicBoolean) data;
+        if (object instanceof AtomicBoolean) {
+            return (AtomicBoolean) object;
         }
 
         return new AtomicBoolean(
             BooleanSpare.INSTANCE.cast(
-                data, supplier
+                object, supplier
             )
         );
     }

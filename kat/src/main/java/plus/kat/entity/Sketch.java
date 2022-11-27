@@ -13,34 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.crash;
+package plus.kat.entity;
 
-import java.io.IOException;
+import plus.kat.anno.NotNull;
+import plus.kat.anno.Nullable;
+
+import plus.kat.spare.*;
+
+import java.lang.reflect.Type;
+import java.lang.annotation.Annotation;
 
 /**
  * @author kraity
  * @since 0.0.5
  */
-public class ProxyCrash extends IOException {
+public interface Sketch<V> {
     /**
-     * @param m the detail message
+     * Returns the class of {@link V}
      */
-    public ProxyCrash(String m) {
-        super(m);
-    }
+    @NotNull
+    Class<?> kind();
 
     /**
-     * @param e the specified cause to saved
+     * Returns the type of {@link V}
      */
-    public ProxyCrash(Throwable e) {
-        super(e);
-    }
+    @NotNull
+    Type type();
 
     /**
-     * @param m the detail message
-     * @param e the specified cause to saved
+     * Returns the flags of {@link V}
      */
-    public ProxyCrash(String m, Throwable e) {
-        super(m, e);
-    }
+    @NotNull
+    long flags();
+
+    /**
+     * Returns the coder of {@link V}
+     */
+    @Nullable
+    Coder<?> coder();
+
+    /**
+     * Returns the annotation of the {@code class}
+     */
+    @Nullable <A extends
+        Annotation> A custom(
+        @NotNull Class<A> clazz
+    );
 }

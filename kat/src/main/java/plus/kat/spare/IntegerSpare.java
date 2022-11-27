@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -47,31 +46,22 @@ public class IntegerSpare extends Property<Integer> {
 
     @Override
     public Integer apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
-        if (type == int.class ||
+        if (type == null ||
+            type == int.class ||
             type == Integer.class) {
             return 0;
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
     @Override
     public String getSpace() {
         return "i";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == int.class
-            || clazz == Integer.class
-            || clazz == Number.class
-            || clazz == Object.class;
     }
 
     @Override
@@ -84,9 +74,9 @@ public class IntegerSpare extends Property<Integer> {
     @Override
     public Integer read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        return alias.toInt();
+        return chain.toInt();
     }
 
     @Override
@@ -102,41 +92,44 @@ public class IntegerSpare extends Property<Integer> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.emit(
-            (int) value
-        );
+        flow.emit((int) value);
     }
 
 
     @Override
     public Integer cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Integer) {
-                return (Integer) data;
-            }
-
-            if (data instanceof Number) {
-                return ((Number) data).intValue();
-            }
-
-            if (data instanceof Boolean) {
-                return ((boolean) data) ? 1 : 0;
-            }
-
-            if (data instanceof Chain) {
-                return ((Chain) data).toInt();
-            }
-
-            if (data instanceof CharSequence) {
-                CharSequence num = (CharSequence) data;
-                return Convert.toInt(
-                    num, num.length(), 10, 0
-                );
-            }
+        if (object == null) {
+            return 0;
         }
-        return 0;
+
+        if (object instanceof Integer) {
+            return (Integer) object;
+        }
+
+        if (object instanceof Number) {
+            return ((Number) object).intValue();
+        }
+
+        if (object instanceof Boolean) {
+            return ((boolean) object) ? 1 : 0;
+        }
+
+        if (object instanceof Chain) {
+            return ((Chain) object).toInt();
+        }
+
+        if (object instanceof CharSequence) {
+            CharSequence num = (CharSequence) object;
+            return Convert.toInt(
+                num, num.length(), 10, 0
+            );
+        }
+
+        throw new IllegalStateException(
+            object + " cannot be converted to Integer"
+        );
     }
 }

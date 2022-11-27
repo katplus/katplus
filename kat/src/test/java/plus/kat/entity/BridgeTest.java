@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author kraity
  */
-public class AgentTest {
+public class BridgeTest {
 
     @Test
     public void test_combine() {
@@ -18,7 +18,7 @@ public class AgentTest {
         );
 
         UserDTO userDTO = new UserDTO();
-        assertTrue(userDTO.combine(user));
+        assertEquals(2, userDTO.combine(user));
 
         assertEquals(user.id, userDTO.id);
         assertEquals(user.name, userDTO.name);
@@ -33,7 +33,7 @@ public class AgentTest {
         data.put("name", "kraity");
 
         UserDTO userDTO = new UserDTO();
-        assertTrue(userDTO.update(data));
+        assertEquals(2, userDTO.update(data));
 
         assertEquals(1, userDTO.id);
         assertEquals("kraity", userDTO.name);
@@ -46,12 +46,12 @@ public class AgentTest {
             1, "kraity"
         );
 
-        assertTrue(user.migrate(userDTO));
+        assertEquals(2, user.migrate(userDTO));
         assertEquals(user.id, userDTO.id);
         assertEquals(user.name, userDTO.name);
     }
 
-    static class User implements Agent {
+    static class User implements Bridge {
         private int id;
         private String name;
 
@@ -77,7 +77,7 @@ public class AgentTest {
         }
     }
 
-    static class UserDTO implements Agent {
+    static class UserDTO implements Bridge {
         private int id;
         private String name;
 

@@ -26,26 +26,13 @@ import java.io.IOException;
 @SuppressWarnings("deprecation")
 public final class Binary {
 
-    private static final byte[] LOWER = {
-        '0', '1', '2', '3', '4', '5',
-        '6', '7', '8', '9', 'a', 'b',
-        'c', 'd', 'e', 'f', 'g', 'h',
-        'i', 'j', 'k', 'l', 'm', 'n',
-        'o', 'p', 'q', 'r', 's', 't',
-        'u', 'v', 'w', 'x', 'y', 'z'
-    };
-
-    private static final byte[] UPPER = {
-        '0', '1', '2', '3', '4', '5',
-        '6', '7', '8', '9', 'A', 'B',
-        'C', 'D', 'E', 'F', 'G', 'H',
-        'I', 'J', 'K', 'L', 'M', 'N',
-        'O', 'P', 'Q', 'R', 'S', 'T',
-        'U', 'V', 'W', 'X', 'Y', 'Z'
-    };
+    private static final byte[]
+        LOWER = Unsafe.LOWER;
+    private static final byte[]
+        UPPER = Unsafe.UPPER;
 
     /**
-     * Convert the ascii character to a hexadecimal number
+     * Converts the ascii character to a hexadecimal number
      *
      * <pre>{@code
      *   Binary.digit((byte) '0'); // 0
@@ -80,7 +67,7 @@ public final class Binary {
     }
 
     /**
-     * Convert the number to lowercase thirty-six-decimal character
+     * Converts the number to lowercase thirty-six-decimal character
      *
      * <pre>{@code
      *  byte b = Binary.lower(1); // 1
@@ -96,7 +83,7 @@ public final class Binary {
     }
 
     /**
-     * Convert the number to uppercase thirty-six-decimal character
+     * Converts the number to uppercase thirty-six-decimal character
      *
      * <pre>{@code
      *  byte b = Binary.upper(1); // 1
@@ -112,7 +99,7 @@ public final class Binary {
     }
 
     /**
-     * Convert the bytes to a lowercase hexadecimal array
+     * Converts the bytes to a lowercase hexadecimal array
      *
      * <pre>{@code
      *   // 6b6174
@@ -140,7 +127,7 @@ public final class Binary {
     }
 
     /**
-     * Convert the bytes to a lowercase hexadecimal string
+     * Converts the bytes to a lowercase hexadecimal string
      *
      * <pre>{@code
      *   // 6b6174
@@ -170,7 +157,7 @@ public final class Binary {
     }
 
     /**
-     * Convert the bytes to an uppercase hexadecimal array
+     * Converts the bytes to an uppercase hexadecimal array
      *
      * <pre>{@code
      *   // 6B6174
@@ -198,7 +185,7 @@ public final class Binary {
     }
 
     /**
-     * Convert the bytes to an uppercase hexadecimal string
+     * Converts the bytes to an uppercase hexadecimal string
      *
      * <pre>{@code
      *   // 6B6174
@@ -225,5 +212,80 @@ public final class Binary {
         return new String(
             it, 0, 0, k
         );
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.5
+     */
+    public static final class Unsafe {
+        /**
+         * Unsafe and may be deleted
+         */
+        public static final byte[] LOWER = {
+            '0', '1', '2', '3', '4', '5',
+            '6', '7', '8', '9', 'a', 'b',
+            'c', 'd', 'e', 'f', 'g', 'h',
+            'i', 'j', 'k', 'l', 'm', 'n',
+            'o', 'p', 'q', 'r', 's', 't',
+            'u', 'v', 'w', 'x', 'y', 'z'
+        };
+        /**
+         * Unsafe and may be deleted
+         */
+        public static final byte[] UPPER = {
+            '0', '1', '2', '3', '4', '5',
+            '6', '7', '8', '9', 'A', 'B',
+            'C', 'D', 'E', 'F', 'G', 'H',
+            'I', 'J', 'K', 'L', 'M', 'N',
+            'O', 'P', 'Q', 'R', 'S', 'T',
+            'U', 'V', 'W', 'X', 'Y', 'Z'
+        };
+        /**
+         * Unsafe and may be deleted
+         */
+        public static final byte[] RFC4648_ENCODE = new byte[]{
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
+        };
+        /**
+         * Unsafe and may be deleted
+         */
+        public static final byte[] RFC4648_DECODE = new byte[]{
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 00-0f
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 10-1f
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, // 20-2f + /
+            52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, // 30-3f 0-9
+            -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,           // 40-4f A-O
+            15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, // 50-5f P-Z
+            -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, // 60-6f a-o
+            41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51                      // 70-7a p-z
+        };
+        /**
+         * Unsafe and may be deleted
+         */
+        public static final byte[] RFC4648_SAFE_ENCODE = new byte[]{
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_'
+        };
+        /**
+         * Unsafe and may be deleted
+         */
+        public static final byte[] RFC4648_SAFE_DECODE = new byte[]{
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 00-0f
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 10-1f
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, // 20-2f -
+            52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, // 30-3f 0-9
+            -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,           // 40-4f A-O
+            15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, 63, // 50-5f P-Z _
+            -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, // 60-6f a-o
+            41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51                      // 70-7a p-z
+        };
     }
 }

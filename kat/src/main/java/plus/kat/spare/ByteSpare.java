@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -47,31 +46,22 @@ public class ByteSpare extends Property<Byte> {
 
     @Override
     public Byte apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
-        if (type == byte.class ||
+        if (type == null ||
+            type == byte.class ||
             type == Byte.class) {
             return (byte) 0;
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
     @Override
     public String getSpace() {
         return "o";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == byte.class
-            || clazz == Byte.class
-            || clazz == Number.class
-            || clazz == Object.class;
     }
 
     @Override
@@ -84,9 +74,9 @@ public class ByteSpare extends Property<Byte> {
     @Override
     public Byte read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        int i = alias.toInt();
+        int i = chain.toInt();
         return i < Byte.MIN_VALUE
             || i > Byte.MAX_VALUE ? (byte) 0 : (byte) i;
     }
@@ -113,35 +103,40 @@ public class ByteSpare extends Property<Byte> {
 
     @Override
     public Byte cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Byte) {
-                return (Byte) data;
-            }
-
-            if (data instanceof Number) {
-                return ((Number) data).byteValue();
-            }
-
-            if (data instanceof Boolean) {
-                return ((boolean) data) ? (byte) 1 : (byte) 0;
-            }
-
-            int i = 0;
-            if (data instanceof Chain) {
-                i = ((Chain) data).toInt();
-            } else if (data instanceof CharSequence) {
-                CharSequence num = (CharSequence) data;
-                i = Convert.toInt(
-                    num, num.length(), 10, 0
-                );
-            }
-
-            return i < Byte.MIN_VALUE
-                || i > Byte.MAX_VALUE ? (byte) 0 : (byte) i;
+        if (object == null) {
+            return (byte) 0;
         }
-        return (byte) 0;
+
+        if (object instanceof Byte) {
+            return (Byte) object;
+        }
+
+        if (object instanceof Number) {
+            return ((Number) object).byteValue();
+        }
+
+        if (object instanceof Boolean) {
+            return ((boolean) object) ? (byte) 1 : (byte) 0;
+        }
+
+        int i;
+        if (object instanceof Chain) {
+            i = ((Chain) object).toInt();
+        } else if (object instanceof CharSequence) {
+            CharSequence num = (CharSequence) object;
+            i = Convert.toInt(
+                num, num.length(), 10, 0
+            );
+        } else {
+            throw new IllegalStateException(
+                object + " cannot be converted to Byte"
+            );
+        }
+
+        return i < Byte.MIN_VALUE
+            || i > Byte.MAX_VALUE ? (byte) 0 : (byte) i;
     }
 }

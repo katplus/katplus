@@ -15,22 +15,12 @@ public class ValueTest {
     }
 
     @Test
-    public void test_digest() {
-        String text = "User{i:id(1)s:name(kraity)}";
-        Value value = new Value(text);
-        assertEquals("d41d8cd98f00b204e9800998ecf8427e", new Value(0).digest());
-        assertEquals("d04f45fd1805ea7a98821bdad6894cb4", value.digest());
-        assertEquals("21707be3777f237901b7edcdd73dc8288a81a4d2", value.digest("SHA1"));
-    }
-
-    @Test
     public void test_toInt() {
         Value v1 = new Value("1400");
         assertEquals(1400, v1.toInt());
 
         Value v2 = new Value("2147483647");
         assertEquals(Integer.MAX_VALUE, v2.toInt());
-
 
         Value v3 = new Value("-2147483648");
         assertEquals(Integer.MIN_VALUE, v3.toInt());
@@ -43,7 +33,6 @@ public class ValueTest {
 
         Value v2 = new Value("9223372036854775807");
         assertEquals(Long.MAX_VALUE, v2.toLong());
-
 
         Value v3 = new Value("-9223372036854775808");
         assertEquals(Long.MIN_VALUE, v3.toLong());

@@ -3,7 +3,6 @@ package plus.kat;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,29 +12,21 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class FlagTest {
 
-    static class Meta {
+    static class Time {
         public Date date;
-        public Instant instant;
     }
 
     @Test
     public void test_date_as_timestamp() throws IOException {
-        Meta meta = new Meta();
-        meta.date = new Date(1641871353000L);
-        meta.instant = Instant.ofEpochMilli(1641871353123L);
+        Time time = new Time();
+        time.date = new Date(1641871353000L);
 
         assertEquals(
-            "{\"date\":\"2022-01-11 11:22:33\",\"instant\":\"2022-01-11T03:22:33.123Z\"}", Json.encode(meta)
+            "{\"date\":\"2022-01-11 11:22:33\"}", Json.encode(time)
         );
 
         assertEquals(
-            "{\"date\":1641871353000,\"instant\":\"2022-01-11T03:22:33.123Z\"}",
-            Json.encode(meta, Flag.DATE_AS_TIMESTAMP)
-        );
-
-        assertEquals(
-            "{\"date\":\"2022-01-11 11:22:33\",\"instant\":1641871353123}",
-            Json.encode(meta, Flag.INSTANT_AS_TIMESTAMP)
+            "{\"date\":1641871353000}", Json.encode(time, Flag.DATE_AS_DIGIT)
         );
     }
 

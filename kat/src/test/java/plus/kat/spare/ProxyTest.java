@@ -1,4 +1,4 @@
-package plus.kat.reflex;
+package plus.kat.spare;
 
 import org.junit.jupiter.api.Test;
 

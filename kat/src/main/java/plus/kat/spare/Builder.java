@@ -20,7 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 
@@ -28,106 +28,143 @@ import java.io.IOException;
  * @author kraity
  * @since 0.0.1
  */
-public abstract class Builder<K> {
+public abstract class Builder<T> implements Channel {
 
-    protected Event<?> event;
-    private Builder<?> parent;
+    protected Channel holder;
+    protected Callback caller;
+
+    protected Flag flag;
     protected Supplier supplier;
 
     /**
+     * Initializes the flag and supplier for
+     * this pipage from the parent, and so on
+     *
+     * @return the proxy pipage
      * @throws IOException If an I/O error occurs
      */
-    final void onAttach(
-        @NotNull Event<?> e,
-        @NotNull Builder<?> b
+    @NotNull
+    public Pipage init(
+        @NotNull Channel parent,
+        @NotNull Callback callback
     ) throws IOException {
-        if (parent == null) {
-            event = e;
-            parent = b;
-            supplier = e.getSupplier();
-            onCreate();
+        if (holder == null) {
+            holder = parent;
+            caller = callback;
+            flag = parent.flag();
+            supplier = parent.supplier();
         } else {
-            throw new ProxyCrash(
-                "Unexpectedly, this Builder is already working"
+            throw new IOException(
+                this + " is already working," +
+                    " and its parent is " + holder
             );
         }
+        onOpen();
+        return this;
     }
 
     /**
-     * Prepare before parsing
+     * Starts a sub pipage of this pipage and returns the sub pipage
      *
-     * @throws Collapse    If it signals to skip
-     * @throws IOException If an I/O error occurs
-     */
-    public abstract void onCreate() throws IOException;
-
-    /**
-     * Receive the property of {@link K}
-     *
-     * @throws IOException If an I/O error occurs
-     */
-    public abstract void onAttain(@NotNull Space space, @NotNull Alias alias, @NotNull Value value) throws IOException;
-
-    /**
-     * Receive the property of {@link K}
-     *
-     * @throws IOException If an I/O error occurs
-     */
-    public void onDetain(
-        @NotNull Builder<?> child
-    ) throws IOException {
-        throw new ProxyCrash(
-            "Supports for structures is not implemented"
-        );
-    }
-
-    /**
-     * Create a builder for the property {@link K}
-     *
+     * @return the sub pipage, may be null
      * @throws IOException If an I/O error occurs
      */
     @Nullable
-    public Builder<?> onAttain(
+    public Pipage onOpen(
         @NotNull Space space,
         @NotNull Alias alias
     ) throws IOException {
-        throw new ProxyCrash(
-            "Supports for structures is not implemented"
+        throw new IOException(
+            "Parsing bean not implemented"
         );
     }
 
     /**
-     * Returns the result of building {@link K}
+     * Prepare the {@link Builder} before parsing
+     *
+     * @throws IOException If an I/O error occurs
+     */
+    public abstract void onOpen() throws IOException;
+
+    /**
+     * Returns the result of building {@link T}.
      * <p>
-     * May be called multiple times,
-     * when implementing this method, make sure that the {@link K} returned each time is the same
+     * Can be called multiple times, and when implementing
+     * this method, the return {@link T} must be the same each time
      *
      * @throws IOException If a packaging error or IO error
      */
     @Nullable
-    public abstract K onPacket() throws IOException;
+    public abstract T build() throws IOException;
 
     /**
-     * Close the resources of this {@link Builder}
-     */
-    public abstract void onDestroy() throws IOException;
-
-    /**
-     * Returns the parent of this {@link Builder}
+     * Closes the iteration of this {@link Builder}
      *
-     * @return {@link Builder} or {@code null}
+     * @throws IOException If an I/O error occurs
      */
-    public final Builder<?> getParent() {
-        return parent;
+    public abstract void onClose() throws IOException;
+
+    /**
+     * Closes the property update of this pipage and returns the parent pipage
+     *
+     * @return the parent pipage, may be null
+     * @throws IOException If an I/O error occurs
+     */
+    @Override
+    public Pipage onClose(
+        @NotNull boolean state,
+        @NotNull boolean alarm
+    ) throws IOException {
+        if (state) {
+            caller.onEmit(
+                this, build()
+            );
+        }
+        try {
+            onClose();
+            return holder;
+        } catch (
+            Exception e
+        ) {
+            if (alarm) {
+                throw e;
+            }
+            return holder;
+        } finally {
+            flag = null;
+            holder = null;
+            caller = null;
+            supplier = null;
+        }
     }
 
     /**
-     * Destroy the resources of this {@link Builder}
+     * Returns the flag of this {@link Channel}
+     *
+     * @return {@link Flag} or {@code null}
      */
-    final void onDetach() throws IOException {
-        onDestroy();
-        event = null;
-        parent = null;
-        supplier = null;
+    @Nullable
+    public final Flag flag() {
+        return flag;
+    }
+
+    /**
+     * Returns the parent of this {@link Channel}
+     *
+     * @return {@link Channel} or {@code null}
+     */
+    @Nullable
+    public final Channel holder() {
+        return holder;
+    }
+
+    /**
+     * Returns the supplier of this {@link Channel}
+     *
+     * @return {@link Supplier} or {@code null}
+     */
+    @Nullable
+    public final Supplier supplier() {
+        return supplier;
     }
 }

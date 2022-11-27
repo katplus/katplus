@@ -21,50 +21,42 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
-import plus.kat.stream.*;
 import plus.kat.utils.*;
+import plus.kat.solver.*;
+import plus.kat.stream.*;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class Parser implements Proxy, Closeable {
+public class Parser implements Channel, Callback, Closeable {
     /**
      * state etc.
      */
     volatile boolean lock;
-
-    /**
-     * record etc.
-     */
-    protected Object bundle;
-    protected int depth, range;
+    protected Object result;
 
     /**
      * solver etc.
      */
     protected Radar radar;
-    protected Solver dotry, sodar;
+    protected Solver podar, sodar;
 
     /**
      * snapshot etc.
      */
     protected Event<?> event;
-    protected Builder<?> active;
+    protected Supplier supplier;
 
     /**
      * default
      */
     public Parser() {
-        radar = new Radar(
-            Space.Buffer.INS,
-            Alias.Buffer.INS,
-            Value.Buffer.INS
-        );
+        radar = Radar.apply();
     }
 
     /**
@@ -87,7 +79,7 @@ public class Parser implements Proxy, Closeable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
-     * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Reader}
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -104,16 +96,15 @@ public class Parser implements Proxy, Closeable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
-     * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
-     * @throws NullPointerException If the specified {@code coder} or {@code event} is null
+     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Reader}
+     * @throws NullPointerException If the specified {@code radar} or {@code event} is null
      */
     @NotNull
     @SuppressWarnings("unchecked")
     public <T> T read(
-        @NotNull Solver coder,
+        @NotNull Solver radar,
         @NotNull Event<T> event
     ) throws IOException {
-        @Nullable
         Reader reader =
             event.getReader();
         if (reader == null) {
@@ -122,36 +113,34 @@ public class Parser implements Proxy, Closeable {
             );
         }
 
+        Supplier supplier =
+            event.getSupplier();
+        if (supplier == null) {
+            throw new Collapse(
+                "Supplier is null"
+            );
+        }
+
         this.event = event;
-        this.range = event.getRange();
+        this.supplier = supplier;
 
         try {
             if (reader.also()) {
-                coder.read(
-                    this, reader
+                radar.read(
+                    reader, this
                 );
-                Object data = bundle;
+                Object data = result;
                 if (data != null) {
                     return (T) data;
                 }
             }
         } finally {
-            coder.clear();
+            radar.clear();
             reader.close();
-            Builder<?> a = active;
-            if (a != null) {
-                Builder<?> b;
-                active = null;
-                do {
-                    b = a.getParent();
-                    a.onDetach();
-                } while (b != null);
-            }
         }
 
         throw new Collapse(
-            "Parsing error, the depth is " + depth
-                + ", the range is " + range + ", the result is null"
+            "Parsing error, the result is null"
         );
     }
 
@@ -161,7 +150,7 @@ public class Parser implements Proxy, Closeable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no solver available for algo is found
-     * @throws IOException          Unexpected errors by {@link Proxy} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Reader}
      * @throws NullPointerException If the specified {@code algo} or {@code event} is null
      */
     @NotNull
@@ -176,9 +165,9 @@ public class Parser implements Proxy, Closeable {
                 );
             }
             case "xml": {
-                Solver it = dotry;
+                Solver it = podar;
                 if (it == null) {
-                    dotry = it = new Dotry(radar);
+                    podar = it = new Podar(radar);
                 }
                 return read(
                     it, event
@@ -202,113 +191,112 @@ public class Parser implements Proxy, Closeable {
     }
 
     /**
+     * Starts a sub pipage of this pipage
+     *
+     * @return the sub pipage, may be null
      * @throws IOException If an I/O error occurs
      */
     @Override
-    public boolean attach(
+    public Pipage onOpen(
         @NotNull Space space,
         @NotNull Alias alias
     ) throws IOException {
-        if (depth >= range) {
-            throw new IOException(
-                "Depth out of range"
-            );
-        }
+        Type type = event.getType();
+        Coder<?> coder = event.getCoder();
 
-        Builder<?> child,
-            parent = active;
-        if (depth != 0) {
-            child = parent.onAttain(
-                space, alias
-            );
+        if (coder != null) {
+            Builder<?> child =
+                coder.getBuilder(type);
+            if (child != null) {
+                return child.init(this, this);
+            }
         } else {
-            Spare<?> spare;
-            spare = event.assign(
-                space, alias
+            coder = supplier.lookup(
+                Space.wipe(type), space
             );
-            child = spare.getBuilder(
-                event.getType()
-            );
-        }
-
-        if (child != null) {
-            try {
-                child.onAttach(
-                    event, parent
+            if (coder != null) {
+                Builder<?> child =
+                    coder.getBuilder(type);
+                if (child != null) {
+                    return child.init(this, this);
+                }
+            } else {
+                throw new IOException(
+                    "The spare of " + alias
+                        + "<" + space + "> was not found"
                 );
-                ++depth;
-                active = child;
-                return true;
-            } catch (Collapse e) {
-                return false;
             }
         }
-        return false;
+
+        throw new IOException(
+            "The root builder<" + space
+                + ", " + alias + "> is not allowed to be null"
+        );
     }
 
     /**
+     * Sets an attribute for this parser
+     *
      * @throws IOException If an I/O error occurs
      */
     @Override
-    public void submit(
+    public void onEmit(
+        @NotNull Pipage pipage,
+        @Nullable Object object
+    ) throws IOException {
+        result = object;
+    }
+
+    /**
+     * Sets an attribute for this parser
+     *
+     * @throws IOException If an I/O error occurs
+     */
+    @Override
+    public void onEmit(
         @NotNull Space space,
         @NotNull Alias alias,
         @NotNull Value value
     ) throws IOException {
-        if (depth != 0) {
-            active.onAttain(
-                space, alias, value
-            );
-        } else {
-            Spare<?> spare;
-            spare = event.accept(
-                space, alias
-            );
-            bundle = spare.read(
+        Coder<?> coder = event.getCoder();
+        if (coder != null) {
+            result = coder.read(
                 event, value
             );
+        } else {
+            coder = supplier.lookup(
+                Space.wipe(event.getType()), space
+            );
+            if (coder != null) {
+                result = coder.read(
+                    event, value
+                );
+            } else {
+                throw new IOException(
+                    "The spare of " + alias
+                        + "<" + space + "> was not found"
+                );
+            }
         }
     }
 
     /**
+     * Closes the property update of this parser
+     *
      * @throws IOException If an I/O error occurs
      */
     @Override
-    public boolean detach()
-        throws IOException {
-        if (--depth < 0) {
-            throw new IOException(
-                "Depth out of range"
-            );
-        }
-
-        Builder<?> child = active;
-        active = child.getParent();
-
-        try {
-            if (depth != 0) {
-                active.onDetain(child);
-                return true;
-            } else {
-                bundle = child.onPacket();
-                return false;
-            }
-        } finally {
-            child.onDetach();
-        }
+    public Pipage onClose(
+        boolean state,
+        boolean alarm
+    ) throws IOException {
+        event = null;
+        supplier = null;
+        return null;
     }
 
     /**
-     * Check if used by other threads
-     */
-    public boolean isLock() {
-        synchronized (this) {
-            return lock;
-        }
-    }
-
-    /**
-     * Apply for use and return status
+     * Requests to lock and return success status
      */
     public boolean lock() {
         synchronized (this) {
@@ -320,12 +308,12 @@ public class Parser implements Proxy, Closeable {
     }
 
     /**
-     * Release use and return status
+     * Releases the lock and return success status
      */
     public boolean unlock() {
         synchronized (this) {
             if (lock) {
-                this.clear();
+                clear();
                 lock = false;
             }
         }
@@ -333,21 +321,49 @@ public class Parser implements Proxy, Closeable {
     }
 
     /**
-     * Clear this {@link Parser}
+     * Clears this {@link Parser}
      */
     public void clear() {
-        depth = 0;
-        range = 0;
-        bundle = null;
+        result = null;
     }
 
     /**
-     * Close this {@link Parser}
+     * Closes this {@link Parser}
      */
     @Override
     public void close() {
         this.clear();
         radar.close();
+    }
+
+    /**
+     * Returns the flag of this {@link Channel}
+     *
+     * @return {@link Flag} or {@code null}
+     */
+    @Nullable
+    public Flag flag() {
+        return event;
+    }
+
+    /**
+     * Returns the parent of this {@link Channel}
+     *
+     * @return {@link Channel} or {@code null}
+     */
+    @Nullable
+    public Channel holder() {
+        return null;
+    }
+
+    /**
+     * Returns the supplier of this {@link Channel}
+     *
+     * @return {@link Supplier} or {@code null}
+     */
+    @Nullable
+    public Supplier supplier() {
+        return supplier;
     }
 
     /**
@@ -364,7 +380,7 @@ public class Parser implements Proxy, Closeable {
 
         public Group() {
             super(Config.get(
-                "kat.parser.capacity", 16
+                "kat.parser.size", 32
             ), Config.get(
                 "kat.parser.block", true
             ));

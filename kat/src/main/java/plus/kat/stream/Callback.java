@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.kernel;
+package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import java.io.IOException;
+
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.5
  */
-public final class Unsafe {
+@FunctionalInterface
+public interface Callback {
     /**
-     * Unsafe method, and may be removed
+     * Sets an attribute for this callable
      *
-     * @throws NullPointerException If the specified chain is null
+     * @throws IOException If an I/O error occurs
      */
-    @Nullable
-    public static byte[] value(
-        @NotNull Chain c
-    ) {
-        return c.value;
-    }
+    void onEmit(
+        @NotNull Pipage pipage,
+        @Nullable Object result
+    ) throws IOException;
 }

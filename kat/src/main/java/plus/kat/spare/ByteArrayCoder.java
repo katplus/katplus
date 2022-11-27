@@ -39,9 +39,9 @@ public class ByteArrayCoder implements Coder<byte[]> {
     @Override
     public byte[] read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Chain chain
     ) {
-        return value.toBytes();
+        return chain.toBytes();
     }
 
     @Override
@@ -49,8 +49,6 @@ public class ByteArrayCoder implements Coder<byte[]> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.emit(
-            (byte[]) value
-        );
+        flow.emit((byte[]) value);
     }
 }

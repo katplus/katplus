@@ -19,20 +19,30 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
-import plus.kat.stream.*;
 import plus.kat.utils.*;
+import plus.kat.stream.*;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class Alias extends Alpha {
+public class Alias extends Chain {
     /**
      * Constructs an empty alias
      */
     public Alias() {
         super();
+    }
+
+    /**
+     * Constructs a mutable alias
+     *
+     * @param size the initial capacity
+     */
+    public Alias(
+        int size
+    ) {
+        super(size);
     }
 
     /**
@@ -167,7 +177,7 @@ public class Alias extends Alpha {
     }
 
     /**
-     * @see Alias#Alias(Bucket)
+     * Returns an empty alias with default bucket
      */
     public static Alias apply() {
         return new Alias(
@@ -193,17 +203,17 @@ public class Alias extends Alpha {
             INS = new Buffer();
 
         @Override
-        public boolean join(
-            @NotNull byte[] it
-        ) {
-            return false;
-        }
-
-        @Override
         public byte[] swap(
             @NotNull byte[] it
         ) {
             return it;
+        }
+
+        @Override
+        public boolean join(
+            @NotNull byte[] it
+        ) {
+            return false;
         }
 
         @Override
@@ -218,16 +228,15 @@ public class Alias extends Alpha {
                     cap <<= 1;
                 } while (cap < size);
 
-                byte[] result = new byte[cap];
+                byte[] data = new byte[cap];
                 System.arraycopy(
-                    it, 0, result, 0, len
+                    it, 0, data, 0, len
                 );
-
-                return result;
+                return data;
             }
 
             throw new FatalCrash(
-                "Unexpectedly, Exceeding range '" + RANGE + "' in alias"
+                "Exceeding range '" + RANGE + "' in alias"
             );
         }
     }

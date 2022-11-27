@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
-import plus.kat.stream.Binary;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -82,7 +81,7 @@ public class JsonTest {
             Meta.class, new Event<Meta>(
                 "{\"user\":\"{\\\"id\\\":1,\\\"name\\\":\\\"kraity\\\"}\"}"
             ).with(
-                Flag.STRING_AS_OBJECT
+                Flag.VALUE_AS_BEAN
             )
         );
 

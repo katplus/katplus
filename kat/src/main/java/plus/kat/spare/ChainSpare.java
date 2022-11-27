@@ -21,48 +21,66 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.5
  */
 @SuppressWarnings("unchecked")
-public class AlphaSpare extends Property<Alpha> {
+public class ChainSpare extends Property<Chain> {
 
-    public static final AlphaSpare
-        INSTANCE = new AlphaSpare(Alpha.class);
+    public static final ChainSpare
+        INSTANCE = new ChainSpare(Chain.class);
 
-    public AlphaSpare(
+    public ChainSpare(
         @NotNull Class<?> clazz
     ) {
-        super((Class<Alpha>) clazz);
+        super((Class<Chain>) clazz);
     }
 
     @Override
-    public Alpha apply() {
-        Class<?> cls = klass;
-        if (cls == Alpha.class) {
-            return new Alpha();
+    public Chain apply() {
+        return apply(klass);
+    }
+
+    @Override
+    public Chain apply(
+        @Nullable Type type
+    ) {
+        if (type == null) {
+            type = klass;
         }
-        if (cls == Alias.class) {
+        if (type == Chain.class) {
+            return new Chain();
+        }
+        if (type == Alias.class) {
             return new Alias();
         }
-        if (cls == Space.class) {
+        if (type == Space.class) {
             return new Space();
         }
-        if (cls == Value.class) {
+        if (type == Value.class) {
             return new Value();
         }
-        try {
-            return (Alpha) cls.newInstance();
-        } catch (Exception e) {
-            throw new Collapse(
-                "Unable to create 'Alpha' instance of '" + cls + "'"
-            );
+        if (type instanceof Class) {
+            Class<?> cls = (Class<?>) type;
+            if (Chain.class.isAssignableFrom(cls)) {
+                try {
+                    return (Chain) cls.newInstance();
+                } catch (Exception e) {
+                    throw new Collapse(
+                        "Failed to apply", e
+                    );
+                }
+            }
         }
+
+        throw new Collapse(
+            this + " unable to build " + type
+        );
     }
 
     @Override
@@ -71,23 +89,13 @@ public class AlphaSpare extends Property<Alpha> {
     }
 
     @Override
-    public Alpha read(
+    public Chain read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) throws IOException {
-        Alpha chain = apply();
-        chain.join(alias);
-        return chain;
-    }
-
-    @Override
-    public Alpha read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) throws IOException {
-        Alpha chain = apply();
-        chain.join(value);
-        return chain;
+        Chain value = apply();
+        value.join(chain);
+        return value;
     }
 
     @Override
@@ -101,46 +109,46 @@ public class AlphaSpare extends Property<Alpha> {
     }
 
     @Override
-    public Alpha cast(
-        @Nullable Object data,
+    public Chain cast(
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
+        if (object == null) {
             return apply();
         }
 
-        if (klass.isInstance(data)) {
-            return (Alpha) data;
+        if (klass.isInstance(object)) {
+            return (Chain) object;
         }
 
-        if (data instanceof char[]) {
-            Alpha chain = apply();
+        if (object instanceof char[]) {
+            Chain chain = apply();
             chain.join(
-                (char[]) data
+                (char[]) object
             );
             return chain;
         }
 
-        if (data instanceof byte[]) {
-            Alpha chain = apply();
+        if (object instanceof byte[]) {
+            Chain chain = apply();
             chain.join(
-                (byte[]) data
+                (byte[]) object
             );
             return chain;
         }
 
-        if (data instanceof Chain) {
-            Alpha chain = apply();
+        if (object instanceof Chain) {
+            Chain chain = apply();
             chain.join(
-                (Chain) data
+                (Chain) object
             );
             return chain;
         }
 
-        if (data instanceof CharSequence) {
-            Alpha chain = apply();
+        if (object instanceof CharSequence) {
+            Chain chain = apply();
             chain.join(
-                (CharSequence) data
+                (CharSequence) object
             );
             return chain;
         }

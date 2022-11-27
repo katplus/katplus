@@ -15,46 +15,48 @@
  */
 package plus.kat.spare;
 
-import plus.kat.anno.Format;
 import plus.kat.anno.NotNull;
 
-import java.io.IOException;
-import java.time.LocalDate;
+import plus.kat.*;
 
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import java.io.IOException;
 
 /**
  * @author kraity
- * @since 0.0.2
+ * @since 0.0.5
  */
-public class LocalDateSpare extends TemporalSpare<LocalDate> {
+public class ErrorCoder implements Coder<Throwable> {
 
-    public static final LocalDateSpare
-        INSTANCE = new LocalDateSpare();
-
-    public LocalDateSpare() {
-        super(LocalDate.class,
-            ISO_LOCAL_DATE
-        );
-    }
-
-    public LocalDateSpare(
-        @NotNull Format format
-    ) {
-        super(LocalDate.class, format);
-    }
+    public static final ErrorCoder
+        INSTANCE = new ErrorCoder();
 
     @Override
     public String getSpace() {
-        return "LocalDate";
+        return "E";
     }
 
     @Override
-    public LocalDate cast(
-        @NotNull String value
+    public Boolean getFlag() {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public void write(
+        @NotNull Flow flow,
+        @NotNull Object value
     ) throws IOException {
-        return LocalDate.from(
-            formatter.parse(value)
+        flow.emit(
+            ((Throwable) value).getMessage()
+        );
+    }
+
+    @Override
+    public void write(
+        @NotNull Chan chan,
+        @NotNull Object value
+    ) throws IOException {
+        chan.set(
+            "message", ((Throwable) value).getMessage()
         );
     }
 }

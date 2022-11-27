@@ -20,15 +20,17 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.kernel.*;
-import plus.kat.stream.*;
+import plus.kat.crash.*;
 
-import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.UUID;
+import java.io.IOException;
+
+import static plus.kat.chain.Chain.Unsafe.value;
 
 /**
  * @author kraity
- * @since 0.0.2
+ * @since 0.0.5
  */
 public class UUIDSpare extends Property<UUID> {
 
@@ -40,32 +42,86 @@ public class UUIDSpare extends Property<UUID> {
     }
 
     @Override
+    public UUID apply() {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID apply(
+        @Nullable Type type
+    ) {
+        if (type == null ||
+            type == UUID.class) {
+            return UUID.randomUUID();
+        }
+
+        throw new Collapse(
+            this + " unable to build " + type
+        );
+    }
+
+    @Override
     public String getSpace() {
         return "UUID";
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
+    public UUID read(
+        @NotNull Flag flag,
+        @NotNull Chain chain
     ) {
-        return clazz == UUID.class
-            || clazz == Object.class;
-    }
+        int size = chain.length();
+        if (size < 9 ||
+            size > 36) {
+            return null;
+        }
 
-    @Override
-    public UUID read(
-        @NotNull Flag flag,
-        @NotNull Alias alias
-    ) throws IOException {
-        return parse(alias);
-    }
+        int i = 0, k = 0;
+        long m = 0, n = 0, u = 0;
 
-    @Override
-    public UUID read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) throws IOException {
-        return parse(value);
+        byte[] it = value(chain);
+        while (i < size) {
+            byte b = it[i++];
+            if (b > 0x2F) {
+                if (b < 0x3A) {
+                    u = u << 4 | (b - 0x30);
+                    continue;
+                }
+                if (b > 0x60 && b < 0x67) {
+                    u = u << 4 | (b - 0x57);
+                    continue;
+                }
+                if (b > 0x40 && b < 0x47) {
+                    u = u << 4 | (b - 0x37);
+                    continue;
+                }
+            }
+            if (b == 0x2D) {
+                switch (k++) {
+                    case 0: {
+                        m = u & 0xFFFFFFFFL;
+                        u = 0;
+                        continue;
+                    }
+                    case 1:
+                    case 2: {
+                        m = m << 16 | u & 0xFFFFL;
+                        u = 0;
+                        continue;
+                    }
+                    case 3: {
+                        n = u & 0xFFFFL;
+                        u = 0;
+                        continue;
+                    }
+                }
+            }
+            return null;
+        }
+
+        return k != 4 ? null : new UUID(
+            m, n << 48 | u & 0xFFFFFFFFFFFFL
+        );
     }
 
     @Override
@@ -75,117 +131,106 @@ public class UUIDSpare extends Property<UUID> {
     ) throws IOException {
         UUID u = (UUID) value;
 
-        long most = u.getMostSignificantBits();
-        long least = u.getLeastSignificantBits();
+        long m = u.getMostSignificantBits();
+        long n = u.getLeastSignificantBits();
 
         flow.emit(
-            (most >> 32) & 0xFFFFFFFFL, 4, 8
+            (m >> 32) & 0xFFFFFFFFL, 4, 8
         );
         flow.emit((byte) '-');
         flow.emit(
-            (most >> 16) & 0xFFFFL, 4, 4
+            (m >> 16) & 0xFFFFL, 4, 4
         );
         flow.emit((byte) '-');
         flow.emit(
-            most & 0xFFFFL, 4, 4
+            m & 0xFFFFL, 4, 4
         );
         flow.emit((byte) '-');
         flow.emit(
-            (least >> 48) & 0xFFFFL, 4, 4
+            (n >> 48) & 0xFFFFL, 4, 4
         );
         flow.emit((byte) '-');
         flow.emit(
-            least & 0xFFFFFFFFFFFFL, 4, 12
+            n & 0xFFFFFFFFFFFFL, 4, 12
         );
     }
 
     @Override
     public UUID cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof UUID) {
-                return (UUID) data;
-            }
-
-            if (data instanceof Chain) {
-                try {
-                    return parse(
-                        (Chain) data
-                    );
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-
-            if (data instanceof CharSequence) {
-                CharSequence c = (CharSequence) data;
-                int len = c.length();
-                if (len < 8 ||
-                    len > 36) {
-                    return null;
-                }
-
-                try {
-                    return parse(
-                        new Value(c)
-                    );
-                } catch (Exception e) {
-                    return null;
-                }
-            }
+        if (object == null) {
+            return null;
         }
-        return null;
-    }
 
-    private static long hex(
-        Chain c, int i, int o
-    ) throws IOException {
-        long d = Binary.digit(
-            c.at(i++)
-        );
-        while (i < o) {
-            d <<= 4;
-            d |= Binary.digit(
-                c.at(i++)
+        if (object instanceof UUID) {
+            return (UUID) object;
+        }
+
+        if (object instanceof Chain) {
+            return read(
+                null, (Chain) object
             );
         }
-        return d;
-    }
 
-    @Nullable
-    public static UUID parse(
-        @NotNull Chain c
-    ) throws IOException {
-        int len = c.length();
-        if (len < 8 ||
-            len > 36) {
-            return null;
+        if (object instanceof CharSequence) {
+            CharSequence c = (CharSequence) object;
+            int size = c.length();
+            if (size < 9 ||
+                size > 36) {
+                return null;
+            }
+
+            int i = 0, k = 0;
+            long m = 0, n = 0, u = 0;
+
+            while (i < size) {
+                char b = c.charAt(i++);
+                if (b > 0x2F) {
+                    if (b < 0x3A) {
+                        u = u << 4 | (b - 0x30);
+                        continue;
+                    }
+                    if (b > 0x60 && b < 0x67) {
+                        u = u << 4 | (b - 0x57);
+                        continue;
+                    }
+                    if (b > 0x40 && b < 0x47) {
+                        u = u << 4 | (b - 0x37);
+                        continue;
+                    }
+                }
+                if (b == 0x2D) {
+                    switch (k++) {
+                        case 0: {
+                            m = u & 0xFFFFFFFFL;
+                            u = 0;
+                            continue;
+                        }
+                        case 1:
+                        case 2: {
+                            m = m << 16 | u & 0xFFFFL;
+                            u = 0;
+                            continue;
+                        }
+                        case 3: {
+                            n = u & 0xFFFFL;
+                            u = 0;
+                            continue;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            return k != 4 ? null : new UUID(
+                m, n << 48 | u & 0xFFFFFFFFFFFFL
+            );
         }
 
-        int dash1 = c.indexOf((byte) '-', 0);
-        int dash2 = c.indexOf((byte) '-', dash1 + 1);
-        int dash3 = c.indexOf((byte) '-', dash2 + 1);
-        int dash4 = c.indexOf((byte) '-', dash3 + 1);
-        int dash5 = c.indexOf((byte) '-', dash4 + 1);
-
-        if (dash4 < 0 || dash5 >= 0) {
-            return null;
-        }
-
-        long most = hex(c, 0, dash1) & 0xFFFFFFFFL;
-        most <<= 16;
-        most |= hex(c, dash1 + 1, dash2) & 0xFFFFL;
-        most <<= 16;
-        most |= hex(c, dash2 + 1, dash3) & 0xFFFFL;
-
-        long least = hex(c, dash3 + 1, dash4) & 0xFFFFL;
-        least <<= 48;
-        least |= hex(c, dash4 + 1, len) & 0xFFFFFFFFFFFFL;
-
-        return new UUID(
-            most, least
+        throw new IllegalStateException(
+            object + " cannot be converted to " + klass
         );
     }
 }

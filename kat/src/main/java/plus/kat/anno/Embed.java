@@ -45,7 +45,7 @@ public @interface Embed {
      * @see Flag
      * @since 0.0.4
      */
-    int require() default 0;
+    long require() default 0;
 
     /**
      * Returns the specified {@link Spare} or the pointing {@link Class}

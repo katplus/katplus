@@ -20,7 +20,7 @@ import plus.kat.anno.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static plus.kat.kernel.Alpha.Memory.INS;
+import static plus.kat.stream.Stream.Buffer.INS;
 
 /**
  * @author kraity
@@ -43,13 +43,12 @@ public class InputStreamReader extends AbstractReader {
     @Override
     protected int load()
         throws IOException {
-        byte[] tmp = cache;
-        if (tmp == null) {
-            cache = tmp = alloc();
+        byte[] buf = cache;
+        if (buf == null) {
+            cache = buf = INS.alloc(range);
         }
-
         return value.read(
-            tmp, 0, scale(tmp.length)
+            buf, 0, scale(buf.length)
         );
     }
 
@@ -65,7 +64,7 @@ public class InputStreamReader extends AbstractReader {
         } finally {
             cache = null;
             value = null;
-            offset = -1;
+            limit = -1;
         }
     }
 }

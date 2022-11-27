@@ -20,7 +20,6 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.crash.*;
 
 import java.io.*;
 import java.net.*;
@@ -44,27 +43,19 @@ public class URLSpare extends Property<URL> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == URL.class
-            || clazz == Object.class;
-    }
-
-    @Override
     public URL read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Chain chain
     ) throws IOException {
-        if (value.isEmpty()) {
+        if (chain.isEmpty()) {
             return null;
         }
         try {
             return new URL(
-                value.toString()
+                chain.toString()
             );
         } catch (MalformedURLException e) {
-            throw new ProxyCrash(e);
+            throw new IOException(e);
         }
     }
 
@@ -80,34 +71,44 @@ public class URLSpare extends Property<URL> {
 
     @Override
     public URL cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof URL) {
-                return (URL) data;
-            }
+        if (object == null) {
+            return null;
+        }
 
-            if (data instanceof URI) {
-                try {
-                    return ((URI) data).toURL();
-                } catch (Exception e) {
-                    return null;
-                }
-            }
+        if (object instanceof URL) {
+            return (URL) object;
+        }
 
-            if (data instanceof CharSequence) {
-                String d = data.toString();
-                if (d.isEmpty()) {
-                    return null;
-                }
-                try {
-                    return new URL(d);
-                } catch (Exception e) {
-                    return null;
-                }
+        if (object instanceof URI) {
+            try {
+                return ((URI) object).toURL();
+            } catch (MalformedURLException e) {
+                throw new IllegalStateException(
+                    object + " cannot be converted to " + klass, e
+                );
             }
         }
-        return null;
+
+        if (object instanceof CharSequence) {
+            String s = object.toString();
+            if (s.isEmpty() ||
+                "null".equalsIgnoreCase(s)) {
+                return null;
+            }
+            try {
+                return new URL(s);
+            } catch (MalformedURLException e) {
+                throw new IllegalStateException(
+                    object + " cannot be converted to " + klass, e
+                );
+            }
+        }
+
+        throw new IllegalStateException(
+            object + " cannot be converted to " + klass
+        );
     }
 }

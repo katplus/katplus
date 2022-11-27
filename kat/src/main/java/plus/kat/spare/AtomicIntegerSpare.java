@@ -44,16 +44,7 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> {
 
     @Override
     public String getSpace() {
-        return "AtomicInteger";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == AtomicInteger.class
-            || clazz == Number.class
-            || clazz == Object.class;
+        return "i";
     }
 
     @Override
@@ -66,20 +57,10 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> {
     @Override
     public AtomicInteger read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
         return new AtomicInteger(
-            alias.toInt()
-        );
-    }
-
-    @Override
-    public AtomicInteger read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) {
-        return new AtomicInteger(
-            value.toInt()
+            chain.toInt()
         );
     }
 
@@ -95,20 +76,20 @@ public class AtomicIntegerSpare extends Property<AtomicInteger> {
 
     @Override
     public AtomicInteger cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
-            return apply();
+        if (object == null) {
+            return null;
         }
 
-        if (data instanceof AtomicInteger) {
-            return (AtomicInteger) data;
+        if (object instanceof AtomicInteger) {
+            return (AtomicInteger) object;
         }
 
         return new AtomicInteger(
             IntegerSpare.INSTANCE.cast(
-                data, supplier
+                object, supplier
             )
         );
     }

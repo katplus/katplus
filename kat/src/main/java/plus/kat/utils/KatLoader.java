@@ -16,7 +16,7 @@
 package plus.kat.utils;
 
 import plus.kat.anno.*;
-import plus.kat.kernel.*;
+import plus.kat.chain.*;
 
 import java.io.*;
 import java.net.*;
@@ -169,7 +169,7 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
     }
 
     /**
-     * Close this {@link KatLoader}
+     * Closes this {@link KatLoader}
      */
     @Override
     public void close() {
@@ -185,7 +185,7 @@ public class KatLoader<T> implements Iterator<T>, Closeable {
      * @author kraity
      * @since 0.0.5
      */
-    public static class Parser extends Alpha {
+    public static class Parser extends Chain {
 
         private int index;
 

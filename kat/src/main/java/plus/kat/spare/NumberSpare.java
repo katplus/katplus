@@ -42,14 +42,6 @@ public class NumberSpare extends Property<Number> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == Number.class
-            || clazz == Object.class;
-    }
-
-    @Override
     public Boolean getBorder(
         @NotNull Flag flag
     ) {
@@ -59,9 +51,9 @@ public class NumberSpare extends Property<Number> {
     @Override
     public Number read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        return alias.toNumber();
+        return chain.toNumber();
     }
 
     @Override
@@ -110,18 +102,27 @@ public class NumberSpare extends Property<Number> {
 
     @Override
     public Number cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Number) {
-                return (Number) data;
-            }
-
-            if (data instanceof Boolean) {
-                return ((boolean) data) ? 1 : 0;
-            }
+        if (object == null) {
+            return null;
         }
-        return null;
+
+        if (object instanceof Number) {
+            return (Number) object;
+        }
+
+        if (object instanceof Boolean) {
+            return ((boolean) object) ? 1 : 0;
+        }
+
+        if (object instanceof Chain) {
+            return ((Chain) object).toNumber();
+        }
+
+        throw new IllegalStateException(
+            object + " cannot be converted to Number"
+        );
     }
 }

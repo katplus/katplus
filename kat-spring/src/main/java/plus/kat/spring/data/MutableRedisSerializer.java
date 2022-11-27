@@ -15,15 +15,17 @@
  */
 package plus.kat.spring.data;
 
+import org.springframework.util.Assert;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
-import org.springframework.util.Assert;
 
 import plus.kat.*;
+import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
 
 import java.io.IOException;
+
+import static plus.kat.Plan.DEF;
 
 /**
  * @author kraity
@@ -34,7 +36,7 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
     protected final Algo algo;
     protected Supplier supplier;
 
-    protected Plan plan = Plan.DEF;
+    protected Plan plan = DEF;
     protected final Class<T> type;
 
     /**
@@ -82,14 +84,16 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
             }
         } catch (Collapse e) {
             throw new SerializationException(
-                "Converter didn't find " + algo + "'s Chan"
+                "Not found the Chan of " + algo, e
             );
         } catch (IOException e) {
-            // Skip to below
+            throw new SerializationException(
+                "Failed to serialize " + algo, e
+            );
         }
 
         throw new SerializationException(
-            "Unexpectedly, Cannot serialize " + data + " to " + algo.name()
+            "Cannot serialize " + data + " to " + algo.name()
         );
     }
 

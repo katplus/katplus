@@ -21,7 +21,7 @@ import javax.crypto.Cipher;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static plus.kat.kernel.Alpha.Memory.INS;
+import static plus.kat.stream.Stream.Buffer.INS;
 
 /**
  * @author kraity
@@ -32,6 +32,7 @@ public class CipherStreamReader extends AbstractReader {
     private int in, mark;
     private byte[] buffer;
 
+    private boolean done;
     private Cipher cipher;
     private InputStream value;
 
@@ -51,18 +52,18 @@ public class CipherStreamReader extends AbstractReader {
     @Override
     protected int load()
         throws IOException {
-        byte[] tmp = buffer;
-        if (tmp == null) {
-            buffer = tmp = alloc();
+        byte[] buf = buffer;
+        if (buf == null) {
+            buffer = buf = INS.alloc(range);
         }
 
         int s = scale(
-            tmp.length
+            buf.length
         );
 
         int i = in, m = mark;
         if (m == 0) {
-            i = value.read(tmp);
+            i = value.read(buf);
             if (i <= s) {
                 s = i;
             } else {
@@ -82,7 +83,7 @@ public class CipherStreamReader extends AbstractReader {
 
         if (i > 0) {
             cache = cipher.update(
-                tmp, m, s
+                buf, m, s
             );
             if (cache == null ||
                 cache.length == 0) {
@@ -90,6 +91,10 @@ public class CipherStreamReader extends AbstractReader {
             }
         } else {
             try {
+                if (done) {
+                    return -1;
+                }
+                done = true;
                 cache = cipher.doFinal();
                 if (cache == null) {
                     return -1;
@@ -109,15 +114,15 @@ public class CipherStreamReader extends AbstractReader {
                 buffer
             );
             value.close();
-            if (offset != -1) {
+            if (!done) {
                 cipher.doFinal();
             }
         } catch (Exception e) {
             // Nothing
         } finally {
+            limit = -1;
             cache = null;
             value = null;
-            offset = -1;
             cipher = null;
             buffer = null;
         }

@@ -2,9 +2,9 @@ package plus.kat;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import plus.kat.chain.*;
 
-import plus.kat.kernel.Chain;
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;

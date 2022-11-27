@@ -20,14 +20,12 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
-import static plus.kat.kernel.Alpha.Memory.INS;
+import static plus.kat.stream.Binary.Unsafe.RFC4648_ENCODE;
 
 /**
  * @author kraity
@@ -38,22 +36,40 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
     public static final ByteBufferSpare
         INSTANCE = new ByteBufferSpare();
 
+    private final byte[]
+        table = RFC4648_ENCODE;
+
     public ByteBufferSpare() {
         super(ByteBuffer.class);
     }
 
     @Override
     public String getSpace() {
-        return "s";
+        return "B";
     }
 
     @Override
     public ByteBuffer read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Chain chain
     ) {
         return ByteBuffer.wrap(
-            value.toBytes()
+            Base64.mime().decode(chain)
+        );
+    }
+
+    @Override
+    public ByteBuffer cast(
+        @Nullable Object object,
+        @NotNull Supplier supplier
+    ) {
+        if (object == null) {
+            return null;
+        }
+        return ByteBuffer.wrap(
+            ByteArraySpare.INSTANCE.cast(
+                object, supplier
+            )
         );
     }
 
@@ -62,59 +78,45 @@ public class ByteBufferSpare extends Property<ByteBuffer> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        int rem;
-        byte[] cache = null;
-        ByteBuffer buf = (ByteBuffer) value;
+        ByteBuffer buf =
+            (ByteBuffer) value;
+        int size = buf.remaining();
 
-        while ((rem = buf.remaining()) > 0) {
-            if (cache == null) {
-                if (rem > 1024) {
-                    cache = INS.alloc();
+        if (size > 0) {
+            int t1 = size % 3;
+            int t2 = size / 3;
+
+            int b1, b2, b3;
+            int c = t2 * 3;
+
+            byte[] tab = table;
+            int i = buf.position();
+
+            while (i < c) {
+                b1 = buf.get(i++) & 0xFF;
+                b2 = buf.get(i++) & 0xFF;
+                b3 = buf.get(i++) & 0xFF;
+
+                flow.emit(tab[b1 >>> 2]);
+                flow.emit(tab[((b1 & 0x3) << 4) | (b2 >>> 4)]);
+                flow.emit(tab[((b2 & 0xF) << 2) | (b3 >>> 6)]);
+                flow.emit(tab[b3 & 0x3F]);
+            }
+
+            if (t1 != 0) {
+                b1 = buf.get(i++) & 0xFF;
+                if (t1 == 1) {
+                    flow.emit(tab[b1 >>> 2]);
+                    flow.emit(tab[(b1 & 0x3) << 4]);
+                    flow.emit((byte) '=');
                 } else {
-                    cache = new byte[Math.min(rem, 256)];
+                    b2 = buf.get(i) & 0xFF;
+                    flow.emit(tab[b1 >>> 2]);
+                    flow.emit(tab[((b1 & 0x3) << 4) | (b2 >>> 4)]);
+                    flow.emit(tab[(b2 & 0xF) << 2]);
                 }
-            }
-            int len = Math.min(
-                rem, cache.length
-            );
-            buf.get(cache, 0, len);
-            flow.emit(cache, 0, len);
-        }
-        INS.join(cache);
-    }
-
-    @Override
-    public ByteBuffer cast(
-        @Nullable Object data,
-        @NotNull Supplier supplier
-    ) {
-        if (data != null) {
-            if (data instanceof ByteBuffer) {
-                return (ByteBuffer) data;
-            }
-
-            if (data instanceof byte[]) {
-                return ByteBuffer.wrap(
-                    (byte[]) data
-                );
-            }
-
-            if (data instanceof Chain) {
-                return ByteBuffer.wrap(
-                    ((Chain) data).toBytes()
-                );
-            }
-
-            if (data instanceof String) {
-                return ByteBuffer.wrap(
-                    Base64.mime().decode(
-                        ((String) data).getBytes(
-                            StandardCharsets.US_ASCII
-                        )
-                    )
-                );
+                flow.emit((byte) '=');
             }
         }
-        return null;
     }
 }

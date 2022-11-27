@@ -22,6 +22,7 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,32 +47,24 @@ public class VoidSpare extends Property<Void> {
 
     @Override
     public Void apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
-        if (type == void.class ||
+        if (type == null ||
+            type == void.class ||
             type == Void.class) {
             throw new Collapse(
-                "Failed to create"
+                "Failed to apply"
             );
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
     @Override
     public String getSpace() {
         return "$";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == void.class
-            || clazz == Void.class
-            || clazz == Object.class;
     }
 
     @Override
@@ -97,8 +90,8 @@ public class VoidSpare extends Property<Void> {
     @Override
     public Void read(
         @NotNull Flag flag,
-        @NotNull Alias alias
-    ) {
+        @NotNull Chain chain
+    ) throws IOException {
         return null;
     }
 
@@ -106,22 +99,38 @@ public class VoidSpare extends Property<Void> {
     public Void read(
         @NotNull Flag flag,
         @NotNull Value value
+    ) throws IOException {
+        return null;
+    }
+
+    @Override
+    public Void cast(
+        @Nullable Object object
     ) {
         return null;
     }
 
     @Override
     public Void cast(
-        @Nullable Object data
-    ) {
-        return null;
-    }
-
-    @Override
-    public Void cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
         return null;
+    }
+
+    @Override
+    public void write(
+        @NotNull Flow flow,
+        @NotNull Object value
+    ) throws IOException {
+        // Nothing
+    }
+
+    @Override
+    public void write(
+        @NotNull Chan chan,
+        @NotNull Object value
+    ) throws IOException {
+        // Nothing
     }
 }

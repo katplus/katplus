@@ -2,21 +2,22 @@ package plus.kat.spare;
 
 import org.junit.jupiter.api.Test;
 
-import plus.kat.*;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 import plus.kat.anno.Format;
-import plus.kat.kernel.Alpha;
-import plus.kat.reflex.ArrayType;
+
+import plus.kat.*;
+import plus.kat.chain.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.time.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -114,20 +115,32 @@ public class SpareTest {
         assertEquals("-123.456AA", spare.read("$(-123.456AA)"));
     }
 
+    @Embed("Time")
+    static class Time {
+        public Date now;
+        public Date time;
+
+        @Format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        public Date date;
+
+        @Format(value = "dd,MMMM yyyy", lang = "zh")
+        public Date just;
+    }
+
     @Test
     public void test_date() throws IOException {
-        Spare<Role> spare =
-            Spare.lookup(Role.class);
+        Spare<Time> spare =
+            Spare.lookup(Time.class);
 
-        Role role = spare.read(
-            new Event<>(
-                "${$:now(2022-01-11 11:11:11)$:time(1641871353000)$:date(2022-02-22T22:22:22.222Z)$:just(03,三月 2022)$:instant(2022-02-22 22:33)$:localDate(2022-02-22)$:localTime(22:33)$:localDateTime(2022-02-22 22:33)}"
-            )
+        String text = "${$:now(2022-01-11 11:11:11)$:time(1641871353000)$:date(2022-02-22T22:22:22.222Z)$:just(03,三月 2022)}";
+
+        Time time = spare.read(
+            new Event<Time>(text).with(Flag.DIGIT_AS_DATE)
         );
 
-        assertNotNull(role);
-        try (Chan chan = spare.write(role)) {
-            assertEquals("Role{Date:now(2022-01-11 11:11:11)Date:time(2022-01-11 11:22:33)Date:date(2022-02-22T22:22:22.222Z)Date:just(03,三月 2022)Instant:instant(2022-02-22 22:33)LocalDate:localDate(2022-02-22)LocalTime:localTime(22:33)LocalDateTime:localDateTime(2022-02-22 22:33)}", chan.toString());
+        assertNotNull(time);
+        try (Chan chan = spare.write(time)) {
+            assertEquals("Time{Date:now(2022-01-11 11:11:11)Date:time(2022-01-11 11:22:33)Date:date(2022-02-22T22:22:22.222Z)Date:just(03,三月 2022)}", chan.toString());
         }
     }
 
@@ -193,30 +206,6 @@ public class SpareTest {
         assertNotNull(a2);
         assertEquals(1, a2.id);
         assertEquals("kraity", a2.name);
-    }
-
-    @Embed("Role")
-    static class Role {
-        public Date now;
-        public Date time;
-
-        @Format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-        public Date date;
-
-        @Format(value = "dd,MMMM yyyy", lang = "zh")
-        public Date just;
-
-        @Format(value = "yyyy-MM-dd HH:mm", zone = "GMT")
-        public Instant instant;
-
-        @Format("yyyy-MM-dd")
-        public LocalDate localDate;
-
-        @Format("HH:mm")
-        public LocalTime localTime;
-
-        @Format("yyyy-MM-dd HH:mm")
-        public LocalDateTime localDateTime;
     }
 
     @Test
@@ -328,25 +317,6 @@ public class SpareTest {
         assertEquals("kraity", user1.name);
     }
 
-    @Test
-    public void test_array_hook() throws Exception {
-        for (Method method : Hook.class.getDeclaredMethods()) {
-            if (method.getName().equals("test")) {
-                Spare<Object[]> spare =
-                    Spare.lookup(Object[].class);
-                method.invoke(
-                    new Hook(), spare.read(
-                        new Event<Object[]>(
-                            "{{(1)(2)}{:name(kraity)}}"
-                        ).with(
-                            ArrayType.of(method)
-                        )
-                    )
-                );
-            }
-        }
-    }
-
     enum Meta {
         KAT, DOC, JSON
     }
@@ -366,10 +336,12 @@ public class SpareTest {
         assertEquals(Meta.JSON, spare.cast(Meta.JSON));
     }
 
-
     @Test
     public void test_UUID_read() {
         UUIDSpare spare = UUIDSpare.INSTANCE;
+
+        String uid = "UUID(" + spare.apply() + ")";
+        assertEquals(uid, Kat.encode(spare.read(uid)));
 
         UUID uuid = spare.read(
             "$(092f7929-d2d6-44d6-9cc1-694c2e360c56)"
@@ -377,6 +349,11 @@ public class SpareTest {
 
         assertEquals("092f7929-d2d6-44d6-9cc1-694c2e360c56", uuid.toString());
         assertEquals("UUID(092f7929-d2d6-44d6-9cc1-694c2e360c56)", Kat.encode(uuid));
+
+        assertNull(spare.cast(""));
+        assertNull(spare.cast("092f7929-d2d6"));
+        assertNull(spare.cast("092f7929-d2d6-44d6-9cc1"));
+        assertEquals(uuid, spare.cast("092f7929-d2d6-44d6-9cc1-694c2e360c56"));
     }
 
     @Test
@@ -458,17 +435,6 @@ public class SpareTest {
     }
 
     @Test
-    public void test_BitSet_read() {
-        BitSetSpare spare = BitSetSpare.INSTANCE;
-
-        BitSet b0 = spare.read("${(1)(0)(1)(0)}");
-        assertEquals("BitSet{i(1)i(0)i(1)}", Kat.encode(b0));
-
-        BitSet b1 = spare.parse("[1,0,1,0]");
-        assertEquals("[1,0,1]", Json.encode(b1));
-    }
-
-    @Test
     public void test_File_read() {
         FileSpare spare = FileSpare.INSTANCE;
 
@@ -493,81 +459,39 @@ public class SpareTest {
     }
 
     @Test
-    public void test_Instant_read() {
-        InstantSpare spare = InstantSpare.INSTANCE;
-
-        Instant i0 = spare.read("$(1645540424)");
-        assertEquals("Instant(1645540424)", Kat.encode(i0, Flag.INSTANT_AS_TIMESTAMP));
-
-        Instant i1 = spare.read("$(1645540424123)");
-        assertEquals("Instant(1645540424123)", Kat.encode(i1, Flag.INSTANT_AS_TIMESTAMP));
-    }
-
-    @Test
     public void test_ByteBuffer_read() {
         ByteBufferSpare spare = ByteBufferSpare.INSTANCE;
+        assertNull(spare.cast(null));
 
-        ByteBuffer buf = spare.read("$(0123456789)");
-        assertEquals("0123456789", new String(buf.array()));
-        assertEquals("s(0123456789)", Kat.encode(buf));
-    }
+        ByteBuffer buf = spare.read("$(a3JhaXR5)");
+        assertEquals("kraity", new String(buf.array()));
+        assertEquals("B(a3JhaXR5)", Kat.encode(buf));
+        assertEquals("\"a3JhaXR5\"", Json.encode(buf));
 
-    @Test
-    public void test_local_date() {
-        LocalDateSpare spare = LocalDateSpare.INSTANCE;
-
-        LocalDate localDate = spare.read("$(2022-02-22)");
-        assertNotNull(localDate);
-        assertEquals("LocalDate(2022-02-22)", Kat.encode(localDate));
-    }
-
-    @Test
-    public void test_local_time() {
-        LocalTimeSpare spare = LocalTimeSpare.INSTANCE;
-
-        LocalTime localTime = spare.read("$(22:22:22.123)");
-        assertNotNull(localTime);
-        assertEquals("LocalTime(22:22:22.123)", Kat.encode(localTime));
-    }
-
-    @Test
-    public void test_local_date_time() {
-        LocalDateTimeSpare spare = LocalDateTimeSpare.INSTANCE;
-
-        LocalDateTime localDateTime = spare.read("$(2022-02-22T22:22:22.123)");
-        assertNotNull(localDateTime);
-        assertEquals("LocalDateTime(2022-02-22T22:22:22.123)", Kat.encode(localDateTime));
-    }
-
-    @Test
-    public void test_zoned_date_time() {
-        ZonedDateTimeSpare spare = ZonedDateTimeSpare.INSTANCE;
-
-        ZonedDateTime zonedDateTime = spare.read("$(2022-02-22T22:22:22.123+08:00[Asia/Shanghai])");
-        assertNotNull(zonedDateTime);
-        assertEquals("ZonedDateTime(2022-02-22T22:22:22.123+08:00[Asia/Shanghai])", Kat.encode(zonedDateTime));
+        assertThrows(IllegalStateException.class, () -> spare.cast(1));
+        assertThrows(IllegalStateException.class, () -> spare.cast(true));
     }
 
     @Test
     public void test_bytes() {
         ByteArraySpare spare = ByteArraySpare.INSTANCE;
-        assertNotNull(spare.cast(null));
-        assertEquals(0, spare.cast(null).length);
-
+        assertNull(spare.cast(null));
         byte[] bytes = "kraity".getBytes();
         assertSame(bytes, spare.cast(bytes));
         assertArrayEquals(bytes, spare.cast("a3JhaXR5"));
+        assertThrows(IllegalStateException.class, () -> spare.cast(1));
+        assertThrows(IllegalStateException.class, () -> spare.cast(true));
     }
 
     @Test
-    public void test_alpha() {
-        AlphaSpare spare = AlphaSpare.INSTANCE;
-        Alpha alpha = spare.cast(null);
-        assertNotNull(alpha);
-        assertEquals(0, alpha.length());
+    public void test_chain() {
+        ChainSpare spare = ChainSpare.INSTANCE;
+        Chain chain = spare.cast(null);
+        assertNotNull(chain);
+        assertEquals(0, chain.length());
 
-        alpha.join("kat.plus");
-        assertEquals("s(kat.plus)", Kat.encode(alpha));
+        chain.join("kat.plus");
+        assertEquals("s(kat.plus)", Kat.encode(chain));
     }
 
     @Test
@@ -614,5 +538,46 @@ public class SpareTest {
             assertEquals(2, list.get(1));
             assertEquals("kraity", data.get("name"));
         }
+    }
+
+    @Test
+    public void test_array_hook() throws Exception {
+        Type type = null;
+        Method method = null;
+
+        for (Method m : Hook.class.getDeclaredMethods()) {
+            if (m.getName().equals("test")) {
+                type = new ParameterizedType() {
+                    @Override
+                    public Type getOwnerType() {
+                        return null;
+                    }
+
+                    @Override
+                    public Type getRawType() {
+                        return Object[].class;
+                    }
+
+                    @Override
+                    public Type[] getActualTypeArguments() {
+                        return m.getGenericParameterTypes();
+                    }
+                };
+                method = m;
+            }
+        }
+
+        assertNotNull(type);
+        assertNotNull(method);
+
+        Spare<Object[]> spare =
+            Supplier.ins().lookup(
+                Space.wipe(type), null
+            );
+        method.invoke(
+            new Hook(), spare.read(
+                new Event<Object[]>("{{(1)(2)}{:name(kraity)}}").with(type)
+            )
+        );
     }
 }

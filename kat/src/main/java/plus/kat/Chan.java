@@ -18,7 +18,6 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.chain.*;
 import plus.kat.spare.*;
 
 import java.io.Closeable;
@@ -32,7 +31,7 @@ public interface Chan extends Flag, Closeable {
     /**
      * Returns the algo of this {@link Chan}
      *
-     * @return {@link Algo}, NotNull
+     * @return {@link Algo} and not null
      */
     Algo algo();
 
@@ -118,7 +117,7 @@ public interface Chan extends Flag, Closeable {
     ) throws IOException;
 
     /**
-     * Returns the {@link Steam} of this
+     * Returns the {@link Flow} of this
      * {@link Chan} as a serialized {@code byte[]}
      *
      * <pre>{@code
@@ -130,7 +129,7 @@ public interface Chan extends Flag, Closeable {
     byte[] toBytes();
 
     /**
-     * Returns the {@link Steam} of this
+     * Returns the {@link Flow} of this
      * {@link Chan} as a serialized {@link String}
      *
      * <pre>{@code
@@ -142,25 +141,15 @@ public interface Chan extends Flag, Closeable {
     String toString();
 
     /**
-     * Returns the internal {@link Steam}
+     * Returns the internal {@link Flow}
      *
      * <pre>{@code
      *   Chan chan = ...
-     *   Steam steam = chan.getSteam();
-     *
-     *   // case 1
-     *   String text = steam.toString();
-     *
-     *   // case 2
-     *   OutputStream out = ...
-     *   steam.update(out);
-     *
-     *   // finally close the steam
-     *   chan.close() // steam.close();
+     *   Flow flow = chan.getFlow();
      * }</pre>
      */
     @NotNull
-    Steam getSteam();
+    Flow getFlow();
 
     /**
      * Returns the internal {@link Supplier}

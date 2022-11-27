@@ -20,11 +20,15 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.kernel.*;
+import plus.kat.crash.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+
+import static plus.kat.chain.Chain.EMPTY_BYTES;
+import static plus.kat.stream.Binary.Unsafe.RFC4648_ENCODE;
 
 /**
  * @author kraity
@@ -35,13 +39,30 @@ public class ByteArraySpare extends Property<byte[]> {
     public static final ByteArraySpare
         INSTANCE = new ByteArraySpare();
 
+    private final byte[]
+        table = RFC4648_ENCODE;
+
     public ByteArraySpare() {
         super(byte[].class);
     }
 
     @Override
     public byte[] apply() {
-        return Chain.EMPTY_BYTES;
+        return EMPTY_BYTES;
+    }
+
+    @Override
+    public byte[] apply(
+        @Nullable Type type
+    ) {
+        if (type == null ||
+            type == byte[].class) {
+            return EMPTY_BYTES;
+        }
+
+        throw new Collapse(
+            this + " unable to build " + type
+        );
     }
 
     @Override
@@ -50,21 +71,11 @@ public class ByteArraySpare extends Property<byte[]> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == byte[].class
-            || clazz == Object.class;
-    }
-
-    @Override
     public byte[] read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Chain chain
     ) {
-        return value.decode(
-            Base64.mime()
-        );
+        return Base64.mime().decode(chain);
     }
 
     @Override
@@ -72,37 +83,73 @@ public class ByteArraySpare extends Property<byte[]> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        byte[] b = Base64.base()
-            .encode(
-                (byte[]) value
-            );
-        flow.emit(
-            b, 'B', 0, b.length
-        );
+        byte[] data =
+            (byte[]) value;
+        int size = data.length;
+
+        if (size != 0) {
+            int t1 = size % 3;
+            int t2 = size / 3;
+
+            int b1, b2, b3;
+            int i = 0, c = t2 * 3;
+
+            byte[] tab = table;
+            while (i < c) {
+                b1 = data[i++] & 0xFF;
+                b2 = data[i++] & 0xFF;
+                b3 = data[i++] & 0xFF;
+
+                flow.emit(tab[b1 >>> 2]);
+                flow.emit(tab[((b1 & 0x3) << 4) | (b2 >>> 4)]);
+                flow.emit(tab[((b2 & 0xF) << 2) | (b3 >>> 6)]);
+                flow.emit(tab[b3 & 0x3F]);
+            }
+
+            if (t1 != 0) {
+                b1 = data[i++] & 0xFF;
+                if (t1 == 1) {
+                    flow.emit(tab[b1 >>> 2]);
+                    flow.emit(tab[(b1 & 0x3) << 4]);
+                    flow.emit((byte) '=');
+                } else {
+                    b2 = data[i] & 0xFF;
+                    flow.emit(tab[b1 >>> 2]);
+                    flow.emit(tab[((b1 & 0x3) << 4) | (b2 >>> 4)]);
+                    flow.emit(tab[(b2 & 0xF) << 2]);
+                }
+                flow.emit((byte) '=');
+            }
+        }
     }
 
     @Override
     public byte[] cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof byte[]) {
-                return (byte[]) data;
-            }
-
-            if (data instanceof Chain) {
-                return ((Chain) data).toBytes();
-            }
-
-            if (data instanceof String) {
-                return Base64.mime().decode(
-                    ((String) data).getBytes(
-                        StandardCharsets.US_ASCII
-                    )
-                );
-            }
+        if (object == null) {
+            return null;
         }
-        return Chain.EMPTY_BYTES;
+
+        if (object instanceof byte[]) {
+            return (byte[]) object;
+        }
+
+        if (object instanceof Chain) {
+            return ((Chain) object).toBytes();
+        }
+
+        if (object instanceof String) {
+            return Base64.mime().decode(
+                ((String) object).getBytes(
+                    StandardCharsets.US_ASCII
+                )
+            );
+        }
+
+        throw new IllegalStateException(
+            object + " cannot be converted to ByteArray"
+        );
     }
 }

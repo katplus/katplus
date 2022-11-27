@@ -4,16 +4,16 @@ import org.junit.jupiter.api.Test;
 
 import plus.kat.Algo;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.HttpInputMessage;
-import org.springframework.http.MediaType;
 
 import java.io.*;
 import java.util.HashMap;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author kraity

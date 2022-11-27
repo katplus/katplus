@@ -52,7 +52,7 @@ public class Plan {
      * <pre>{@code
      *  Plan plan = ...
      *  plan.read(
-     *    Flag.INDEX_AS_ENUM | Flag.STRING_AS_OBJECT, false
+     *    Flag.INDEX_AS_ENUM | Flag.VALUE_AS_BEAN, false
      *  );
      * }</pre>
      *
@@ -124,7 +124,7 @@ public class Plan {
      * <pre>{@code
      *  Plan plan = ...
      *  plan.write(
-     *    Flag.ENUM_AS_INDEX | Flag.DATE_AS_TIMESTAMP, false
+     *    Flag.ENUM_AS_INDEX | Flag.DATE_AS_DIGIT, false
      *  );
      * }</pre>
      *

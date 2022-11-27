@@ -13,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.chain;
+package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
 import plus.kat.*;
-import plus.kat.kernel.*;
-import plus.kat.stream.*;
+import plus.kat.chain.*;
+import plus.kat.crash.*;
 import plus.kat.utils.*;
 
 import java.io.IOException;
 
-import static plus.kat.stream.Binary.*;
+import static plus.kat.chain.Chain.Unsafe.*;
+import static plus.kat.stream.Binary.Unsafe.*;
 
 /**
  * @author kraity
  * @since 0.0.5
  */
-public abstract class Steam extends Alpha implements Flow {
+public abstract class Stream extends Chain implements Flow {
 
     protected long flags;
     protected short depth;
@@ -38,12 +39,26 @@ public abstract class Steam extends Alpha implements Flow {
     /**
      * Constructs a steam with the specified flags
      *
-     * @param flags the specified flags of {@link Flag}
+     * @param flags the specified flags of {@link Flow}
      */
-    public Steam(
+    public Stream(
         long flags
     ) {
-        super(Buffer.INS);
+        this(
+            flags, Buffer.INS
+        );
+    }
+
+    /**
+     * Constructs a steam with the specified flags and bucket
+     *
+     * @param flags  the specified flags of {@link Flow}
+     * @param bucket the specified bucket of {@link Flow}
+     */
+    public Stream(
+        long flags, Bucket bucket
+    ) {
+        super(bucket);
         this.flags = flags;
         if ((flags & 1) == 0) {
             this.depth = Short.MIN_VALUE;
@@ -51,7 +66,7 @@ public abstract class Steam extends Alpha implements Flow {
     }
 
     /**
-     * Check if this {@link Steam} use the {@code flag}
+     * Check if this {@link Stream} use the {@code flag}
      *
      * @param flag the specified {@code flag}
      */
@@ -63,8 +78,48 @@ public abstract class Steam extends Alpha implements Flow {
     }
 
     /**
+     * Concatenates the string representation
+     * of the integer value to this {@link Stream}
+     *
+     * @param num the specified number to be appended
+     */
+    @Override
+    public void emit(
+        int num
+    ) {
+        int arch = 0x30;
+        byte[] it = value;
+
+        asset = 0;
+        if (num < 0) {
+            int size = count + 2;
+            if (size > it.length) {
+                it = grow(size);
+            }
+            arch = 0x3A;
+            it[count++] = '-';
+        }
+
+        int i = count;
+        do {
+            if (count == it.length) {
+                it = grow(count + 1);
+            }
+            it[count++] = (byte) (arch + (num % 10));
+        } while (
+            (num /= 10) != 0
+        );
+
+        arch = count;
+        for (byte j; i < --arch; it[i++] = j) {
+            j = it[arch];
+            it[arch] = it[i];
+        }
+    }
+
+    /**
      * Concatenates the format an integer value
-     * (treated as unsigned) to this {@link Steam}
+     * (treated as unsigned) to this {@link Stream}
      *
      * @param num the specified number to be appended
      */
@@ -82,7 +137,7 @@ public abstract class Steam extends Alpha implements Flow {
                 if (count == it.length) {
                     it = grow(count + 1);
                 }
-                it[count++] = lower((num & arch));
+                it[count++] = LOWER[(num & arch)];
             } while (
                 (num >>>= s) != 0
             );
@@ -93,7 +148,7 @@ public abstract class Steam extends Alpha implements Flow {
                 it[arch] = it[i];
             }
         } else {
-            throw new IOException(
+            throw new FlowCrash(
                 "The specified shift is not in [0, 5]"
             );
         }
@@ -101,7 +156,7 @@ public abstract class Steam extends Alpha implements Flow {
 
     /**
      * Concatenates the format an integer value
-     * (treated as unsigned) to this {@link Steam}
+     * (treated as unsigned) to this {@link Stream}
      *
      * @param num the specified number to be appended
      */
@@ -119,7 +174,7 @@ public abstract class Steam extends Alpha implements Flow {
                 if (count == it.length) {
                     it = grow(count + 1);
                 }
-                it[count++] = lower((num & arch));
+                it[count++] = LOWER[(num & arch)];
                 num >>>= s;
             }
 
@@ -129,15 +184,55 @@ public abstract class Steam extends Alpha implements Flow {
                 it[arch] = it[i];
             }
         } else {
-            throw new IOException(
+            throw new FlowCrash(
                 "The specified shift is not in [0, 5]"
             );
         }
     }
 
     /**
+     * Concatenates the string representation
+     * of the long value to this {@link Stream}
+     *
+     * @param num the specified number to be appended
+     */
+    @Override
+    public void emit(
+        long num
+    ) {
+        long arch = 0x30L;
+        byte[] it = value;
+
+        asset = 0;
+        if (num < 0) {
+            int size = count + 2;
+            if (size > it.length) {
+                it = grow(size);
+            }
+            arch = 0x3AL;
+            it[count++] = '-';
+        }
+
+        int i = count;
+        do {
+            if (count == it.length) {
+                it = grow(count + 1);
+            }
+            it[count++] = (byte) (arch + (num % 10L));
+        } while (
+            (num /= 10L) != 0L
+        );
+
+        int apex = count;
+        for (byte j; i < --apex; it[i++] = j) {
+            j = it[apex];
+            it[apex] = it[i];
+        }
+    }
+
+    /**
      * Concatenates the format a long value
-     * (treated as unsigned) to this {@link Steam}
+     * (treated as unsigned) to this {@link Stream}
      *
      * @param num the specified number to be appended
      */
@@ -155,7 +250,7 @@ public abstract class Steam extends Alpha implements Flow {
                 if (count == it.length) {
                     it = grow(count + 1);
                 }
-                it[count++] = lower((int) (num & arch));
+                it[count++] = LOWER[(int) (num & arch)];
             } while (
                 (num >>>= s) != 0L
             );
@@ -166,7 +261,7 @@ public abstract class Steam extends Alpha implements Flow {
                 it[apex] = it[i];
             }
         } else {
-            throw new IOException(
+            throw new FlowCrash(
                 "The specified shift is not in [0, 5]"
             );
         }
@@ -174,7 +269,7 @@ public abstract class Steam extends Alpha implements Flow {
 
     /**
      * Concatenates the format a long value
-     * (treated as unsigned) to this {@link Steam}
+     * (treated as unsigned) to this {@link Stream}
      *
      * @param num the specified number to be appended
      */
@@ -192,7 +287,7 @@ public abstract class Steam extends Alpha implements Flow {
                 if (count == it.length) {
                     it = grow(count + 1);
                 }
-                it[count++] = lower((int) (num & arch));
+                it[count++] = LOWER[(int) (num & arch)];
                 num >>>= s;
             }
 
@@ -202,7 +297,7 @@ public abstract class Steam extends Alpha implements Flow {
                 it[apex] = it[i];
             }
         } else {
-            throw new IOException(
+            throw new FlowCrash(
                 "The specified shift is not in [0, 5]"
             );
         }
@@ -210,19 +305,7 @@ public abstract class Steam extends Alpha implements Flow {
 
     /**
      * Concatenates the string representation
-     * of the short value to this {@link Steam}
-     *
-     * @param num the specified number to be appended
-     */
-    public void emit(
-        short num
-    ) throws IOException {
-        emit((int) num);
-    }
-
-    /**
-     * Concatenates the string representation
-     * of the float value to this {@link Alpha}
+     * of the float value to this {@link Chain}
      *
      * @param num the specified number to be appended
      */
@@ -246,7 +329,7 @@ public abstract class Steam extends Alpha implements Flow {
 
     /**
      * Concatenates the string representation
-     * of the double value to this {@link Alpha}
+     * of the double value to this {@link Chain}
      *
      * @param num the specified number to be appended
      */
@@ -270,7 +353,7 @@ public abstract class Steam extends Alpha implements Flow {
 
     /**
      * Concatenates the string representation
-     * of the boolean value to this {@link Alpha}
+     * of the boolean value to this {@link Chain}
      *
      * @param bool the specified boolean to be appended
      */
@@ -302,7 +385,22 @@ public abstract class Steam extends Alpha implements Flow {
     }
 
     /**
-     * Concatenates the byte array to this {@link Steam},
+     * Concatenates the two bytes to this {@link Stream},
+     * which will be escaped if it contains special characters
+     *
+     * @param sh the specified two bytes to be appended
+     * @throws IOException If an I/O error occurs
+     */
+    @Override
+    public void emit(
+        short sh
+    ) throws IOException {
+        emit((byte) (sh >>> 8));
+        emit((byte) (sh & 0xFF));
+    }
+
+    /**
+     * Concatenates the byte array to this {@link Stream},
      * which will be escaped if it contains special characters
      *
      * @param data the specified source to be appended
@@ -315,7 +413,7 @@ public abstract class Steam extends Alpha implements Flow {
     }
 
     /**
-     * Concatenates the byte array to this {@link Steam},
+     * Concatenates the byte array to this {@link Stream},
      * which will be escaped if it contains special characters
      *
      * @param data the specified source to be appended
@@ -330,45 +428,14 @@ public abstract class Steam extends Alpha implements Flow {
                 emit(data[i++]);
             }
         } else {
-            throw new IOException(
+            throw new FlowCrash(
                 "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
             );
         }
     }
 
     /**
-     * Concatenates the byte array to this {@link Steam}
-     * and copy it directly if the specified type does not conflict with algo,
-     * otherwise check to see if it contains special characters, concat it after escape
-     */
-    @Override
-    public void emit(
-        @NotNull byte[] data, char t, int i, int l
-    ) throws IOException {
-        int k = i + l;
-        if (0 <= i && 0 <= l && k <= data.length) {
-            if (l != 0) {
-                if (t == 'B') {
-                    System.arraycopy(
-                        data, i, grow(count + l), count, l
-                    );
-                    asset = 0;
-                    count += l;
-                } else {
-                    while (i < k) {
-                        emit(data[i++]);
-                    }
-                }
-            }
-        } else {
-            throw new IOException(
-                "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
-            );
-        }
-    }
-
-    /**
-     * Concatenates the char value to this {@link Steam},
+     * Concatenates the char value to this {@link Stream},
      * which will be escaped if it is a special character
      *
      * @param ch the specified char value to be appended
@@ -390,16 +457,16 @@ public abstract class Steam extends Alpha implements Flow {
                 }
                 it[count++] = algo().esc();
                 it[count++] = 'u';
-                it[count++] = upper(ch >> 12 & 0x0F);
-                it[count++] = upper(ch >> 8 & 0x0F);
-                it[count++] = upper(ch >> 4 & 0x0F);
-                it[count++] = upper(ch & 0x0F);
+                it[count++] = UPPER[ch >> 12 & 0x0F];
+                it[count++] = UPPER[ch >> 8 & 0x0F];
+                it[count++] = UPPER[ch >> 4 & 0x0F];
+                it[count++] = UPPER[ch & 0x0F];
             }
         }
     }
 
     /**
-     * Concatenates the char array to this {@link Steam},
+     * Concatenates the char array to this {@link Stream},
      * which will be escaped if it contains special characters
      *
      * @param data the specified source to be appended
@@ -412,7 +479,7 @@ public abstract class Steam extends Alpha implements Flow {
     }
 
     /**
-     * Concatenates the char array to this {@link Steam},
+     * Concatenates the char array to this {@link Stream},
      * which will be escaped if it contains special characters
      *
      * @param data the specified source to be appended
@@ -439,10 +506,10 @@ public abstract class Steam extends Alpha implements Flow {
                             }
                             it[count++] = esc;
                             it[count++] = 'u';
-                            it[count++] = upper(ch >> 12 & 0x0F);
-                            it[count++] = upper(ch >> 8 & 0x0F);
-                            it[count++] = upper(ch >> 4 & 0x0F);
-                            it[count++] = upper(ch & 0x0F);
+                            it[count++] = UPPER[ch >> 12 & 0x0F];
+                            it[count++] = UPPER[ch >> 8 & 0x0F];
+                            it[count++] = UPPER[ch >> 4 & 0x0F];
+                            it[count++] = UPPER[ch & 0x0F];
                         }
                     } while (i < k);
                 } else {
@@ -515,14 +582,14 @@ public abstract class Steam extends Alpha implements Flow {
                 }
             }
         } else {
-            throw new IOException(
+            throw new FlowCrash(
                 "Out of bounds, i:" + i + " l:" + l + " length:" + data.length
             );
         }
     }
 
     /**
-     * Concatenates the chain to this {@link Steam},
+     * Concatenates the chain to this {@link Stream},
      * which will be escaped if it contains special characters
      *
      * @param data the specified chain to be appended
@@ -534,7 +601,7 @@ public abstract class Steam extends Alpha implements Flow {
         int size = data.length();
         if (size != 0) {
             int i = 0;
-            byte[] it = Unsafe.value(data);
+            byte[] it = value(data);
             while (i < size) {
                 emit(it[i++]);
             }
@@ -542,7 +609,7 @@ public abstract class Steam extends Alpha implements Flow {
     }
 
     /**
-     * Concatenates the chain to this {@link Steam},
+     * Concatenates the chain to this {@link Stream},
      * which will be escaped if it contains special characters
      *
      * @param data the specified chain to be appended
@@ -553,19 +620,19 @@ public abstract class Steam extends Alpha implements Flow {
     ) throws IOException {
         int k = i + l;
         if (0 <= i && 0 <= l && k <= data.length()) {
-            byte[] it = Unsafe.value(data);
+            byte[] it = value(data);
             while (i < k) {
                 emit(it[i++]);
             }
         } else {
-            throw new IOException(
+            throw new FlowCrash(
                 "Out of bounds, i:" + i + " l:" + l + " length:" + data.length()
             );
         }
     }
 
     /**
-     * Concatenates the sequence to this {@link Steam},
+     * Concatenates the sequence to this {@link Stream},
      * which will be escaped if it contains special characters
      *
      * @param data the specified sequence to be appended
@@ -578,7 +645,7 @@ public abstract class Steam extends Alpha implements Flow {
     }
 
     /**
-     * Concatenates the sequence to this {@link Steam},
+     * Concatenates the sequence to this {@link Stream},
      * which will be escaped if it contains special characters
      *
      * @param data the specified sequence to be appended
@@ -605,10 +672,10 @@ public abstract class Steam extends Alpha implements Flow {
                             }
                             it[count++] = esc;
                             it[count++] = 'u';
-                            it[count++] = upper(ch >> 12 & 0x0F);
-                            it[count++] = upper(ch >> 8 & 0x0F);
-                            it[count++] = upper(ch >> 4 & 0x0F);
-                            it[count++] = upper(ch & 0x0F);
+                            it[count++] = UPPER[ch >> 12 & 0x0F];
+                            it[count++] = UPPER[ch >> 8 & 0x0F];
+                            it[count++] = UPPER[ch >> 4 & 0x0F];
+                            it[count++] = UPPER[ch & 0x0F];
                         }
                     } while (i < k);
                 } else {
@@ -681,7 +748,7 @@ public abstract class Steam extends Alpha implements Flow {
                 }
             }
         } else {
-            throw new IOException(
+            throw new FlowCrash(
                 "Out of bounds, i:" + i + " l:" + l + " length:" + data.length()
             );
         }
@@ -689,22 +756,23 @@ public abstract class Steam extends Alpha implements Flow {
 
     /**
      * @author kraity
-     * @since 0.0.4
+     * @since 0.0.5
      */
     public static class Buffer implements Bucket {
 
-        private static final int SIZE, GROUP, SCALE;
+        private static final int SIZE, GROUP, SCALE, VALVE;
 
         static {
             SIZE = Config.get(
-                "kat.paper.size", 4
+                "kat.stream.size", 4
             );
             GROUP = Config.get(
-                "kat.paper.group", 4
+                "kat.stream.group", 4
             );
             SCALE = Config.get(
-                "kat.paper.scale", 1024
+                "kat.stream.scale", 2048
             );
+            VALVE = SCALE - 1;
         }
 
         public static final Buffer
@@ -717,15 +785,16 @@ public abstract class Steam extends Alpha implements Flow {
         public boolean join(
             @NotNull byte[] it
         ) {
-            int i = it.length / SCALE;
-            if (i < GROUP) {
-                Thread th = Thread.currentThread();
-                int tr = th.hashCode() & 0xFFFFFF;
-                int ix = i * GROUP + tr % SIZE;
-                synchronized (this) {
-                    bucket[ix] = it;
+            if (it != null) {
+                int i = it.length;
+                if (VALVE <= i && (i /= SCALE) < SIZE) {
+                    Thread th = Thread.currentThread();
+                    int sh = th.hashCode() & 0xFFFFFFF;
+                    synchronized (this) {
+                        bucket[i * SIZE + sh % GROUP] = it;
+                    }
+                    return true;
                 }
-                return true;
             }
             return false;
         }
@@ -734,44 +803,69 @@ public abstract class Steam extends Alpha implements Flow {
         public byte[] swap(
             @NotNull byte[] it
         ) {
-            this.join(it);
-            return EMPTY_BYTES;
+            return join(it) ? EMPTY_BYTES : it;
+        }
+
+        @NotNull
+        public byte[] alloc(
+            @NotNull int size
+        ) {
+            Thread th = Thread.currentThread();
+            int sh = th.hashCode() & 0xFFFFFFF;
+
+            int ix;
+            if (size <= 0) {
+                ix = sh % GROUP;
+            } else {
+                ix = (size / SCALE) * SIZE + sh % GROUP;
+            }
+
+            byte[] it;
+            synchronized (this) {
+                it = bucket[ix];
+                bucket[ix] = null;
+            }
+
+            if (it != null &&
+                size <= it.length) {
+                return it;
+            }
+
+            return new byte[SCALE];
         }
 
         @Override
         public byte[] alloc(
             @NotNull byte[] it, int len, int size
         ) {
+            Thread th = Thread.currentThread();
+            int sh = th.hashCode() & 0xFFFFFFF;
+
             byte[] data;
             int i = size / SCALE;
 
-            Thread th = Thread.currentThread();
-            int tr = th.hashCode() & 0xFFFFFF;
-
-            if (i >= GROUP) {
-                data = new byte[(i + 1) * SCALE - 1];
+            if (SIZE <= i) {
+                data = new byte[i * SCALE + VALVE];
             } else {
-                int ix = i * GROUP + tr % SIZE;
+                int ix = i * SIZE + sh % GROUP;
                 synchronized (this) {
                     data = bucket[ix];
                     bucket[ix] = null;
                 }
                 if (data == null ||
                     data.length < size) {
-                    data = new byte[(i + 1) * SCALE - 1];
+                    data = new byte[i * SCALE + VALVE];
                 }
             }
 
-            if (it.length != 0) {
+            if ((i = it.length) != 0) {
                 System.arraycopy(
                     it, 0, data, 0, len
                 );
 
-                i = it.length / SCALE;
-                if (i < GROUP) {
-                    int ix = i * GROUP + tr % SIZE;
+                if (VALVE <= i && (i /= SCALE) < SIZE) {
                     synchronized (this) {
-                        bucket[ix] = it;
+                        bucket[i * SIZE + sh % GROUP] = it;
                     }
                 }
             }

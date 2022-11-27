@@ -35,6 +35,9 @@ import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static java.util.Locale.getDefault;
+import static java.util.Locale.Category.FORMAT;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -57,14 +60,70 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
     }
 
     public DateSpare(
-        @NotNull String pattern,
+        @NotNull String format,
         @NotNull String zone,
-        @NotNull String language
+        @NotNull String locale
     ) {
-        super(pattern, LocaleSpare.lookup(language, Locale.Category.FORMAT));
+        this(format, zone, LocaleSpare.lookup(locale));
+    }
+
+    public DateSpare(
+        @NotNull String format,
+        @NotNull String zone,
+        @Nullable Locale locale
+    ) {
+        super(format, locale != null ? locale : getDefault(FORMAT));
         if (!zone.isEmpty()) {
-            super.setTimeZone(
+            setTimeZone(
                 TimeZone.getTimeZone(zone)
+            );
+        }
+    }
+
+    @Override
+    public Date apply(
+        @NotNull Supplier supplier,
+        @NotNull ResultSet resultSet
+    ) throws SQLException {
+        Object obj = resultSet
+            .getObject(1);
+        Date value = cast(
+            obj, supplier
+        );
+
+        if (value != null) {
+            return value;
+        }
+
+        throw new SQLCrash(
+            "Cannot convert the type from "
+                + obj.getClass() + " to " + Date.class
+        );
+    }
+
+    @Override
+    public Date apply(
+        @NotNull Spoiler spoiler,
+        @NotNull Supplier supplier
+    ) throws Collapse {
+        if (spoiler.hasNext()) {
+            Object obj = spoiler
+                .getValue();
+            Date value = cast(
+                obj, supplier
+            );
+
+            if (value != null) {
+                return value;
+            }
+
+            throw new Collapse(
+                "Cannot convert the type from "
+                    + obj + " to " + Date.class
+            );
+        } else {
+            throw new Collapse(
+                "The spoiler doesn't have a next data value"
             );
         }
     }
@@ -72,14 +131,6 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
     @Override
     public String getSpace() {
         return "Date";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == Date.class
-            || clazz == Object.class;
     }
 
     @Override
@@ -96,7 +147,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
     public Boolean getBorder(
         @NotNull Flag flag
     ) {
-        if (flag.isFlag(Flag.DATE_AS_TIMESTAMP)) {
+        if (flag.isFlag(Flag.DATE_AS_DIGIT)) {
             return Boolean.FALSE;
         }
         return null;
@@ -115,73 +166,23 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
     }
 
     @Override
-    public Date apply(
-        @NotNull Spoiler spoiler,
-        @NotNull Supplier supplier
-    ) throws Collapse {
-        if (!spoiler.hasNext()) {
-            throw new Collapse(
-                "No data source"
-            );
-        }
-
-        Object val = spoiler.getValue();
-        if (val instanceof Date) {
-            return (Date) val;
-        }
-
-        Date target = cast(
-            val, supplier
-        );
-        if (target != null) {
-            return target;
-        }
-
-        throw new Collapse(
-            "Cannot convert the type from "
-                + val.getClass() + " to " + Date.class
-        );
-    }
-
-    @Override
-    public Date apply(
-        @NotNull Supplier supplier,
-        @NotNull ResultSet resultSet
-    ) throws SQLException {
-        Object val = resultSet.getObject(1);
-        if (val instanceof Date) {
-            return (Date) val;
-        }
-
-        Date target = cast(
-            val, supplier
-        );
-        if (target != null) {
-            return target;
-        }
-
-        throw new SQLCrash(
-            "Cannot convert the type from "
-                + val.getClass() + " to " + Date.class
-        );
-    }
-
-    @Override
     public Date read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Chain chain
     ) throws IOException {
-        int len = value.length();
+        int len = chain.length();
         if (len == 0) {
             return null;
         }
 
-        long mil = value.toLong(-1);
-        if (mil >= 0) {
-            return new Date(mil);
+        if (flag.isFlag(Flag.DIGIT_AS_DATE)) {
+            long mil = chain.toLong(-1);
+            if (mil > -1) {
+                return new Date(mil);
+            }
         }
 
-        String text = value.toString();
+        String text = chain.toString();
         synchronized (this) {
             try {
                 return parse(text);
@@ -197,7 +198,7 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
         @NotNull Object value
     ) throws IOException {
         Date date = (Date) value;
-        if (flow.isFlag(Flag.DATE_AS_TIMESTAMP)) {
+        if (flow.isFlag(Flag.DATE_AS_DIGIT)) {
             flow.emit(
                 date.getTime()
             );
@@ -212,30 +213,30 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
 
     @Override
     public Date cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Date) {
-                return (Date) data;
+        if (object != null) {
+            if (object instanceof Date) {
+                return (Date) object;
             }
 
-            if (data instanceof Long) {
+            if (object instanceof Long) {
                 // as millisecond
                 return new Date(
-                    (long) data
+                    (long) object
                 );
             }
 
-            if (data instanceof Integer) {
+            if (object instanceof Integer) {
                 // as seconds
                 return new Date(
-                    (int) data * 1000L
+                    (int) object * 1000L
                 );
             }
 
-            if (data instanceof CharSequence) {
-                String d = data.toString();
+            if (object instanceof CharSequence) {
+                String d = object.toString();
                 if (d.isEmpty()) {
                     return null;
                 }
@@ -243,25 +244,28 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
                     try {
                         return parse(d);
                     } catch (Exception e) {
-                        return null;
+                        throw new FatalCrash(e);
                     }
                 }
             }
 
-            if (data instanceof AtomicLong) {
+            if (object instanceof AtomicLong) {
                 // as millisecond
                 return new Date(
-                    ((AtomicLong) data).get()
+                    ((AtomicLong) object).get()
                 );
             }
 
-            if (data instanceof AtomicInteger) {
+            if (object instanceof AtomicInteger) {
                 // as seconds
                 return new Date(
-                    ((AtomicInteger) data).get() * 1000L
+                    ((AtomicInteger) object).get() * 1000L
                 );
             }
         }
-        return null;
+
+        throw new FatalCrash(
+            object + " cannot be converted to " + getType()
+        );
     }
 }

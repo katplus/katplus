@@ -29,6 +29,7 @@ public class CipherByteReader extends AbstractReader {
     private int begin;
     private final int end;
 
+    private boolean done;
     private byte[] value;
     private Cipher cipher;
 
@@ -100,6 +101,10 @@ public class CipherByteReader extends AbstractReader {
             }
         } else {
             try {
+                if (done) {
+                    return -1;
+                }
+                done = true;
                 cache = cipher.doFinal();
                 if (cache == null) {
                     return -1;
@@ -117,12 +122,12 @@ public class CipherByteReader extends AbstractReader {
         value = null;
         cache = null;
 
-        if (offset != -1) try {
+        if (!done) try {
             cipher.doFinal();
         } catch (Exception e) {
             // Nothing
         } finally {
-            offset = -1;
+            limit = -1;
             cipher = null;
         }
     }

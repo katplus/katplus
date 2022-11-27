@@ -20,7 +20,6 @@ import plus.kat.*;
 import okhttp3.ResponseBody;
 import retrofit2.Converter;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 
 /**
@@ -50,11 +49,9 @@ public class MutableResponseBodyConverter<T> implements Converter<ResponseBody, 
     @Override
     public T convert(
         ResponseBody value
-    ) throws IOException {
+    ) {
         return supplier.solve(
-            type, algo, new Event<T>(
-                value.byteStream()
-            ).with(plan)
+            type, algo, new Event<T>(value.byteStream()).with(plan)
         );
     }
 }

@@ -146,6 +146,6 @@ public class CharReader extends AbstractReader {
     public void close() {
         value = null;
         cache = null;
-        offset = -1;
+        limit = -1;
     }
 }

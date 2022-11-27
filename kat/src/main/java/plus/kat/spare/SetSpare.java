@@ -29,7 +29,6 @@ import java.util.concurrent.*;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.stream.*;
 
 /**
  * @author kraity
@@ -67,9 +66,13 @@ public class SetSpare extends Property<Set> {
         @NotNull Flag flag,
         @NotNull Value value
     ) throws IOException {
-        if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
-            return Convert.toObject(
-                this, flag, value
+        if (flag.isFlag(Flag.VALUE_AS_BEAN)) {
+            Algo algo = Algo.of(value);
+            if (algo == null) {
+                return null;
+            }
+            return solve(
+                algo, new Event<Set>(value).with(flag)
             );
         }
         return null;
@@ -89,8 +92,12 @@ public class SetSpare extends Property<Set> {
 
     @Override
     public Set apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
+        if (type == null) {
+            type = klass;
+        }
+
         if (type == Set.class ||
             type == HashSet.class) {
             return new HashSet<>();
@@ -154,82 +161,94 @@ public class SetSpare extends Property<Set> {
 
     @Override
     public Set cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
+        if (object == null) {
             return null;
         }
 
-        if (klass.isInstance(data)) {
-            return (Set) data;
+        if (klass.isInstance(object)) {
+            return (Set) object;
         }
 
-        if (data instanceof Collection) {
+        if (object instanceof Collection) {
             Set set = apply();
             set.addAll(
-                (Set) data
+                (Set) object
             );
             return set;
         }
 
-        if (data instanceof Map) {
+        if (object instanceof Map) {
             Set set = apply();
             set.addAll(
-                ((Map) data).values()
+                ((Map) object).values()
             );
             return set;
         }
 
-        if (data instanceof Iterable) {
+        if (object instanceof Iterable) {
             Set set = apply();
-            for (Object o : (Iterable) data) {
+            for (Object o : (Iterable) object) {
                 set.add(o);
             }
             return set;
         }
 
-        if (data instanceof CharSequence) {
-            return Convert.toObject(
-                this, (CharSequence) data, null, supplier
+        if (object instanceof CharSequence) {
+            CharSequence cs =
+                (CharSequence) object;
+            Algo algo = Algo.of(cs);
+            if (algo == null) {
+                return null;
+            }
+            return solve(
+                algo, new Event<Set>(cs).with(supplier)
             );
         }
 
-        if (data.getClass().isArray()) {
+        if (object.getClass().isArray()) {
             Set set = apply();
-            int size = Array.getLength(data);
+            int size = Array.getLength(object);
 
             for (int i = 0; i < size; i++) {
                 set.add(
-                    Array.get(data, i)
+                    Array.get(object, i)
                 );
             }
             return set;
         }
 
-        if (data instanceof Spoiler) {
+        if (object instanceof Spoiler) {
             return apply(
                 (Spoiler) supplier, supplier
             );
         }
 
-        if (data instanceof ResultSet) {
+        if (object instanceof ResultSet) {
             try {
                 return apply(
-                    supplier, (ResultSet) data
+                    supplier, (ResultSet) object
                 );
-            } catch (Exception e) {
-                return null;
+            } catch (SQLException e) {
+                throw new IllegalStateException(
+                    object + " cannot be converted to " + klass, e
+                );
             }
         }
 
         Spoiler spoiler =
-            supplier.flat(data);
-        if (spoiler == null) {
-            return null;
+            supplier.flat(object);
+        if (spoiler != null) {
+            return apply(
+                spoiler, supplier
+            );
+        } else {
+            throw new IllegalStateException(
+                object + " cannot be converted to " + klass
+            );
         }
-
-        return apply(spoiler, supplier);
     }
 
     @Override

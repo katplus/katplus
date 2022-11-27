@@ -20,7 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.kernel.*;
+import plus.kat.crash.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -34,8 +34,30 @@ public class ObjectSpare extends Property<Object> {
     public static final ObjectSpare
         INSTANCE = new ObjectSpare();
 
+    public static final Object
+        EMPTY_OBJECT = new Object();
+
     public ObjectSpare() {
         super(Object.class);
+    }
+
+    @Override
+    public Object apply() {
+        return EMPTY_OBJECT;
+    }
+
+    @Override
+    public Object apply(
+        @Nullable Type type
+    ) {
+        if (type == null ||
+            type == Object.class) {
+            return EMPTY_OBJECT;
+        }
+
+        throw new Collapse(
+            this + " unable to build " + type
+        );
     }
 
     @Override
@@ -44,26 +66,93 @@ public class ObjectSpare extends Property<Object> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == Object.class;
-    }
-
-    @Override
     public Object read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) throws IOException {
-        return solve(alias);
-    }
+        int length = chain.length();
 
-    @Override
-    public Object read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) throws IOException {
-        return solve(value);
+        if (length == 0) {
+            return null;
+        }
+
+        byte b = chain.at(0);
+
+        if (b < 0x3A) {
+            Number num = chain.toNumber();
+            if (num != null) {
+                return num;
+            }
+            return chain.toString();
+        }
+
+        switch (length) {
+            case 4: {
+                // true
+                if (b == 't') {
+                    if (chain.at(1) == 'r' &&
+                        chain.at(2) == 'u' &&
+                        chain.at(3) == 'e') {
+                        return Boolean.TRUE;
+                    }
+                }
+
+                // TRUE/True
+                else if (b == 'T') {
+                    byte c = chain.at(1);
+                    if (c == 'R') {
+                        if (chain.at(2) == 'U' &&
+                            chain.at(3) == 'E') {
+                            return Boolean.TRUE;
+                        }
+                    }
+
+                    // True
+                    else if (c == 'r') {
+                        if (chain.at(2) == 'u' &&
+                            chain.at(3) == 'e') {
+                            return Boolean.TRUE;
+                        }
+                    }
+                }
+                return chain.toString();
+            }
+            case 5: {
+                // false
+                if (b == 'f') {
+                    if (chain.at(1) == 'a' &&
+                        chain.at(2) == 'l' &&
+                        chain.at(3) == 's' &&
+                        chain.at(4) == 'e') {
+                        return Boolean.FALSE;
+                    }
+                }
+
+                // FALSE/False
+                else if (b == 'F') {
+                    byte c = chain.at(1);
+                    if (c == 'A') {
+                        if (chain.at(2) == 'L' &&
+                            chain.at(3) == 'S' &&
+                            chain.at(4) == 'E') {
+                            return Boolean.FALSE;
+                        }
+                    }
+
+                    // False
+                    else if (c == 'a') {
+                        if (chain.at(2) == 'l' &&
+                            chain.at(3) == 's' &&
+                            chain.at(4) == 'e') {
+                            return Boolean.FALSE;
+                        }
+                    }
+                }
+                return chain.toString();
+            }
+        }
+
+        return chain.toString();
     }
 
     @Override
@@ -71,12 +160,13 @@ public class ObjectSpare extends Property<Object> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        Spare<?> spare = supplier.lookup(
-            value.getClass()
-        );
-        if (spare != null &&
-            spare != this) {
-            spare.write(chan, value);
+        Class<?> clazz = value.getClass();
+        if (clazz != Object.class) {
+            Spare<?> spare = supplier.lookup(clazz);
+            if (spare != null &&
+                spare != this) {
+                spare.write(chan, value);
+            }
         }
     }
 
@@ -85,117 +175,29 @@ public class ObjectSpare extends Property<Object> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        Spare<?> spare = supplier.lookup(
-            value.getClass()
-        );
-        if (spare != null &&
-            spare != this) {
-            spare.write(flow, value);
-        }
-    }
-
-    @Nullable
-    private Object solve(
-        @NotNull Chain ch
-    ) {
-        int length = ch.length();
-
-        if (length == 0) {
-            return null;
-        }
-
-        byte b = ch.at(0);
-
-        if (b < 0x3A) {
-            Number num = ch.toNumber();
-            if (num != null) {
-                return num;
-            }
-            return ch.toString();
-        }
-
-        switch (length) {
-            case 4: {
-                // true
-                if (b == 't') {
-                    if (ch.at(1) == 'r' &&
-                        ch.at(2) == 'u' &&
-                        ch.at(3) == 'e') {
-                        return Boolean.TRUE;
-                    }
-                }
-
-                // TRUE/True
-                else if (b == 'T') {
-                    byte c = ch.at(1);
-                    if (c == 'R') {
-                        if (ch.at(2) == 'U' &&
-                            ch.at(3) == 'E') {
-                            return Boolean.TRUE;
-                        }
-                    }
-
-                    // True
-                    else if (c == 'r') {
-                        if (ch.at(2) == 'u' &&
-                            ch.at(3) == 'e') {
-                            return Boolean.TRUE;
-                        }
-                    }
-                }
-                return ch.toString();
-            }
-            case 5: {
-                // false
-                if (b == 'f') {
-                    if (ch.at(1) == 'a' &&
-                        ch.at(2) == 'l' &&
-                        ch.at(3) == 's' &&
-                        ch.at(4) == 'e') {
-                        return Boolean.FALSE;
-                    }
-                }
-
-                // FALSE/False
-                else if (b == 'F') {
-                    byte c = ch.at(1);
-                    if (c == 'A') {
-                        if (ch.at(2) == 'L' &&
-                            ch.at(3) == 'S' &&
-                            ch.at(4) == 'E') {
-                            return Boolean.FALSE;
-                        }
-                    }
-
-                    // False
-                    else if (c == 'a') {
-                        if (ch.at(2) == 'l' &&
-                            ch.at(3) == 's' &&
-                            ch.at(4) == 'e') {
-                            return Boolean.FALSE;
-                        }
-                    }
-                }
-                return ch.toString();
+        Class<?> clazz = value.getClass();
+        if (clazz != Object.class) {
+            Spare<?> spare = supplier.lookup(clazz);
+            if (spare != null &&
+                spare != this) {
+                spare.write(flow, value);
             }
         }
-
-        return ch.toString();
     }
 
     @Override
     public Object cast(
-        @Nullable Object data
+        @Nullable Object object
     ) {
-        return data;
+        return object;
     }
 
     @Override
     public Object cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        return data;
+        return object;
     }
 
     @Override
@@ -204,7 +206,9 @@ public class ObjectSpare extends Property<Object> {
     ) {
         if (type != null &&
             type != Object.class) {
-            Spare<?> spare = supplier.lookup(type, null);
+            Spare<?> spare = supplier.lookup(
+                Space.wipe(type), null
+            );
             if (spare == null) {
                 return null;
             }

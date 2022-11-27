@@ -32,36 +32,6 @@ public class ConvertTest {
         assertEquals('\0', Convert.toChar(new byte[]{d3[1], d3[2]}, 2, '\0'));
     }
 
-    static class User {
-        public int id;
-        public String name;
-    }
-
-    @Test
-    public void test() {
-        String[] list = new String[]{
-            "{:id(1):name(kraity)}",
-            "${$:id(1)$:name(kraity)}",
-            "${i:id(1)s:name(kraity)}",
-            "  {  :id(1)  :name(kraity)}  ",
-            "  {  $:id(1)  $:name(kraity)}  ",
-            "{\"id\":1,\"name\":\"kraity\"}",
-            "  {  'id':1,  'name':'kraity'}   ",
-            "  {  'id':1,  'name':\"kraity\"}   ",
-            "  {  \"id\":1,  \"name\":\"kraity\"}   ",
-            "<User><id>1</id><name>kraity</name></User>"
-        };
-
-        for (String text : list) {
-            User user = Convert.toObject(
-                User.class, text
-            );
-            assertNotNull(user);
-            assertEquals(1, user.id);
-            assertEquals("kraity", user.name);
-        }
-    }
-
     @Test
     public void test_byte_array_to_char_array() {
         byte[] d0 = "kraity".getBytes(UTF_8);

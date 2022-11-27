@@ -1,4 +1,4 @@
-package plus.kat.reflex;
+package plus.kat.spare;
 
 import org.junit.jupiter.api.Test;
 
@@ -189,7 +189,7 @@ public class ReflexTest {
     static class Tag {
         @Expose(
             value = "id",
-            require = Flag.NotNull
+            require = Flag.NOTNULL
         )
         private String id;
         private String name;
@@ -200,7 +200,7 @@ public class ReflexTest {
             this.name = name;
         }
 
-        @Expose(require = Flag.NotNull)
+        @Expose(require = Flag.NOTNULL)
         public String getName() {
             return name;
         }
@@ -289,7 +289,7 @@ public class ReflexTest {
         public int id;
 
         @Expose(
-            require = Flag.Unwrapped
+            require = Flag.UNWRAPPED
         )
         public Name name;
     }

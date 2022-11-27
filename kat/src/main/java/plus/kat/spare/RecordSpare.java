@@ -52,17 +52,17 @@ public class RecordSpare<T> extends AbstractSpare<T> {
     public T apply(
         @NotNull Object[] data
     ) {
-        Constructor<T> b = ctor;
-        if (ctor == null) {
+        Constructor<T> con = ctor;
+        if (con == null) {
             throw new Collapse(
                 "Not supported"
             );
         }
         try {
-            return b.newInstance(data);
+            return con.newInstance(data);
         } catch (Throwable e) {
             throw new Collapse(
-                "Failed to create", e
+                "Failed to apply", e
             );
         }
     }
@@ -120,85 +120,91 @@ public class RecordSpare<T> extends AbstractSpare<T> {
         @NotNull Field[] fields
     ) {
         for (Field field : fields) {
-            try {
-                int mod = field.getModifiers();
-                if ((mod & Modifier.STATIC) != 0) {
-                    continue;
-                }
+            int mo = field.getModifiers();
+            if ((mo & Modifier.STATIC) != 0) {
+                continue;
+            }
 
-                Expose e1 = field
-                    .getAnnotation(Expose.class);
+            Expose e1 = field
+                .getAnnotation(Expose.class);
 
-                Argument arg = new Argument(
-                    width++, e1, field, this
+            Argument arg = new Argument(
+                width++, e1, field, this
+            );
+
+            String[] keys = null;
+            String name = field.getName();
+            if (e1 == null) {
+                setParameter(
+                    name, arg
                 );
-
-                String[] keys = null;
-                String name = field.getName();
-                if (e1 == null) {
+            } else {
+                String[] ks = e1.value();
+                if (ks.length == 0) {
                     setParameter(
                         name, arg
                     );
                 } else {
-                    String[] ks = e1.value();
-                    if (ks.length == 0) {
+                    for (String key : (keys = ks)) {
                         setParameter(
-                            name, arg
+                            key, arg
                         );
-                    } else {
-                        for (String key : (keys = ks)) {
-                            setParameter(
-                                key, arg
-                            );
-                        }
-                    }
-                    if ((e1.require() & Flag.Internal) != 0) {
-                        continue;
                     }
                 }
+                if ((e1.require() & Flag.INTERNAL) != 0) {
+                    continue;
+                }
+            }
 
-                Accessor<T> accessor;
-                Method method = klass.getMethod(
+            Method method;
+            try {
+                method = klass.getMethod(
                     field.getName()
                 );
+            } catch (NoSuchMethodException e) {
+                throw new FatalCrash(
+                    "Can't find the `" + field.getName() + "` method", e
+                );
+            }
 
-                Expose e2 = method
-                    .getAnnotation(Expose.class);
+            Expose e2 = method
+                .getAnnotation(Expose.class);
 
-                if (e2 == null) {
-                    accessor = new Accessor<>(
-                        e1, method, this
+            Callable<T> accessor;
+            if (e2 == null) {
+                accessor = new Callable<>(
+                    e1, method, this
+                );
+                if (keys == null) {
+                    setWriter(
+                        name, accessor
                     );
-                    if (keys == null) {
+                } else {
+                    for (String key : keys) {
                         setWriter(
-                            name, accessor
+                            key, accessor
                         );
-                    } else {
-                        for (String key : keys) {
-                            setWriter(
-                                key, accessor
-                            );
-                        }
-                    }
-                } else if ((e2.require() & Flag.Internal) == 0) {
-                    accessor = new Accessor<>(
-                        e2, method, this
-                    );
-                    keys = e2.value();
-                    if (keys.length == 0) {
-                        setWriter(
-                            name, accessor
-                        );
-                    } else {
-                        for (String key : keys) {
-                            setWriter(
-                                key, accessor
-                            );
-                        }
                     }
                 }
-            } catch (Exception e) {
-                throw new FatalCrash(e);
+                continue;
+            }
+
+            if ((e2.require() & Flag.INTERNAL) == 0) {
+                accessor = new Callable<>(
+                    e2, method, this
+                );
+                keys = e2.value();
+                if (keys.length == 0) {
+                    setWriter(
+                        name, accessor
+                    );
+                } else {
+                    for (String key : keys) {
+                        setWriter(
+                            key, accessor
+                        );
+                    }
+                }
             }
         }
     }
@@ -221,7 +227,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
 
         if (b == null) {
             throw new FatalCrash(
-                "Unexpectedly, the Constructor of '" + klass + "' is null"
+                "The Constructor of '" + klass + "' is null"
             );
         }
 
@@ -232,7 +238,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
             }
         } else {
             throw new FatalCrash(
-                "Unexpectedly, the number of actual and formal parameters differ"
+                "The number of actual and formal parameters differ"
             );
         }
     }

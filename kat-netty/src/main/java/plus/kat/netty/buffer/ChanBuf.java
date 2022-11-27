@@ -17,12 +17,13 @@ package plus.kat.netty.buffer;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.Chan;
-import plus.kat.kernel.Chain;
-import plus.kat.kernel.Unsafe;
+import plus.kat.*;
+import plus.kat.chain.*;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+
+import static plus.kat.chain.Chain.Unsafe.value;
 
 /**
  * @author kraity
@@ -37,9 +38,18 @@ public class ChanBuf {
     public static ByteBuf wrappedBuffer(
         @NotNull Chan chan
     ) {
-        return wrappedBuffer(
-            chan.getSteam()
-        );
+        Flow flow = chan.getFlow();
+        if (flow instanceof Chain) {
+            return wrappedBuffer(
+                (Chain) flow
+            );
+        } else {
+            byte[] stream = chan.toBytes();
+            if (stream.length == 0) {
+                return Unpooled.EMPTY_BUFFER;
+            }
+            return Unpooled.wrappedBuffer(stream);
+        }
     }
 
     /**
@@ -55,7 +65,7 @@ public class ChanBuf {
             return Unpooled.EMPTY_BUFFER;
         }
 
-        byte[] value = Unsafe.value(chain);
+        byte[] value = value(chain);
         if (value == null) {
             return Unpooled.wrappedBuffer(
                 chain.toBytes()

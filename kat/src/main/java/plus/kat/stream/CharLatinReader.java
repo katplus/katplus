@@ -48,8 +48,8 @@ public class CharLatinReader extends CharReader {
             return -1;
         }
 
-        byte[] tmp = cache;
-        if (tmp == null) {
+        byte[] buf = cache;
+        if (buf == null) {
             int r = range;
             if (r == 0) {
                 r = 128;
@@ -57,21 +57,21 @@ public class CharLatinReader extends CharReader {
             if (cap < r) {
                 r = cap;
             }
-            cache = tmp = new byte[r];
+            cache = buf = new byte[r];
         }
 
-        if (cap > tmp.length) {
-            cap = tmp.length;
+        if (cap > buf.length) {
+            cap = buf.length;
         }
 
         if (value instanceof String) {
             String s = (String) value;
             s.getBytes(
-                begin, begin += cap, tmp, 0
+                begin, begin += cap, buf, 0
             );
         } else {
             for (int i = 0; i < cap; i++) {
-                tmp[i] = (byte) value.charAt(begin++);
+                buf[i] = (byte) value.charAt(begin++);
             }
         }
 

@@ -2,12 +2,12 @@ package plus.kat.stream;
 
 import org.junit.jupiter.api.Test;
 
+import plus.kat.anno.Embed;
+import plus.kat.anno.Expose;
+
 import plus.kat.Chan;
 import plus.kat.Event;
 import plus.kat.Spare;
-import plus.kat.anno.Embed;
-import plus.kat.anno.Expose;
-import plus.kat.chain.Value;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -21,18 +21,18 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
-import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.junit.jupiter.api.Assertions.*;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 public class CipherReaderTest {
 
     @Test
     public void test_cipher_input_stream_aes() throws Exception {
         SecretKeySpec ks = new SecretKeySpec(
-            "0123456789ABCDEf".getBytes(US_ASCII), "AES"
+            "0123456789ABCDEf".getBytes(ISO_8859_1), "AES"
         );
         IvParameterSpec ps = new IvParameterSpec(
-            "0123456789abcdef".getBytes(US_ASCII)
+            "0123456789abcdef".getBytes(ISO_8859_1)
         );
 
         Cipher cipher = Cipher.getInstance(
@@ -43,11 +43,11 @@ public class CipherReaderTest {
         );
 
         String text = "User{i:id(1)s:name(kraity)}";
-        Value value = new Value(text);
-
         ByteArrayInputStream input =
             new ByteArrayInputStream(
-                value.doFinal(cipher)
+                cipher.doFinal(
+                    text.getBytes()
+                )
             );
 
         cipher.init(
@@ -76,7 +76,7 @@ public class CipherReaderTest {
             ("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDbUq4z/sg094rjoVBlofrwW+dj\n" +
                 "ZrP4ntJsOmRwAIO1+elDOJtZdvzJz4DCCYTHFxgAwO/Aq0s7lfF7j7X2ZtD//IjM\n" +
                 "1JaknujmHRzAq2D6h0Q0lixu4zod/LOqfIxhmpk3Dw3DJhAsqN4L1wBtlLwDu7S0\n" +
-                "QKFYlRogt03ZCtWQVwIDAQAB").getBytes(US_ASCII)
+                "QKFYlRogt03ZCtWQVwIDAQAB").getBytes(ISO_8859_1)
         );
 
         RSAPublicKey pubKey = (RSAPublicKey) KeyFactory.getInstance("RSA")
@@ -86,14 +86,13 @@ public class CipherReaderTest {
         cipher.init(Cipher.ENCRYPT_MODE, pubKey);
 
         String text = "User{i:id(1)s:name(kraity)}";
-        Value value = new Value(text);
-        int length = value.length();
+        byte[] bytes = text.getBytes();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        for (int i = 0; i < length; i += 117) {
+        for (int i = 0; i < bytes.length; i += 117) {
             out.write(
-                value.doFinal(cipher, i,
-                    Math.min(117, length - i)
+                cipher.doFinal(bytes, i,
+                    Math.min(117, bytes.length - i)
                 )
             );
         }
@@ -117,7 +116,7 @@ public class CipherReaderTest {
                 "O5J2Q+dDO652/zIuhvBpFPU4xa5D9QJAMS9/Mn9xgLm2L3m2mdONb611aixjgqc4\n" +
                 "tPkP45J1E7BqTcQuguUDUinfr2KrhOPo87qEsmDjAIqKTea/pN41NwJBAIJWd/da\n" +
                 "gaPX+kBmZ5IS7mPnsuoGxLSSAg4ThVjN7sVWBJO9PMIIZQ56DZ4TJFZTG0NdEOfE\n" +
-                "f8+nzhNJI1knBkk=").getBytes(US_ASCII)
+                "f8+nzhNJI1knBkk=").getBytes(ISO_8859_1)
         );
 
         RSAPrivateKey priKey = (RSAPrivateKey) KeyFactory.getInstance("RSA")

@@ -27,16 +27,15 @@ import plus.kat.crash.*;
  */
 public interface Provider extends Comparable<Provider> {
     /**
-     * Returns true to indicate that this
-     * provider has been used as a loader for a long time
+     * Loads spares for the specified supplier
      *
-     * @param supplier the specified supplier to be loaded
+     * @param o the specified supplier to be loaded
+     * @return true, indicating to remain active as a provider
      * @see Provider#lookup(Class, Supplier)
      * @see Provider#search(Class, String, Supplier)
-     * @since 0.0.4
      */
-    default boolean accept(
-        @NotNull Supplier supplier
+    default boolean alive(
+        @NotNull Supplier o
     ) {
         return true;
     }
@@ -44,8 +43,7 @@ public interface Provider extends Comparable<Provider> {
     /**
      * Returns the level of this provider
      *
-     * @see Provider#compareTo(Provider)
-     * @since 0.0.4
+     * @see #compareTo(Provider)
      */
     default int grade() {
         return 0;
@@ -55,19 +53,14 @@ public interface Provider extends Comparable<Provider> {
      * Returns the result of the comparison
      *
      * @see Comparable#compareTo(Object)
-     * @since 0.0.4
      */
     @Override
     default int compareTo(
         @NotNull Provider o
     ) {
-        int m = grade();
-        int n = o.grade();
-
-        if (m == n) {
-            return 0;
-        }
-        return m > n ? 1 : -1;
+        return Integer.compare(
+            grade(), o.grade()
+        );
     }
 
     /**
@@ -91,7 +84,6 @@ public interface Provider extends Comparable<Provider> {
      * @throws NullPointerException If the specified {@code name} or {@code supplier} is null
      * @see Supplier#lookup(Class, CharSequence)
      * @see Supplier#search(Class, CharSequence)
-     * @since 0.0.4
      */
     @Nullable
     default Spare<?> search(

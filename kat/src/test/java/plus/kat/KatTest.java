@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
 
+import plus.kat.crash.Collapse;
+import plus.kat.crash.FatalCrash;
+
 import java.io.*;
 import java.util.*;
 
@@ -59,10 +62,15 @@ public class KatTest {
     @Test
     public void test_encode1() {
         assertEquals(
-            "E{i:c(403)s:m(error)}", Kat.encode(
-                new plus.kat.crash.Crash(
-                    "error", 403
-                )
+            "E{s:message(error)}",
+            Kat.encode(
+                new Collapse("error")
+            )
+        );
+        assertEquals(
+            "E{s:message(error)}",
+            Kat.encode(
+                new FatalCrash("error")
             )
         );
     }
@@ -210,7 +218,7 @@ public class KatTest {
             Meta.class, new Event<Meta>(
                 "${$:user(${$:id^(1^)$:name^(kraity^)})}"
             ).with(
-                Flag.STRING_AS_OBJECT
+                Flag.VALUE_AS_BEAN
             )
         );
 
@@ -256,26 +264,28 @@ public class KatTest {
         map.put("set", "${s(id)}");
         map.put("list", "${i(123)i(456)}");
 
-        Spare<Util> spare =
-            lookup(Util.class);
+        Spare<Data> spare =
+            lookup(Data.class);
 
-        Util u = spare.cast(map);
+        Data data = spare.cast(map);
+        assertNotNull(data);
 
-        assertNotNull(u);
-        assertNull(spare.cast(1));
+        assertEquals(1, data.i);
+        assertEquals("kraity", data.s);
 
-        assertEquals(1, u.i);
-        assertEquals("kraity", u.s);
+        assertNotNull(data.map);
+        assertEquals(1, data.map.get("id"));
 
-        assertNotNull(u.map);
-        assertEquals(1, u.map.get("id"));
+        assertNotNull(data.set);
+        assertTrue(data.set.contains("id"));
 
-        assertNotNull(u.set);
-        assertTrue(u.set.contains("id"));
+        assertNotNull(data.list);
+        assertEquals(123, data.list.get(0));
+        assertEquals(456, data.list.get(1));
 
-        assertNotNull(u.list);
-        assertEquals(123, u.list.get(0));
-        assertEquals(456, u.list.get(1));
+        assertNull(spare.cast(null));
+        assertThrows(IllegalStateException.class, () -> spare.cast(1));
+        assertThrows(IllegalStateException.class, () -> spare.cast(true));
     }
 
     @Test
@@ -440,13 +450,13 @@ public class KatTest {
     static class Meta {
         @Expose(
             value = "user",
-            require = NotNull
+            require = NOTNULL
         )
         private User user;
     }
 
     @SuppressWarnings("rawtypes")
-    static class Util {
+    static class Data {
         @Expose("i")
         private int i;
 
@@ -470,7 +480,7 @@ public class KatTest {
 
         @Expose(
             value = "token",
-            require = Readonly
+            require = READONLY
         )
         private String token;
     }

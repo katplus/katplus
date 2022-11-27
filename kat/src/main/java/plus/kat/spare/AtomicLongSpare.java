@@ -44,16 +44,7 @@ public class AtomicLongSpare extends Property<AtomicLong> {
 
     @Override
     public String getSpace() {
-        return "AtomicLong";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == AtomicLong.class
-            || clazz == Number.class
-            || clazz == Object.class;
+        return "l";
     }
 
     @Override
@@ -66,20 +57,10 @@ public class AtomicLongSpare extends Property<AtomicLong> {
     @Override
     public AtomicLong read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
         return new AtomicLong(
-            alias.toLong()
-        );
-    }
-
-    @Override
-    public AtomicLong read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) {
-        return new AtomicLong(
-            value.toLong()
+            chain.toLong()
         );
     }
 
@@ -95,20 +76,20 @@ public class AtomicLongSpare extends Property<AtomicLong> {
 
     @Override
     public AtomicLong cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
-            return apply();
+        if (object == null) {
+            return null;
         }
 
-        if (data instanceof AtomicLong) {
-            return (AtomicLong) data;
+        if (object instanceof AtomicLong) {
+            return (AtomicLong) object;
         }
 
         return new AtomicLong(
             LongSpare.INSTANCE.cast(
-                data, supplier
+                object, supplier
             )
         );
     }

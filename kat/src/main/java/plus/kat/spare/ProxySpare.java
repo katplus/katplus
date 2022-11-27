@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.reflex;
+package plus.kat.spare;
 
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
@@ -21,9 +21,8 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
+import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.spare.*;
-import plus.kat.utils.*;
 
 import java.lang.reflect.*;
 import java.util.HashMap;
@@ -61,12 +60,12 @@ public class ProxySpare extends AbstractSpare<Object> {
                 throw e;
             } catch (Exception e) {
                 throw new Collapse(
-                    "Failed to create"
+                    "Failed to apply"
                 );
             }
         }
 
-        Class<?> clazz = Find.clazz(type);
+        Class<?> clazz = Space.wipe(type);
         if (klass.isAssignableFrom(clazz)) {
             Supplier supplier = getSupplier();
             Spare<?> spare = supplier.lookup(clazz);
@@ -78,7 +77,7 @@ public class ProxySpare extends AbstractSpare<Object> {
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
@@ -108,15 +107,16 @@ public class ProxySpare extends AbstractSpare<Object> {
             }
 
             return c.newInstance(
-                new Explorer()
+                new Handler()
             );
         } catch (Exception e) {
             throw new Collapse(
-                "Failed to create", e
+                "Failed to apply", e
             );
         }
     }
 
+    @SuppressWarnings("deprecation")
     protected void onMethods(
         @NotNull Method[] methods
     ) {
@@ -139,9 +139,67 @@ public class ProxySpare extends AbstractSpare<Object> {
                         Expose.class
                     );
 
-                String name = Find.name(method);
-                if (name == null) {
-                    name = method.getName();
+                String name = method.getName();
+                int i = 1, len = name.length();
+
+                Parser:
+                {
+                    // set
+                    char ch = name.charAt(0);
+                    if (ch == 's') {
+                        if (count == 0 || len < 4 ||
+                            name.charAt(i++) != 'e' ||
+                            name.charAt(i++) != 't') {
+                            break Parser;
+                        }
+                    }
+
+                    // get
+                    else if (ch == 'g') {
+                        if (count != 0 || len < 4 ||
+                            name.charAt(i++) != 'e' ||
+                            name.charAt(i++) != 't') {
+                            break Parser;
+                        }
+                    }
+
+                    // is
+                    else if (ch == 'i') {
+                        if (count != 0 || len < 3 ||
+                            name.charAt(i++) != 's') {
+                            break Parser;
+                        }
+                        Class<?> cls = method.getReturnType();
+                        if (cls != boolean.class &&
+                            cls != Boolean.class) {
+                            break Parser;
+                        }
+                    } else {
+                        break Parser;
+                    }
+
+                    char c1 = name.charAt(i++);
+                    if (c1 < 'A' || 'Z' < c1) {
+                        break Parser;
+                    }
+
+                    if (i == len) {
+                        name = String.valueOf(
+                            (char) (c1 + 0x20)
+                        );
+                    } else {
+                        char c2 = name.charAt(i);
+                        if (c2 < 'A' || 'Z' < c2) {
+                            c1 += 0x20;
+                        }
+
+                        byte[] it = new byte[len - i + 1];
+                        it[0] = (byte) c1;
+                        name.getBytes(
+                            i, len, it, 1
+                        );
+                        name = new String(it, 0, 0, it.length);
+                    }
                 }
 
                 Handle node = new Handle(
@@ -172,9 +230,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                         }
                     }
                 } else {
-                    setReader(
-                        false, name, node
-                    );
+                    addReader(name, node);
                     if (expose == null) {
                         setWriter(
                             name, node
@@ -182,7 +238,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                         continue;
                     }
 
-                    if ((expose.require() & Flag.Internal) == 0) {
+                    if ((expose.require() & Flag.INTERNAL) == 0) {
                         String[] keys = expose.value();
                         if (keys.length == 0) {
                             setWriter(
@@ -206,7 +262,7 @@ public class ProxySpare extends AbstractSpare<Object> {
      * @author kraity
      * @since 0.0.3
      */
-    public static class Handle extends Medium<Object, Object> {
+    public static class Handle extends Explorer<Object, Object> {
 
         final String alias;
         final Method method;
@@ -218,9 +274,7 @@ public class ProxySpare extends AbstractSpare<Object> {
             ProxySpare spare
         ) {
             super(method, expose);
-            coder = spare.inflate(
-                expose, this
-            );
+            init(expose, spare);
 
             this.spare = spare;
             this.method = method;
@@ -246,7 +300,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                     return method.invoke(bean);
                 }
 
-                Object val = ((Explorer) Proxy
+                Object val = ((Handler) Proxy
                     .getInvocationHandler(bean)
                 ).get(alias);
                 if (val != null) {
@@ -256,7 +310,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                 Class<?> c = method
                     .getReturnType();
                 if (c.isPrimitive()) {
-                    return Find.value(c);
+                    return Spare.lookup(c).apply();
                 }
                 return null;
             } catch (Throwable e) {
@@ -269,7 +323,7 @@ public class ProxySpare extends AbstractSpare<Object> {
             @NotNull Object bean,
             @Nullable Object value
         ) {
-            if (value != null || (flags & Flag.NotNull) == 0) {
+            if (value != null || (flags & Flag.NOTNULL) == 0) {
                 try {
                     Class<?> cl = bean.getClass();
                     if (cl != spare.proxy) {
@@ -277,7 +331,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                             bean, value
                         );
                     } else {
-                        ((Explorer) Proxy
+                        ((Handler) Proxy
                             .getInvocationHandler(bean)
                         ).put(
                             alias, value
@@ -294,9 +348,9 @@ public class ProxySpare extends AbstractSpare<Object> {
 
     /**
      * @author kraity
-     * @since 0.0.3
+     * @since 0.0.5
      */
-    public static class Explorer extends HashMap<Object, Object> implements InvocationHandler {
+    public static class Handler extends HashMap<Object, Object> implements InvocationHandler {
 
         @Override
         public Object invoke(
@@ -318,7 +372,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                 Class<?> c = method
                     .getReturnType();
                 if (c.isPrimitive()) {
-                    return Find.value(c);
+                    return Spare.lookup(c).apply();
                 }
                 return null;
             }

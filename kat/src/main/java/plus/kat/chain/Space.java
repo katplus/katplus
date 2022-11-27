@@ -18,13 +18,12 @@ package plus.kat.chain;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
+import plus.kat.crash.*;
+import plus.kat.utils.*;
+import plus.kat.stream.*;
+
 import java.lang.reflect.*;
 import java.nio.charset.Charset;
-
-import plus.kat.crash.*;
-import plus.kat.kernel.*;
-import plus.kat.stream.*;
-import plus.kat.utils.*;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -32,7 +31,8 @@ import static java.nio.charset.StandardCharsets.*;
  * @author kraity
  * @since 0.0.1
  */
-public class Space extends Alpha implements Type {
+@SuppressWarnings("unchecked")
+public class Space extends Chain implements Type {
     /**
      * Constructs an empty space
      */
@@ -131,7 +131,9 @@ public class Space extends Alpha implements Type {
      *
      * @param name the specified name
      */
-    public Space as(byte name) {
+    public Space as(
+        byte name
+    ) {
         count = 0;
         join(name);
         return this;
@@ -149,7 +151,9 @@ public class Space extends Alpha implements Type {
      *
      * @param name the specified name
      */
-    public Space as(char name) {
+    public Space as(
+        char name
+    ) {
         count = 0;
         join(name);
         return this;
@@ -167,52 +171,14 @@ public class Space extends Alpha implements Type {
      *
      * @param name the specified name
      */
-    public Space as(CharSequence name) {
+    public Space as(
+        CharSequence name
+    ) {
         count = 0;
         join(
             name, 0, name.length()
         );
         return this;
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is {@code '$'}
-     */
-    public boolean isAny() {
-        return count == 1 && value[0] == '$';
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is {@code 'M'}
-     */
-    public boolean isMap() {
-        return count == 1 && value[0] == 'M';
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is {@code 'S'}
-     */
-    public boolean isSet() {
-        return count == 1 && value[0] == 'S';
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is {@code 'L'}
-     */
-    public boolean isList() {
-        return count == 1 && value[0] == 'L';
-    }
-
-    /**
-     * Returns a true only
-     * if this chain is {@code 'A'}
-     */
-    public boolean isArray() {
-        return count == 1 && value[0] == 'A';
     }
 
     /**
@@ -227,6 +193,7 @@ public class Space extends Alpha implements Type {
      *  // plus.kat.User
      *  // plus.kat.v2.User
      *  // plus.kat.v2.UserName
+     *  // plus.kat.v2.User$Name
      *
      *  isClass() -> false
      *  // $
@@ -383,12 +350,103 @@ public class Space extends Alpha implements Type {
     }
 
     /**
-     * @see Space#Space(Bucket)
+     * Returns an empty space with default bucket
      */
     public static Space apply() {
         return new Space(
             Buffer.INS
         );
+    }
+
+    /**
+     * Returns a wrapper class of the specified type
+     *
+     * @return {@link Class} or {@code itself}
+     * @since 0.0.5
+     */
+    @NotNull
+    public static Class<?> wrap(
+        @NotNull Class<?> type
+    ) {
+        if (type == int.class) {
+            return Integer.class;
+        }
+        if (type == long.class) {
+            return Long.class;
+        }
+        if (type == boolean.class) {
+            return Boolean.class;
+        }
+        if (type == byte.class) {
+            return Byte.class;
+        }
+        if (type == short.class) {
+            return Short.class;
+        }
+        if (type == float.class) {
+            return Float.class;
+        }
+        if (type == double.class) {
+            return Double.class;
+        }
+        if (type == void.class) {
+            return Void.class;
+        }
+        if (type == char.class) {
+            return Character.class;
+        }
+        return type;
+    }
+
+    /**
+     * Returns the class corresponding to the specified type
+     *
+     * @return {@link Class} or {@code null}
+     * @since 0.0.5
+     */
+    @Nullable
+    public static <T> Class<T> wipe(
+        @Nullable Type type
+    ) {
+        if (type == null) {
+            return null;
+        }
+
+        if (type instanceof Class) {
+            return (Class<T>) type;
+        }
+
+        if (type instanceof ParameterizedType) {
+            return wipe(
+                ((ParameterizedType) type).getRawType()
+            );
+        }
+
+        if (type instanceof TypeVariable) {
+            return null;
+        }
+
+        if (type instanceof WildcardType) {
+            return wipe(
+                ((WildcardType) type).getUpperBounds()[0]
+            );
+        }
+
+        if (type instanceof GenericArrayType) {
+            GenericArrayType g = (GenericArrayType) type;
+            Class<?> cls = wipe(
+                g.getGenericComponentType()
+            );
+            if (cls != null) {
+                if (cls == Object.class) {
+                    return (Class<T>) Object[].class;
+                } else {
+                    return (Class<T>) Array.newInstance(cls, 0).getClass();
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -409,17 +467,17 @@ public class Space extends Alpha implements Type {
             INS = new Buffer();
 
         @Override
-        public boolean join(
-            @NotNull byte[] it
-        ) {
-            return false;
-        }
-
-        @Override
         public byte[] swap(
             @NotNull byte[] it
         ) {
             return it;
+        }
+
+        @Override
+        public boolean join(
+            @NotNull byte[] it
+        ) {
+            return false;
         }
 
         @Override
@@ -434,16 +492,15 @@ public class Space extends Alpha implements Type {
                     cap <<= 1;
                 } while (cap < size);
 
-                byte[] result = new byte[cap];
+                byte[] data = new byte[cap];
                 System.arraycopy(
-                    it, 0, result, 0, len
+                    it, 0, data, 0, len
                 );
-
-                return result;
+                return data;
             }
 
             throw new FatalCrash(
-                "Unexpectedly, Exceeding range '" + RANGE + "' in space"
+                "Exceeding range '" + RANGE + "' in space"
             );
         }
     }

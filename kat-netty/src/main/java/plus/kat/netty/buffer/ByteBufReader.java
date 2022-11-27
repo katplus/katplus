@@ -21,8 +21,7 @@ import plus.kat.stream.*;
 
 import io.netty.buffer.ByteBuf;
 
-import static plus.kat.kernel.Alpha.Memory;
-import static plus.kat.kernel.Alpha.Memory.INS;
+import static plus.kat.stream.Stream.Buffer.INS;
 
 /**
  * @author kraity
@@ -32,9 +31,6 @@ public class ByteBufReader extends AbstractReader {
 
     private ByteBuf value;
 
-    /**
-     * @since 0.0.2
-     */
     public ByteBufReader(
         @NotNull ByteBuf data
     ) {
@@ -54,32 +50,23 @@ public class ByteBufReader extends AbstractReader {
             return -1;
         }
 
-        byte[] tmp = cache;
-        if (tmp == null) {
-            int r = range;
-            if (r == 0) {
-                if (cap > 512) {
-                    tmp = INS.alloc();
-                } else {
-                    tmp = new byte[Math.min(cap, 256)];
-                }
+        byte[] buf = cache;
+        if (buf == null) {
+            if (cap > 1024) {
+                cache = buf = INS.alloc(range);
+            } else if (cap > 512) {
+                cache = buf = new byte[256];
             } else {
-                int s = Memory.SCALE;
-                if (r > s) {
-                    tmp = new byte[r];
-                } else {
-                    tmp = INS.alloc();
-                }
+                cache = buf = new byte[Math.min(cap, 256)];
             }
-            cache = tmp;
         }
 
-        if (cap > tmp.length) {
-            cap = tmp.length;
+        if (cap > buf.length) {
+            cap = buf.length;
         }
 
-        value.getBytes(
-            m, tmp, 0, cap
+        value.readBytes(
+            buf, 0, cap
         );
         return cap;
     }
@@ -87,24 +74,8 @@ public class ByteBufReader extends AbstractReader {
     @Override
     public void close() {
         INS.join(cache);
+        limit = -1;
         value = null;
         cache = null;
-        offset = -1;
-    }
-
-    /**
-     * @since 0.0.2
-     */
-    @NotNull
-    public static Reader of(
-        @NotNull ByteBuf buf
-    ) {
-        if (buf.hasArray()) {
-            return new ByteReader(
-                buf.array()
-            );
-        }
-
-        return new ByteBufReader(buf);
     }
 }

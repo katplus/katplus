@@ -28,9 +28,9 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.1
  */
-public interface Coder<K> {
+public interface Coder<T> {
     /**
-     * Returns the space of {@link K}
+     * Returns the space of {@link T}
      *
      * @see Spare#getSpace()
      */
@@ -40,7 +40,7 @@ public interface Coder<K> {
     }
 
     /**
-     * Returns the flag of {@link K}
+     * Returns the flag of {@link T}
      *
      * @see Spare#getFlag()
      */
@@ -50,7 +50,7 @@ public interface Coder<K> {
     }
 
     /**
-     * Returns the border of {@link K}
+     * Returns the border of {@link T}
      *
      * @see Spare#getBorder(Flag)
      */
@@ -62,43 +62,47 @@ public interface Coder<K> {
     }
 
     /**
-     * Create a {@link Builder} of {@link K}
+     * Create a {@link Builder} of {@link T}
      *
      * @see Spare#getBuilder(Type)
      */
     @Nullable
-    default Builder<? extends K> getBuilder(
+    default Builder<? extends T> getBuilder(
         @Nullable Type type
     ) {
         return null;
     }
 
     /**
-     * Reads the {@link Alias} as {@link K}
+     * Reads the {@link Chain} as {@link T}
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the flag or alias is null
      */
     @Nullable
-    default K read(
+    default T read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) throws IOException {
-        return null;
+        throw new IOException(
+            "Parsing bean not implemented"
+        );
     }
 
     /**
-     * Reads the {@link Value} as {@link K}
+     * Reads the {@link Value} as {@link T}
      *
      * @throws IOException          If an I/O error occurs
      * @throws NullPointerException If the flag or value is null
      */
     @Nullable
-    default K read(
+    default T read(
         @NotNull Flag flag,
         @NotNull Value value
     ) throws IOException {
-        return null;
+        return read(
+            flag, (Chain) value
+        );
     }
 
     /**
@@ -111,7 +115,9 @@ public interface Coder<K> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        // Nothing
+        throw new IOException(
+            "Serializing bean is not implemented"
+        );
     }
 
     /**
@@ -124,6 +130,8 @@ public interface Coder<K> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        // Nothing
+        throw new IOException(
+            "Serializing bean is not implemented"
+        );
     }
 }

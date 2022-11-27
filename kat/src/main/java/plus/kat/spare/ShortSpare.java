@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
@@ -47,31 +46,22 @@ public class ShortSpare extends Property<Short> {
 
     @Override
     public Short apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
-        if (type == short.class ||
+        if (type == null ||
+            type == short.class ||
             type == Short.class) {
             return (short) 0;
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
     @Override
     public String getSpace() {
         return "u";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == short.class
-            || clazz == Short.class
-            || clazz == Number.class
-            || clazz == Object.class;
     }
 
     @Override
@@ -84,9 +74,11 @@ public class ShortSpare extends Property<Short> {
     @Override
     public Short read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        return (short) alias.toInt();
+        int i = chain.toInt();
+        return i < Short.MIN_VALUE
+            || i > Short.MAX_VALUE ? (short) 0 : (short) i;
     }
 
     @Override
@@ -94,7 +86,9 @@ public class ShortSpare extends Property<Short> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return (short) value.toInt();
+        int i = value.toInt();
+        return i < Short.MIN_VALUE
+            || i > Short.MAX_VALUE ? (short) 0 : (short) i;
     }
 
     @Override
@@ -103,41 +97,46 @@ public class ShortSpare extends Property<Short> {
         @NotNull Object value
     ) throws IOException {
         flow.emit(
-            (short) value
+            ((Short) value).intValue()
         );
     }
 
     @Override
     public Short cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Short) {
-                return (Short) data;
-            }
-
-            if (data instanceof Number) {
-                return ((Number) data).shortValue();
-            }
-
-            if (data instanceof Boolean) {
-                return ((boolean) data) ? (short) 1 : (short) 0;
-            }
-
-            int i = 0;
-            if (data instanceof Chain) {
-                i = ((Chain) data).toInt();
-            } else if (data instanceof CharSequence) {
-                CharSequence num = (CharSequence) data;
-                i = Convert.toInt(
-                    num, num.length(), 10, 0
-                );
-            }
-
-            return i < Short.MIN_VALUE
-                || i > Short.MAX_VALUE ? (short) 0 : (short) i;
+        if (object == null) {
+            return (short) 0;
         }
-        return (short) 0;
+
+        if (object instanceof Short) {
+            return (Short) object;
+        }
+
+        if (object instanceof Number) {
+            return ((Number) object).shortValue();
+        }
+
+        if (object instanceof Boolean) {
+            return ((boolean) object) ? (short) 1 : (short) 0;
+        }
+
+        int i;
+        if (object instanceof Chain) {
+            i = ((Chain) object).toInt();
+        } else if (object instanceof CharSequence) {
+            CharSequence num = (CharSequence) object;
+            i = Convert.toInt(
+                num, num.length(), 10, 0
+            );
+        } else {
+            throw new IllegalStateException(
+                object + " cannot be converted to Short"
+            );
+        }
+
+        return i < Short.MIN_VALUE
+            || i > Short.MAX_VALUE ? (short) 0 : (short) i;
     }
 }

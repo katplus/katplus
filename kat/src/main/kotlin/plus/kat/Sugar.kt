@@ -418,7 +418,7 @@ inline fun <reified T : Any>
  * @see Spare.revoke
  */
 inline fun <reified T : Any>
-    revoke() = Spare.revoke(T::class.java)
+    revoke() = Spare.revoke(T::class.java, null)
 
 /**
  * E.g.
@@ -447,7 +447,7 @@ inline fun <reified T : Any>
  * @see Supplier.revoke
  */
 inline fun <reified T : Any>
-    Supplier.revoke() = revoke(T::class.java)
+    Supplier.revoke() = revoke(T::class.java, null)
 
 /**
  * E.g.

@@ -45,23 +45,15 @@ public class FileSpare extends Property<File> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == File.class
-            || clazz == Object.class;
-    }
-
-    @Override
     public File read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Chain chain
     ) throws IOException {
-        if (value.isEmpty()) {
+        if (chain.isEmpty()) {
             return null;
         }
         return new File(
-            value.toString()
+            chain.toString()
         );
     }
 
@@ -77,46 +69,41 @@ public class FileSpare extends Property<File> {
 
     @Override
     public File cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof File) {
-                return (File) data;
-            }
+        if (object == null) {
+            return null;
+        }
 
-            if (data instanceof URI) {
-                try {
-                    return new File(
-                        (URI) data
-                    );
-                } catch (Exception e) {
-                    return null;
-                }
-            }
+        if (object instanceof File) {
+            return (File) object;
+        }
 
-            if (data instanceof URL) {
-                try {
-                    return new File(
-                        ((URL) data).toExternalForm()
-                    );
-                } catch (Exception e) {
-                    return null;
-                }
-            }
+        if (object instanceof URI) {
+            return new File(
+                (URI) object
+            );
+        }
 
-            if (data instanceof CharSequence) {
-                String d = data.toString();
-                if (d.isEmpty()) {
-                    return null;
-                }
-                try {
-                    return new File(d);
-                } catch (Exception e) {
-                    return null;
-                }
+        if (object instanceof URL) {
+            return new File(
+                ((URL) object).toExternalForm()
+            );
+        }
+
+        if (object instanceof CharSequence) {
+            String s = object.toString();
+            if (s.isEmpty() ||
+                "null".equalsIgnoreCase(s)) {
+                return null;
+            } else {
+                return new File(s);
             }
         }
-        return null;
+
+        throw new IllegalStateException(
+            object + " cannot be converted to " + klass
+        );
     }
 }

@@ -13,28 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.entity;
+package plus.kat.crash;
 
-import plus.kat.anno.NotNull;
-
-import plus.kat.crash.*;
+import java.io.IOException;
 
 /**
  * @author kraity
- * @since 0.0.2
+ * @since 0.0.5
  */
-@FunctionalInterface
-public interface Maker<K> {
+public class FlowCrash extends IOException {
     /**
-     * If this {@link Maker} can create an instance,
-     * it returns it, otherwise it will throw {@link Collapse}
-     *
-     * @param args the specified args for constructs
-     * @return {@link K}, it is not null
-     * @throws Collapse If a build error occurs
+     * @param m the detail message
      */
-    @NotNull
-    K apply(
-        @NotNull Object[] args
-    );
+    public FlowCrash(String m) {
+        super(m);
+    }
+
+    /**
+     * @param e the specified cause to saved
+     */
+    public FlowCrash(Throwable e) {
+        super(e);
+    }
+
+    /**
+     * @param m the detail message
+     * @param e the specified cause to saved
+     */
+    public FlowCrash(String m, Throwable e) {
+        super(m, e);
+    }
 }

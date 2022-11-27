@@ -15,20 +15,25 @@
  */
 package plus.kat.spring.http;
 
-import org.springframework.core.GenericTypeResolver;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
-import org.springframework.http.MediaType;
+import org.springframework.core.GenericTypeResolver;
 import org.springframework.http.converter.*;
 import org.springframework.util.Assert;
+import org.springframework.util.StreamUtils;
 
 import plus.kat.*;
-import plus.kat.crash.*;
+import plus.kat.chain.*;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
+
+import static plus.kat.Plan.DEF;
+import static plus.kat.chain.Chain.Unsafe.value;
 
 /**
  * @author kraity
@@ -39,7 +44,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     protected final Algo algo;
     protected Supplier supplier;
 
-    protected Plan plan = Plan.DEF;
+    protected Plan plan = DEF;
     protected MediaType[] mediaTypes;
 
     /**
@@ -90,7 +95,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             }
             default: {
                 throw new HttpMessageNotWritableException(
-                    "Unexpectedly, Converter did not find " + algo
+                    "At present, not found the media-types of " + algo
                 );
             }
         }
@@ -125,13 +130,10 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             );
         }
 
-        Type clazz = GenericTypeResolver
-            .resolveType(
-                type, cxt
-            );
+        Type visa = GenericTypeResolver.resolveType(type, cxt);
 
         return supplier.solve(
-            clazz, algo, new Event<>(in.getBody()).with(plan)
+            visa, algo, new Event<>(in.getBody()).with(plan)
         );
     }
 
@@ -168,22 +170,30 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         Type type,
         HttpOutputMessage output
     ) throws IOException, HttpMessageNotWritableException {
+        byte[] stream;
         try (Chan chan = supplier.telex(algo, plan)) {
             if (chan.set(null, data)) {
-                chan.getSteam().each(
-                    output.getBody()
-                );
+                Flow flow = chan.getFlow();
+                if (flow instanceof Chain) {
+                    Chain chain = (Chain) flow;
+                    OutputStream out = output.getBody();
+                    out.write(
+                        value(chain), 0, chain.length()
+                    );
+                    out.flush();
+                    return;
+                } else {
+                    stream = chan.toBytes();
+                }
             } else {
                 throw new HttpMessageNotWritableException(
-                    "Unexpectedly, Cannot serialize "
-                        + data + " to " + algo.name()
+                    "Failed to serialize " + data + " to " + algo
                 );
             }
-        } catch (Collapse collapse) {
-            throw new HttpMessageNotWritableException(
-                collapse.getMessage(), collapse
-            );
         }
+        StreamUtils.copy(
+            stream, output.getBody()
+        );
     }
 
     /**
@@ -201,6 +211,15 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
      */
     public Plan getPlan() {
         return plan;
+    }
+
+    /**
+     * @since 0.0.5
+     */
+    public void setSupportedMediaTypes(
+        MediaType[] types
+    ) {
+        mediaTypes = types.clone();
     }
 
     /**

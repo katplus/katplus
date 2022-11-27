@@ -24,8 +24,9 @@ import plus.kat.crash.*;
  * @author kraity
  * @since 0.0.1
  */
+@SuppressWarnings("unchecked")
 @FunctionalInterface
-public interface Setter<K, V> {
+public interface Setter<T, V> {
     /**
      * Sets the specified value to the bean
      *
@@ -33,7 +34,7 @@ public interface Setter<K, V> {
      * @throws FatalCrash If the underlying method throws a fatal exception
      */
     boolean accept(
-        @NotNull K bean,
+        @NotNull T bean,
         @Nullable V value
     );
 
@@ -44,14 +45,13 @@ public interface Setter<K, V> {
      * @throws FatalCrash If the underlying method throws a fatal exception
      * @see Setter#accept(Object, Object)
      */
-    @SuppressWarnings("unchecked")
     default boolean invoke(
         @NotNull Object bean,
         @Nullable Object value
     ) {
         try {
             return accept(
-                (K) bean, (V) value
+                (T) bean, (V) value
             );
         } catch (ClassCastException e) {
             throw new FatalCrash(

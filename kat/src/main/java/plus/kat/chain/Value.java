@@ -19,30 +19,14 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
-import plus.kat.stream.*;
 import plus.kat.utils.*;
-
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.Signature;
-import java.security.SignatureException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import javax.crypto.spec.IvParameterSpec;
-
-import static plus.kat.stream.Binary.toLower;
+import plus.kat.stream.*;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class Value extends Alpha {
+public class Value extends Chain {
     /**
      * Constructs a mutable value
      */
@@ -122,473 +106,7 @@ public class Value extends Alpha {
     }
 
     /**
-     * Returns a lowercase {@code MD5} of this {@link Chain}
-     *
-     * @throws FatalCrash If the MD5 algo is not supported
-     */
-    @NotNull
-    public String digest() {
-        return digest(
-            "MD5", 0, count
-        );
-    }
-
-    /**
-     * Returns a lowercase message digest of this {@link Chain}
-     *
-     * @param algo the name of the algorithm requested
-     * @throws FatalCrash If the specified algo is not supported
-     * @see MessageDigest
-     * @see Binary#toLower(byte[])
-     * @see Value#digest(String, int, int)
-     */
-    @NotNull
-    public String digest(
-        @NotNull String algo
-    ) {
-        return digest(
-            algo, 0, count
-        );
-    }
-
-    /**
-     * Returns a lowercase message digest of this {@link Chain}
-     *
-     * @param algo the name of the algorithm requested
-     * @param i    the specified offset
-     * @param l    the specified length
-     * @throws FatalCrash               If the specified algo is not supported
-     * @throws IllegalArgumentException If the length out of range
-     * @see MessageDigest
-     * @see Binary#toLower(byte[])
-     */
-    @NotNull
-    public String digest(
-        @NotNull String algo, int i, int l
-    ) {
-        if (i <= count - l && 0 <= i && 0 <= l) {
-            try {
-                MessageDigest md =
-                    MessageDigest
-                        .getInstance(algo);
-
-                md.update(
-                    value, i, l
-                );
-
-                return toLower(
-                    md.digest()
-                );
-            } catch (NoSuchAlgorithmException e) {
-                throw new FatalCrash(
-                    algo + " is not supported", e
-                );
-            }
-        } else {
-            throw new IllegalArgumentException(
-                "Specified offset(" + i + ")/length("
-                    + l + ") index is out of bounds: " + count
-            );
-        }
-    }
-
-    /**
-     * Completes the {@link Base64} using the internal value of this {@link Chain}
-     *
-     * @throws NullPointerException     If the specified {@code base64} is null
-     * @throws IllegalArgumentException If the offset is negative or the length out of range
-     * @see Base64#encode(byte[], int, int)
-     * @since 0.0.5
-     */
-    @NotNull
-    public byte[] encode(
-        @NotNull Base64 base64
-    ) {
-        return base64.encode(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Completes the {@link Base64} using the internal value of this {@link Chain}
-     *
-     * @param i the specified offset
-     * @param l the specified length
-     * @throws NullPointerException      If the specified {@code base64} is null
-     * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
-     * @see Base64#encode(byte[], int, int)
-     * @since 0.0.5
-     */
-    @NotNull
-    public byte[] encode(
-        @NotNull Base64 base64, int i, int l
-    ) {
-        if (i <= count - l && 0 <= i && 0 <= l) {
-            return base64.encode(
-                value, i, l
-            );
-        } else {
-            throw new IndexOutOfBoundsException(
-                "Specified offset(" + i + ")/length("
-                    + l + ") index is out of bounds: " + count
-            );
-        }
-    }
-
-    /**
-     * Completes the {@link Base64} using the internal value of this {@link Chain}
-     *
-     * @throws NullPointerException If the specified {@code base64} is null
-     * @see Base64#decode(byte[], int, int)
-     * @since 0.0.5
-     */
-    @NotNull
-    public byte[] decode(
-        @NotNull Base64 base64
-    ) {
-        return base64.decode(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Completes the {@link Base64} using the internal value of this {@link Chain}
-     *
-     * @param i the specified offset
-     * @param l the specified length
-     * @throws NullPointerException      If the specified {@code base64} is null
-     * @throws IndexOutOfBoundsException If the offset is negative or the length out of range
-     * @see Base64#decode(byte[], int, int)
-     * @since 0.0.5
-     */
-    @NotNull
-    public byte[] decode(
-        @NotNull Base64 base64, int i, int l
-    ) {
-        if (i <= count - l && 0 <= i && 0 <= l) {
-            return base64.decode(
-                value, i, l
-            );
-        } else {
-            throw new IndexOutOfBoundsException(
-                "Specified offset(" + i + ")/length("
-                    + l + ") index is out of bounds: " + count
-            );
-        }
-    }
-
-    /**
-     * Updates the {@link Mac} using the internal value of this {@link Chain}
-     *
-     * @throws NullPointerException If the specified {@code mac} is null
-     * @see Mac#update(byte[], int, int)
-     */
-    public void update(
-        @NotNull Mac m
-    ) {
-        m.update(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Updates the {@link Mac} using the internal value of this {@link Chain}
-     *
-     * @param i the specified offset
-     * @param l the specified length
-     * @throws NullPointerException     If the specified {@code mac} is null
-     * @throws IllegalArgumentException If the offset is negative or the length out of range
-     * @see Mac#update(byte[], int, int)
-     */
-    public void update(
-        @NotNull Mac m, int i, int l
-    ) {
-        if (i <= count - l) {
-            m.update(
-                value, i, l
-            );
-        } else {
-            throw new IllegalArgumentException(
-                "Specified offset(" + i + ")/length("
-                    + l + ") index is out of bounds: " + count
-            );
-        }
-    }
-
-    /**
-     * Updates the {@link Signature} using the internal value of this {@link Chain}
-     *
-     * @throws NullPointerException If the specified {@code signature} is null
-     * @see Signature#update(byte[], int, int)
-     */
-    public void update(
-        @NotNull Signature s
-    ) throws SignatureException {
-        s.update(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Updates the {@link Signature} using the internal value of this {@link Chain}
-     *
-     * @param i the specified offset
-     * @param l the specified length
-     * @throws NullPointerException     If the specified {@code signature} is null
-     * @throws IllegalArgumentException If the offset is negative or the length out of range
-     * @see Signature#update(byte[], int, int)
-     */
-    public void update(
-        @NotNull Signature s, int i, int l
-    ) throws SignatureException {
-        if (i <= count - l) {
-            s.update(
-                value, i, l
-            );
-        } else {
-            throw new IllegalArgumentException(
-                "Specified offset(" + i + ")/length("
-                    + l + ") index is out of bounds: " + count
-            );
-        }
-    }
-
-    /**
-     * Updates the {@link MessageDigest} using the internal value of this {@link Chain}
-     *
-     * @throws NullPointerException If the specified {@code digest} is null
-     * @see MessageDigest#update(byte[], int, int)
-     */
-    public void update(
-        @NotNull MessageDigest m
-    ) {
-        m.update(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Updates the {@link MessageDigest} using the internal value of this {@link Chain}
-     *
-     * @param i the specified offset
-     * @param l the specified length
-     * @throws NullPointerException     If the specified {@code digest} is null
-     * @throws IllegalArgumentException If the offset is negative or the length out of range
-     * @see MessageDigest#update(byte[], int, int)
-     */
-    public void update(
-        @NotNull MessageDigest m, int i, int l
-    ) {
-        if (i <= count - l) {
-            m.update(
-                value, i, l
-            );
-        } else {
-            throw new IllegalArgumentException(
-                "Specified offset(" + i + ")/length("
-                    + l + ") index is out of bounds: " + count
-            );
-        }
-    }
-
-    /**
-     * Updates the {@link Cipher} using the internal value of this {@link Chain}
-     *
-     * @throws NullPointerException If the specified {@code cipher} is null
-     * @see Cipher#update(byte[], int, int)
-     */
-    @Nullable
-    public byte[] update(
-        @NotNull Cipher c
-    ) {
-        return c.update(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Updates the {@link Cipher} using the internal value of this {@link Chain}
-     *
-     * @param i the specified offset
-     * @param l the specified length
-     * @throws NullPointerException     If the specified {@code cipher} is null
-     * @throws IllegalArgumentException If the offset is negative or the length out of range
-     * @see Cipher#update(byte[], int, int)
-     */
-    @Nullable
-    public byte[] update(
-        @NotNull Cipher c, int i, int l
-    ) {
-        if (i <= count - l) {
-            return c.update(
-                value, i, l
-            );
-        } else {
-            throw new IllegalArgumentException(
-                "Specified offset(" + i + ")/length("
-                    + l + ") index is out of bounds: " + count
-            );
-        }
-    }
-
-    /**
-     * Completes the {@link Cipher} using the internal value of this {@link Chain}
-     *
-     * @throws NullPointerException If the specified {@code cipher} is null
-     * @see Cipher#doFinal(byte[], int, int)
-     */
-    @Nullable
-    public byte[] doFinal(
-        @NotNull Cipher c
-    ) throws IllegalBlockSizeException, BadPaddingException {
-        return c.doFinal(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Completes the {@link Cipher} using the internal value of this {@link Chain}
-     *
-     * @param i the specified offset
-     * @param l the specified length
-     * @throws NullPointerException     If the specified {@code cipher} is null
-     * @throws IllegalArgumentException If the offset is negative or the length out of range
-     * @see Cipher#doFinal(byte[], int, int)
-     */
-    @Nullable
-    public byte[] doFinal(
-        @NotNull Cipher c, int i, int l
-    ) throws IllegalBlockSizeException, BadPaddingException {
-        if (i <= count - l) {
-            return c.doFinal(
-                value, i, l
-            );
-        } else {
-            throw new IllegalArgumentException(
-                "Specified offset(" + i + ")/length("
-                    + l + ") index is out of bounds: " + count
-            );
-        }
-    }
-
-    /**
-     * Returns a {@link Reader} of this {@link Chain}
-     *
-     * @see Reader
-     * @see ByteReader
-     */
-    @NotNull
-    public Reader asReader() {
-        return new ByteReader(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Returns a {@link Reader} of this {@link Chain}
-     *
-     * @param index  the specified index
-     * @param length the specified length
-     * @throws IndexOutOfBoundsException If the index is negative or the length out of range
-     * @see Reader
-     * @see ByteReader
-     */
-    @NotNull
-    public Reader asReader(
-        int index, int length
-    ) {
-        return new ByteReader(
-            value, index, length
-        );
-    }
-
-    /**
-     * Returns this {@link Alpha} as an {@link InputStream}
-     *
-     * @since 0.0.5
-     */
-    @NotNull
-    public InputStream asInputStream() {
-        return new ByteArrayInputStream(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Returns this {@link Alpha} as an {@link InputStream}
-     *
-     * @since 0.0.5
-     */
-    @NotNull
-    public InputStream asInputStream(
-        int index, int length
-    ) {
-        return new ByteArrayInputStream(
-            value, index, length
-        );
-    }
-
-    /**
-     * Returns this {@link Chain} as a {@link SecretKeySpec}
-     *
-     * @throws IllegalArgumentException If the algo is null
-     * @since 0.0.5
-     */
-    @NotNull
-    public SecretKeySpec asSecretKeySpec(
-        @NotNull String algo
-    ) {
-        return new SecretKeySpec(
-            value, 0, count, algo
-        );
-    }
-
-    /**
-     * Returns this {@link Chain} as a {@link SecretKeySpec}
-     *
-     * @throws IllegalArgumentException       If the algo is null or the offset out of range
-     * @throws ArrayIndexOutOfBoundsException If the length is negative
-     * @since 0.0.5
-     */
-    @NotNull
-    public SecretKeySpec asSecretKeySpec(
-        @NotNull String algo, int offset, int length
-    ) {
-        return new SecretKeySpec(
-            value, offset, length, algo
-        );
-    }
-
-    /**
-     * Returns this {@link Chain} as a {@link IvParameterSpec}
-     *
-     * @since 0.0.5
-     */
-    @NotNull
-    public IvParameterSpec asIvParameterSpec() {
-        return new IvParameterSpec(
-            value, 0, count
-        );
-    }
-
-    /**
-     * Returns this {@link Chain} as a {@link IvParameterSpec}
-     *
-     * @throws IllegalArgumentException       If the offset out of range
-     * @throws ArrayIndexOutOfBoundsException If the length is negative
-     * @since 0.0.5
-     */
-    @NotNull
-    public IvParameterSpec asIvParameterSpec(
-        int offset, int length
-    ) {
-        return new IvParameterSpec(
-            value, offset, length
-        );
-    }
-
-    /**
-     * @see Value#Value(Bucket)
+     * Returns an empty value with default bucket
      */
     public static Value apply() {
         return new Value(
@@ -602,7 +120,7 @@ public class Value extends Alpha {
      */
     public static class Buffer implements Bucket {
 
-        private static final int SIZE, LIMIT, SCALE;
+        private static final int SIZE, LIMIT, SCALE, VALVE;
 
         static {
             SIZE = Config.get(
@@ -621,6 +139,7 @@ public class Value extends Alpha {
             SCALE = Config.get(
                 "kat.value.scale", 1024
             );
+            VALVE = SCALE - 1;
         }
 
         public static final Buffer
@@ -633,12 +152,12 @@ public class Value extends Alpha {
         public boolean join(
             @NotNull byte[] it
         ) {
-            int i = it.length / SCALE;
-            if (i < SIZE) {
+            int i = it.length;
+            if (VALVE <= i && (i /= SCALE) < SIZE) {
                 synchronized (this) {
                     bucket[i] = it;
+                    return true;
                 }
-                return true;
             }
             return false;
         }
@@ -657,8 +176,8 @@ public class Value extends Alpha {
                 if (i < SIZE) {
                     bucket[i] = it;
                 }
-                data = bucket[i];
-                bucket[i] = null;
+                data = bucket[0];
+                bucket[0] = null;
             }
             return data == null ? EMPTY_BYTES : data;
         }
@@ -677,27 +196,26 @@ public class Value extends Alpha {
                 }
                 if (data == null ||
                     data.length < size) {
-                    data = new byte[(i + 1) * SCALE - 1];
+                    data = new byte[i * SCALE + VALVE];
                 }
             } else {
                 if (i < LIMIT) {
-                    data = new byte[(i + 1) * SCALE - 1];
+                    data = new byte[i * SCALE + VALVE];
                 } else {
                     throw new FatalCrash(
-                        "Unexpectedly, Exceeding range '" + LIMIT * SCALE + "' in value"
+                        "Exceeding range '" + LIMIT * SCALE + "' in value"
                     );
                 }
             }
 
-            if (it.length != 0) {
+            if ((i = it.length) != 0) {
                 System.arraycopy(
                     it, 0, data, 0, len
                 );
 
-                int k = it.length / SCALE;
-                if (k < SIZE) {
+                if (VALVE <= i && (i /= SCALE) < SIZE) {
                     synchronized (this) {
-                        bucket[k] = it;
+                        bucket[i] = it;
                     }
                 }
             }

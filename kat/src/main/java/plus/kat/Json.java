@@ -18,24 +18,24 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.Optional;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
-import static plus.kat.stream.Binary.upper;
+import static plus.kat.stream.Binary.Unsafe.UPPER;
 
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class Json extends Steam implements Chan {
+public class Json extends Stream implements Chan {
 
     private static final byte
         LP = '[', RP = ']',
@@ -261,8 +261,8 @@ public class Json extends Steam implements Chan {
                     );
                 }
 
-                if (value instanceof Exception) {
-                    coder = ErrorSpare.INSTANCE;
+                if (value instanceof Throwable) {
+                    coder = ErrorCoder.INSTANCE;
                 } else if (value instanceof Map) {
                     coder = MapSpare.INSTANCE;
                 } else if (value instanceof Set) {
@@ -359,10 +359,10 @@ public class Json extends Steam implements Chan {
     }
 
     /**
-     * Returns the internal {@link Steam}
+     * Returns the internal {@link Flow}
      */
-    @NotNull
-    public Steam getSteam() {
+    @Override
+    public Flow getFlow() {
         return this;
     }
 
@@ -546,8 +546,8 @@ public class Json extends Steam implements Chan {
                 it[count++] = 'u';
                 it[count++] = '0';
                 it[count++] = '0';
-                it[count++] = upper((data >> 4) & 0x0F);
-                it[count++] = upper(data & 0x0F);
+                it[count++] = UPPER[(data >> 4) & 0x0F];
+                it[count++] = UPPER[data & 0x0F];
                 return;
             }
         }
@@ -611,47 +611,6 @@ public class Json extends Steam implements Chan {
                 "Unexpectedly, error serializing to json", e
             );
         }
-    }
-
-    /**
-     * Parse {@link Json} {@link CharSequence}
-     *
-     * @param text the specified text to be parsed
-     * @throws Collapse   If parsing fails or the result is null
-     * @throws FatalCrash If no spare available for klass is found
-     * @see Spare#solve(Algo, Event)
-     */
-    @Nullable
-    public static Object decode(
-        @Nullable CharSequence text
-    ) {
-        if (text == null) {
-            return null;
-        }
-        return INS.solve(
-            Algo.JSON, new Event<>(text)
-        );
-    }
-
-    /**
-     * Parse {@link Json} {@link CharSequence}
-     *
-     * @param event the specified event to be handled
-     * @throws Collapse   If parsing fails or the result is null
-     * @throws FatalCrash If no spare available for klass is found
-     * @see Spare#solve(Algo, Event)
-     */
-    @Nullable
-    public static <T> T decode(
-        @Nullable Event<T> event
-    ) {
-        if (event == null) {
-            return null;
-        }
-
-        return INS.solve(
-            Algo.JSON, event
-        );
     }
 
     /**

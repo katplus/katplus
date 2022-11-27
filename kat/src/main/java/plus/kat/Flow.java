@@ -18,7 +18,6 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 
 import plus.kat.chain.*;
-import plus.kat.kernel.*;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -31,7 +30,7 @@ public interface Flow extends Flag, Closeable {
     /**
      * Returns the algo of this {@link Flow}
      *
-     * @return {@link Algo}, NotNull
+     * @return {@link Algo} and not null
      */
     Algo algo();
 
@@ -83,6 +82,26 @@ public interface Flow extends Flag, Closeable {
      */
     void emit(
         char ch
+    ) throws IOException;
+
+    /**
+     * Concatenates the two bytes to this {@link Flow},
+     * which will be escaped if it contains special characters
+     *
+     * <pre>{@code
+     *   Flow flow = ...
+     *   flow.emit((short) 0x5E);
+     *   // emit((byte) 0x0); emit((byte) 0x5E);
+     *
+     *   flow.emit((short) 0x6B74);
+     *   // emit((byte) 0x6B); emit((byte) 0x74);
+     * }</pre>
+     *
+     * @param sh the specified two bytes to be appended
+     * @throws IOException If an I/O error occurs
+     */
+    void emit(
+        short sh
     ) throws IOException;
 
     /**
@@ -211,24 +230,7 @@ public interface Flow extends Flag, Closeable {
 
     /**
      * Concatenates the string representation
-     * of the short value to this {@link Steam}
-     *
-     * <pre>{@code
-     *   Flow flow = ...
-     *   flow.emit((short) 32); // 32
-     *   flow.emit((short) 64); // 64
-     * }</pre>
-     *
-     * @param num the specified number to be appended
-     * @throws IOException If an I/O error occurs
-     */
-    void emit(
-        short num
-    ) throws IOException;
-
-    /**
-     * Concatenates the string representation
-     * of the float value to this {@link Steam}
+     * of the float value to this {@link Flow}
      *
      * <pre>{@code
      *   Flow flow = ...
@@ -246,7 +248,7 @@ public interface Flow extends Flag, Closeable {
 
     /**
      * Concatenates the string representation
-     * of the double value to this {@link Steam}
+     * of the double value to this {@link Flow}
      *
      * <pre>{@code
      *   Flow flow = ...
@@ -264,7 +266,7 @@ public interface Flow extends Flag, Closeable {
 
     /**
      * Concatenates the string representation
-     * of the boolean value to this {@link Steam}
+     * of the boolean value to this {@link Flow}
      *
      * <pre>{@code
      *   Flow flow = ...
@@ -277,6 +279,60 @@ public interface Flow extends Flag, Closeable {
      */
     void emit(
         boolean bool
+    ) throws IOException;
+
+    /**
+     * Concatenates the byte array to this {@link Flow},
+     * which will be escaped if it contains special characters
+     *
+     * <pre>{@code
+     *   Flow flow = ...
+     *   // literally
+     *   byte[] data = new byte[]{
+     *       ^, k, t, ", \
+     *   };
+     *
+     *   // kat
+     *   flow.emit(data); // escape: ^^, k, t, ", \
+     *
+     *   // json
+     *   flow.emit(data); // escape: ^, k, t, \", \\
+     * }</pre>
+     *
+     * @param data the specified source to be appended
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified data is null
+     */
+    void emit(
+        @NotNull byte[] data
+    ) throws IOException;
+
+    /**
+     * Concatenates the byte array to this {@link Flow},
+     * which will be escaped if it contains special characters
+     *
+     * <pre>{@code
+     *   Flow flow = ...
+     *   // literally
+     *   byte[] data = new byte[]{
+     *       ^, k, t, ", \
+     *   };
+     *
+     *   // kat
+     *   flow.emit(data, 0, 5); // escape: ^^, k, t, ", \
+     *
+     *   // json
+     *   flow.emit(data, 0, 5); // escape: ^, k, t, \", \\
+     * }</pre>
+     *
+     * @param data   the specified source to be appended
+     * @param offset the specified start index for array
+     * @param length the specified length of bytes to concat
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified data is null
+     */
+    void emit(
+        @NotNull byte[] data, int offset, int length
     ) throws IOException;
 
     /**
@@ -447,94 +503,5 @@ public interface Flow extends Flag, Closeable {
      */
     void emit(
         @NotNull CharSequence data, int offset, int length
-    ) throws IOException;
-
-    /**
-     * Concatenates the byte array to this {@link Flow},
-     * which will be escaped if it contains special characters
-     *
-     * <pre>{@code
-     *   Flow flow = ...
-     *   // literally
-     *   byte[] data = new byte[]{
-     *       ^, k, t, ", \
-     *   };
-     *
-     *   // kat
-     *   flow.emit(data); // escape: ^^, k, t, ", \
-     *
-     *   // json
-     *   flow.emit(data); // escape: ^, k, t, \", \\
-     * }</pre>
-     *
-     * @param data the specified source to be appended
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified data is null
-     */
-    void emit(
-        @NotNull byte[] data
-    ) throws IOException;
-
-    /**
-     * Concatenates the byte array to this {@link Flow},
-     * which will be escaped if it contains special characters
-     *
-     * <pre>{@code
-     *   Flow flow = ...
-     *   // literally
-     *   byte[] data = new byte[]{
-     *       ^, k, t, ", \
-     *   };
-     *
-     *   // kat
-     *   flow.emit(data, 0, 5); // escape: ^^, k, t, ", \
-     *
-     *   // json
-     *   flow.emit(data, 0, 5); // escape: ^, k, t, \", \\
-     * }</pre>
-     *
-     * @param data   the specified source to be appended
-     * @param offset the specified start index for array
-     * @param length the specified length of bytes to concat
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified data is null
-     */
-    void emit(
-        @NotNull byte[] data, int offset, int length
-    ) throws IOException;
-
-    /**
-     * Concatenates the byte array to this {@link Flow}
-     * and copy it directly if the specified type does not conflict with algo,
-     * otherwise check to see if it contains special characters, concat it after escape
-     *
-     * <pre>{@code
-     *   Unified:
-     *   // 'K' -> Kat/Standard
-     *   // 'X' -> XML/Standard
-     *   // 'J' -> Json/Standard
-     *   // 'B' -> Base64/REC4648
-     *
-     *   Flow flow = ...
-     *   byte[] data = ...
-     *
-     *   // Algo-Kat
-     *   flow.emit(data, 'J', 0, 5); // concat it after escape
-     *   flow.emit(data, 'B', 0, 5); // will not escape, copy it directly
-     *
-     *   // Algo-Json
-     *   flow.emit(data, 'K', 0, 5); // concat it after escape
-     *   flow.emit(data, 'B', 0, 5); // will not escape, copy it directly
-     * }</pre>
-     *
-     * @param data   the specified source to be appended
-     * @param type   the specified type of source
-     * @param offset the specified start index for array
-     * @param length the specified length of bytes to concat
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified data is null
-     */
-    void emit(
-        @NotNull byte[] data, char type, int offset, int length
     ) throws IOException;
 }

@@ -28,7 +28,6 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.stream.*;
-import plus.kat.utils.*;
 
 /**
  * @author kraity
@@ -66,9 +65,13 @@ public class MapSpare extends Property<Map> {
         @NotNull Flag flag,
         @NotNull Value value
     ) throws IOException {
-        if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
-            return Convert.toObject(
-                this, flag, value
+        if (flag.isFlag(Flag.VALUE_AS_BEAN)) {
+            Algo algo = Algo.of(value);
+            if (algo == null) {
+                return null;
+            }
+            return solve(
+                algo, new Event<Map>(value).with(flag)
             );
         }
         return null;
@@ -95,8 +98,12 @@ public class MapSpare extends Property<Map> {
 
     @NotNull
     public Map apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
+        if (type == null) {
+            type = klass;
+        }
+
         if (type == Map.class) {
             return new LinkedHashMap<>();
         }
@@ -189,54 +196,66 @@ public class MapSpare extends Property<Map> {
 
     @Override
     public Map cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
+        if (object == null) {
             return null;
         }
 
-        if (klass.isInstance(data)) {
-            return (Map) data;
+        if (klass.isInstance(object)) {
+            return (Map) object;
         }
 
-        if (data instanceof Map) {
+        if (object instanceof Map) {
             Map map = apply();
             map.putAll(
-                (Map) data
+                (Map) object
             );
             return map;
         }
 
-        if (data instanceof CharSequence) {
-            return Convert.toObject(
-                this, (CharSequence) data, null, supplier
+        if (object instanceof CharSequence) {
+            CharSequence cs =
+                (CharSequence) object;
+            Algo algo = Algo.of(cs);
+            if (algo == null) {
+                return null;
+            }
+            return solve(
+                algo, new Event<Map>(cs).with(supplier)
             );
         }
 
-        if (data instanceof Spoiler) {
+        if (object instanceof Spoiler) {
             return apply(
                 (Spoiler) supplier, supplier
             );
         }
 
-        if (data instanceof ResultSet) {
+        if (object instanceof ResultSet) {
             try {
                 return apply(
-                    supplier, (ResultSet) data
+                    supplier, (ResultSet) object
                 );
-            } catch (Exception e) {
-                return null;
+            } catch (SQLException e) {
+                throw new IllegalStateException(
+                    object + " cannot be converted to " + klass, e
+                );
             }
         }
 
         Spoiler spoiler =
-            supplier.flat(data);
-        if (spoiler == null) {
-            return null;
+            supplier.flat(object);
+        if (spoiler != null) {
+            return apply(
+                spoiler, supplier
+            );
+        } else {
+            throw new IllegalStateException(
+                object + " cannot be converted to " + klass
+            );
         }
-
-        return apply(spoiler, supplier);
     }
 
     @Override
@@ -304,7 +323,7 @@ public class MapSpare extends Property<Map> {
         }
     }
 
-    public static class Builder0 extends Builder<Map> {
+    public static class Builder0 extends Builder<Map> implements Callback {
 
         protected Class<?> kind;
         protected Type key, val, raw;
@@ -349,7 +368,7 @@ public class MapSpare extends Property<Map> {
 
             // other
             else {
-                Class<?> cls = Find.clazz(type);
+                Class<?> cls = Space.wipe(type);
                 if (cls != null &&
                     cls != Object.class) {
                     raw = cls;
@@ -360,10 +379,10 @@ public class MapSpare extends Property<Map> {
         }
 
         @Override
-        public void onCreate() throws IOException {
+        public void onOpen() throws IOException {
             Type tv = val;
             if (tv != null) {
-                Class<?> cls = Find.clazz(tv);
+                Class<?> cls = Space.wipe(tv);
                 if (cls != null &&
                     cls != Object.class) {
                     kind = cls;
@@ -372,12 +391,12 @@ public class MapSpare extends Property<Map> {
             }
             Type tk = key;
             if (tk != null) {
-                Class<?> cls = Find.clazz(tk);
+                Class<?> cls = Space.wipe(tk);
                 if (cls != Object.class &&
                     cls != String.class) {
                     spare0 = supplier.lookup(cls);
                     if (spare0 == null) {
-                        throw new ProxyCrash(
+                        throw new IOException(
                             tk + "'s spare does not exist"
                         );
                     }
@@ -387,7 +406,49 @@ public class MapSpare extends Property<Map> {
         }
 
         @Override
-        public void onAttain(
+        public Pipage onOpen(
+            @NotNull Space space,
+            @NotNull Alias alias
+        ) throws IOException {
+            Spare<?> s1 = spare1;
+            if (s1 == null) {
+                s1 = supplier.search(
+                    kind, space
+                );
+                if (s1 == null) {
+                    return null;
+                }
+            }
+
+            Builder<?> child =
+                s1.getBuilder(val);
+
+            if (child == null) {
+                return null;
+            }
+
+            Spare<?> s0 = spare0;
+            if (s0 == null) {
+                attr = alias.toString();
+            } else {
+                attr = s0.read(flag, alias);
+            }
+
+            return child.init(this, this);
+        }
+
+        @Override
+        public void onEmit(
+            @NotNull Pipage pipage,
+            @Nullable Object result
+        ) throws IOException {
+            bundle.put(
+                attr, result
+            );
+        }
+
+        @Override
+        public void onEmit(
             @NotNull Space space,
             @NotNull Alias alias,
             @NotNull Value value
@@ -407,68 +468,28 @@ public class MapSpare extends Property<Map> {
                 bundle.put(
                     alias.toString(),
                     s1.read(
-                        event, value
+                        flag, value
                     )
                 );
             } else {
                 bundle.put(
                     s0.read(
-                        event, alias
+                        flag, alias
                     ),
                     s1.read(
-                        event, value
+                        flag, value
                     )
                 );
             }
         }
 
         @Override
-        public void onDetain(
-            @NotNull Builder<?> child
-        ) throws IOException {
-            bundle.put(
-                attr, child.onPacket()
-            );
-        }
-
-        @Override
-        public Builder<?> onAttain(
-            @NotNull Space space,
-            @NotNull Alias alias
-        ) throws IOException {
-            Spare<?> s1 = spare1;
-            if (s1 == null) {
-                s1 = supplier.search(
-                    kind, space
-                );
-                if (s1 == null) {
-                    return null;
-                }
-            }
-
-            Builder<?> builder =
-                s1.getBuilder(val);
-
-            if (builder == null) {
-                return null;
-            }
-
-            Spare<?> s0 = spare0;
-            if (s0 == null) {
-                attr = alias.toString();
-            } else {
-                attr = s0.read(event, alias);
-            }
-            return builder;
-        }
-
-        @Override
-        public Map onPacket() {
+        public Map build() {
             return bundle;
         }
 
         @Override
-        public void onDestroy() {
+        public void onClose() {
             attr = null;
             bundle = null;
         }

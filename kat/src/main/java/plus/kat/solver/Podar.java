@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.kernel;
+package plus.kat.solver;
 
 import plus.kat.*;
 import plus.kat.anno.*;
@@ -23,16 +23,13 @@ import plus.kat.stream.*;
 
 import java.io.IOException;
 
+import static plus.kat.Doc.*;
+
 /**
  * @author kraity
  * @since 0.0.5
  */
-public class Dotry implements Solver {
-
-    public static final byte
-        LT = '<', GT = '>', AMP = '&',
-        APOS = '\'', QUOT = '"', SLASH = '/';
-
+public class Podar implements Solver {
     /**
      * snapshot
      */
@@ -45,7 +42,7 @@ public class Dotry implements Solver {
      *
      * @param radar the specified radar
      */
-    public Dotry(
+    public Podar(
         @NotNull Radar radar
     ) {
         space = radar.space;
@@ -60,7 +57,7 @@ public class Dotry implements Solver {
      * @param b2 the bucket of {@code alias}
      * @param b3 the bucket of {@code value}
      */
-    public Dotry(
+    public Podar(
         @NotNull Bucket b1,
         @NotNull Bucket b2,
         @NotNull Bucket b3
@@ -98,129 +95,146 @@ public class Dotry implements Solver {
      *  </User>
      * }</pre>
      *
-     * @param p the specified data transfer pipeline
+     * @param e the specified data transfer pipeline
      * @param r the specified data source to be parsed
-     * @throws ReaderCrash If an I/O error occurs by reader
-     * @throws ProxyCrash  If an I/O error occurs by proxy
+     * @throws IOException If an I/O error occurs by pipage
+     * @throws FlowCrash   If an I/O error occurs by reader
      * @throws SolverCrash If an I/O error occurs by solver
      */
     @Override
     public void read(
-        @NotNull Proxy p,
-        @NotNull Reader r
+        @NotNull Reader r,
+        @NotNull Pipage e
     ) throws IOException {
-        // local access
-        Space s = space;
-        Alias a = alias;
-        Value v = value;
+        try {
+            // local access
+            Space s = space;
+            Alias a = alias;
+            Value v = value;
 
-        Boot:
-        // decode xml stream
-        while (r.also()) {
-            byte b = r.read();
-            if (b != LT) {
-                if (b != AMP) {
-                    v.join(b);
-                } else {
-                    escape(v, r);
-                }
-                continue;
-            }
-
-            byte c = r.next();
-            switch (c) {
-                case '?': {
-                    decide(r);
-                    continue;
-                }
-                case '!': {
-                    explain(v, r);
-                    continue;
-                }
-                case SLASH: {
-                    if (a.isEmpty()) {
-                        while (true) {
-                            byte d = r.next();
-                            if (d != GT) {
-                                continue;
-                            }
-                            p.detach();
-                            v.reset();
-                            continue Boot;
-                        }
+            Boot:
+            // decode xml stream
+            while (r.also()) {
+                byte b = r.read();
+                if (b != LT) {
+                    if (b != AMP) {
+                        v.join(b);
                     } else {
-                        int i = 0;
-                        while (true) {
-                            byte d = r.next();
-                            if (d == GT) {
-                                p.submit(
-                                    s.as('s'), a, v
+                        escape(v, r);
+                    }
+                    continue;
+                }
+
+                byte c = r.next();
+                switch (c) {
+                    case '?': {
+                        decide(r);
+                        continue;
+                    }
+                    case '!': {
+                        explain(v, r);
+                        continue;
+                    }
+                    case SLASH: {
+                        if (a.isEmpty()) {
+                            while (true) {
+                                byte d = r.next();
+                                if (d != GT) {
+                                    continue;
+                                }
+                                v.reset();
+                                e = e.onClose(
+                                    true, true
                                 );
+                                continue Boot;
+                            }
+                        } else {
+                            int i = 0;
+                            while (true) {
+                                byte d = r.next();
+                                if (d == GT) {
+                                    e.onEmit(
+                                        s.as('s'), a, v
+                                    );
+                                    a.reset();
+                                    v.reset();
+                                    continue Boot;
+                                }
+
+                                if (a.is(i++, d)) {
+                                    continue;
+                                }
+
+                                throw new SolverCrash(
+                                    "Parse error, `" + b + "`  can't be in namespace"
+                                );
+                            }
+                        }
+                    }
+                    default: {
+                        if (!a.isEmpty()) {
+                            Pipage it = e.onOpen(
+                                s.as('M'), a
+                            );
+                            if (it != null) {
+                                e = it;
+                                a.reset();
+                            } else {
                                 a.reset();
                                 v.reset();
+                                washing(2, r);
+                                continue;
+                            }
+                        }
+
+                        v.reset();
+                        a.join(c);
+
+                        while (true) {
+                            b = r.next();
+                            if (b == AMP) {
+                                escape(a, r);
+                                continue;
+                            }
+
+                            if (b == GT) {
+                                if (a.get(-1) == SLASH) {
+                                    a.reset();
+                                }
                                 continue Boot;
                             }
 
-                            if (a.is(i++, d)) {
+                            if (b != ' ') {
+                                a.join(b);
                                 continue;
                             }
 
-                            throw new SolverCrash(
-                                "Parse error, `" + b + "`  can't be in namespace"
+                            Pipage it = e.onOpen(
+                                s.as('M'), a
                             );
-                        }
-                    }
-                }
-                default: {
-                    if (!a.isEmpty()) {
-                        if (p.attach(s.as('M'), a)) {
-                            a.reset();
-                        } else {
-                            a.reset();
-                            v.reset();
-                            washing(2, r);
-                            continue;
-                        }
-                    }
-
-                    v.reset();
-                    a.join(c);
-
-                    while (true) {
-                        b = r.next();
-                        if (b == AMP) {
-                            escape(a, r);
-                            continue;
-                        }
-
-                        if (b == GT) {
-                            if (a.get(-1) == SLASH) {
+                            if (it != null) {
+                                e = it;
                                 a.reset();
+                                e = collate(
+                                    s, a, v, r, e
+                                );
+                                a.reset();
+                                v.reset();
+                            } else {
+                                a.reset();
+                                v.reset();
+                                washing(1, r);
                             }
                             continue Boot;
                         }
-
-                        if (b != ' ') {
-                            a.join(b);
-                            continue;
-                        }
-
-                        if (p.attach(s.as('M'), a)) {
-                            a.reset();
-                            collate(
-                                s, a, v, p, r
-                            );
-                            a.reset();
-                            v.reset();
-                            continue Boot;
-                        } else {
-                            a.reset();
-                            v.reset();
-                            washing(1, r);
-                            continue Boot;
-                        }
                     }
                 }
+            }
+        } finally {
+            while (e != null) {
+                e = e.onClose(
+                    false, false
+                );
             }
         }
     }
@@ -230,19 +244,19 @@ public class Dotry implements Solver {
      *
      * @throws IOException If an I/O error occurs
      */
-    protected void collate(
+    protected Pipage collate(
         @NotNull Space s,
         @NotNull Alias a,
         @NotNull Value v,
-        @NotNull Proxy p,
-        @NotNull Reader r
+        @NotNull Reader r,
+        @NotNull Pipage e
     ) throws IOException {
         Boot:
         while (true) {
             byte b = r.next();
 
             if (b == GT) {
-                break;
+                return e;
             }
 
             if (b <= 0x20) {
@@ -252,8 +266,9 @@ public class Dotry implements Solver {
             if (b == SLASH) {
                 b = r.next();
                 if (b == GT) {
-                    p.detach();
-                    break;
+                    return e.onClose(
+                        true, true
+                    );
                 }
                 throw new SolverCrash(
                     "Parse error, `" + b + "`  can't be here"
@@ -273,7 +288,7 @@ public class Dotry implements Solver {
                         v.join(b);
                         continue;
                     }
-                    p.submit(
+                    e.onEmit(
                         s.as('s'), a, v
                     );
                     a.reset();
@@ -320,7 +335,7 @@ public class Dotry implements Solver {
      * @throws IOException If an I/O error occurs
      */
     protected void escape(
-        @NotNull Alpha c,
+        @NotNull Chain c,
         @NotNull Reader r
     ) throws IOException {
         byte b = r.next();
@@ -560,7 +575,7 @@ public class Dotry implements Solver {
     }
 
     /**
-     * Clear this {@link Dotry}
+     * Clears this {@link Podar}
      */
     @Override
     public void clear() {
@@ -570,7 +585,7 @@ public class Dotry implements Solver {
     }
 
     /**
-     * Close this {@link Dotry}
+     * Closes this {@link Podar}
      */
     @Override
     public void close() {

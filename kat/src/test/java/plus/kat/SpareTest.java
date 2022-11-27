@@ -1,13 +1,17 @@
 package plus.kat;
 
-import org.junit.jupiter.api.Test;
+import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
+import org.junit.jupiter.api.Test;
+
 import plus.kat.crash.*;
 import plus.kat.spare.*;
 
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 
+import static plus.kat.Supplier.Impl.INS;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -17,9 +21,17 @@ public class SpareTest {
 
     @Test
     public void test_embed() {
-        assertNotNull(
-            Spare.lookup(User.class)
-        );
+        Spare<User> spare =
+            INS.lookup(User.class);
+        assertNotNull(spare);
+
+        assertEquals(spare, spare.drop(INS));
+        assertNull(INS.get(User.class));
+        assertNull(INS.extra.get("plus.kat.spare.User"));
+
+        assertEquals(spare, spare.join(INS));
+        assertEquals(spare, INS.get(User.class));
+        assertEquals(spare, INS.extra.get("plus.kat.spare.User"));
 
         Object[] list = new Object[]{
             Collections.EMPTY_MAP,
@@ -171,7 +183,7 @@ public class SpareTest {
         Supplier supplier = Supplier.ins();
 
         User user = new User();
-        assertTrue(supplier.update(user, spoiler));
+        assertTrue(supplier.update(user, spoiler) > 0);
 
         assertEquals(1, user.id);
         assertEquals("kraity", user.name);
@@ -185,7 +197,7 @@ public class SpareTest {
         Entity entity = new Entity();
 
         Supplier supplier = Supplier.ins();
-        assertTrue(supplier.mutate(user, entity));
+        assertTrue(supplier.mutate(user, entity) > 0);
 
         assertEquals(user.id, entity.id);
         assertEquals(user.name, entity.name);
@@ -200,6 +212,7 @@ public class SpareTest {
         assertNotNull(spare.getSupplier());
     }
 
+    @Embed("plus.kat.spare.User")
     static class User {
         @Expose("id")
         private int id;
@@ -226,6 +239,7 @@ public class SpareTest {
             Spare.lookup(User.class);
 
         assertSame(User.class, spare.apply(User.class).getClass());
+        assertSame(User.class, spare.apply((Type) null).getClass());
         assertSame(UserVO.class, spare.apply(UserVO.class).getClass());
 
         assertThrows(Collapse.class, () -> spare.apply(Object.class));

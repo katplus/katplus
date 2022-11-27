@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.crash.*;
 
 import java.io.IOException;
 import java.util.Currency;
@@ -45,39 +46,17 @@ public class CurrencySpare extends Property<Currency> {
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == Currency.class
-            || clazz == Object.class;
-    }
-
-    @Override
     public Currency read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        if (alias.length() != 3) {
+        if (chain.length() != 3) {
             return null;
+        } else {
+            return getInstance(
+                chain.toString()
+            );
         }
-
-        return getInstance(
-            alias.toString()
-        );
-    }
-
-    @Override
-    public Currency read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) {
-        if (value.length() != 3) {
-            return null;
-        }
-
-        return getInstance(
-            value.toString()
-        );
     }
 
     @Override
@@ -92,28 +71,27 @@ public class CurrencySpare extends Property<Currency> {
 
     @Override
     public Currency cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Currency) {
-                return (Currency) data;
-            }
+        if (object instanceof Currency) {
+            return (Currency) object;
+        }
 
-            if (data instanceof CharSequence) {
-                CharSequence d = (CharSequence) data;
-                if (d.length() != 3) {
-                    return null;
-                }
+        if (object instanceof CharSequence) {
+            if (((CharSequence) object).length() == 3) {
                 try {
                     return getInstance(
-                        data.toString()
+                        object.toString()
                     );
                 } catch (Exception e) {
-                    return null;
+                    throw new FatalCrash(e);
                 }
             }
         }
-        return null;
+
+        throw new FatalCrash(
+            object + " cannot be converted to " + Currency.class
+        );
     }
 }

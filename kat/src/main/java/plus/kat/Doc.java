@@ -18,14 +18,14 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.Optional;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Impl.INS;
@@ -34,7 +34,12 @@ import static plus.kat.Supplier.Impl.INS;
  * @author kraity
  * @since 0.0.1
  */
-public class Doc extends Steam implements Chan {
+public class Doc extends Stream implements Chan {
+
+    public static final byte
+        LT = '<', GT = '>',
+        AMP = '&', QUOT = '"',
+        APOS = '\'', SLASH = '/';
 
     protected Supplier supplier;
 
@@ -170,9 +175,9 @@ public class Doc extends Steam implements Chan {
             }
         }
 
-        join((byte) '<');
+        join(LT);
         emit(alias);
-        join((byte) '>');
+        join(GT);
 
         if (value != null) {
             value.serial(this);
@@ -197,10 +202,10 @@ public class Doc extends Steam implements Chan {
             }
         }
 
-        join((byte) '<');
-        join((byte) '/');
+        join(LT);
+        join(SLASH);
         emit(alias);
-        join((byte) '>');
+        join(GT);
         return true;
     }
 
@@ -243,8 +248,8 @@ public class Doc extends Steam implements Chan {
                     );
                 }
 
-                if (value instanceof Exception) {
-                    coder = ErrorSpare.INSTANCE;
+                if (value instanceof Throwable) {
+                    coder = ErrorCoder.INSTANCE;
                 } else if (value instanceof Map) {
                     coder = MapSpare.INSTANCE;
                 } else if (value instanceof Set) {
@@ -280,9 +285,9 @@ public class Doc extends Steam implements Chan {
             }
         }
 
-        join((byte) '<');
+        join(LT);
         emit(alias);
-        join((byte) '>');
+        join(GT);
 
         if (flag == null) {
             coder.write(
@@ -313,18 +318,18 @@ public class Doc extends Steam implements Chan {
             }
         }
 
-        join((byte) '<');
-        join((byte) '/');
+        join(LT);
+        join(SLASH);
         emit(alias);
-        join((byte) '>');
+        join(GT);
         return true;
     }
 
     /**
-     * Returns the internal {@link Steam}
+     * Returns the internal {@link Flow}
      */
-    @NotNull
-    public Steam getSteam() {
+    @Override
+    public Flow getFlow() {
         return this;
     }
 
@@ -474,47 +479,6 @@ public class Doc extends Steam implements Chan {
                 "Unexpectedly, error serializing to xml", e
             );
         }
-    }
-
-    /**
-     * Parse {@link Doc} {@link CharSequence}
-     *
-     * @param text the specified text to be parsed
-     * @throws Collapse   If parsing fails or the result is null
-     * @throws FatalCrash If no spare available for klass is found
-     * @see Spare#solve(Algo, Event)
-     */
-    @Nullable
-    public static Object decode(
-        @Nullable CharSequence text
-    ) {
-        if (text == null) {
-            return null;
-        }
-        return INS.solve(
-            Algo.DOC, new Event<>(text)
-        );
-    }
-
-    /**
-     * Parse {@link Doc} {@link CharSequence}
-     *
-     * @param event the specified event to be handled
-     * @throws Collapse   If parsing fails or the result is null
-     * @throws FatalCrash If no spare available for klass is found
-     * @see Spare#solve(Algo, Event)
-     */
-    @Nullable
-    public static <T> T decode(
-        @Nullable Event<T> event
-    ) {
-        if (event == null) {
-            return null;
-        }
-
-        return INS.solve(
-            Algo.DOC, event
-        );
     }
 
     /**

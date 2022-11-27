@@ -15,8 +15,6 @@
  */
 package plus.kat.entity;
 
-import plus.kat.anno.Expose;
-import plus.kat.anno.Format;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
@@ -24,36 +22,30 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.spare.*;
-import plus.kat.utils.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
+import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.time.*;
-import java.util.Date;
 
 /**
  * @author kraity
  * @since 0.0.4
  */
-@SuppressWarnings("unchecked")
-public interface Subject<K> extends Spare<K>, Maker<K> {
+public interface Subject<T> extends Spare<T> {
     /**
      * If this {@link Subject} can create an instance,
      * it returns it, otherwise it will throw {@link Collapse}
      *
-     * @return {@link K}, it is not null
+     * @return {@link T}, it is not null
      * @throws Collapse If a build error occurs
      */
     @NotNull
-    default K apply() {
+    default T apply() {
         throw new Collapse(
-            "Failure occurs"
+            "Failed to apply"
         );
     }
 
@@ -62,20 +54,20 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      * it returns it, otherwise it will throw {@link Collapse}
      *
      * @param args the specified args for constructs
-     * @return {@link K}, it is not null
+     * @return {@link T}, it is not null
      * @throws Collapse If a build error occurs
      */
     @NotNull
-    default K apply(
+    default T apply(
         @NotNull Object[] args
     ) {
         throw new Collapse(
-            "Failure occurs"
+            "Failed to apply"
         );
     }
 
     /**
-     * Returns the flag of {@link K}
+     * Returns the flag of {@link T}
      */
     @Override
     default Boolean getFlag() {
@@ -83,7 +75,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     }
 
     /**
-     * Returns the border of {@link K}
+     * Returns the border of {@link T}
      */
     @Override
     default Boolean getBorder(
@@ -93,24 +85,12 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     }
 
     /**
-     * Check if {@code clazz} is a parent Class of {@link K}
-     * or this {@link Subject} can create an instance of {@code clazz}
-     */
-    @Override
-    default boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz.isAssignableFrom(getType());
-    }
-
-    /**
-     * Returns a {@link Builder} of {@link K}
+     * Returns a {@link Builder} of {@link T}
      *
      * @param type the specified actual type
      */
-    @Nullable
     @Override
-    default Builder<K> getBuilder(
+    default Builder<T> getBuilder(
         @Nullable Type type
     ) {
         return new Builder0<>(this);
@@ -125,8 +105,8 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      * @throws NullPointerException If the specified alias is null
      */
     @Override
-    default Member<K, ?> set(
-        @NotNull Object name
+    default Member<T, ?> set(
+        @NotNull CharSequence name
     ) {
         return null;
     }
@@ -140,8 +120,8 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      * @throws NullPointerException If the specified alias is null
      */
     @Override
-    default Member<K, ?> get(
-        @NotNull Object name
+    default Member<T, ?> get(
+        @NotNull CharSequence name
     ) {
         return null;
     }
@@ -156,7 +136,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      */
     @Nullable
     default Member<Object[], ?> arg(
-        @NotNull Object name
+        @NotNull CharSequence name
     ) {
         return null;
     }
@@ -172,13 +152,13 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      */
     @Override
     default int update(
-        @NotNull K bean,
+        @NotNull T bean,
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
     ) {
         int rows = 0;
         while (spoiler.hasNext()) {
-            Member<K, ?> setter = set(
+            Member<T, ?> setter = set(
                 spoiler.getKey()
             );
             if (setter == null) {
@@ -190,7 +170,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 continue;
             }
 
-            Class<?> clazz = setter.getType();
+            Class<?> clazz = setter.kind();
             if (clazz.isInstance(value)) {
                 rows++;
                 setter.invoke(
@@ -240,7 +220,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 continue;
             }
 
-            Class<?> clazz = setter.getType();
+            Class<?> clazz = setter.kind();
             if (clazz.isInstance(value)) {
                 rows++;
                 setter.invoke(
@@ -275,23 +255,23 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      */
     @Override
     default int update(
-        @NotNull K bean,
+        @NotNull T bean,
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
     ) throws SQLException {
         ResultSetMetaData meta =
             resultSet.getMetaData();
-        int rows = 0, count =
+        int rows = 0, size =
             meta.getColumnCount();
 
-        for (int i = 1; i <= count; i++) {
+        for (int i = 1; i <= size; i++) {
             String name = meta
                 .getColumnLabel(i);
             if (name == null) {
                 name = meta.getColumnName(i);
             }
 
-            Member<K, ?> setter = set(name);
+            Member<T, ?> setter = set(name);
             if (setter == null) {
                 throw new SQLCrash(
                     "Cannot find the `" + name + "` property of " + getType()
@@ -304,7 +284,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 continue;
             }
 
-            Class<?> clazz = setter.getType();
+            Class<?> clazz = setter.kind();
             if (clazz.isInstance(value)) {
                 rows++;
                 setter.invoke(bean, value);
@@ -320,7 +300,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
 
             throw new SQLCrash(
                 "Unable to convert the `" + name + "` property type of "
-                    + getType() + " from " + value.getClass() + " to " + clazz
+                    + getType() + " from " + value.getClass() + " to " + setter.type()
             );
         }
 
@@ -344,10 +324,10 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     ) throws SQLException {
         ResultSetMetaData meta =
             resultSet.getMetaData();
-        int rows = 0, count =
+        int rows = 0, size =
             meta.getColumnCount();
 
-        for (int i = 1; i <= count; i++) {
+        for (int i = 1; i <= size; i++) {
             String name = meta
                 .getColumnLabel(i);
             if (name == null) {
@@ -367,7 +347,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
                 continue;
             }
 
-            Class<?> clazz = setter.getType();
+            Class<?> clazz = setter.kind();
             if (clazz.isInstance(value)) {
                 rows++;
                 setter.invoke(group, value);
@@ -383,7 +363,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
 
             throw new SQLCrash(
                 "Unable to convert the `" + name + "` argument type of "
-                    + getType() + " from " + value.getClass() + " to " + clazz
+                    + getType() + " from " + value.getClass() + " to " + setter.type()
             );
         }
 
@@ -391,248 +371,28 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
     }
 
     /**
-     * Returns the custom {@link Coder} for the {@link Member}
-     *
-     * @param expose the specified expose to be used
-     * @param member the specified member to be solved
-     * @return {@link Coder} or {@code null}
+     * @author kraity
+     * @since 0.0.4
      */
-    @Nullable
-    default Coder<?> inflate(
-        @Nullable Expose expose,
-        @Nullable Member<?, ?> member
-    ) {
-        Class<?> clazz;
-        if (member == null) {
-            return null;
-        }
-
-        if (expose == null || (clazz =
-            expose.with()) == Coder.class) {
-            Format format = member
-                .getAnnotation(Format.class);
-            if (format != null) {
-                Class<?> type = member.getType();
-                if (type == Date.class) {
-                    return new DateSpare(format);
-                } else if (type == Instant.class) {
-                    return new InstantSpare(format);
-                } else if (type == LocalDate.class) {
-                    return new LocalDateSpare(format);
-                } else if (type == LocalTime.class) {
-                    return new LocalTimeSpare(format);
-                } else if (type == LocalDateTime.class) {
-                    return new LocalDateTimeSpare(format);
-                } else if (type == ZonedDateTime.class) {
-                    return new ZonedDateTimeSpare(format);
-                }
-            }
-            return null;
-        }
-
-        if (!Coder.class.
-            isAssignableFrom(clazz)) {
-            return getSupplier().lookup(clazz);
-        }
-
-        if (clazz == ByteArrayCoder.class) {
-            return ByteArrayCoder.INSTANCE;
-        }
-
-        try {
-            Constructor<?>[] cs = clazz
-                .getDeclaredConstructors();
-            Constructor<?> d, c = cs[0];
-            for (int i = 1; i < cs.length; i++) {
-                d = cs[i];
-                if (c.getParameterCount() <=
-                    d.getParameterCount()) c = d;
-            }
-
-            Object[] args;
-            int size = c.getParameterCount();
-
-            if (size == 0) {
-                args = ArraySpare.EMPTY_ARRAY;
-            } else {
-                args = new Object[size];
-                Class<?>[] cls =
-                    c.getParameterTypes();
-                for (int i = 0; i < size; i++) {
-                    Class<?> m = cls[i];
-                    if (m == Class.class) {
-                        args[i] = member.getType();
-                    } else if (m == Type.class) {
-                        args[i] = member.getScope();
-                    } else if (m == Expose.class) {
-                        args[i] = expose;
-                    } else if (m == Supplier.class) {
-                        args[i] = getSupplier();
-                    } else if (m.isPrimitive()) {
-                        args[i] = Find.value(m);
-                    } else if (m.isAnnotation()) {
-                        args[i] = member.getAnnotation(
-                            (Class<? extends Annotation>) m
-                        );
-                    }
-                }
-            }
-
-            if (!c.isAccessible()) {
-                c.setAccessible(true);
-            }
-            return (Coder<?>) c.newInstance(args);
-        } catch (Exception e) {
-            // Nothing
-        }
-
-        return null;
+    interface Member<T, V> extends
+        Sketch<V>, Setter<T, V>, Getter<T, V> {
     }
 
     /**
      * @author kraity
      * @since 0.0.4
      */
-    interface Member<K, V> extends
-        Setter<K, V>, Getter<K, V> {
-        /**
-         * Returns the {@link Class} of {@link V}
-         */
-        @NotNull
-        Class<?> getType();
+    class Builder0<T> extends Builder<T> implements Callback {
 
-        /**
-         * Gets the property of the bean
-         *
-         * @see #get(Object)
-         * @see Getter#apply(Object)
-         */
-        @Nullable
-        default V apply(
-            @NotNull K bean
-        ) {
-            throw new FatalCrash(
-                "Not implemented"
-            );
-        }
-
-        /**
-         * Sets the specified value to the bean
-         *
-         * @see #set(Object)
-         * @see Setter#accept(Object, Object)
-         */
-        @Override
-        default boolean accept(
-            @NotNull K bean,
-            @Nullable V value
-        ) {
-            throw new FatalCrash(
-                "Not implemented"
-            );
-        }
-
-        /**
-         * Returns {@code true} if processed
-         */
-        default boolean serialize(
-            @NotNull Chan chan,
-            @Nullable Object value
-        ) throws IOException {
-            return false;
-        }
-
-        /**
-         * Returns the {@link Coder} of {@link V}
-         */
-        @Nullable
-        default Coder<?> deserialize(
-            @NotNull Space space,
-            @Nullable Supplier supplier
-        ) throws IOException {
-            Coder<?> it = getCoder();
-            if (it != null) {
-                return it;
-            }
-
-            if (supplier != null) {
-                return supplier.lookup(
-                    getType(), space
-                );
-            }
-
-            throw new ProxyCrash(
-                "Unexpectedly, supplier not found"
-            );
-        }
-
-        /**
-         * Returns the flags of {@link V}
-         *
-         * @see Flag
-         */
-        @NotNull
-        default int getFlags() {
-            return 0;
-        }
-
-        /**
-         * Returns the actual {@link Type} of {@link V}
-         */
-        @NotNull
-        default Type getScope() {
-            return getType();
-        }
-
-        /**
-         * Returns the {@link Coder} of {@link V}
-         */
-        @Nullable
-        default Coder<?> getCoder() {
-            return null;
-        }
-
-        /**
-         * Returns the {@link AnnotatedElement} of {@link V}
-         */
-        @Nullable
-        default AnnotatedElement getAnnotated() {
-            return null;
-        }
-
-        /**
-         * Returns the annotation of the specified {@link Class}
-         */
-        @Nullable
-        default <A extends Annotation> A getAnnotation(
-            @NotNull Class<A> target
-        ) {
-            AnnotatedElement elem = getAnnotated();
-            if (elem != null) {
-                return elem.getAnnotation(target);
-            } else {
-                return getType().getAnnotation(target);
-            }
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.4
-     */
-    class Builder0<K> extends Builder<K> {
-
-        protected K bean;
-        protected int index;
-
-        protected Subject<K> subject;
-        protected Member<K, ?> setter;
+        protected T bean;
+        protected Subject<T> subject;
+        protected Member<T, ?> setter;
 
         /**
          * default
          */
         public Builder0(
-            @NotNull Subject<K> subject
+            @NotNull Subject<T> subject
         ) {
             this.subject = subject;
         }
@@ -641,81 +401,50 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * Prepare before parsing
          */
         @Override
-        public void onCreate() {
+        public void onOpen() {
             bean = subject.apply();
         }
 
         /**
-         * Receive the property of {@link K}
-         *
-         * @throws IOException If an I/O error occurs
-         */
-        @Override
-        public void onAttain(
-            @NotNull Space space,
-            @NotNull Alias alias,
-            @NotNull Value value
-        ) throws IOException {
-            int i = index++;
-            setter = subject.set(
-                alias.isEmpty() ? i : alias
-            );
-
-            if (setter != null) {
-                Coder<?> coder = setter
-                    .deserialize(
-                        space, supplier
-                    );
-
-                if (coder != null) {
-                    setter.invoke(
-                        bean, coder.read(
-                            event, value
-                        )
-                    );
-                }
-            }
-        }
-
-        /**
-         * Receive the property of {@link K}
-         *
-         * @throws IOException If an I/O error occurs
-         */
-        @Override
-        public void onDetain(
-            @NotNull Builder<?> child
-        ) throws IOException {
-            setter.invoke(
-                bean, child.onPacket()
-            );
-        }
-
-        /**
-         * Create a builder for the property {@link K}
+         * Create a builder for the property {@link T}
          *
          * @throws IOException If an I/O error occurs
          */
         @Nullable
-        public Builder<?> onAttain(
+        public Pipage onOpen(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            int i = index++;
-            setter = subject.set(
-                alias.isEmpty() ? i : alias
-            );
+            Member<T, ?> member =
+                setter = subject.set(alias);
 
-            if (setter != null) {
-                Coder<?> coder = setter
-                    .deserialize(
-                        space, supplier
-                    );
+            if (member != null) {
+                Type type = member.type();
+                Coder<?> coder = member.coder();
 
                 if (coder != null) {
-                    return coder.getBuilder(
-                        setter.getScope()
+                    Builder<?> child =
+                        coder.getBuilder(type);
+                    if (child != null) {
+                        return child.init(this, this);
+                    }
+                } else {
+                    coder = supplier.lookup(
+                        member.kind(), space
                     );
+
+                    if (coder != null) {
+                        Builder<?> child =
+                            coder.getBuilder(type);
+                        if (child != null) {
+                            return child.init(this, this);
+                        }
+                    } else {
+                        throw new IOException(
+                            "No spare for member(" + alias
+                                + ") of " + subject.getType() + " was found"
+                        );
+                    }
                 }
             }
 
@@ -723,10 +452,70 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         /**
-         * Returns the result of building {@link K}
+         * Receive the property of {@link T}
+         *
+         * @throws IOException If an I/O error occurs
+         */
+        @Override
+        public void onEmit(
+            @NotNull Pipage pipage,
+            @Nullable Object result
+        ) throws IOException {
+            setter.invoke(
+                bean, result
+            );
+        }
+
+        /**
+         * Receive the property of {@link T}
+         *
+         * @throws IOException If an I/O error occurs
+         */
+        @Override
+        public void onEmit(
+            @NotNull Space space,
+            @NotNull Alias alias,
+            @NotNull Value value
+        ) throws IOException {
+            Member<T, ?> member =
+                setter = subject.set(alias);
+
+            if (member != null) {
+                Coder<?> coder =
+                    member.coder();
+
+                if (coder != null) {
+                    member.invoke(
+                        bean, coder.read(
+                            flag, value
+                        )
+                    );
+                } else {
+                    coder = supplier.lookup(
+                        member.kind(), space
+                    );
+
+                    if (coder != null) {
+                        member.invoke(
+                            bean, coder.read(
+                                flag, value
+                            )
+                        );
+                    } else {
+                        throw new IOException(
+                            "No spare for member(" + alias
+                                + ") of " + subject.getType() + " was found"
+                        );
+                    }
+                }
+            }
+        }
+
+        /**
+         * Returns the result of building {@link T}
          */
         @Nullable
-        public K onPacket() {
+        public T build() {
             return bean;
         }
 
@@ -734,8 +523,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * Close the resources of this {@link Builder}
          */
         @Override
-        public void onDestroy() {
-            index = 0;
+        public void onClose() {
             bean = null;
             setter = null;
         }
@@ -745,18 +533,17 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      * @author kraity
      * @since 0.0.4
      */
-    class Builder1<K> extends Builder<K> {
+    class Builder1<T> extends Builder<T> implements Callback {
 
-        protected K bean;
-        protected int index;
+        protected T bean;
         protected Object[] data;
 
-        protected Subject<K> subject;
-        protected Member<Object[], ?> setter;
+        protected Subject<T> subject;
+        protected Member<Object[], ?> target;
 
         public Builder1(
             @NotNull Object[] data,
-            @NotNull Subject<K> subject
+            @NotNull Subject<T> subject
         ) {
             this.data = data;
             this.subject = subject;
@@ -766,81 +553,50 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * Prepare before parsing
          */
         @Override
-        public void onCreate() {
+        public void onOpen() {
             // Nothing
         }
 
         /**
-         * Receive the property of {@link K}
-         *
-         * @throws IOException If an I/O error occurs
-         */
-        @Override
-        public void onAttain(
-            @NotNull Space space,
-            @NotNull Alias alias,
-            @NotNull Value value
-        ) throws IOException {
-            int i = index++;
-            setter = subject.arg(
-                alias.isEmpty() ? i : alias
-            );
-
-            if (setter != null) {
-                Coder<?> coder = setter
-                    .deserialize(
-                        space, supplier
-                    );
-
-                if (coder != null) {
-                    setter.invoke(
-                        data, coder.read(
-                            event, value
-                        )
-                    );
-                }
-            }
-        }
-
-        /**
-         * Receive the property of {@link K}
-         *
-         * @throws IOException If an I/O error occurs
-         */
-        @Override
-        public void onDetain(
-            @NotNull Builder<?> child
-        ) throws IOException {
-            setter.invoke(
-                data, child.onPacket()
-            );
-        }
-
-        /**
-         * Create a builder for the property {@link K}
+         * Create a builder for the property {@link T}
          *
          * @throws IOException If an I/O error occurs
          */
         @Nullable
-        public Builder<?> onAttain(
+        public Pipage onOpen(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            int i = index++;
-            setter = subject.arg(
-                alias.isEmpty() ? i : alias
-            );
+            Member<Object[], ?> member =
+                target = subject.arg(alias);
 
-            if (setter != null) {
-                Coder<?> coder = setter
-                    .deserialize(
-                        space, supplier
-                    );
+            if (member != null) {
+                Type type = member.type();
+                Coder<?> coder = member.coder();
 
                 if (coder != null) {
-                    return coder.getBuilder(
-                        setter.getScope()
+                    Builder<?> child =
+                        coder.getBuilder(type);
+                    if (child != null) {
+                        return child.init(this, this);
+                    }
+                } else {
+                    coder = supplier.lookup(
+                        member.kind(), space
                     );
+
+                    if (coder != null) {
+                        Builder<?> child =
+                            coder.getBuilder(type);
+                        if (child != null) {
+                            return child.init(this, this);
+                        }
+                    } else {
+                        throw new IOException(
+                            "No spare for member(" + alias
+                                + ") of " + subject.getType() + " was found"
+                        );
+                    }
                 }
             }
 
@@ -848,18 +604,78 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         /**
-         * Returns the result of building {@link K}
+         * Receive the property of {@link T}
+         *
+         * @throws IOException If an I/O error occurs
+         */
+        @Override
+        public void onEmit(
+            @NotNull Pipage pipage,
+            @Nullable Object result
+        ) throws IOException {
+            target.invoke(
+                data, result
+            );
+        }
+
+        /**
+         * Receive the property of {@link T}
+         *
+         * @throws IOException If an I/O error occurs
+         */
+        @Override
+        public void onEmit(
+            @NotNull Space space,
+            @NotNull Alias alias,
+            @NotNull Value value
+        ) throws IOException {
+            Member<Object[], ?> member =
+                target = subject.arg(alias);
+
+            if (member != null) {
+                Coder<?> coder =
+                    member.coder();
+
+                if (coder != null) {
+                    member.invoke(
+                        data, coder.read(
+                            flag, value
+                        )
+                    );
+                } else {
+                    coder = supplier.lookup(
+                        member.kind(), space
+                    );
+
+                    if (coder != null) {
+                        member.invoke(
+                            data, coder.read(
+                                flag, value
+                            )
+                        );
+                    } else {
+                        throw new IOException(
+                            "No spare for member(" + alias
+                                + ") of " + subject.getType() + " was found"
+                        );
+                    }
+                }
+            }
+        }
+
+        /**
+         * Returns the result of building {@link T}
          *
          * @throws IOException If a packaging error or IO error
          */
         @Nullable
-        public K onPacket()
+        public T build()
             throws IOException {
             if (bean == null) {
                 try {
                     bean = subject.apply(data);
                 } catch (Collapse e) {
-                    throw new ProxyCrash(
+                    throw new IOException(
                         "Error creating entity", e
                     );
                 }
@@ -871,11 +687,10 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * Close the resources of this {@link Builder}
          */
         @Override
-        public void onDestroy() {
-            index = 0;
+        public void onClose() {
             data = null;
             bean = null;
-            setter = null;
+            target = null;
         }
     }
 
@@ -883,23 +698,21 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
      * @author kraity
      * @since 0.0.4
      */
-    class Builder2<K> extends Builder<K> {
+    class Builder2<T> extends Builder<T> implements Callback {
 
-        protected K bean;
-        protected int index;
-
+        protected T bean;
         protected Class<?> cxt;
         protected Object[] data;
 
-        protected Cache<K> cache;
-        protected Subject<K> subject;
+        protected Cache cache;
+        protected Subject<T> subject;
 
-        protected Member<K, ?> setter;
+        protected Member<T, ?> setter;
         protected Member<Object[], ?> target;
 
         public Builder2(
             @NotNull Object[] data,
-            @NotNull Subject<K> subject
+            @NotNull Subject<T> subject
         ) {
             this(
                 null, data, subject
@@ -909,7 +722,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         public Builder2(
             @Nullable Class<?> cxt,
             @NotNull Object[] data,
-            @NotNull Subject<K> subject
+            @NotNull Subject<T> subject
         ) {
             this.cxt = cxt;
             this.data = data;
@@ -922,145 +735,105 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * @throws IOException If an I/O error occurs
          */
         @Override
-        public void onCreate() throws IOException {
+        public void onOpen() throws IOException {
             Class<?> o = cxt;
             if (o != null) {
-                Object res = getParent().onPacket();
-                if (res == null) {
-                    throw new ProxyCrash(
-                        "Unexpectedly, the parent is is null"
-                    );
-                } else {
-                    if (o.isInstance(res)) {
-                        data[0] = res;
+                Channel holder = holder();
+                if (holder instanceof Builder) {
+                    Object bean = ((Builder<?>) holder).build();
+                    if (bean == null) {
+                        throw new IOException(
+                            "The parent result is is null"
+                        );
                     } else {
-                        throw new ProxyCrash(
-                            "Unexpectedly, the parent is not " + o
-                        );
-                    }
-                }
-            }
-        }
-
-        /**
-         * Receive the property of {@link K}
-         *
-         * @throws IOException If an I/O error occurs
-         */
-        @Override
-        public void onAttain(
-            @NotNull Space space,
-            @NotNull Alias alias,
-            @NotNull Value value
-        ) throws IOException {
-            int i = index++;
-            target = subject.arg(
-                alias.isEmpty() ? i : alias
-            );
-
-            if (target != null) {
-                Coder<?> coder = target
-                    .deserialize(
-                        space, supplier
-                    );
-
-                if (coder != null) {
-                    target.invoke(
-                        data, coder.read(
-                            event, value
-                        )
-                    );
-                }
-            } else {
-                setter = subject.set(
-                    alias.isEmpty() ? i : alias
-                );
-
-                if (setter != null) {
-                    Coder<?> coder = setter
-                        .deserialize(
-                            space, supplier
-                        );
-
-                    if (coder != null) {
-                        Cache<K> ca = new Cache<>();
-                        ca.setter = setter;
-                        ca.value = coder.read(
-                            event, value
-                        );
-                        if (cache == null) {
-                            cache = ca;
+                        if (o.isInstance(bean)) {
+                            data[0] = bean;
                         } else {
-                            cache.next = ca;
+                            throw new IOException(
+                                "The parent result is not " + o
+                            );
                         }
                     }
-                }
-            }
-        }
-
-        /**
-         * Receive the property of {@link K}
-         *
-         * @throws IOException If an I/O error occurs
-         */
-        @Override
-        public void onDetain(
-            @NotNull Builder<?> child
-        ) throws IOException {
-            if (target != null) {
-                target.invoke(
-                    data, child.onPacket()
-                );
-            } else {
-                Cache<K> ca = new Cache<>();
-                ca.setter = setter;
-                ca.value = child.onPacket();
-                if (cache == null) {
-                    cache = ca;
                 } else {
-                    cache.next = ca;
+                    throw new IOException(
+                        "Could not find the result of the parent pipage: " + holder
+                    );
                 }
             }
         }
 
         /**
-         * Create a builder for the property {@link K}
+         * Create a builder for the property {@link T}
          *
          * @throws IOException If an I/O error occurs
          */
         @Nullable
-        public Builder<?> onAttain(
+        public Pipage onOpen(
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            int i = index++;
-            target = subject.arg(
-                alias.isEmpty() ? i : alias
-            );
-
-            Coder<?> coder;
+            target = subject.arg(alias);
             if (target != null) {
-                coder = target.deserialize(
-                    space, supplier
-                );
+                Type type = target.type();
+                Coder<?> coder = target.coder();
+
                 if (coder != null) {
-                    return coder.getBuilder(
-                        target.getScope()
+                    Builder<?> child =
+                        coder.getBuilder(type);
+                    if (child != null) {
+                        return child.init(this, this);
+                    }
+                } else {
+                    coder = supplier.lookup(
+                        target.kind(), space
                     );
+
+                    if (coder != null) {
+                        Builder<?> child =
+                            coder.getBuilder(type);
+                        if (child != null) {
+                            return child.init(this, this);
+                        }
+                    } else {
+                        throw new IOException(
+                            "No spare for param(" + alias
+                                + ") of " + subject.getType() + " was found"
+                        );
+                    }
                 }
             } else {
-                setter = subject.set(
-                    alias.isEmpty() ? i : alias
-                );
-
+                setter = subject.set(alias);
                 if (setter != null) {
-                    coder = setter.deserialize(
-                        space, supplier
-                    );
+                    Type type = setter.type();
+                    Coder<?> coder = setter.coder();
+
                     if (coder != null) {
-                        return coder.getBuilder(
-                            setter.getScope()
+                        Builder<?> child =
+                            coder.getBuilder(type);
+                        if (child != null) {
+                            return child.init(
+                                this, new Cache(setter)
+                            );
+                        }
+                    } else {
+                        coder = supplier.lookup(
+                            setter.kind(), space
                         );
+
+                        if (coder != null) {
+                            Builder<?> child =
+                                coder.getBuilder(type);
+                            if (child != null) {
+                                return child.init(
+                                    this, new Cache(setter)
+                                );
+                            }
+                        } else {
+                            throw new IOException(
+                                "No spare for param(" + alias
+                                    + ") of " + subject.getType() + " was found"
+                            );
+                        }
                     }
                 }
             }
@@ -1069,27 +842,141 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
         }
 
         /**
-         * @author kraity
-         * @since 0.0.4
+         * Receive the property of {@link T}
+         *
+         * @throws IOException If an I/O error occurs
          */
-        static class Cache<K> {
-            Object value;
-            Cache<K> next;
-            Setter<K, ?> setter;
+        @Override
+        public void onEmit(
+            @NotNull Pipage pipage,
+            @Nullable Object result
+        ) throws IOException {
+            target.invoke(
+                data, result
+            );
         }
 
         /**
-         * Returns the result of building {@link K}
+         * Receive the property of {@link T}
+         *
+         * @throws IOException If an I/O error occurs
+         */
+        @Override
+        public void onEmit(
+            @NotNull Space space,
+            @NotNull Alias alias,
+            @NotNull Value value
+        ) throws IOException {
+            target = subject.arg(alias);
+            if (target != null) {
+                Coder<?> coder =
+                    target.coder();
+
+                if (coder != null) {
+                    target.invoke(
+                        data, coder.read(
+                            flag, value
+                        )
+                    );
+                } else {
+                    coder = supplier.lookup(
+                        target.kind(), space
+                    );
+
+                    if (coder != null) {
+                        target.invoke(
+                            data, coder.read(
+                                flag, value
+                            )
+                        );
+                    } else {
+                        throw new IOException(
+                            "No spare for param(" + alias
+                                + ") of " + subject.getType() + " was found"
+                        );
+                    }
+                }
+            } else {
+                setter = subject.set(alias);
+                if (setter != null) {
+                    Coder<?> coder =
+                        setter.coder();
+
+                    if (coder != null) {
+                        new Cache(setter,
+                            coder.read(flag, value)
+                        );
+                    } else {
+                        coder = supplier.lookup(
+                            setter.kind(), space
+                        );
+
+                        if (coder != null) {
+                            new Cache(setter,
+                                coder.read(flag, value)
+                            );
+                        } else {
+                            throw new IOException(
+                                "No spare for member(" + alias
+                                    + ") of " + subject.getType() + " was found"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * @author kraity
+         * @since 0.0.4
+         */
+        class Cache implements Callback {
+            Cache next;
+            Object value;
+            Setter<T, ?> setter;
+
+            public Cache(
+                Setter<T, ?> setter
+            ) {
+                this.setter = setter;
+            }
+
+            public Cache(
+                Setter<T, ?> setter, Object value
+            ) {
+                this.value = value;
+                this.setter = setter;
+                if (cache == null) {
+                    cache = this;
+                } else {
+                    cache.next = this;
+                }
+            }
+
+            @Override
+            public void onEmit(
+                Pipage pipage, Object result) throws IOException {
+                value = result;
+                if (cache == null) {
+                    cache = this;
+                } else {
+                    cache.next = this;
+                }
+            }
+        }
+
+        /**
+         * Returns the result of building {@link T}
          *
          * @throws IOException If a packaging error or IO error
          */
         @Nullable
-        public K onPacket() throws IOException {
+        public T build() throws IOException {
             if (bean == null) {
                 try {
                     bean = subject.apply(data);
                 } catch (Collapse e) {
-                    throw new ProxyCrash(
+                    throw new IOException(
                         "Error creating entity", e
                     );
                 }
@@ -1108,8 +995,7 @@ public interface Subject<K> extends Spare<K>, Maker<K> {
          * Close the resources of this {@link Builder}
          */
         @Override
-        public void onDestroy() {
-            index = 0;
+        public void onClose() {
             bean = null;
             data = null;
             cache = null;

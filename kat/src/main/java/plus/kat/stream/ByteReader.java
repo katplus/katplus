@@ -17,9 +17,12 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
+import plus.kat.chain.*;
 import plus.kat.crash.*;
 
 import java.io.IOException;
+
+import static plus.kat.chain.Chain.Unsafe.value;
 
 /**
  * @author kraity
@@ -28,12 +31,9 @@ import java.io.IOException;
 public class ByteReader implements Reader {
 
     private int index;
-    private int offset;
+    private int limit;
     private byte[] value;
 
-    /**
-     * @throws NullPointerException If the specified {@code data} is null
-     */
     public ByteReader(
         @NotNull byte[] data
     ) {
@@ -42,13 +42,40 @@ public class ByteReader implements Reader {
         }
 
         this.value = data;
-        this.offset = data.length;
+        this.limit = data.length;
     }
 
-    /**
-     * @throws NullPointerException      If the specified {@code data} is null
-     * @throws IndexOutOfBoundsException If the index and the length are out of range
-     */
+    public ByteReader(
+        @NotNull Chain data
+    ) {
+        if (data == null) {
+            throw new NullPointerException();
+        }
+
+        this.value = value(data);
+        this.limit = data.length();
+    }
+
+    public ByteReader(
+        @NotNull Chain data, int index, int length
+    ) {
+        if (data == null) {
+            throw new NullPointerException();
+        }
+
+        int limit = index + length;
+        if (index < 0 ||
+            limit <= index ||
+            limit > data.length()
+        ) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        this.index = index;
+        this.limit = limit;
+        this.value = value(data);
+    }
+
     public ByteReader(
         @NotNull byte[] data, int index, int length
     ) {
@@ -56,22 +83,22 @@ public class ByteReader implements Reader {
             throw new NullPointerException();
         }
 
-        int offset = index + length;
+        int limit = index + length;
         if (index < 0 ||
-            offset <= index ||
-            offset > data.length
+            limit <= index ||
+            limit > data.length
         ) {
             throw new IndexOutOfBoundsException();
         }
 
         this.value = data;
         this.index = index;
-        this.offset = offset;
+        this.limit = limit;
     }
 
     @Override
     public boolean also() {
-        return index < offset;
+        return index < limit;
     }
 
     @Override
@@ -81,18 +108,19 @@ public class ByteReader implements Reader {
 
     @Override
     public byte next() throws IOException {
-        if (index < offset) {
+        if (index < limit) {
             return value[index++];
         }
 
-        throw new ReaderCrash(
-            "Unexpectedly, no readable byte"
+        throw new FlowCrash(
+            "No readable byte, please " +
+                "check whether the stream is damaged"
         );
     }
 
     @Override
     public void close() {
+        limit = 0;
         value = null;
-        offset = 0;
     }
 }

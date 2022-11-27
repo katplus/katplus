@@ -21,7 +21,6 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
-import plus.kat.kernel.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -46,31 +45,22 @@ public class DoubleSpare extends Property<Double> {
 
     @Override
     public Double apply(
-        @NotNull Type type
+        @Nullable Type type
     ) {
-        if (type == double.class ||
+        if (type == null ||
+            type == double.class ||
             type == Double.class) {
             return 0D;
         }
 
         throw new Collapse(
-            "Unable to create an instance of " + type
+            this + " unable to build " + type
         );
     }
 
     @Override
     public String getSpace() {
         return "d";
-    }
-
-    @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
-    ) {
-        return clazz == double.class
-            || clazz == Double.class
-            || clazz == Number.class
-            || clazz == Object.class;
     }
 
     @Override
@@ -83,9 +73,9 @@ public class DoubleSpare extends Property<Double> {
     @Override
     public Double read(
         @NotNull Flag flag,
-        @NotNull Alias alias
+        @NotNull Chain chain
     ) {
-        return alias.toDouble();
+        return chain.toDouble();
     }
 
     @Override
@@ -101,43 +91,49 @@ public class DoubleSpare extends Property<Double> {
         @NotNull Flow flow,
         @NotNull Object value
     ) throws IOException {
-        flow.emit(
-            (double) value
-        );
+        flow.emit((double) value);
     }
 
     @Override
     public Double cast(
-        @Nullable Object data,
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data != null) {
-            if (data instanceof Double) {
-                return (Double) data;
-            }
+        if (object == null) {
+            return 0D;
+        }
 
-            if (data instanceof Number) {
-                return ((Number) data).doubleValue();
-            }
+        if (object instanceof Double) {
+            return (Double) object;
+        }
 
-            if (data instanceof Boolean) {
-                return ((boolean) data) ? 1D : 0D;
-            }
+        if (object instanceof Number) {
+            return ((Number) object).doubleValue();
+        }
 
-            if (data instanceof Chain) {
-                return ((Chain) data).toDouble();
-            }
+        if (object instanceof Boolean) {
+            return ((boolean) object) ? 1D : 0D;
+        }
 
-            if (data instanceof CharSequence) {
-                try {
-                    return Double.parseDouble(
-                        data.toString()
-                    );
-                } catch (Exception e) {
-                    // Nothing
-                }
+        if (object instanceof Chain) {
+            return ((Chain) object).toDouble();
+        }
+
+        if (object instanceof CharSequence) {
+            String s = object.toString();
+            if (s.isEmpty() ||
+                "null".equalsIgnoreCase(s)) {
+                return 0D;
+            }
+            try {
+                return Double.parseDouble(s);
+            } catch (Exception e) {
+                return 0D;
             }
         }
-        return 0D;
+
+        throw new IllegalStateException(
+            object + " cannot be converted to Double"
+        );
     }
 }

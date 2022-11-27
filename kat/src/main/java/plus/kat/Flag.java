@@ -25,6 +25,24 @@ import plus.kat.anno.Expose;
 @FunctionalInterface
 public interface Flag {
     /**
+     * Embed Flags
+     *
+     * @see Embed
+     */
+    long SEALED = 0x1;
+
+    /**
+     * Expose Flags
+     *
+     * @see Expose
+     */
+    long NOTNULL = 0x1;
+    long READONLY = 0x2;
+    long INTERNAL = 0x4;
+    long EXCLUDED = 0x6;
+    long UNWRAPPED = 0x8;
+
+    /**
      * Write Flags
      *
      * @see Chan
@@ -32,8 +50,7 @@ public interface Flag {
     long PRETTY = 0x1;
     long UNICODE = 0x2;
     long ENUM_AS_INDEX = 0x4;
-    long DATE_AS_TIMESTAMP = 0x10;
-    long INSTANT_AS_TIMESTAMP = 0x20;
+    long DATE_AS_DIGIT = 0x8;
 
     /**
      * Read Flags
@@ -41,29 +58,11 @@ public interface Flag {
      * @see Event
      */
     long INDEX_AS_ENUM = 0x4;
-    long STRING_AS_OBJECT = 0x8;
+    long DIGIT_AS_DATE = 0x8;
+    long VALUE_AS_BEAN = 0x10;
 
     /**
-     * Embed Flags
-     *
-     * @see Embed
-     */
-    int Sealed = 0x1;
-    int Nimble = 0x2;
-
-    /**
-     * Expose Flags
-     *
-     * @see Expose
-     */
-    int NotNull = 0x1;
-    int Readonly = 0x2;
-    int Internal = 0x4;
-    int Excluded = 0x6;
-    int Unwrapped = 0x8;
-
-    /**
-     * Check if this {@link Object} use the {@code flag}
+     * Check if this {@link Object} uses the {@code flag}
      *
      * <pre>{@code
      *  Flag flag = ...
@@ -77,32 +76,33 @@ public interface Flag {
     );
 
     /**
-     * Check if this {@link Object} use the {@code flag}.
-     * The method is to extend {@link Flag#isFlag(long)} to derive custom {@code flags}.
+     * Check if this {@link Object} uses the
+     * {@code flag} under the specified branch {@code code}
      *
      * <pre>{@code
      *  Flag flag = ...
-     *  boolean status = flag.isFlag(Flag.UNICODE, 0); // equivalent to 'flag.isFlag(Flag.UNICODE);'
+     *  // equivalent to 'flag.isFlag(0x1L);'
+     *  boolean status = flag.isFlag(0x1L, 0);
      *
-     *  // custom
-     *  int kat = 1;
-     *  int json = 2;
+     *  // code=1, flag = 0x1L
+     *  boolean status = flag.isFlag(0x1L, 1);
      *
-     *  long ASM = 0x1L;
-     *  boolean status = flag.isFlag(ASM, kat);
-     *  boolean status = flag.isFlag(ASM, json);
+     *  // code=1, flag = 0x2L
+     *  boolean status = flag.isFlag(0x2L, 1);
      *
-     *  long AUTO = 0x2L;
-     *  boolean status = flag.isFlag(AUTO, kat);
-     *  boolean status = flag.isFlag(AUTO, json);
+     *  // code=2, flag = 0x1L
+     *  boolean status = flag.isFlag(0x1L, 2);
+     *
+     *  // code=2, flag = 0x2L
+     *  boolean status = flag.isFlag(0x2L, 2);
      * }</pre>
      * <p>
-     * Use {@code code} as the distinguishing mark,
-     * when code is 0, check whether to use official {@code flags},
-     * otherwise use {@code code} as branch to check custom {@code flags}
+     * Uses {@code code} as the distinguishing mark,
+     * when code is '0', metamorphoses to {@link #isFlag(long)},
+     * otherwise use {@code code} as branch to check the {@code flag}
      *
      * @param flag the specified {@code flag}
-     * @param code the specified {@code code}
+     * @param code the specified branch {@code code}
      * @since 0.0.3
      */
     default boolean isFlag(

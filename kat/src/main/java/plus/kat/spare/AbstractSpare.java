@@ -15,14 +15,16 @@
  */
 package plus.kat.spare;
 
-import plus.kat.anno.*;
+import plus.kat.anno.Embed;
+import plus.kat.anno.Expose;
+import plus.kat.anno.Format;
+import plus.kat.anno.NotNull;
+import plus.kat.anno.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
-import plus.kat.stream.*;
-import plus.kat.utils.*;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -31,6 +33,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Map;
 
 import static plus.kat.Flag.*;
@@ -43,14 +46,14 @@ import static plus.kat.Flag.*;
 public abstract class AbstractSpare<T> implements Subject<T> {
 
     protected String[] spaces;
-    protected int flags;
+    protected long flags;
     protected final String space;
 
     protected final Class<T> klass;
     protected final Supplier supplier;
 
     protected Bundle<T>[] table;
-    protected Medium<T, ?> head, tail;
+    protected Explorer<T, ?> head, tail;
 
     protected AbstractSpare(
         @NotNull Class<T> klass,
@@ -92,15 +95,79 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     }
 
     @Override
-    public String getSpace() {
-        return space;
+    public T apply(
+        @Nullable Type type
+    ) {
+        if (type == null ||
+            type == klass) {
+            return apply();
+        }
+
+        Class<?> clazz = Space.wipe(type);
+        if (clazz == null) {
+            throw new Collapse(
+                "Failed to resolve " + type
+            );
+        }
+
+        if (klass == clazz) {
+            return apply();
+        }
+
+        if (klass.isAssignableFrom(clazz)) {
+            Spare<T> spare =
+                getSupplier().lookup(
+                    (Class<T>) clazz
+                );
+
+            if (spare != null &&
+                spare != this) {
+                return spare.apply(type);
+            }
+        }
+
+        throw new Collapse(
+            this + " unable to build " + type
+        );
     }
 
     @Override
-    public boolean accept(
-        @NotNull Class<?> clazz
+    public Spare<T> join(
+        @NotNull Supplier supplier
     ) {
-        return clazz.isAssignableFrom(klass);
+        supplier.embed(
+            klass, this
+        );
+        if (spaces != null) {
+            for (String space : spaces) {
+                if (space.indexOf('.', 1) != -1) {
+                    supplier.embed(space, this);
+                }
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public Spare<T> drop(
+        @NotNull Supplier supplier
+    ) {
+        supplier.revoke(
+            klass, this
+        );
+        if (spaces != null) {
+            for (String space : spaces) {
+                if (space.indexOf('.', 1) != -1) {
+                    supplier.revoke(space, this);
+                }
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public String getSpace() {
+        return space;
     }
 
     @Override
@@ -114,27 +181,17 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     }
 
     @Override
-    public void embed(
-        @NotNull Supplier supplier
-    ) {
-        supplier.embed(klass, this);
-        if (spaces != null) {
-            for (String space : spaces) {
-                if (space.indexOf('.', 1) != -1) {
-                    supplier.embed(space, this);
-                }
-            }
-        }
-    }
-
-    @Override
     public T read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Chain value
     ) throws IOException {
-        if (flag.isFlag(Flag.STRING_AS_OBJECT)) {
-            return Convert.toObject(
-                this, flag, value
+        if (flag.isFlag(Flag.VALUE_AS_BEAN)) {
+            Algo algo = Algo.of(value);
+            if (algo == null) {
+                return null;
+            }
+            return solve(
+                algo, new Event<T>(value).with(flag)
             );
         }
         return null;
@@ -145,10 +202,33 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        for (Medium<T, ?> m = head; m != null; m = m.near) {
-            m.serialize(
-                chan, m.invoke(value)
-            );
+        for (Explorer<T, ?> m = head; m != null; m = m.near) {
+            Object data = m.invoke(value);
+            if (data == null) {
+                if ((m.flags & NOTNULL) == 0) {
+                    chan.set(
+                        m.name, m.coder, null
+                    );
+                }
+            } else {
+                if ((m.flags & UNWRAPPED) == 0) {
+                    chan.set(
+                        m.name, m.coder, data
+                    );
+                } else {
+                    Coder<?> it = m.coder;
+                    if (it != null) {
+                        it.write(chan, data);
+                    } else {
+                        it = chan.getSupplier().lookup(
+                            data.getClass()
+                        );
+                        if (it != null) {
+                            it.write(chan, data);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -156,8 +236,13 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     public Spoiler flat(
         @NotNull T bean
     ) {
-        return new Folder<>(
-            bean, this
+        if (bean != null) {
+            return new Broker<>(
+                bean, head
+            );
+        }
+        throw new NullPointerException(
+            "The specified bean is null"
         );
     }
 
@@ -166,56 +251,94 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         @NotNull T bean,
         @NotNull Visitor visitor
     ) {
-        for (Medium<T, ?> m = head; m != null; m = m.near) {
-            Object data = m.apply(bean);
-            if (data != null || (m.flags & NotNull) == 0) {
-                visitor.visit(
-                    m.name, data
-                );
+        if (bean != null) {
+            for (Explorer<T, ?> m = head; m != null; m = m.near) {
+                Object data = m.apply(bean);
+                if (data != null || (m.flags & NOTNULL) == 0) {
+                    visitor.visit(
+                        m.name, data
+                    );
+                }
             }
+            return true;
         }
-        return true;
-    }
-
-    @Override
-    public T cast(
-        @Nullable Object data
-    ) {
-        return cast(
-            data, supplier
+        throw new NullPointerException(
+            "The specified bean is null"
         );
     }
 
-    @Override
+    @Nullable
     public T cast(
-        @Nullable Object data,
+        @Nullable Object object
+    ) {
+        return cast(
+            object, supplier
+        );
+    }
+
+    @Nullable
+    public T cast(
+        @Nullable Object object,
         @NotNull Supplier supplier
     ) {
-        if (data == null) {
+        if (object == null) {
             return null;
         }
 
-        if (klass.isInstance(data)) {
-            return (T) data;
+        if (klass.isInstance(object)) {
+            return (T) object;
         }
 
-        if (data instanceof CharSequence) {
-            return Convert.toObject(
-                this, (CharSequence) data, null, supplier
+        if (object instanceof CharSequence) {
+            CharSequence cs =
+                (CharSequence) object;
+            Algo algo = Algo.of(cs);
+            if (algo == null) {
+                return null;
+            }
+            return solve(
+                algo, new Event<T>(cs).with(supplier)
             );
         }
 
-        try {
-            return convert(
-                data, supplier
+        if (object instanceof Map) {
+            return apply(
+                Spoiler.of((Map<?, ?>) object), supplier
             );
-        } catch (Exception e) {
-            return null;
+        }
+
+        if (object instanceof Spoiler) {
+            return apply(
+                (Spoiler) object, supplier
+            );
+        }
+
+        if (object instanceof ResultSet) {
+            try {
+                return apply(
+                    supplier, (ResultSet) object
+                );
+            } catch (SQLException e) {
+                throw new IllegalStateException(
+                    object + " cannot be converted to " + klass, e
+                );
+            }
+        }
+
+        Spoiler spoiler =
+            supplier.flat(object);
+        if (spoiler != null) {
+            return apply(
+                spoiler, supplier
+            );
+        } else {
+            throw new IllegalStateException(
+                "Not found the Spoiler of " + object
+            );
         }
     }
 
     @NotNull
-    @Override
     public T apply(
         @NotNull Spoiler spoiler
     ) throws Collapse {
@@ -225,7 +348,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     }
 
     @NotNull
-    @Override
     public T apply(
         @NotNull Spoiler spoiler,
         @NotNull Supplier supplier
@@ -246,7 +368,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     }
 
     @NotNull
-    @Override
     public T apply(
         @NotNull ResultSet resultSet
     ) throws SQLException {
@@ -256,7 +377,6 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     }
 
     @NotNull
-    @Override
     public T apply(
         @NotNull Supplier supplier,
         @NotNull ResultSet resultSet
@@ -276,41 +396,9 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         }
     }
 
-    @Nullable
-    public T convert(
-        @NotNull Object data,
-        @NotNull Supplier supplier
-    ) throws Exception {
-        if (data instanceof Map) {
-            return apply(
-                Spoiler.of((Map<?, ?>) data), supplier
-            );
-        }
-
-        if (data instanceof Spoiler) {
-            return apply(
-                (Spoiler) data, supplier
-            );
-        }
-
-        if (data instanceof ResultSet) {
-            return apply(
-                supplier, (ResultSet) data
-            );
-        }
-
-        Spoiler spoiler =
-            supplier.flat(data);
-        if (spoiler == null) {
-            return null;
-        }
-
-        return apply(spoiler, supplier);
-    }
-
     @Override
     public Member<T, ?> set(
-        @NotNull Object name
+        @NotNull CharSequence name
     ) {
         Bundle<T>[] tab = table;
         if (tab == null) {
@@ -337,7 +425,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
 
     @Override
     public Member<T, ?> get(
-        @NotNull Object key
+        @NotNull CharSequence key
     ) {
         Bundle<T>[] tab = table;
         if (tab == null) {
@@ -364,7 +452,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
 
     @Override
     public Member<Object[], ?> arg(
-        @NotNull Object name
+        @NotNull CharSequence name
     ) {
         Bundle<T>[] tab = table;
         if (tab == null) {
@@ -474,7 +562,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     }
 
     /**
-     * Returns true if the {@link Medium} is settled
+     * Returns true if the {@link Explorer} is settled
      *
      * @param name the specified key of bundle
      * @param node the specified bundle to be settled
@@ -482,7 +570,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     private boolean bundle(
         @NotNull int grade,
         @NotNull String name,
-        @NotNull Medium<T, ?> node
+        @NotNull Explorer<T, ?> node
     ) {
         if (node.name == null) {
             node.name = name;
@@ -491,8 +579,8 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             return false;
         }
 
-        Medium<T, ?> m = head;
-        Medium<T, ?> n = null;
+        Explorer<T, ?> m = head;
+        Explorer<T, ?> n = null;
 
         int d = node.index;
         if (d == -1 && grade == 0) {
@@ -574,23 +662,22 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      * Sets the specified property
      */
     protected void setReader(
-        @NotNull Object key,
-        @NotNull Medium<T, ?> node
+        @NotNull String key,
+        @NotNull Explorer<T, ?> node
     ) {
         bundle(key, node).setter = node;
     }
 
     /**
-     * Sets the specified property.
+     * Adds the specified property.
      * Returns true if the node is settled
      */
-    protected boolean setReader(
-        @NotNull boolean fix,
-        @NotNull Object key,
-        @NotNull Medium<T, ?> node
+    protected boolean addReader(
+        @NotNull Object name,
+        @NotNull Explorer<T, ?> node
     ) {
-        Bundle<T> e = bundle(key, node);
-        if (fix || e.setter == null) {
+        Bundle<T> e = bundle(name, node);
+        if (e.setter == null) {
             e.setter = node;
             return true;
         } else {
@@ -604,7 +691,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      */
     protected boolean setWriter(
         @NotNull String name,
-        @NotNull Medium<T, ?> node
+        @NotNull Explorer<T, ?> node
     ) {
         return setWriter(
             0, name, node
@@ -618,7 +705,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     protected boolean setWriter(
         @NotNull int grade,
         @NotNull String name,
-        @NotNull Medium<T, ?> node
+        @NotNull Explorer<T, ?> node
     ) {
         Bundle<T> e = bundle(name, node);
         if (e.getter != null) {
@@ -637,7 +724,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      */
     protected boolean setProperty(
         @NotNull String name,
-        @NotNull Medium<T, ?> node
+        @NotNull Explorer<T, ?> node
     ) {
         return setProperty(
             0, name, node
@@ -651,7 +738,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
     protected boolean setProperty(
         @NotNull int grade,
         @NotNull String name,
-        @NotNull Medium<T, ?> node
+        @NotNull Explorer<T, ?> node
     ) {
         Bundle<T> e = bundle(name, node);
         e.setter = node;
@@ -669,23 +756,22 @@ public abstract class AbstractSpare<T> implements Subject<T> {
      * Sets the specified parameter
      */
     protected void setParameter(
-        @NotNull Object key,
-        @NotNull Medium<Object[], ?> node
+        @NotNull String name,
+        @NotNull Explorer<Object[], ?> node
     ) {
-        bundle(key, node).target = node;
+        bundle(name, node).target = node;
     }
 
     /**
-     * Sets the specified parameter.
+     * Adds the specified parameter.
      * Returns true if the node is settled
      */
-    protected boolean setParameter(
-        @NotNull boolean fix,
-        @NotNull Object key,
-        @NotNull Medium<Object[], ?> node
+    protected boolean addParameter(
+        @NotNull String name,
+        @NotNull Explorer<Object[], ?> node
     ) {
-        Bundle<Object[]> e = bundle(key, node);
-        if (fix || e.target == null) {
+        Bundle<Object[]> e = bundle(name, node);
+        if (e.target == null) {
             e.target = node;
             return true;
         } else {
@@ -695,24 +781,37 @@ public abstract class AbstractSpare<T> implements Subject<T> {
 
     /**
      * @author kraity
-     * @since 0.0.4
+     * @since 0.0.5
      */
-    public static class Folder<K>
+    public static class Broker<T>
         implements Spoiler {
 
-        protected Medium<K, ?> near;
-        protected Medium<K, ?> node;
+        protected final T bean;
+        protected Explorer<T, ?> near;
+        protected Explorer<T, ?> node;
 
-        protected final K bean;
-        protected AbstractSpare<K> spare;
-
-        public Folder(
-            @NotNull K bean,
-            @NotNull AbstractSpare<K> spare
+        protected Broker(
+            @NotNull T bean,
+            @NotNull Explorer<T, ?> near
         ) {
-            near = spare.head;
             this.bean = bean;
-            this.spare = spare;
+            this.near = near;
+        }
+
+        @Override
+        public boolean hasNext() {
+            Explorer<T, ?> n = near;
+            if (n != null) {
+                node = n;
+                near = n.near;
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return node.clazz;
         }
 
         @Override
@@ -724,65 +823,48 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         public Object getValue() {
             return node.apply(bean);
         }
-
-        @Override
-        public Class<?> getType() {
-            return node.clazz;
-        }
-
-        @Override
-        public boolean hasNext() {
-            Medium<K, ?> n = near;
-            if (n != null) {
-                node = n;
-                near = n.near;
-                return true;
-            } else {
-                return false;
-            }
-        }
     }
 
     /**
      * @author kraity
-     * @since 0.0.4
+     * @since 0.0.5
      */
-    public static class Bundle<K> {
+    public static class Bundle<T> {
         private int hash;
         private Object key;
-        private Bundle<K> next;
+        private Bundle<T> next;
 
-        private Member<K, ?> setter;
-        private Member<K, ?> getter;
+        private Member<T, ?> setter;
+        private Member<T, ?> getter;
         private Member<Object[], ?> target;
     }
 
     /**
      * @author kraity
-     * @since 0.0.4
+     * @since 0.0.5
      */
-    public abstract static class Medium<K, V>
-        extends Bundle<K> implements Member<K, V> {
+    public abstract static class Explorer<T, V>
+        extends Bundle<T> implements Member<T, V> {
 
         private int grade;
         private String name;
-        private Medium<K, ?> near;
+        private Explorer<T, ?> near;
 
-        protected Type scope;
+        protected int index;
+        protected long flags;
+
+        protected Type klass;
         protected Class<?> clazz;
-
-        protected int flags;
-        public final int index;
 
         protected Coder<?> coder;
         protected AnnotatedElement element;
 
         /**
          * <pre>{@code
-         *  Medium node = new MediumImpl(0);
+         *  Explorer node = new ExplorerImpl(0);
          * }</pre>
          */
-        protected Medium(
+        protected Explorer(
             int index
         ) {
             this.index = index;
@@ -791,10 +873,10 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         /**
          * <pre>{@code
          *  Expose expose = ...
-         *  Medium node = new MediumImpl(expose);
+         *  Explorer node = new ExplorerImpl(expose);
          * }</pre>
          */
-        protected Medium(
+        protected Explorer(
             @Nullable Expose elem
         ) {
             if (elem == null) {
@@ -807,18 +889,18 @@ public abstract class AbstractSpare<T> implements Subject<T> {
 
         /**
          * <pre>{@code
-         *  Medium node = ...
-         *  Medium node0 = new MediumImpl(node);
+         *  Explorer node = ...
+         *  Explorer node0 = new ExplorerImpl(node);
          * }</pre>
          */
-        protected Medium(
-            @NotNull Medium<?, ?> node
+        protected Explorer(
+            @NotNull Explorer<?, ?> node
         ) {
             coder = node.coder;
-            clazz = node.clazz;
-            index = node.index;
             flags = node.flags;
-            scope = node.scope;
+            index = node.index;
+            clazz = node.clazz;
+            klass = node.klass;
             element = node.element;
         }
 
@@ -826,22 +908,22 @@ public abstract class AbstractSpare<T> implements Subject<T> {
          * <pre>{@code
          *  Field field = ...
          *  Expose expose = ...
-         *  Medium medium = new MediumImpl(field, expose);
+         *  Explorer medium = new ExplorerImpl(field, expose);
          * }</pre>
          */
-        protected Medium(
+        protected Explorer(
             @NotNull Field field,
             @Nullable Expose expose
         ) {
             this(expose);
             element = field;
-            Class<?> type = field.getType();
-            scope = field.getGenericType();
-            if (!type.isPrimitive()) {
-                clazz = type;
+            Class<?> cls = field.getType();
+            if (cls.isPrimitive()) {
+                flags |= NOTNULL;
+                klass = clazz = Space.wrap(cls);
             } else {
-                flags |= NotNull;
-                clazz = Find.kind(type);
+                clazz = cls;
+                klass = field.getGenericType();
             }
         }
 
@@ -849,24 +931,36 @@ public abstract class AbstractSpare<T> implements Subject<T> {
          * <pre>{@code
          *  Method method = ...
          *  Expose expose = ...
-         *  Medium medium = new MediumImpl(method, expose);
+         *  Explorer medium = new ExplorerImpl(method, expose);
          * }</pre>
          */
-        protected Medium(
+        protected Explorer(
             @NotNull Method method,
             @Nullable Expose expose
         ) {
             this(expose);
-            Class<?> type;
             element = method;
             switch (method.getParameterCount()) {
                 case 0: {
-                    scope = type = method.getReturnType();
+                    Class<?> cls = method.getReturnType();
+                    if (cls.isPrimitive()) {
+                        flags |= NOTNULL;
+                        klass = clazz = Space.wrap(cls);
+                    } else {
+                        clazz = cls;
+                        klass = method.getGenericReturnType();
+                    }
                     break;
                 }
                 case 1: {
-                    type = method.getParameterTypes()[0];
-                    scope = method.getGenericParameterTypes()[0];
+                    Class<?> cls = method.getParameterTypes()[0];
+                    if (cls.isPrimitive()) {
+                        flags |= NOTNULL;
+                        klass = clazz = Space.wrap(cls);
+                    } else {
+                        clazz = cls;
+                        klass = method.getGenericParameterTypes()[0];
+                    }
                     break;
                 }
                 default: {
@@ -876,205 +970,211 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                     );
                 }
             }
-            if (!type.isPrimitive()) {
-                clazz = type;
-            } else {
-                flags |= NotNull;
-                clazz = Find.kind(type);
+        }
+
+        protected void init(
+            Expose expose,
+            Subject<?> subject
+        ) {
+            Class<?> with;
+            if (expose == null || (with =
+                expose.with()) == Coder.class) {
+                Format format = custom(Format.class);
+                if (format != null) {
+                    if (clazz == Date.class) {
+                        coder = new DateSpare(format);
+                    }
+                }
+                return;
+            }
+
+            if (!Coder.class.
+                isAssignableFrom(with)) {
+                coder = subject.getSupplier().lookup(with);
+            } else if (with == ByteArrayCoder.class) {
+                coder = ByteArrayCoder.INSTANCE;
+            } else try {
+                Constructor<?>[] cs = with
+                    .getDeclaredConstructors();
+                Constructor<?> d, c = cs[0];
+                for (int i = 1; i < cs.length; i++) {
+                    d = cs[i];
+                    if (c.getParameterCount() <=
+                        d.getParameterCount()) c = d;
+                }
+
+                Object[] args;
+                int size = c.getParameterCount();
+
+                if (size == 0) {
+                    args = ArraySpare.EMPTY_ARRAY;
+                } else {
+                    args = new Object[size];
+                    Class<?>[] cls =
+                        c.getParameterTypes();
+                    for (int i = 0; i < size; i++) {
+                        Class<?> m = cls[i];
+                        if (m == Class.class) {
+                            args[i] = clazz;
+                        } else if (m == Type.class) {
+                            args[i] = klass;
+                        } else if (m == Expose.class) {
+                            args[i] = expose;
+                        } else if (m == Supplier.class) {
+                            args[i] = subject.getSupplier();
+                        } else if (m.isPrimitive()) {
+                            args[i] = Spare.lookup(m).apply();
+                        } else if (m.isAnnotation()) {
+                            args[i] = custom(
+                                (Class<? extends Annotation>) m
+                            );
+                        }
+                    }
+                }
+
+                if (!c.isAccessible()) {
+                    c.setAccessible(true);
+                }
+                coder = (Coder<?>) c.newInstance(args);
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                    "Failed to build the '"
+                        + this + "' coder: " + with, e
+                );
             }
         }
 
         /**
-         * Returns the {@link Class} of {@link V}
+         * Returns the class of {@link V}
          */
         @Override
-        public Class<?> getType() {
+        public Class<?> kind() {
             return clazz;
         }
 
         /**
-         * Returns {@code true} if processed
+         * Returns the type of {@link V}
          */
         @Override
-        public boolean serialize(
-            @NotNull Chan chan,
-            @Nullable Object value
-        ) throws IOException {
-            if (value == null) {
-                if ((flags & NotNull) == 0) {
-                    chan.set(
-                        name, coder, null
-                    );
-                }
-            } else {
-                if ((flags & Unwrapped) == 0) {
-                    chan.set(
-                        name, coder, value
-                    );
-                } else {
-                    Coder<?> it = coder;
-                    if (it != null) {
-                        it.write(chan, value);
-                    } else {
-                        it = chan.getSupplier().lookup(
-                            value.getClass()
-                        );
-                        if (it == null) {
-                            return false;
-                        } else {
-                            it.write(chan, value);
-                        }
-                    }
-                }
-            }
-            return true;
-        }
-
-        /**
-         * Returns the {@link Coder} of {@link V}
-         */
-        @Override
-        public Coder<?> deserialize(
-            @NotNull Space space,
-            @Nullable Supplier supplier
-        ) throws IOException {
-            Coder<?> it = coder;
-            if (it != null) {
-                return it;
-            }
-
-            if (supplier != null) {
-                return supplier.lookup(
-                    clazz, space
-                );
-            }
-
-            throw new ProxyCrash(
-                "Unexpectedly, supplier not found"
-            );
+        public Type type() {
+            return klass;
         }
 
         /**
          * Returns the flags of {@link V}
          */
         @Override
-        public int getFlags() {
+        public long flags() {
             return flags;
         }
 
         /**
-         * Returns the {@link Type} of {@link V}
+         * Returns the coder of {@link V}
          */
         @Override
-        public Type getScope() {
-            return scope;
-        }
-
-        /**
-         * Returns the {@link Coder} of {@link V}
-         */
-        @Nullable
-        public Coder<?> getCoder() {
+        public Coder<?> coder() {
             return coder;
         }
 
         /**
-         * Returns the {@link AnnotatedElement} of {@link V}
+         * Returns the annotation of the {@code class}
          */
         @Override
-        public AnnotatedElement getAnnotated() {
-            return element;
-        }
-
-        /**
-         * Returns the annotation of the specified type
-         */
-        @Override
-        public <A extends Annotation> A getAnnotation(
-            @NotNull Class<A> target
+        public <A extends Annotation> A custom(
+            @NotNull Class<A> clazz
         ) {
             AnnotatedElement elem = element;
             if (elem != null) {
-                return elem.getAnnotation(target);
+                return elem.getAnnotation(clazz);
             } else {
-                return clazz.getAnnotation(target);
+                return clazz.getAnnotation(clazz);
             }
         }
     }
 
     /**
      * @see MethodHandles
-     * @since 0.0.4
+     * @since 0.0.5
      */
     protected static final MethodHandles.Lookup
         LOOKUP = MethodHandles.lookup();
 
     /**
      * @author kraity
-     * @since 0.0.4
+     * @since 0.0.5
      */
-    public static class Accessor<K> extends Medium<K, Object> {
+    public static class Callable<T> extends Explorer<T, Object> {
 
         protected MethodHandle getter;
         protected MethodHandle setter;
 
-        public Accessor(
+        public Callable(
             Expose expose,
             Field field,
             Subject<?> subject
-        ) throws IllegalAccessException {
+        ) {
             this(
                 expose, field, false, subject
             );
         }
 
-        public Accessor(
+        public Callable(
             Expose expose,
             Field field,
             Boolean status,
             Subject<?> subject
-        ) throws IllegalAccessException {
+        ) {
             super(field, expose);
-            coder = subject.inflate(
-                expose, this
-            );
+            init(expose, subject);
 
             if (!field.isAccessible()) {
                 field.setAccessible(true);
             }
-            if (status == null) {
-                getter = LOOKUP.unreflectGetter(field);
-            } else {
-                setter = LOOKUP.unreflectSetter(field);
-                if (!status) {
+
+            try {
+                if (status == null) {
                     getter = LOOKUP.unreflectGetter(field);
+                } else {
+                    setter = LOOKUP.unreflectSetter(field);
+                    if (!status) {
+                        getter = LOOKUP.unreflectGetter(field);
+                    }
                 }
+            } catch (Exception e) {
+                throw new FatalCrash(
+                    field + " cannot be reflected by MethodHandle", e
+                );
             }
         }
 
-        public Accessor(
+        public Callable(
             Expose expose,
             Method method,
             Subject<?> subject
-        ) throws IllegalAccessException {
+        ) {
             super(method, expose);
-            coder = subject.inflate(
-                expose, this
-            );
+            init(expose, subject);
 
             if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
-            if (method.getParameterCount() != 0) {
-                setter = LOOKUP.unreflect(method);
-            } else {
-                getter = LOOKUP.unreflect(method);
+
+            try {
+                if (method.getParameterCount() != 0) {
+                    setter = LOOKUP.unreflect(method);
+                } else {
+                    getter = LOOKUP.unreflect(method);
+                }
+            } catch (Exception e) {
+                throw new FatalCrash(
+                    method + " cannot be reflected by MethodHandle", e
+                );
             }
         }
 
         @Override
         public Object apply(
-            @NotNull K bean
+            @NotNull T bean
         ) {
             MethodHandle method = getter;
             if (method == null) {
@@ -1086,7 +1186,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                     return method.invoke(bean);
                 } catch (Throwable e) {
                     throw new FatalCrash(
-                        "Accessor call 'invoke' failed", e
+                        method + " call 'invoke' failed", e
                     );
                 }
             }
@@ -1094,7 +1194,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
 
         @Override
         public boolean accept(
-            @NotNull K bean,
+            @NotNull T bean,
             @Nullable Object value
         ) {
             MethodHandle method = setter;
@@ -1103,7 +1203,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                     "Setter is not supported"
                 );
             }
-            if (value != null || (flags & NotNull) == 0) {
+            if (value != null || (flags & NOTNULL) == 0) {
                 try {
                     method.invoke(
                         bean, value
@@ -1111,7 +1211,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                     return true;
                 } catch (Throwable e) {
                     throw new FatalCrash(
-                        "Edge call 'invoke' failed", e
+                        method + " call 'invoke' failed", e
                     );
                 }
             }
@@ -1121,9 +1221,9 @@ public abstract class AbstractSpare<T> implements Subject<T> {
 
     /**
      * @author kraity
-     * @since 0.0.4
+     * @since 0.0.5
      */
-    public static class Argument extends Medium<Object[], Object> {
+    public static class Argument extends Explorer<Object[], Object> {
 
         protected Annotation[] annotations;
 
@@ -1131,42 +1231,38 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             int index,
             Expose expose,
             Field field,
-            Subject<?> subject
+            AbstractSpare<?> subject
         ) {
             super(index);
             element = field;
-            Class<?> type = field.getType();
-            scope = field.getGenericType();
-            if (!type.isPrimitive()) {
-                clazz = type;
+            Class<?> cls = field.getType();
+            if (cls.isPrimitive()) {
+                flags |= NOTNULL;
+                klass = clazz = Space.wrap(cls);
             } else {
-                flags |= NotNull;
-                clazz = Find.kind(type);
+                clazz = cls;
+                klass = field.getGenericType();
             }
-            coder = subject.inflate(
-                expose, this
-            );
+            init(expose, subject);
         }
 
         public Argument(
             int index,
             Type type,
             Class<?> kind,
-            Subject<?> subject,
+            AbstractSpare<?> subject,
             Annotation[] annotations
         ) {
             super(index);
-            this.scope = type;
+            klass = type;
             if (!kind.isPrimitive()) {
                 clazz = kind;
             } else {
-                flags |= NotNull;
-                clazz = Find.kind(kind);
+                flags |= NOTNULL;
+                clazz = Space.wrap(kind);
             }
             this.annotations = annotations;
-            coder = subject.inflate(
-                getAnnotation(Expose.class), this
-            );
+            init(custom(Expose.class), subject);
         }
 
         @Override
@@ -1181,7 +1277,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
             @NotNull Object[] bean,
             @Nullable Object value
         ) {
-            if (value != null || (flags & NotNull) == 0) {
+            if (value != null || (flags & NOTNULL) == 0) {
                 bean[index] = value;
                 return true;
             }
@@ -1189,17 +1285,17 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         }
 
         @Override
-        public <A extends Annotation> A getAnnotation(
-            @NotNull Class<A> target
+        public <A extends Annotation> A custom(
+            @NotNull Class<A> clazz
         ) {
             AnnotatedElement elem = element;
             if (elem != null) {
-                return elem.getAnnotation(target);
+                return elem.getAnnotation(clazz);
             }
             Annotation[] array = annotations;
             if (array != null) {
                 for (Annotation a : array) {
-                    if (a.annotationType() == target) {
+                    if (a.annotationType() == clazz) {
                         return (A) a;
                     }
                 }
