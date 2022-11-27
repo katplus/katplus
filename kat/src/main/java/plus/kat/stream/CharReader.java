@@ -144,8 +144,8 @@ public class CharReader extends AbstractReader {
 
     @Override
     public void close() {
+        limit = -1;
         value = null;
         cache = null;
-        limit = -1;
     }
 }

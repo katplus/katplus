@@ -77,27 +77,6 @@ public abstract class AbstractReader implements Reader {
         throws IOException;
 
     /**
-     * Returns the appropriate scale
-     *
-     * @param cap the specified capacity
-     */
-    protected int scale(
-        int cap
-    ) throws IOException {
-        int s = scale;
-        if (s == 0) {
-            s = cap;
-        } else {
-            if (s > cap) {
-                throw new IOException(
-                    "The specified scale(" + s + ") exceeds the buffer length(" + cap + ")"
-                );
-            }
-        }
-        return s;
-    }
-
-    /**
      * Checks {@link Reader} for readable bytes
      *
      * @throws IOException If this has been closed or I/O error occurs

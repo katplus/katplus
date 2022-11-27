@@ -47,9 +47,22 @@ public class InputStreamReader extends AbstractReader {
         if (buf == null) {
             cache = buf = INS.alloc(range);
         }
-        return value.read(
-            buf, 0, scale(buf.length)
-        );
+
+        int s = scale;
+        if (s == 0) {
+            return value.read(buf);
+        } else {
+            if (s <= buf.length) {
+                return value.read(
+                    buf, 0, s
+                );
+            } else {
+                throw new IOException(
+                    "The specified scale<" + s + "> exceeds " +
+                        "the buffer length<" + buf.length + ">"
+                );
+            }
+        }
     }
 
     @Override
@@ -62,9 +75,9 @@ public class InputStreamReader extends AbstractReader {
         } catch (Exception e) {
             // Nothing
         } finally {
+            limit = -1;
             cache = null;
             value = null;
-            limit = -1;
         }
     }
 }

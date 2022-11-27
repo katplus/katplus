@@ -57,9 +57,17 @@ public class CipherStreamReader extends AbstractReader {
             buffer = buf = INS.alloc(range);
         }
 
-        int s = scale(
-            buf.length
-        );
+        int s = scale;
+        if (s == 0) {
+            s = buf.length;
+        } else {
+            if (s > buf.length) {
+                throw new IOException(
+                    "The specified scale<" + s + "> exceeds " +
+                        "the buffer length<" + buf.length + ">"
+                );
+            }
+        }
 
         int i = in, m = mark;
         if (m == 0) {
