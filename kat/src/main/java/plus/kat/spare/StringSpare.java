@@ -96,7 +96,7 @@ public class StringSpare extends Property<String> {
         @NotNull Supplier supplier
     ) {
         if (object == null) {
-            return "";
+            return null;
         }
 
         if (object instanceof String) {

@@ -114,7 +114,7 @@ public class ChainSpare extends Property<Chain> {
         @NotNull Supplier supplier
     ) {
         if (object == null) {
-            return apply();
+            return null;
         }
 
         if (klass.isInstance(object)) {
@@ -153,6 +153,8 @@ public class ChainSpare extends Property<Chain> {
             return chain;
         }
 
-        return apply();
+        throw new IllegalStateException(
+            object + " cannot be converted to " + klass
+        );
     }
 }

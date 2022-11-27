@@ -486,18 +486,23 @@ public class SpareTest {
     @Test
     public void test_chain() {
         ChainSpare spare = ChainSpare.INSTANCE;
-        Chain chain = spare.cast(null);
+        assertNull(spare.cast(null));
+
+        Chain chain = spare.cast("");
         assertNotNull(chain);
         assertEquals(0, chain.length());
 
         chain.join("kat.plus");
         assertEquals("s(kat.plus)", Kat.encode(chain));
+
+        assertThrows(IllegalStateException.class, () -> spare.cast(1));
+        assertThrows(IllegalStateException.class, () -> spare.cast(true));
     }
 
     @Test
     public void test_string() {
         StringSpare spare = StringSpare.INSTANCE;
-        assertEquals("", spare.cast(null));
+        assertNull(spare.cast(null));
         assertEquals("1", spare.cast(1));
         assertEquals("143", spare.cast(143L));
         assertEquals("kraity", spare.cast("kraity"));
