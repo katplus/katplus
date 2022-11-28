@@ -45,19 +45,6 @@ public class Sodar implements Solver {
     protected final Value value;
 
     /**
-     * Constructs a sodar with the specified radar
-     *
-     * @param radar the specified radar
-     */
-    public Sodar(
-        @NotNull Radar radar
-    ) {
-        space = radar.space;
-        alias = radar.alias;
-        value = radar.value;
-    }
-
-    /**
      * Constructs a sodar with the specified bucket
      *
      * @param b1 the bucket of {@code space}
@@ -72,6 +59,32 @@ public class Sodar implements Solver {
         space = new Space(b1);
         alias = new Alias(b2);
         value = new Value(b3);
+    }
+
+    /**
+     * Constructs a sodar with the specified chains
+     *
+     * @param space the specified {@code space}
+     * @param alias the specified {@code alias}
+     * @param value the specified {@code value}
+     */
+    public Sodar(
+        @NotNull Space space,
+        @NotNull Alias alias,
+        @NotNull Value value
+    ) {
+        if (space != null &&
+            alias != null &&
+            value != null) {
+            this.space = space;
+            this.alias = alias;
+            this.value = value;
+        } else {
+            throw new NullPointerException(
+                "Received: (" + space + ", "
+                    + alias + ", " + value + ")"
+            );
+        }
     }
 
     /**

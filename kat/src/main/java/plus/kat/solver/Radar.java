@@ -55,6 +55,32 @@ public class Radar implements Solver {
     }
 
     /**
+     * Constructs a radar with the specified chains
+     *
+     * @param space the specified {@code space}
+     * @param alias the specified {@code alias}
+     * @param value the specified {@code value}
+     */
+    public Radar(
+        @NotNull Space space,
+        @NotNull Alias alias,
+        @NotNull Value value
+    ) {
+        if (space != null &&
+            alias != null &&
+            value != null) {
+            this.space = space;
+            this.alias = alias;
+            this.value = value;
+        } else {
+            throw new NullPointerException(
+                "Received: (" + space + ", "
+                    + alias + ", " + value + ")"
+            );
+        }
+    }
+
+    /**
      * Returns the algo of solver
      */
     @Override

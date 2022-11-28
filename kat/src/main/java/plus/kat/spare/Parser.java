@@ -41,6 +41,13 @@ public class Parser implements Channel, Callback, Closeable {
     protected Object result;
 
     /**
+     * chain etc.
+     */
+    protected Space space;
+    protected Alias alias;
+    protected Value value;
+
+    /**
      * solver etc.
      */
     protected Radar radar;
@@ -56,21 +63,28 @@ public class Parser implements Channel, Callback, Closeable {
      * default
      */
     public Parser() {
-        radar = Radar.apply();
+        this(
+            Space.Buffer.INS,
+            Alias.Buffer.INS,
+            Value.Buffer.INS
+        );
     }
 
     /**
-     * @param bucket1 the specified {@link Bucket} of {@code Space}
-     * @param bucket2 the specified {@link Bucket} of {@code Alias}
-     * @param bucket3 the specified {@link Bucket} of {@code Value}
+     * @param b1 the specified {@link Bucket} of {@code Space}
+     * @param b2 the specified {@link Bucket} of {@code Alias}
+     * @param b3 the specified {@link Bucket} of {@code Value}
      */
     public Parser(
-        @NotNull Bucket bucket1,
-        @NotNull Bucket bucket2,
-        @NotNull Bucket bucket3
+        @NotNull Bucket b1,
+        @NotNull Bucket b2,
+        @NotNull Bucket b3
     ) {
+        space = new Space(b1);
+        alias = new Alias(b2);
+        value = new Value(b3);
         radar = new Radar(
-            bucket1, bucket2, bucket3
+            space, alias, value
         );
     }
 
@@ -167,7 +181,9 @@ public class Parser implements Channel, Callback, Closeable {
             case "xml": {
                 Solver it = podar;
                 if (it == null) {
-                    podar = it = new Podar(radar);
+                    podar = it = new Podar(
+                        space, alias, value
+                    );
                 }
                 return read(
                     it, event
@@ -176,7 +192,9 @@ public class Parser implements Channel, Callback, Closeable {
             case "json": {
                 Solver it = sodar;
                 if (it == null) {
-                    sodar = it = new Sodar(radar);
+                    sodar = it = new Sodar(
+                        space, alias, value
+                    );
                 }
                 return read(
                     it, event
