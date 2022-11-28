@@ -45,7 +45,7 @@ public class Sodar implements Solver {
     protected final Value value;
 
     /**
-     * Constructs a sodar with the specified bucket
+     * Constructs a sodar with the specified buckets
      *
      * @param b1 the bucket of {@code space}
      * @param b2 the bucket of {@code alias}
@@ -62,11 +62,11 @@ public class Sodar implements Solver {
     }
 
     /**
-     * Constructs a sodar with the specified chains
+     * Constructs a sodar with the specified space, alias and value
      *
-     * @param space the specified {@code space}
-     * @param alias the specified {@code alias}
-     * @param value the specified {@code value}
+     * @param space the specified {@code space} of solver
+     * @param alias the specified {@code alias} of solver
+     * @param value the specified {@code value} of solver
      */
     public Sodar(
         @NotNull Space space,

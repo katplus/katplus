@@ -38,7 +38,7 @@ public class Radar implements Solver {
     protected final Value value;
 
     /**
-     * Constructs a radar with the specified bucket
+     * Constructs a radar with the specified buckets
      *
      * @param b1 the bucket of {@code space}
      * @param b2 the bucket of {@code alias}
@@ -55,11 +55,11 @@ public class Radar implements Solver {
     }
 
     /**
-     * Constructs a radar with the specified chains
+     * Constructs a radar with the specified space, alias and value
      *
-     * @param space the specified {@code space}
-     * @param alias the specified {@code alias}
-     * @param value the specified {@code value}
+     * @param space the specified {@code space} of solver
+     * @param alias the specified {@code alias} of solver
+     * @param value the specified {@code value} of solver
      */
     public Radar(
         @NotNull Space space,

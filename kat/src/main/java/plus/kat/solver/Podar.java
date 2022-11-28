@@ -38,7 +38,7 @@ public class Podar implements Solver {
     protected final Value value;
 
     /**
-     * Constructs a podar with the specified bucket
+     * Constructs a podar with the specified buckets
      *
      * @param b1 the bucket of {@code space}
      * @param b2 the bucket of {@code alias}
@@ -55,11 +55,11 @@ public class Podar implements Solver {
     }
 
     /**
-     * Constructs a podar with the specified chains
+     * Constructs a podar with the specified space, alias and value
      *
-     * @param space the specified {@code space}
-     * @param alias the specified {@code alias}
-     * @param value the specified {@code value}
+     * @param space the specified {@code space} of solver
+     * @param alias the specified {@code alias} of solver
+     * @param value the specified {@code value} of solver
      */
     public Podar(
         @NotNull Space space,
@@ -100,7 +100,7 @@ public class Podar implements Solver {
      *     <!-- status -->
      *     <blocked>0</blocked>
      *
-     *     <!-- extra data -->
+     *     <!-- extras -->
      *     <resource>
      *         <age>6</age>
      *         <devote>1024</devote>
