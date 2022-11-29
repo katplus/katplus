@@ -38,6 +38,14 @@
         <url>https://github.com/katplus/kat/issues</url>
     </issueManagement>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>maven-repo1</id>
+            <name>Central Repository</name>
+            <url>https://repo1.maven.org/maven2/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
     <distributionManagement>
         <snapshotRepository>
             <id>sonatype-snapshots</id>
