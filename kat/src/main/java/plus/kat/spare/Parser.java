@@ -27,7 +27,7 @@ import plus.kat.stream.*;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 
 /**
  * @author kraity
@@ -311,6 +311,80 @@ public class Parser implements Channel, Callback, Closeable {
         event = null;
         supplier = null;
         return null;
+    }
+
+    /**
+     * Returns the wiped type of the specified {@code type}
+     */
+    @Override
+    public Type trace(
+        @NotNull Type type
+    ) {
+        if (type instanceof WildcardType) {
+            return trace(
+                ((WildcardType) type).getUpperBounds()[0]
+            );
+        }
+
+        if (type instanceof TypeVariable) {
+            Type scope = event.getType();
+            Class<?> clazz = Space.wipe(scope);
+
+            if (clazz != null) {
+                // If GenericDeclaration is method,
+                // then a ClassCastException is thrown
+                Class<?> entry = (Class<?>) (
+                    (TypeVariable<?>) type).getGenericDeclaration();
+
+                dig:
+                for (Class<?> cls; ; clazz = cls) {
+                    if (entry == clazz) break;
+                    if (entry.isInterface()) {
+                        Class<?>[] a = clazz.getInterfaces();
+                        for (int i = 0; i < a.length; i++) {
+                            cls = a[i];
+                            if (cls == entry) {
+                                scope = clazz.getGenericInterfaces()[i];
+                                break dig;
+                            } else if (entry.isAssignableFrom(cls)) {
+                                scope = clazz.getGenericInterfaces()[i];
+                                continue dig;
+                            }
+                        }
+                    }
+                    if (!clazz.isInterface()) {
+                        for (; clazz != Object.class; clazz = cls) {
+                            cls = clazz.getSuperclass();
+                            if (cls == entry) {
+                                scope = clazz.getGenericSuperclass();
+                                break dig;
+                            } else if (entry.isAssignableFrom(cls)) {
+                                scope = clazz.getGenericSuperclass();
+                                continue dig;
+                            }
+                        }
+                    }
+                    throw new IllegalStateException(
+                        this + " can't resolve " + type + " from " + scope
+                    );
+                }
+
+                if (scope instanceof ParameterizedType) {
+                    Object[] items = entry.getTypeParameters();
+                    for (int i = 0; i < items.length; i++) {
+                        if (type == items[i]) {
+                            return trace(
+                                ((ParameterizedType) scope).getActualTypeArguments()[i]
+                            );
+                        }
+                    }
+                }
+            }
+            throw new IllegalStateException(
+                this + " can't resolve " + type + " from " + scope
+            );
+        }
+        return type;
     }
 
     /**

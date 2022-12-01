@@ -1255,11 +1255,11 @@ public abstract class AbstractSpare<T> implements Subject<T> {
         ) {
             super(index);
             klass = type;
-            if (!kind.isPrimitive()) {
-                clazz = kind;
-            } else {
+            if (kind.isPrimitive()) {
                 flags |= NOTNULL;
                 clazz = Space.wrap(kind);
+            } else {
+                clazz = kind;
             }
             this.annotations = annotations;
             init(custom(Expose.class), subject);

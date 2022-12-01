@@ -112,7 +112,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
         @Nullable Type type
     ) {
         return new Builder1<>(
-            new Object[width], this
+            type, new Object[width], this
         );
     }
 

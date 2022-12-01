@@ -13,39 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.stream;
+package plus.kat.spare;
 
+import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.*;
-import plus.kat.spare.*;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
  * @since 0.0.5
  */
-public interface Channel extends Pipage, Helper {
+public interface Helper {
     /**
-     * Returns the flag of this {@link Channel}
-     *
-     * @return {@link Flag} or {@code null}
+     * Returns the holder of this {@link Helper}
      */
     @Nullable
-    Flag flag();
+    Helper holder();
 
     /**
-     * Returns the holder of this {@link Channel}
-     *
-     * @return {@link Channel} or {@code null}
+     * Returns the wiped type of the specified {@code type}
      */
-    @Nullable
-    Channel holder();
-
-    /**
-     * Returns the supplier of this {@link Channel}
-     *
-     * @return {@link Supplier} or {@code null}
-     */
-    @Nullable
-    Supplier supplier();
+    @NotNull
+    default Type trace(
+        @NotNull Type type
+    ) {
+        return holder().trace(type);
+    }
 }

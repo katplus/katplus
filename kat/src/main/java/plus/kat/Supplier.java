@@ -197,8 +197,8 @@ public interface Supplier extends Converter {
      */
     @Nullable <T>
     Spare<T> lookup(
-        @Nullable Class<T> type,
-        @Nullable CharSequence klass
+        @NotNull Class<T> type,
+        @NotNull CharSequence klass
     );
 
     /**
@@ -1459,15 +1459,9 @@ public interface Supplier extends Converter {
 
         @Override
         public <T> Spare<T> lookup(
-            @Nullable Class<T> type,
-            @Nullable CharSequence klass
+            @NotNull Class<T> type,
+            @NotNull CharSequence klass
         ) {
-            if (type == null) {
-                return search(
-                    null, klass
-                );
-            }
-
             Spare<T> spare = lookup(type);
             if (spare != null ||
                 klass == null) {

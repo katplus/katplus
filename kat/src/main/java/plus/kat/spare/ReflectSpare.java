@@ -39,7 +39,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
     private MethodHandle handle;
     private Constructor<T> builder;
 
-    private Class<?> cxt;
+    private Class<?> self;
     private Class<?>[] args;
 
     private boolean marker;
@@ -140,7 +140,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 return bean;
             }
 
-            if (cxt == null) {
+            if (self == null) {
                 Object[] group = new Object[as.length];
                 update(
                     group, spoiler, supplier
@@ -175,7 +175,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 return bean;
             }
 
-            if (cxt == null) {
+            if (self == null) {
                 Object[] group = new Object[as.length];
                 update(
                     group, supplier, resultSet
@@ -201,20 +201,20 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
     ) {
         Class<?>[] as = args;
         if (as == null) {
-            return new Builder0<>(this);
+            return new Builder0<>(type, this);
         }
 
-        Class<?> cls = cxt;
+        Class<?> cls = self;
         int size = as.length;
 
         if (cls == null && !variable) {
             return new Builder1<>(
-                new Object[size], this
+                type, new Object[size], this
             );
         }
 
         return new Builder2<>(
-            cls, new Object[size], this
+            type, cls, new Object[size], this
         );
     }
 
@@ -561,7 +561,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 (klass.getModifiers() & Modifier.STATIC) == 0) {
                 if (declaringClass == args[0]) {
                     i++;
-                    cxt = declaringClass;
+                    self = declaringClass;
                 }
             }
 

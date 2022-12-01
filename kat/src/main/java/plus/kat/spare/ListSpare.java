@@ -271,66 +271,54 @@ public class ListSpare extends Property<List> {
 
     public static class Builder0<T extends Collection> extends Builder<T> implements Callback {
 
-        protected Type tag, raw;
-        protected Class<?> kind;
+        protected Type actual;
+        protected Type raw, elem;
 
-        protected T bundle;
-        protected Spare<T> owner;
-        protected Spare<?> spare0;
+        protected T bean;
+        protected Class<?> elemType;
+
+        protected Spare<T> rawSpare;
+        protected Spare<?> elemSpare;
 
         public Builder0(
             Type type,
             Class<?> kind,
             Spare<T> spare
         ) {
-            owner = spare;
-            if (type == null) {
-                raw = kind;
-            }
-
-            // class
-            else if (type instanceof Class) {
-                if (type != Object.class) {
-                    raw = type;
-                } else {
-                    raw = kind;
-                }
-            }
-
-            // param
-            else if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
-                Type[] act = p.getActualTypeArguments();
-                raw = p.getRawType();
-                if (act[0] != Object.class) {
-                    tag = act[0];
-                }
-            }
-
-            // other
-            else {
-                Class<?> cls = Space.wipe(type);
-                if (cls != null &&
-                    cls != Object.class) {
-                    raw = cls;
-                } else {
-                    raw = kind;
-                }
-            }
+            raw = kind;
+            actual = type;
+            rawSpare = spare;
         }
 
         @Override
         public void onOpen() {
-            Type tv = tag;
-            if (tv != null) {
-                Class<?> cls = Space.wipe(tv);
-                if (cls != null &&
-                    cls != Object.class) {
-                    kind = cls;
-                    spare0 = supplier.lookup(cls);
+            Type type = actual;
+            if (type != null) {
+                if (type instanceof Class) {
+                    if (type != Object.class) {
+                        raw = type;
+                    }
+                } else if (type instanceof ParameterizedType) {
+                    ParameterizedType p = (ParameterizedType) type;
+                    raw = p.getRawType();
+                    type = p.getActualTypeArguments()[0];
+                    if (type != Object.class) {
+                        Class<?> cls = Space.wipe(
+                            elem = trace(type)
+                        );
+                        if (cls != null &&
+                            cls != Object.class) {
+                            elemType = cls;
+                            elemSpare = supplier.lookup(cls);
+                        }
+                    }
+                } else {
+                    throw new IllegalStateException(
+                        "Failed to resolve this " + type
+                    );
                 }
             }
-            bundle = owner.apply(raw);
+            bean = rawSpare.apply(raw);
         }
 
         @Override
@@ -338,10 +326,10 @@ public class ListSpare extends Property<List> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            Spare<?> spare = spare0;
+            Spare<?> spare = elemSpare;
             if (spare == null) {
                 spare = supplier.search(
-                    kind, space
+                    elemType, space
                 );
                 if (spare == null) {
                     return null;
@@ -349,7 +337,7 @@ public class ListSpare extends Property<List> {
             }
 
             Builder<?> child =
-                spare.getBuilder(tag);
+                spare.getBuilder(elem);
 
             if (child == null) {
                 return null;
@@ -363,7 +351,7 @@ public class ListSpare extends Property<List> {
             @NotNull Pipage pipage,
             @Nullable Object result
         ) throws IOException {
-            bundle.add(result);
+            bean.add(result);
         }
 
         @Override
@@ -372,17 +360,17 @@ public class ListSpare extends Property<List> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            Spare<?> spare = spare0;
+            Spare<?> spare = elemSpare;
             if (spare == null) {
                 spare = supplier.search(
-                    kind, space
+                    elemType, space
                 );
                 if (spare == null) {
                     return;
                 }
             }
 
-            bundle.add(
+            bean.add(
                 spare.read(
                     flag, value
                 )
@@ -391,12 +379,12 @@ public class ListSpare extends Property<List> {
 
         @Override
         public T build() {
-            return bundle;
+            return bean;
         }
 
         @Override
         public void onClose() {
-            bundle = null;
+            bean = null;
         }
     }
 }

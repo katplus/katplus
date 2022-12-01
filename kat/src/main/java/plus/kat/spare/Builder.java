@@ -23,6 +23,7 @@ import plus.kat.chain.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author kraity
@@ -31,7 +32,7 @@ import java.io.IOException;
 public abstract class Builder<T> implements Channel {
 
     protected Channel holder;
-    protected Callback caller;
+    protected Callback handler;
 
     protected Flag flag;
     protected Supplier supplier;
@@ -50,7 +51,7 @@ public abstract class Builder<T> implements Channel {
     ) throws IOException {
         if (holder == null) {
             holder = parent;
-            caller = callback;
+            handler = callback;
             flag = parent.flag();
             supplier = parent.supplier();
         } else {
@@ -116,7 +117,7 @@ public abstract class Builder<T> implements Channel {
         @NotNull boolean alarm
     ) throws IOException {
         if (state) {
-            caller.onEmit(
+            handler.onEmit(
                 this, build()
             );
         }
@@ -133,9 +134,19 @@ public abstract class Builder<T> implements Channel {
         } finally {
             flag = null;
             holder = null;
-            caller = null;
+            handler = null;
             supplier = null;
         }
+    }
+
+    /**
+     * Returns the wiped type of the specified type
+     */
+    @Override
+    public Type trace(
+        @NotNull Type type
+    ) {
+        return holder.trace(type);
     }
 
     /**

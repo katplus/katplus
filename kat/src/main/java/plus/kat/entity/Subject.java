@@ -25,7 +25,7 @@ import plus.kat.spare.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -93,7 +93,9 @@ public interface Subject<T> extends Spare<T> {
     default Builder<T> getBuilder(
         @Nullable Type type
     ) {
-        return new Builder0<>(this);
+        return new Builder0<>(
+            type, this
+        );
     }
 
     /**
@@ -385,6 +387,8 @@ public interface Subject<T> extends Spare<T> {
     class Builder0<T> extends Builder<T> implements Callback {
 
         protected T bean;
+        protected Type visa;
+
         protected Subject<T> subject;
         protected Member<T, ?> setter;
 
@@ -392,16 +396,19 @@ public interface Subject<T> extends Spare<T> {
          * default
          */
         public Builder0(
-            @NotNull Subject<T> subject
+            Type visa,
+            Subject<T> spare
         ) {
-            this.subject = subject;
+            this.visa = visa;
+            this.subject = spare;
         }
 
         /**
          * Prepare before parsing
          */
         @Override
-        public void onOpen() {
+        public void onOpen()
+            throws IOException {
             bean = subject.apply();
         }
 
@@ -415,8 +422,8 @@ public interface Subject<T> extends Spare<T> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            Member<T, ?> member =
-                setter = subject.set(alias);
+            Member<T, ?> member
+                = subject.set(alias);
 
             if (member != null) {
                 Type type = member.type();
@@ -424,26 +431,51 @@ public interface Subject<T> extends Spare<T> {
 
                 if (coder != null) {
                     Builder<?> child =
-                        coder.getBuilder(type);
+                        coder.getBuilder(
+                            trace(type)
+                        );
                     if (child != null) {
+                        setter = member;
                         return child.init(this, this);
                     }
                 } else {
-                    coder = supplier.lookup(
-                        member.kind(), space
-                    );
-
-                    if (coder != null) {
-                        Builder<?> child =
-                            coder.getBuilder(type);
-                        if (child != null) {
-                            return child.init(this, this);
+                    while (true) {
+                        if (type instanceof Class) {
+                            coder = supplier.lookup(
+                                (Class<?>) type, space
+                            );
+                        } else if (type instanceof GenericArrayType) {
+                            coder = supplier.lookup(
+                                Object[].class, space
+                            );
+                        } else if (type instanceof ParameterizedType) {
+                            coder = supplier.lookup((Class<?>) (
+                                    (ParameterizedType) type
+                                ).getRawType(), space
+                            );
+                        } else {
+                            if (type == (type = trace(type))) {
+                                throw new IllegalStateException(
+                                    this + " can't resolve " + type + " any further"
+                                );
+                            }
+                            continue;
                         }
-                    } else {
-                        throw new IOException(
-                            "No spare for member(" + alias
-                                + ") of " + subject.getType() + " was found"
-                        );
+
+                        if (coder != null) {
+                            Builder<?> child =
+                                coder.getBuilder(type);
+                            if (child != null) {
+                                setter = member;
+                                return child.init(this, this);
+                            }
+                        } else {
+                            throw new IOException(
+                                "No spare for member(" + alias
+                                    + ") of " + subject.getType() + " was found"
+                            );
+                        }
+                        return null;
                     }
                 }
             }
@@ -477,8 +509,8 @@ public interface Subject<T> extends Spare<T> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            Member<T, ?> member =
-                setter = subject.set(alias);
+            Member<T, ?> member
+                = subject.set(alias);
 
             if (member != null) {
                 Coder<?> coder =
@@ -491,21 +523,43 @@ public interface Subject<T> extends Spare<T> {
                         )
                     );
                 } else {
-                    coder = supplier.lookup(
-                        member.kind(), space
-                    );
+                    Type type = member.type();
+                    while (true) {
+                        if (type instanceof Class) {
+                            coder = supplier.lookup(
+                                (Class<?>) type, space
+                            );
+                        } else if (type instanceof GenericArrayType) {
+                            coder = supplier.lookup(
+                                Object[].class, space
+                            );
+                        } else if (type instanceof ParameterizedType) {
+                            coder = supplier.lookup((Class<?>) (
+                                    (ParameterizedType) type
+                                ).getRawType(), space
+                            );
+                        } else {
+                            if (type == (type = trace(type))) {
+                                throw new IllegalStateException(
+                                    this + " can't resolve " + type + " any further"
+                                );
+                            }
+                            continue;
+                        }
 
-                    if (coder != null) {
-                        member.invoke(
-                            bean, coder.read(
-                                flag, value
-                            )
-                        );
-                    } else {
-                        throw new IOException(
-                            "No spare for member(" + alias
-                                + ") of " + subject.getType() + " was found"
-                        );
+                        if (coder != null) {
+                            member.invoke(
+                                bean, coder.read(
+                                    flag, value
+                                )
+                            );
+                        } else {
+                            throw new IOException(
+                                "No spare for member(" + alias
+                                    + ") of " + subject.getType() + " was found"
+                            );
+                        }
+                        return;
                     }
                 }
             }
@@ -515,15 +569,88 @@ public interface Subject<T> extends Spare<T> {
          * Returns the result of building {@link T}
          */
         @Nullable
-        public T build() {
+        public T build()
+            throws IOException {
             return bean;
+        }
+
+        /**
+         * Returns the wiped type of the specified type
+         */
+        @Override
+        public Type trace(
+            @NotNull Type type
+        ) {
+            if (type instanceof WildcardType) {
+                return trace(
+                    ((WildcardType) type).getUpperBounds()[0]
+                );
+            }
+
+            if (type instanceof TypeVariable) {
+                Type scope = visa;
+                Class<?> clazz = subject.getType();
+
+                if (clazz != null) {
+                    // If GenericDeclaration is method,
+                    // then a ClassCastException is thrown
+                    Class<?> entry = (Class<?>) (
+                        (TypeVariable<?>) type).getGenericDeclaration();
+
+                    dig:
+                    for (Class<?> cls; ; clazz = cls) {
+                        if (entry == clazz) break;
+                        if (entry.isInterface()) {
+                            Class<?>[] a = clazz.getInterfaces();
+                            for (int i = 0; i < a.length; i++) {
+                                cls = a[i];
+                                if (cls == entry) {
+                                    scope = clazz.getGenericInterfaces()[i];
+                                    break dig;
+                                } else if (entry.isAssignableFrom(cls)) {
+                                    scope = clazz.getGenericInterfaces()[i];
+                                    continue dig;
+                                }
+                            }
+                        }
+                        if (!clazz.isInterface()) {
+                            for (; clazz != Object.class; clazz = cls) {
+                                cls = clazz.getSuperclass();
+                                if (cls == entry) {
+                                    scope = clazz.getGenericSuperclass();
+                                    break dig;
+                                } else if (entry.isAssignableFrom(cls)) {
+                                    scope = clazz.getGenericSuperclass();
+                                    continue dig;
+                                }
+                            }
+                        }
+                        return holder.trace(type);
+                    }
+
+                    if (scope instanceof ParameterizedType) {
+                        Object[] items = entry.getTypeParameters();
+                        for (int i = 0; i < items.length; i++) {
+                            if (type == items[i]) {
+                                return trace(
+                                    ((ParameterizedType) scope).getActualTypeArguments()[i]
+                                );
+                            }
+                        }
+                    }
+                }
+                throw new IllegalStateException(
+                    this + " can't resolve " + type + " from " + scope
+                );
+            }
+            return type;
         }
 
         /**
          * Close the resources of this {@link Builder}
          */
         @Override
-        public void onClose() {
+        public void onClose() throws IOException {
             bean = null;
             setter = null;
         }
@@ -533,20 +660,18 @@ public interface Subject<T> extends Spare<T> {
      * @author kraity
      * @since 0.0.4
      */
-    class Builder1<T> extends Builder<T> implements Callback {
+    class Builder1<T> extends Builder0<T> implements Callback {
 
-        protected T bean;
         protected Object[] data;
-
-        protected Subject<T> subject;
-        protected Member<Object[], ?> target;
+        protected Member<?, ?> target;
 
         public Builder1(
-            @NotNull Object[] data,
-            @NotNull Subject<T> subject
+            Type visa,
+            Object[] data,
+            Subject<T> spare
         ) {
+            super(visa, spare);
             this.data = data;
-            this.subject = subject;
         }
 
         /**
@@ -567,8 +692,8 @@ public interface Subject<T> extends Spare<T> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            Member<Object[], ?> member =
-                target = subject.arg(alias);
+            Member<Object[], ?> member
+                = subject.arg(alias);
 
             if (member != null) {
                 Type type = member.type();
@@ -576,26 +701,51 @@ public interface Subject<T> extends Spare<T> {
 
                 if (coder != null) {
                     Builder<?> child =
-                        coder.getBuilder(type);
+                        coder.getBuilder(
+                            trace(type)
+                        );
                     if (child != null) {
+                        target = member;
                         return child.init(this, this);
                     }
                 } else {
-                    coder = supplier.lookup(
-                        member.kind(), space
-                    );
-
-                    if (coder != null) {
-                        Builder<?> child =
-                            coder.getBuilder(type);
-                        if (child != null) {
-                            return child.init(this, this);
+                    while (true) {
+                        if (type instanceof Class) {
+                            coder = supplier.lookup(
+                                (Class<?>) type, space
+                            );
+                        } else if (type instanceof GenericArrayType) {
+                            coder = supplier.lookup(
+                                Object[].class, space
+                            );
+                        } else if (type instanceof ParameterizedType) {
+                            coder = supplier.lookup((Class<?>) (
+                                    (ParameterizedType) type
+                                ).getRawType(), space
+                            );
+                        } else {
+                            if (type == (type = trace(type))) {
+                                throw new IllegalStateException(
+                                    this + " can't resolve " + type + " any further"
+                                );
+                            }
+                            continue;
                         }
-                    } else {
-                        throw new IOException(
-                            "No spare for member(" + alias
-                                + ") of " + subject.getType() + " was found"
-                        );
+
+                        if (coder != null) {
+                            Builder<?> child =
+                                coder.getBuilder(type);
+                            if (child != null) {
+                                target = member;
+                                return child.init(this, this);
+                            }
+                        } else {
+                            throw new IOException(
+                                "No spare for argument(" + alias
+                                    + ") of " + subject.getType() + " was found"
+                            );
+                        }
+                        return null;
                     }
                 }
             }
@@ -629,8 +779,8 @@ public interface Subject<T> extends Spare<T> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            Member<Object[], ?> member =
-                target = subject.arg(alias);
+            Member<Object[], ?> member
+                = subject.arg(alias);
 
             if (member != null) {
                 Coder<?> coder =
@@ -643,21 +793,43 @@ public interface Subject<T> extends Spare<T> {
                         )
                     );
                 } else {
-                    coder = supplier.lookup(
-                        member.kind(), space
-                    );
+                    Type type = member.type();
+                    while (true) {
+                        if (type instanceof Class) {
+                            coder = supplier.lookup(
+                                (Class<?>) type, space
+                            );
+                        } else if (type instanceof GenericArrayType) {
+                            coder = supplier.lookup(
+                                Object[].class, space
+                            );
+                        } else if (type instanceof ParameterizedType) {
+                            coder = supplier.lookup((Class<?>) (
+                                    (ParameterizedType) type
+                                ).getRawType(), space
+                            );
+                        } else {
+                            if (type == (type = trace(type))) {
+                                throw new IllegalStateException(
+                                    this + " can't resolve " + type + " any further"
+                                );
+                            }
+                            continue;
+                        }
 
-                    if (coder != null) {
-                        member.invoke(
-                            data, coder.read(
-                                flag, value
-                            )
-                        );
-                    } else {
-                        throw new IOException(
-                            "No spare for member(" + alias
-                                + ") of " + subject.getType() + " was found"
-                        );
+                        if (coder != null) {
+                            member.invoke(
+                                data, coder.read(
+                                    flag, value
+                                )
+                            );
+                        } else {
+                            throw new IOException(
+                                "No spare for argument(" + alias
+                                    + ") of " + subject.getType() + " was found"
+                            );
+                        }
+                        return;
                     }
                 }
             }
@@ -687,7 +859,7 @@ public interface Subject<T> extends Spare<T> {
          * Close the resources of this {@link Builder}
          */
         @Override
-        public void onClose() {
+        public void onClose() throws IOException {
             data = null;
             bean = null;
             target = null;
@@ -698,35 +870,23 @@ public interface Subject<T> extends Spare<T> {
      * @author kraity
      * @since 0.0.4
      */
-    class Builder2<T> extends Builder<T> implements Callback {
+    class Builder2<T> extends Builder0<T> implements Callback {
 
-        protected T bean;
-        protected Class<?> cxt;
+        protected Class<?> self;
         protected Object[] data;
 
         protected Cache cache;
-        protected Subject<T> subject;
-
-        protected Member<T, ?> setter;
-        protected Member<Object[], ?> target;
+        protected Member<?, ?> target;
 
         public Builder2(
-            @NotNull Object[] data,
-            @NotNull Subject<T> subject
+            Type visa,
+            Class<?> self,
+            Object[] data,
+            Subject<T> spare
         ) {
-            this(
-                null, data, subject
-            );
-        }
-
-        public Builder2(
-            @Nullable Class<?> cxt,
-            @NotNull Object[] data,
-            @NotNull Subject<T> subject
-        ) {
-            this.cxt = cxt;
+            super(visa, spare);
             this.data = data;
-            this.subject = subject;
+            this.self = self;
         }
 
         /**
@@ -736,7 +896,7 @@ public interface Subject<T> extends Spare<T> {
          */
         @Override
         public void onOpen() throws IOException {
-            Class<?> o = cxt;
+            Class<?> o = self;
             if (o != null) {
                 Channel holder = holder();
                 if (holder instanceof Builder) {
@@ -772,67 +932,116 @@ public interface Subject<T> extends Spare<T> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            target = subject.arg(alias);
-            if (target != null) {
-                Type type = target.type();
-                Coder<?> coder = target.coder();
+            Member<?, ?> member
+                = subject.arg(alias);
+            if (member != null) {
+                Type type = member.type();
+                Coder<?> coder = member.coder();
 
                 if (coder != null) {
                     Builder<?> child =
-                        coder.getBuilder(type);
+                        coder.getBuilder(
+                            trace(type)
+                        );
                     if (child != null) {
+                        target = member;
                         return child.init(this, this);
                     }
                 } else {
-                    coder = supplier.lookup(
-                        target.kind(), space
-                    );
-
-                    if (coder != null) {
-                        Builder<?> child =
-                            coder.getBuilder(type);
-                        if (child != null) {
-                            return child.init(this, this);
-                        }
-                    } else {
-                        throw new IOException(
-                            "No spare for param(" + alias
-                                + ") of " + subject.getType() + " was found"
-                        );
-                    }
-                }
-            } else {
-                setter = subject.set(alias);
-                if (setter != null) {
-                    Type type = setter.type();
-                    Coder<?> coder = setter.coder();
-
-                    if (coder != null) {
-                        Builder<?> child =
-                            coder.getBuilder(type);
-                        if (child != null) {
-                            return child.init(
-                                this, new Cache(setter)
+                    while (true) {
+                        if (type instanceof Class) {
+                            coder = supplier.lookup(
+                                (Class<?>) type, space
                             );
+                        } else if (type instanceof GenericArrayType) {
+                            coder = supplier.lookup(
+                                Object[].class, space
+                            );
+                        } else if (type instanceof ParameterizedType) {
+                            coder = supplier.lookup((Class<?>) (
+                                    (ParameterizedType) type
+                                ).getRawType(), space
+                            );
+                        } else {
+                            if (type == (type = trace(type))) {
+                                throw new IllegalStateException(
+                                    this + " can't resolve " + type + " any further"
+                                );
+                            }
+                            continue;
                         }
-                    } else {
-                        coder = supplier.lookup(
-                            setter.kind(), space
-                        );
 
                         if (coder != null) {
                             Builder<?> child =
                                 coder.getBuilder(type);
                             if (child != null) {
-                                return child.init(
-                                    this, new Cache(setter)
-                                );
+                                target = member;
+                                return child.init(this, this);
                             }
                         } else {
                             throw new IOException(
-                                "No spare for param(" + alias
+                                "No spare for argument(" + alias
                                     + ") of " + subject.getType() + " was found"
                             );
+                        }
+                        return null;
+                    }
+                }
+            } else {
+                member = subject.set(alias);
+                if (member != null) {
+                    Type type = member.type();
+                    Coder<?> coder = member.coder();
+
+                    if (coder != null) {
+                        Builder<?> child =
+                            coder.getBuilder(
+                                trace(type)
+                            );
+                        if (child != null) {
+                            return child.init(
+                                this, this
+                            );
+                        }
+                    } else {
+                        while (true) {
+                            if (type instanceof Class) {
+                                coder = supplier.lookup(
+                                    (Class<?>) type, space
+                                );
+                            } else if (type instanceof GenericArrayType) {
+                                coder = supplier.lookup(
+                                    Object[].class, space
+                                );
+                            } else if (type instanceof ParameterizedType) {
+                                coder = supplier.lookup((Class<?>) (
+                                        (ParameterizedType) type
+                                    ).getRawType(), space
+                                );
+                            } else {
+                                if (type == (type = trace(type))) {
+                                    throw new IllegalStateException(
+                                        this + " can't resolve " + type + " any further"
+                                    );
+                                }
+                                continue;
+                            }
+
+                            if (coder != null) {
+                                Builder<?> child =
+                                    coder.getBuilder(type);
+                                if (child != null) {
+                                    return child.init(
+                                        this, new Cache(member)
+                                    );
+                                }
+                            } else {
+                                throw new IOException(
+                                    "No spare for member(" + alias
+                                        + ") of " + subject.getType() + " was found"
+                                );
+                            }
+                            return null;
                         }
                     }
                 }
@@ -867,59 +1076,104 @@ public interface Subject<T> extends Spare<T> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            target = subject.arg(alias);
-            if (target != null) {
+            Member<?, ?> member
+                = subject.arg(alias);
+            if (member != null) {
                 Coder<?> coder =
-                    target.coder();
+                    member.coder();
 
                 if (coder != null) {
-                    target.invoke(
+                    member.invoke(
                         data, coder.read(
                             flag, value
                         )
                     );
                 } else {
-                    coder = supplier.lookup(
-                        target.kind(), space
-                    );
-
-                    if (coder != null) {
-                        target.invoke(
-                            data, coder.read(
-                                flag, value
-                            )
-                        );
-                    } else {
-                        throw new IOException(
-                            "No spare for param(" + alias
-                                + ") of " + subject.getType() + " was found"
-                        );
-                    }
-                }
-            } else {
-                setter = subject.set(alias);
-                if (setter != null) {
-                    Coder<?> coder =
-                        setter.coder();
-
-                    if (coder != null) {
-                        new Cache(setter,
-                            coder.read(flag, value)
-                        );
-                    } else {
-                        coder = supplier.lookup(
-                            setter.kind(), space
-                        );
+                    Type type = member.type();
+                    while (true) {
+                        if (type instanceof Class) {
+                            coder = supplier.lookup(
+                                (Class<?>) type, space
+                            );
+                        } else if (type instanceof GenericArrayType) {
+                            coder = supplier.lookup(
+                                Object[].class, space
+                            );
+                        } else if (type instanceof ParameterizedType) {
+                            coder = supplier.lookup((Class<?>) (
+                                    (ParameterizedType) type
+                                ).getRawType(), space
+                            );
+                        } else {
+                            if (type == (type = trace(type))) {
+                                throw new IllegalStateException(
+                                    this + " can't resolve " + type + " any further"
+                                );
+                            }
+                            continue;
+                        }
 
                         if (coder != null) {
-                            new Cache(setter,
-                                coder.read(flag, value)
+                            member.invoke(
+                                data, coder.read(
+                                    flag, value
+                                )
                             );
                         } else {
                             throw new IOException(
-                                "No spare for member(" + alias
+                                "No spare for argument(" + alias
                                     + ") of " + subject.getType() + " was found"
                             );
+                        }
+                        return;
+                    }
+                }
+            } else {
+                member = subject.set(alias);
+                if (member != null) {
+                    Coder<?> coder =
+                        member.coder();
+
+                    if (coder != null) {
+                        new Cache(member,
+                            coder.read(flag, value)
+                        );
+                    } else {
+                        Type type = member.type();
+                        while (true) {
+                            if (type instanceof Class) {
+                                coder = supplier.lookup(
+                                    (Class<?>) type, space
+                                );
+                            } else if (type instanceof GenericArrayType) {
+                                coder = supplier.lookup(
+                                    Object[].class, space
+                                );
+                            } else if (type instanceof ParameterizedType) {
+                                coder = supplier.lookup((Class<?>) (
+                                        (ParameterizedType) type
+                                    ).getRawType(), space
+                                );
+                            } else {
+                                if (type == (type = trace(type))) {
+                                    throw new IllegalStateException(
+                                        this + " can't resolve " + type + " any further"
+                                    );
+                                }
+                                continue;
+                            }
+
+                            if (coder != null) {
+                                new Cache(member,
+                                    coder.read(flag, value)
+                                );
+                            } else {
+                                throw new IOException(
+                                    "No spare for argument(" + alias
+                                        + ") of " + subject.getType() + " was found"
+                                );
+                            }
+                            return;
                         }
                     }
                 }
@@ -933,16 +1187,16 @@ public interface Subject<T> extends Spare<T> {
         class Cache implements Callback {
             Cache next;
             Object value;
-            Setter<T, ?> setter;
+            Setter<?, ?> setter;
 
             public Cache(
-                Setter<T, ?> setter
+                Setter<?, ?> setter
             ) {
                 this.setter = setter;
             }
 
             public Cache(
-                Setter<T, ?> setter, Object value
+                Setter<?, ?> setter, Object value
             ) {
                 this.value = value;
                 this.setter = setter;
@@ -995,7 +1249,7 @@ public interface Subject<T> extends Spare<T> {
          * Close the resources of this {@link Builder}
          */
         @Override
-        public void onClose() {
+        public void onClose() throws IOException {
             bean = null;
             data = null;
             cache = null;

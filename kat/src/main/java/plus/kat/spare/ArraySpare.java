@@ -376,7 +376,7 @@ public class ArraySpare extends Property<Object> {
             if (e.isPrimitive()) {
                 return new Builder0(e);
             } else {
-                return new Builder1(e, e);
+                return new Builder1(e);
             }
         }
 
@@ -389,24 +389,21 @@ public class ArraySpare extends Property<Object> {
             if (k.isPrimitive()) {
                 return new Builder0(k);
             } else {
-                return new Builder1(k, k);
+                return new Builder1(k);
             }
+        }
+
+        if (type instanceof GenericArrayType) {
+            GenericArrayType g = (GenericArrayType) type;
+            return new Builder1(
+                g.getGenericComponentType(), elem
+            );
         }
 
         if (type instanceof ParameterizedType) {
             ParameterizedType p = (ParameterizedType) type;
             return new Builder2(
                 p.getActualTypeArguments()
-            );
-        }
-
-        if (type instanceof GenericArrayType) {
-            GenericArrayType g = (GenericArrayType) type;
-            Class<?> cls = Space.wipe(
-                type = g.getGenericComponentType()
-            );
-            return new Builder1(
-                type, cls != null ? cls : elem
             );
         }
 
@@ -419,15 +416,15 @@ public class ArraySpare extends Property<Object> {
         protected int mark;
 
         protected int length;
-        protected Object bundle;
+        protected Object bean;
 
         protected Class<?> elem;
         protected Spare<?> spare;
 
         public Builder0(
-            Class<?> type
+            Class<?> elem
         ) {
-            elem = type;
+            this.elem = elem;
         }
 
         @Override
@@ -436,7 +433,7 @@ public class ArraySpare extends Property<Object> {
             if (spare != null) {
                 size = 0;
                 mark = 1;
-                bundle = Array.newInstance(
+                bean = Array.newInstance(
                     elem, length = 1
                 );
             } else {
@@ -456,7 +453,7 @@ public class ArraySpare extends Property<Object> {
                 enlarge();
             }
             Array.set(
-                bundle, size++, spare.read(flag, value)
+                bean, size++, spare.read(flag, value)
             );
         }
 
@@ -475,64 +472,95 @@ public class ArraySpare extends Property<Object> {
                 capacity = size + 8;
             }
 
-            mark = size;
             Object make = Array.newInstance(
                 elem, length = capacity
             );
 
             //noinspection SuspiciousSystemArraycopy
             System.arraycopy(
-                bundle, 0, make, 0, size
+                bean, 0, bean = make, 0, mark = size
             );
-            bundle = make;
         }
 
         @Override
         public Object build() {
             if (length == size) {
-                return bundle;
+                return bean;
             }
 
             Object data = Array
                 .newInstance(elem, size);
             //noinspection SuspiciousSystemArraycopy
             System.arraycopy(
-                bundle, 0, data, 0, size
+                bean, 0, data, 0, size
             );
             return data;
         }
 
         @Override
         public void onClose() {
-            bundle = null;
+            bean = null;
         }
     }
 
     public static class Builder1 extends Builder0 implements Callback {
 
-        protected Type tag;
+        protected Type visa;
         protected Class<?> kind;
 
         public Builder1(
-            Type type,
-            Class<?> clazz
+            Class<?> elem
         ) {
-            super(clazz);
-            this.tag = type;
+            super(elem);
+            this.visa = elem;
+        }
+
+        public Builder1(
+            Type visa,
+            Class<?> elem
+        ) {
+            super(elem);
+            this.visa = visa;
         }
 
         @Override
         public void onOpen() {
-            Class<?> clazz = elem;
-            if (clazz != Object.class) {
-                kind = clazz;
-                spare = supplier.lookup(clazz);
+            Type v = visa;
+            Class<?> e = elem;
+            if (e != v) {
+                int i = 0;
+                for (; v instanceof GenericArrayType; i++) {
+                    v = ((GenericArrayType) v).getGenericComponentType();
+                }
+                if ((v = trace(v)) instanceof Class) {
+                    if (i == 0) {
+                        e = (Class<?>) v;
+                    } else {
+                        e = Array.newInstance(
+                            (Class<?>) v, new int[i]
+                        ).getClass();
+                    }
+                    visa = elem = e;
+                } else {
+                    if (i == 0) {
+                        elem = e = Space.wipe(visa = v);
+                    } else {
+                        elem = e = Array.newInstance(
+                            Space.wipe(v), new int[i]
+                        ).getClass();
+                    }
+                }
+            }
+
+            if (e != Object.class) {
+                kind = e;
+                spare = supplier.lookup(e);
             }
 
             size = 0;
             mark = 1;
-            bundle = Array.newInstance(
-                clazz, length = 1
+            bean = Array.newInstance(
+                e, length = 1
             );
         }
 
@@ -552,7 +580,7 @@ public class ArraySpare extends Property<Object> {
             }
 
             Builder<?> child =
-                spare0.getBuilder(tag);
+                spare0.getBuilder(visa);
 
             if (child == null) {
                 return null;
@@ -570,7 +598,7 @@ public class ArraySpare extends Property<Object> {
                 enlarge();
             }
             Array.set(
-                bundle, size++, result
+                bean, size++, result
             );
         }
 
@@ -595,33 +623,32 @@ public class ArraySpare extends Property<Object> {
             }
 
             Array.set(
-                bundle, size++, spare0.read(flag, value)
+                bean, size++, spare0.read(flag, value)
             );
         }
 
         @Override
         public void onClose() {
-            tag = null;
-            bundle = null;
+            bean = null;
         }
     }
 
     public static class Builder2 extends Builder<Object> implements Callback {
 
         protected int index;
-        protected Type[] tag;
-        protected Object[] bundle;
+        protected Type[] elems;
+        protected Object[] bean;
 
         public Builder2(
-            Type[] types
+            Type[] visa
         ) {
-            tag = types;
+            elems = visa;
         }
 
         @Override
         public void onOpen() {
             index = -1;
-            bundle = new Object[tag.length];
+            bean = new Object[elems.length];
         }
 
         @Override
@@ -629,7 +656,7 @@ public class ArraySpare extends Property<Object> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            Type[] types = tag;
+            Type[] types = elems;
             if (++index < types.length) {
                 Type type = types[index];
                 Class<?> clazz = Space.wipe(type);
@@ -665,7 +692,7 @@ public class ArraySpare extends Property<Object> {
             @NotNull Pipage pipage,
             @Nullable Object result
         ) throws IOException {
-            bundle[index] = result;
+            bean[index] = result;
         }
 
         @Override
@@ -674,7 +701,7 @@ public class ArraySpare extends Property<Object> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            Type[] types = tag;
+            Type[] types = elems;
             if (++index < types.length) {
                 Class<?> clazz = Space.wipe(
                     types[index]
@@ -688,7 +715,7 @@ public class ArraySpare extends Property<Object> {
                 }
 
                 if (spare != null) {
-                    bundle[index] =
+                    bean[index] =
                         spare.read(
                             flag, value
                         );
@@ -702,12 +729,12 @@ public class ArraySpare extends Property<Object> {
 
         @Override
         public Object[] build() {
-            return bundle;
+            return bean;
         }
 
         @Override
         public void onClose() {
-            bundle = null;
+            bean = null;
         }
     }
 }

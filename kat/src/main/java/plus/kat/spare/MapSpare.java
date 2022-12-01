@@ -325,84 +325,74 @@ public class MapSpare extends Property<Map> {
 
     public static class Builder0 extends Builder<Map> implements Callback {
 
-        protected Class<?> kind;
+        protected Map bean;
+        protected Object name;
+        protected Class<?> valType;
+
+        protected Type actual;
         protected Type key, val, raw;
 
-        protected Map bundle;
-        protected Object attr;
-
-        protected Spare<Map> owner;
-        protected Spare<?> spare0, spare1;
+        protected Spare<Map> rawSpare;
+        protected Spare<?> keySpace, valSpace;
 
         public Builder0(
             Type type,
             Class<?> kind,
             Spare<Map> spare
         ) {
-            owner = spare;
-            if (type == null) {
-                raw = kind;
-            }
-
-            // class
-            else if (type instanceof Class) {
-                if (type != Object.class) {
-                    raw = type;
-                } else {
-                    raw = kind;
-                }
-            }
-
-            // param
-            else if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
-                Type[] act = p.getActualTypeArguments();
-                raw = p.getRawType();
-                if (act[0] != Object.class) {
-                    key = act[0];
-                }
-                if (act[1] != Object.class) {
-                    val = act[1];
-                }
-            }
-
-            // other
-            else {
-                Class<?> cls = Space.wipe(type);
-                if (cls != null &&
-                    cls != Object.class) {
-                    raw = cls;
-                } else {
-                    raw = kind;
-                }
-            }
+            raw = kind;
+            actual = type;
+            rawSpare = spare;
         }
 
         @Override
         public void onOpen() throws IOException {
-            Type tv = val;
-            if (tv != null) {
-                Class<?> cls = Space.wipe(tv);
-                if (cls != null &&
-                    cls != Object.class) {
-                    kind = cls;
-                    spare1 = supplier.lookup(cls);
-                }
-            }
-            Type tk = key;
-            if (tk != null) {
-                Class<?> cls = Space.wipe(tk);
-                if (cls != Object.class &&
-                    cls != String.class) {
-                    spare0 = supplier.lookup(cls);
-                    if (spare0 == null) {
-                        throw new IOException(
-                            tk + "'s spare does not exist"
-                        );
+            Type type = actual;
+            if (type != null) {
+                if (type instanceof Class) {
+                    if (type != Object.class) {
+                        raw = type;
                     }
+                } else if (type instanceof ParameterizedType) {
+                    ParameterizedType p = (ParameterizedType) type;
+                    raw = p.getRawType();
+                    Type[] args = p.getActualTypeArguments();
+
+                    type = args[0];
+                    if (type != Object.class &&
+                        type != String.class) {
+                        Class<?> cls = Space.wipe(
+                            key = trace(type)
+                        );
+                        if (cls != Object.class &&
+                            cls != String.class) {
+                            keySpace = supplier.lookup(cls);
+                            if (keySpace == null) {
+                                throw new IOException(
+                                    type + "'s spare does not exist"
+                                );
+                            }
+                        }
+                    }
+
+                    type = args[1];
+                    if (type != Object.class) {
+                        Class<?> cls = Space.wipe(
+                            val = trace(type)
+                        );
+                        if (cls != null &&
+                            cls != Object.class) {
+                            valType = cls;
+                            valSpace = supplier.lookup(cls);
+                        }
+                    }
+                } else {
+                    throw new IllegalStateException(
+                        "Failed to resolve this " + type
+                    );
                 }
             }
-            bundle = owner.apply(raw);
+            bean = rawSpare.apply(raw);
         }
 
         @Override
@@ -410,10 +400,10 @@ public class MapSpare extends Property<Map> {
             @NotNull Space space,
             @NotNull Alias alias
         ) throws IOException {
-            Spare<?> s1 = spare1;
+            Spare<?> s1 = valSpace;
             if (s1 == null) {
                 s1 = supplier.search(
-                    kind, space
+                    valType, space
                 );
                 if (s1 == null) {
                     return null;
@@ -427,11 +417,11 @@ public class MapSpare extends Property<Map> {
                 return null;
             }
 
-            Spare<?> s0 = spare0;
+            Spare<?> s0 = keySpace;
             if (s0 == null) {
-                attr = alias.toString();
+                name = alias.toString();
             } else {
-                attr = s0.read(flag, alias);
+                name = s0.read(flag, alias);
             }
 
             return child.init(this, this);
@@ -442,8 +432,8 @@ public class MapSpare extends Property<Map> {
             @NotNull Pipage pipage,
             @Nullable Object result
         ) throws IOException {
-            bundle.put(
-                attr, result
+            bean.put(
+                name, result
             );
         }
 
@@ -453,26 +443,26 @@ public class MapSpare extends Property<Map> {
             @NotNull Alias alias,
             @NotNull Value value
         ) throws IOException {
-            Spare<?> s1 = spare1;
+            Spare<?> s1 = valSpace;
             if (s1 == null) {
                 s1 = supplier.search(
-                    kind, space
+                    valType, space
                 );
                 if (s1 == null) {
                     return;
                 }
             }
 
-            Spare<?> s0 = spare0;
+            Spare<?> s0 = keySpace;
             if (s0 == null) {
-                bundle.put(
+                bean.put(
                     alias.toString(),
                     s1.read(
                         flag, value
                     )
                 );
             } else {
-                bundle.put(
+                bean.put(
                     s0.read(
                         flag, alias
                     ),
@@ -485,13 +475,13 @@ public class MapSpare extends Property<Map> {
 
         @Override
         public Map build() {
-            return bundle;
+            return bean;
         }
 
         @Override
         public void onClose() {
-            attr = null;
-            bundle = null;
+            name = null;
+            bean = null;
         }
     }
 }
