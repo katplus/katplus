@@ -387,7 +387,7 @@ public interface Subject<T> extends Spare<T> {
     class Builder0<T> extends Builder<T> implements Callback {
 
         protected T bean;
-        protected Type visa;
+        protected Type type;
 
         protected Subject<T> subject;
         protected Member<T, ?> setter;
@@ -396,10 +396,10 @@ public interface Subject<T> extends Spare<T> {
          * default
          */
         public Builder0(
-            Type visa,
+            Type type,
             Subject<T> spare
         ) {
-            this.visa = visa;
+            this.type = type;
             this.subject = spare;
         }
 
@@ -432,7 +432,7 @@ public interface Subject<T> extends Spare<T> {
                 if (coder != null) {
                     Builder<?> child =
                         coder.getBuilder(
-                            trace(type)
+                            locate(type)
                         );
                     if (child != null) {
                         setter = member;
@@ -454,7 +454,7 @@ public interface Subject<T> extends Spare<T> {
                                 ).getRawType(), space
                             );
                         } else {
-                            if (type == (type = trace(type))) {
+                            if (type == (type = locate(type))) {
                                 throw new IllegalStateException(
                                     this + " can't resolve " + type + " any further"
                                 );
@@ -539,7 +539,7 @@ public interface Subject<T> extends Spare<T> {
                                 ).getRawType(), space
                             );
                         } else {
-                            if (type == (type = trace(type))) {
+                            if (type == (type = locate(type))) {
                                 throw new IllegalStateException(
                                     this + " can't resolve " + type + " any further"
                                 );
@@ -575,27 +575,28 @@ public interface Subject<T> extends Spare<T> {
         }
 
         /**
-         * Returns the wiped type of the specified type
+         * Resolves the unknown type with this helper,
+         * substituting type variables as far as possible
          */
         @Override
-        public Type trace(
-            @NotNull Type type
+        public Type locate(
+            @NotNull Type unknown
         ) {
-            if (type instanceof WildcardType) {
-                return trace(
-                    ((WildcardType) type).getUpperBounds()[0]
+            if (unknown instanceof WildcardType) {
+                return locate(
+                    ((WildcardType) unknown).getUpperBounds()[0]
                 );
             }
 
-            if (type instanceof TypeVariable) {
-                Type scope = visa;
+            if (unknown instanceof TypeVariable) {
+                Type scope = type;
                 Class<?> clazz = subject.getType();
 
                 if (clazz != null) {
                     // If GenericDeclaration is method,
                     // then a ClassCastException is thrown
                     Class<?> entry = (Class<?>) (
-                        (TypeVariable<?>) type).getGenericDeclaration();
+                        (TypeVariable<?>) unknown).getGenericDeclaration();
 
                     dig:
                     for (Class<?> cls; ; clazz = cls) {
@@ -625,14 +626,14 @@ public interface Subject<T> extends Spare<T> {
                                 }
                             }
                         }
-                        return holder.trace(type);
+                        return holder.locate(unknown);
                     }
 
                     if (scope instanceof ParameterizedType) {
                         Object[] items = entry.getTypeParameters();
                         for (int i = 0; i < items.length; i++) {
-                            if (type == items[i]) {
-                                return trace(
+                            if (unknown == items[i]) {
+                                return locate(
                                     ((ParameterizedType) scope).getActualTypeArguments()[i]
                                 );
                             }
@@ -640,10 +641,10 @@ public interface Subject<T> extends Spare<T> {
                     }
                 }
                 throw new IllegalStateException(
-                    this + " can't resolve " + type + " from " + scope
+                    this + " can't resolve " + unknown + " from " + scope
                 );
             }
-            return type;
+            return unknown;
         }
 
         /**
@@ -666,11 +667,11 @@ public interface Subject<T> extends Spare<T> {
         protected Member<?, ?> target;
 
         public Builder1(
-            Type visa,
+            Type type,
             Object[] data,
             Subject<T> spare
         ) {
-            super(visa, spare);
+            super(type, spare);
             this.data = data;
         }
 
@@ -702,7 +703,7 @@ public interface Subject<T> extends Spare<T> {
                 if (coder != null) {
                     Builder<?> child =
                         coder.getBuilder(
-                            trace(type)
+                            locate(type)
                         );
                     if (child != null) {
                         target = member;
@@ -724,7 +725,7 @@ public interface Subject<T> extends Spare<T> {
                                 ).getRawType(), space
                             );
                         } else {
-                            if (type == (type = trace(type))) {
+                            if (type == (type = locate(type))) {
                                 throw new IllegalStateException(
                                     this + " can't resolve " + type + " any further"
                                 );
@@ -809,7 +810,7 @@ public interface Subject<T> extends Spare<T> {
                                 ).getRawType(), space
                             );
                         } else {
-                            if (type == (type = trace(type))) {
+                            if (type == (type = locate(type))) {
                                 throw new IllegalStateException(
                                     this + " can't resolve " + type + " any further"
                                 );
@@ -879,12 +880,12 @@ public interface Subject<T> extends Spare<T> {
         protected Member<?, ?> target;
 
         public Builder2(
-            Type visa,
+            Type type,
             Class<?> self,
             Object[] data,
             Subject<T> spare
         ) {
-            super(visa, spare);
+            super(type, spare);
             this.data = data;
             this.self = self;
         }
@@ -941,7 +942,7 @@ public interface Subject<T> extends Spare<T> {
                 if (coder != null) {
                     Builder<?> child =
                         coder.getBuilder(
-                            trace(type)
+                            locate(type)
                         );
                     if (child != null) {
                         target = member;
@@ -963,7 +964,7 @@ public interface Subject<T> extends Spare<T> {
                                 ).getRawType(), space
                             );
                         } else {
-                            if (type == (type = trace(type))) {
+                            if (type == (type = locate(type))) {
                                 throw new IllegalStateException(
                                     this + " can't resolve " + type + " any further"
                                 );
@@ -996,7 +997,7 @@ public interface Subject<T> extends Spare<T> {
                     if (coder != null) {
                         Builder<?> child =
                             coder.getBuilder(
-                                trace(type)
+                                locate(type)
                             );
                         if (child != null) {
                             return child.init(
@@ -1019,7 +1020,7 @@ public interface Subject<T> extends Spare<T> {
                                     ).getRawType(), space
                                 );
                             } else {
-                                if (type == (type = trace(type))) {
+                                if (type == (type = locate(type))) {
                                     throw new IllegalStateException(
                                         this + " can't resolve " + type + " any further"
                                     );
@@ -1105,7 +1106,7 @@ public interface Subject<T> extends Spare<T> {
                                 ).getRawType(), space
                             );
                         } else {
-                            if (type == (type = trace(type))) {
+                            if (type == (type = locate(type))) {
                                 throw new IllegalStateException(
                                     this + " can't resolve " + type + " any further"
                                 );
@@ -1155,7 +1156,7 @@ public interface Subject<T> extends Spare<T> {
                                     ).getRawType(), space
                                 );
                             } else {
-                                if (type == (type = trace(type))) {
+                                if (type == (type = locate(type))) {
                                     throw new IllegalStateException(
                                         this + " can't resolve " + type + " any further"
                                     );

@@ -304,7 +304,7 @@ public class ListSpare extends Property<List> {
                     type = p.getActualTypeArguments()[0];
                     if (type != Object.class) {
                         Class<?> cls = Space.wipe(
-                            elem = trace(type)
+                            elem = locate(type)
                         );
                         if (cls != null &&
                             cls != Object.class) {

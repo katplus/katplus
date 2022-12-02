@@ -314,19 +314,20 @@ public class Parser implements Channel, Callback, Closeable {
     }
 
     /**
-     * Returns the wiped type of the specified {@code type}
+     * Resolves the unknown type with this helper,
+     * substituting type variables as far as possible
      */
     @Override
-    public Type trace(
-        @NotNull Type type
+    public Type locate(
+        @NotNull Type unknown
     ) {
-        if (type instanceof WildcardType) {
-            return trace(
-                ((WildcardType) type).getUpperBounds()[0]
+        if (unknown instanceof WildcardType) {
+            return locate(
+                ((WildcardType) unknown).getUpperBounds()[0]
             );
         }
 
-        if (type instanceof TypeVariable) {
+        if (unknown instanceof TypeVariable) {
             Type scope = event.getType();
             Class<?> clazz = Space.wipe(scope);
 
@@ -334,7 +335,7 @@ public class Parser implements Channel, Callback, Closeable {
                 // If GenericDeclaration is method,
                 // then a ClassCastException is thrown
                 Class<?> entry = (Class<?>) (
-                    (TypeVariable<?>) type).getGenericDeclaration();
+                    (TypeVariable<?>) unknown).getGenericDeclaration();
 
                 dig:
                 for (Class<?> cls; ; clazz = cls) {
@@ -365,15 +366,15 @@ public class Parser implements Channel, Callback, Closeable {
                         }
                     }
                     throw new IllegalStateException(
-                        this + " can't resolve " + type + " from " + scope
+                        this + " can't resolve " + unknown + " from " + scope
                     );
                 }
 
                 if (scope instanceof ParameterizedType) {
                     Object[] items = entry.getTypeParameters();
                     for (int i = 0; i < items.length; i++) {
-                        if (type == items[i]) {
-                            return trace(
+                        if (unknown == items[i]) {
+                            return locate(
                                 ((ParameterizedType) scope).getActualTypeArguments()[i]
                             );
                         }
@@ -381,10 +382,10 @@ public class Parser implements Channel, Callback, Closeable {
                 }
             }
             throw new IllegalStateException(
-                this + " can't resolve " + type + " from " + scope
+                this + " can't resolve " + unknown + " from " + scope
             );
         }
-        return type;
+        return unknown;
     }
 
     /**

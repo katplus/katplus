@@ -532,7 +532,7 @@ public class ArraySpare extends Property<Object> {
                 for (; v instanceof GenericArrayType; i++) {
                     v = ((GenericArrayType) v).getGenericComponentType();
                 }
-                if ((v = trace(v)) instanceof Class) {
+                if ((v = locate(v)) instanceof Class) {
                     if (i == 0) {
                         e = (Class<?>) v;
                     } else {

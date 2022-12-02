@@ -362,7 +362,7 @@ public class MapSpare extends Property<Map> {
                     if (type != Object.class &&
                         type != String.class) {
                         Class<?> cls = Space.wipe(
-                            key = trace(type)
+                            key = locate(type)
                         );
                         if (cls != Object.class &&
                             cls != String.class) {
@@ -378,7 +378,7 @@ public class MapSpare extends Property<Map> {
                     type = args[1];
                     if (type != Object.class) {
                         Class<?> cls = Space.wipe(
-                            val = trace(type)
+                            val = locate(type)
                         );
                         if (cls != null &&
                             cls != Object.class) {

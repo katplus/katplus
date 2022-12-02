@@ -140,13 +140,14 @@ public abstract class Builder<T> implements Channel {
     }
 
     /**
-     * Returns the wiped type of the specified type
+     * Resolves the unknown type with this helper,
+     * substituting type variables as far as possible
      */
     @Override
-    public Type trace(
-        @NotNull Type type
+    public Type locate(
+        @NotNull Type unknown
     ) {
-        return holder.trace(type);
+        return holder.locate(unknown);
     }
 
     /**

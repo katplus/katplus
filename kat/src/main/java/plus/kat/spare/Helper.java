@@ -32,12 +32,16 @@ public interface Helper {
     Helper holder();
 
     /**
-     * Returns the wiped type of the specified {@code type}
+     * Resolves the unknown type with this helper,
+     * substituting type variables as far as possible
      */
     @NotNull
-    default Type trace(
-        @NotNull Type type
+    default Type locate(
+        @NotNull Type unknown
     ) {
-        return holder().trace(type);
+        Helper holder = holder();
+        // handled by parent, default
+        return holder == null ?
+            unknown : holder.locate(unknown);
     }
 }
