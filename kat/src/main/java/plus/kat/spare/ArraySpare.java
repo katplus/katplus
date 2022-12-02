@@ -50,8 +50,7 @@ public class ArraySpare extends Property<Object> {
         @NotNull Class<?> clazz
     ) {
         super((Class<Object>) clazz);
-        elem = clazz.getComponentType();
-        if (elem == null) {
+        if ((elem = clazz.getComponentType()) == null) {
             throw new IllegalStateException(
                 "Specified `" + clazz + "` is not an array type"
             );
@@ -101,7 +100,10 @@ public class ArraySpare extends Property<Object> {
                 algo, new Event<>(value).with(flag)
             );
         }
-        return null;
+        throw new IOException(
+            "Failed to parse the value to `" + klass
+                + "` unless `Flag.VALUE_AS_BEAN` is enabled"
+        );
     }
 
     @Override
@@ -109,7 +111,7 @@ public class ArraySpare extends Property<Object> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        if (elem == Object.class) {
+        if (value instanceof Object[]) {
             for (Object val : (Object[]) value) {
                 chan.set(null, val);
             }

@@ -75,7 +75,10 @@ public class SetSpare extends Property<Set> {
                 algo, new Event<Set>(value).with(flag)
             );
         }
-        return null;
+        throw new IOException(
+            "Failed to parse the value to `" + klass
+                + "` unless `Flag.VALUE_AS_BEAN` is enabled"
+        );
     }
 
     @Override

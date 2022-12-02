@@ -1463,8 +1463,7 @@ public interface Supplier extends Converter {
             @NotNull CharSequence klass
         ) {
             Spare<T> spare = lookup(type);
-            if (spare != null ||
-                klass == null) {
+            if (spare != null) {
                 return spare;
             } else {
                 return search(type, klass);
@@ -1567,14 +1566,11 @@ public interface Supplier extends Converter {
                     break;
                 }
                 case '[': {
-                    if (klass.isArray()) {
-                        return new ArraySpare(klass).join(this);
-                    }
+                    return new ArraySpare(klass).join(this);
                 }
             }
 
-            Embed embed = klass
-                .getAnnotation(Embed.class);
+            Embed embed = klass.getAnnotation(Embed.class);
             if (embed == null) {
                 if (klass.isInterface() ||
                     Coder.class.isAssignableFrom(klass) ||
