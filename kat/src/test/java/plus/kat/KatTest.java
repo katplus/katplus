@@ -30,6 +30,32 @@ public class KatTest {
     }
 
     @Test
+    public void test_pure() {
+        User user = new User();
+        user.id = 1;
+        user.name = "kraity";
+
+        assertEquals(
+            "{:id(1):name(kraity):blocked(0)}", Kat.pure(user)
+        );
+
+        Map<String, Object> extra = new HashMap<>();
+        extra.put("kat", new User[]{user});
+
+        String string =
+            "{\n" +
+                "  :kat{\n" +
+                "    {\n" +
+                "      :id(1)\n" +
+                "      :name(kraity)\n" +
+                "      :blocked(0)\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
+        assertEquals(string, Kat.encode(extra, PURE | PRETTY));
+    }
+
+    @Test
     public void test_pretty() {
         User user = new User();
         user.id = 1;
@@ -44,11 +70,11 @@ public class KatTest {
         assertEquals(pretty, Kat.pretty(user));
 
         Map<String, Object> extra = new HashMap<>();
-        extra.put("k", new User[]{user});
+        extra.put("kat", new User[]{user});
 
         String string =
             "M{\n" +
-                "  A:k{\n" +
+                "  A:kat{\n" +
                 "    plus.kat.User{\n" +
                 "      i:id(1)\n" +
                 "      s:name(kraity)\n" +

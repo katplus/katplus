@@ -447,7 +447,7 @@ public abstract class Stream extends Chain implements Flow {
         if (ch < 0x80) {
             emit((byte) ch);
         } else {
-            if ((flags & 2) == 0) {
+            if ((flags & Flag.UNICODE) == 0) {
                 join(ch);
             } else {
                 byte[] it = value;
@@ -492,7 +492,7 @@ public abstract class Stream extends Chain implements Flow {
         if (0 <= i && 0 <= l && k <= data.length) {
             if (l != 0) {
                 asset = 0;
-                if ((flags & 2) == 2) {
+                if ((flags & Flag.UNICODE) != 0) {
                     byte esc = algo().esc();
                     do {
                         char ch = data[i++];
@@ -658,7 +658,7 @@ public abstract class Stream extends Chain implements Flow {
         if (0 <= i && 0 <= l && k <= data.length()) {
             if (l != 0) {
                 asset = 0;
-                if ((flags & 2) == 2) {
+                if ((flags & Flag.UNICODE) != 0) {
                     byte esc = algo().esc();
                     do {
                         char ch = data.charAt(i++);

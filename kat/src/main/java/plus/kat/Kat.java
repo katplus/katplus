@@ -164,9 +164,11 @@ public class Kat extends Stream implements Chan {
             }
         }
 
-        if (space != null) {
+        if (0 <= flags &&
+            space != null) {
             emit(space);
         }
+
         if (alias != null) {
             join(
                 (byte) ':'
@@ -275,9 +277,12 @@ public class Kat extends Stream implements Chan {
             }
         }
 
-        emit(
-            coder.getSpace()
-        );
+        if (0 <= flags) {
+            emit(
+                coder.getSpace()
+            );
+        }
+
         if (alias != null) {
             join(
                 (byte) ':'
@@ -578,6 +583,22 @@ public class Kat extends Stream implements Chan {
             it[count++] = '^';
             it[count++] = (byte) ch;
         }
+    }
+
+    /**
+     * Serialize to pure {@link Kat} String
+     *
+     * @param value the specified value to serialized
+     * @throws FatalCrash If an error occurs in serialization
+     * @since 0.0.5
+     */
+    @NotNull
+    public static String pure(
+        @Nullable Object value
+    ) {
+        return encode(
+            null, value, Flag.PURE | DEF.writeFlags
+        );
     }
 
     /**

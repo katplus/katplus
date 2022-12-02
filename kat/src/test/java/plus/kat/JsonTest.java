@@ -30,11 +30,11 @@ public class JsonTest {
         assertEquals(pretty, Json.pretty(user));
 
         Map<String, Object> extra = new HashMap<>();
-        extra.put("k", new User[]{user});
+        extra.put("kat", new User[]{user});
 
         String string =
             "{\n" +
-                "  \"k\":[\n" +
+                "  \"kat\":[\n" +
                 "    {\n" +
                 "      \"id\":1,\n" +
                 "      \"name\":\"kraity\",\n" +

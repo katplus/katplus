@@ -28,17 +28,17 @@ public class DocTest {
         assertEquals(pretty, Doc.pretty(user));
 
         Map<String, Object> extra = new HashMap<>();
-        extra.put("k", new User[]{user});
+        extra.put("kat", new User[]{user});
 
         String string =
             "<M>\n" +
-                "  <k>\n" +
+                "  <kat>\n" +
                 "    <User>\n" +
                 "      <id>1</id>\n" +
                 "      <name>kraity</name>\n" +
                 "      <blocked>false</blocked>\n" +
                 "    </User>\n" +
-                "  </k>\n" +
+                "  </kat>\n" +
                 "</M>";
         assertEquals(string, Doc.pretty(extra));
     }

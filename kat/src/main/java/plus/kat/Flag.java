@@ -47,19 +47,20 @@ public interface Flag {
      *
      * @see Chan
      */
+    long PURE = 1L << 0x3F;
     long PRETTY = 0x1;
     long UNICODE = 0x2;
-    long ENUM_AS_INDEX = 0x4;
-    long DATE_AS_DIGIT = 0x8;
+    long ENUM_AS_INDEX = 0x10;
+    long DATE_AS_DIGIT = 0x20;
 
     /**
      * Read Flags
      *
      * @see Event
      */
-    long INDEX_AS_ENUM = 0x4;
-    long DIGIT_AS_DATE = 0x8;
-    long VALUE_AS_BEAN = 0x10;
+    long INDEX_AS_ENUM = 0x10;
+    long DIGIT_AS_DATE = 0x20;
+    long VALUE_AS_BEAN = 0x40;
 
     /**
      * Check if this {@link Object} uses the {@code flag}

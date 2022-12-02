@@ -35,6 +35,9 @@ public class MainTest {
         assertEquals(
             "{\"data\":[{\"id\":1,\"name\":\"kraity\"},{\"id\":2,\"name\":\"b\"}]}", Json.encode(data)
         );
+        assertEquals(
+            "{:data{{:id(1):name(kraity)}{:id(2):name(b)}}}", Kat.pure(data)
+        );
         assertEquals("plus.kat.MainTest$Data{" +
             "A:data{" +
             "plus.kat.MainTest$User{i:id(1)s:name(kraity)}" +
@@ -59,6 +62,9 @@ public class MainTest {
             "{\"bean\":{\"data\":{\"id\":123456}}}", Json.encode(data)
         );
         assertEquals(
+            "{:bean{:data{:id(123456)}}}", Kat.pure(data)
+        );
+        assertEquals(
             "plus.kat.MainTest$Bundle{plus.kat.MainTest$Data:bean{M:data{l:id(123456)}}}", Kat.encode(data)
         );
     }
@@ -75,6 +81,9 @@ public class MainTest {
         assertNotNull(data);
         assertEquals(
             "{\"bean\":{\"data\":{\"id\":1,\"name\":\"kraity\"}}}", Json.encode(data)
+        );
+        assertEquals(
+            "{:bean{:data{:id(1):name(kraity)}}}", Kat.pure(data)
         );
         assertEquals(
             "plus.kat.MainTest$Bundle{" +
@@ -99,6 +108,9 @@ public class MainTest {
         assertNotNull(data);
         assertEquals(
             "{\"bundle\":{\"bean\":{\"data\":{\"id\":1,\"name\":\"kraity\"}}}}", Json.encode(data)
+        );
+        assertEquals(
+            "{:bundle{:bean{:data{:id(1):name(kraity)}}}}", Kat.pure(data)
         );
         assertEquals(
             "plus.kat.MainTest$Group{" +
@@ -129,6 +141,12 @@ public class MainTest {
                 "\"one\":{\"id\":2,\"name\":\"kat\"}," +
                 "\"two\":{\"id\":3,\"name\":\"plus\"}}}", Json.encode(bucket));
         assertEquals(
+            "{:oneself{:id(1):name(kraity)}" +
+                ":friends{" +
+                ":one{:id(2):name(kat)}" +
+                ":two{:id(3):name(plus)}}}", Kat.pure(bucket)
+        );
+        assertEquals(
             "plus.kat.MainTest$Bucket{" +
                 "plus.kat.MainTest$User:oneself{i:id(1)s:name(kraity)}" +
                 "M:friends{" +
@@ -157,6 +175,9 @@ public class MainTest {
         assertNotNull(data);
         assertEquals(
             "{\"bag\":{\"id\":1,\"name\":\"kraity\"}}", Json.encode(data)
+        );
+        assertEquals(
+            "{:bag{:id(1):name(kraity)}}", Kat.pure(data)
         );
         assertEquals(
             "plus.kat.MainTest$Packet{plus.kat.MainTest$User:bag{i:id(1)s:name(kraity)}}", Kat.encode(data)
@@ -189,6 +210,9 @@ public class MainTest {
             "{\"master\":{\"id\":1,\"name\":\"kraity\"}}", Json.encode(data)
         );
         assertEquals(
+            "{:master{:id(1):name(kraity)}}", Kat.pure(data)
+        );
+        assertEquals(
             "plus.kat.MainTest$Animal{plus.kat.MainTest$User:master{i:id(1)s:name(kraity)}}", Kat.encode(data)
         );
     }
@@ -205,6 +229,9 @@ public class MainTest {
         assertNotNull(data);
         assertEquals(
             "{\"master\":{\"id\":1,\"name\":\"kraity\"}}", Json.encode(data)
+        );
+        assertEquals(
+            "{:master{:id(1):name(kraity)}}", Kat.pure(data)
         );
         assertEquals(
             "plus.kat.MainTest$Dragon{plus.kat.MainTest$User:master{i:id(1)s:name(kraity)}}", Kat.encode(data)
@@ -229,6 +256,9 @@ public class MainTest {
             "{\"elems\":[[[[1,2]]],[[[3,4]]]]}", Json.encode(data)
         );
         assertEquals(
+            "{:elems{{{{(1)(2)}}}{{{(3)(4)}}}}}", Kat.pure(data)
+        );
+        assertEquals(
             "plus.kat.MainTest$Container{A:elems{A{A{A{l(1)l(2)}}}A{A{A{l(3)l(4)}}}}}", Kat.encode(data)
         );
     }
@@ -245,6 +275,9 @@ public class MainTest {
         assertNotNull(data);
         assertEquals(
             "{\"elems\":[[[[{\"volume\":123456.0}]]]]}", Json.encode(data)
+        );
+        assertEquals(
+            "{:elems{{{{{:volume(123456.0)}}}}}}", Kat.pure(data)
         );
         assertEquals(
             "plus.kat.MainTest$Container{A:elems{A{A{A{M{d:volume(123456.0)}}}}}}", Kat.encode(data)
