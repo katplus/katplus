@@ -179,6 +179,9 @@ public class Json extends Stream implements Chan {
             emit(alias);
             join((byte) '"');
             join((byte) ':');
+            if (d != Short.MIN_VALUE) {
+                join((byte) ' ');
+            }
         }
 
         if (value == null) {
@@ -303,6 +306,9 @@ public class Json extends Stream implements Chan {
             emit(alias);
             join((byte) '"');
             join((byte) ':');
+            if (d != Short.MIN_VALUE) {
+                join((byte) ' ');
+            }
         }
 
         Boolean flag = coder.getFlag();

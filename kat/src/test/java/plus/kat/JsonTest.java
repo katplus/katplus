@@ -23,9 +23,9 @@ public class JsonTest {
 
         String pretty =
             "{\n" +
-                "  \"id\":1,\n" +
-                "  \"name\":\"kraity\",\n" +
-                "  \"blocked\":false\n" +
+                "  \"id\": 1,\n" +
+                "  \"name\": \"kraity\",\n" +
+                "  \"blocked\": false\n" +
                 "}";
         assertEquals(pretty, Json.pretty(user));
 
@@ -34,11 +34,11 @@ public class JsonTest {
 
         String string =
             "{\n" +
-                "  \"kat\":[\n" +
+                "  \"kat\": [\n" +
                 "    {\n" +
-                "      \"id\":1,\n" +
-                "      \"name\":\"kraity\",\n" +
-                "      \"blocked\":false\n" +
+                "      \"id\": 1,\n" +
+                "      \"name\": \"kraity\",\n" +
+                "      \"blocked\": false\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}";
