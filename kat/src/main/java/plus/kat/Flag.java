@@ -25,41 +25,235 @@ import plus.kat.anno.Expose;
 @FunctionalInterface
 public interface Flag {
     /**
-     * Embed Flags
+     * Uses this feature on {@link Embed#require()}, if the bean
+     * requires a field or method annotated by {@link Expose} to take effect
      *
-     * @see Embed
+     * <pre>{@code
+     *  import plus.kat.anno.*;
+     *  import static plus.kat.Flag.*;
+     *
+     *  @Embed(
+     *     require = SEALED
+     *  )
+     *  class User {
+     *      @Expose
+     *      public int id; // It will be used
+     *      public String name; // It won't be used
+     *
+     *      // It will be used
+     *      @Expose
+     *      public String getAlias() {
+     *          return this.name;
+     *      }
+     *
+     *      // It won't be used
+     *      public void setAlias(String name) {
+     *          this.name = name;
+     *      }
+     *  }
+     * }</pre>
      */
     long SEALED = 0x1;
 
     /**
-     * Expose Flags
+     * Uses this feature on {@link Expose#require()}, if a field or
+     * method requires that the value of setter is non-null before it
+     * is updated, the value of getter is serialized only if it is non-null
      *
-     * @see Expose
+     * <pre>{@code
+     *  import plus.kat.anno.*;
+     *  import static plus.kat.Flag.*;
+     *
+     *  class User {
+     *      @Expose(
+     *         require = NOTNULL
+     *      )
+     *      public String name;
+     *
+     *      @Expose(
+     *         require = NOTNULL
+     *      )
+     *      public String getAlias() {
+     *          return this.name;
+     *      }
+     *
+     *      @Expose(
+     *         require = NOTNULL
+     *      )
+     *      public setAlias(String name) {
+     *          this.name = name;
+     *      }
+     *  }
+     * }</pre>
      */
     long NOTNULL = 0x1;
+
+    /**
+     * Uses this feature on {@link Expose#require()}, if a field
+     * or method requires that it can only be serialized, not updated
+     *
+     * <pre>{@code
+     *  import plus.kat.anno.*;
+     *  import static plus.kat.Flag.*;
+     *
+     *  class User {
+     *      @Expose(
+     *         require = READONLY
+     *      )
+     *      public String name;
+     *  }
+     * }</pre>
+     */
     long READONLY = 0x2;
+
+    /**
+     * Uses this feature on {@link Expose#require()}, if a field
+     * or method requires that it can only be updated rather than serialized
+     *
+     * <pre>{@code
+     *  import plus.kat.anno.*;
+     *  import static plus.kat.Flag.*;
+     *
+     *  class User {
+     *      @Expose(
+     *         require = INTERNAL
+     *      )
+     *      public String name;
+     *  }
+     * }</pre>
+     */
     long INTERNAL = 0x4;
+
+    /**
+     * Uses this feature on {@link Expose#require()},
+     * if a field or method requires that it cannot be used
+     * as setter and getter, it means that it will not take effect
+     *
+     * <pre>{@code
+     *  import plus.kat.anno.*;
+     *  import static plus.kat.Flag.*;
+     *
+     *  class User {
+     *      @Expose(
+     *         require = EXCLUDED
+     *      )
+     *      public String name;
+     *
+     *      @Expose(
+     *         require = EXCLUDED
+     *      )
+     *      public String getAlias() {
+     *          return this.name;
+     *      }
+     *  }
+     * }</pre>
+     */
     long EXCLUDED = 0x6;
+
+    /**
+     * Uses this feature on {@link Expose#require()}, if a field
+     * or method requires that the elements inside it be serialized
+     *
+     * <pre>{@code
+     *  import plus.kat.anno.*;
+     *  import static plus.kat.Flag.*;
+     *
+     *  class User {
+     *      @Expose(
+     *         require = UNWRAPPED
+     *      )
+     *      public Map<?, ?> extra;
+     *  }
+     * }</pre>
+     */
     long UNWRAPPED = 0x8;
 
     /**
-     * Write Flags
+     * Uses this feature in serialization,
+     * if serialization is required to be pure, that means erasing types, etc
      *
-     * @see Chan
+     * <pre>{@code
+     *  import plus.kat.Kat;
+     *  import plus.kat.Flag;
+     *
+     *  class User {
+     *      public int id;
+     *      public String name;
+     *  }
+     *
+     *  User user = new User(1, "kraity");
+     *  // {:id(1):name(kraity)}
+     *  String text = Kat.encode(user, Flag.PURE);
+     * }</pre>
      */
-    long PURE = 1L << 0x3F;
+    long PURE = Long.MIN_VALUE;
+
+    /**
+     * Uses this feature in serialization,
+     * if the serialization result is required to be formatted
+     *
+     * <pre>{@code
+     *  import plus.kat.Kat;
+     *  import plus.kat.Flag;
+     *
+     *  User user = ...;
+     *
+     *  // User{
+     *  //   i:id(1)
+     *  //   s:name(kraity)
+     *  // }
+     *  String text = Kat.encode(user, Flag.PRETTY);
+     *
+     *  // {
+     *  //   "id": 1,
+     *  //   "name": "kraity"
+     *  // }
+     *  String text = Json.encode(user, Flag.PRETTY);
+     * }</pre>
+     */
     long PRETTY = 0x1;
+
+    /**
+     * Uses this feature in serialization,
+     * if a character in the serialization result
+     * is greater than 0x7F, it is converted to unicode format
+     *
+     * <pre>{@code
+     *  import plus.kat.Kat;
+     *  import plus.kat.Flag;
+     *
+     *  User user = ...;
+     *
+     *  // User{i:id(1)s:name(^u9646^u4E4B^u5C87)}
+     *  String text = Kat.encode(user, Flag.UNICODE);
+     *  String text = Json.encode(user, Flag.UNICODE);
+     * }</pre>
+     */
     long UNICODE = 0x2;
+
+    /**
+     * Uses this feature in serialization
+     */
     long ENUM_AS_INDEX = 0x10;
+
+    /**
+     * Uses this feature in serialization
+     */
     long DATE_AS_DIGIT = 0x20;
 
     /**
-     * Read Flags
-     *
-     * @see Event
+     * Uses this feature in deserialization
      */
     long INDEX_AS_ENUM = 0x10;
+
+    /**
+     * Uses this feature in deserialization
+     */
     long DIGIT_AS_DATE = 0x20;
+
+    /**
+     * Uses this feature in deserialization
+     */
     long VALUE_AS_BEAN = 0x40;
 
     /**
