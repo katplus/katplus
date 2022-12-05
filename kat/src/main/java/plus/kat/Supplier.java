@@ -666,7 +666,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolve the Kat {@code text} and convert the result to {@link T}
+     * Resolves the Kat {@code text} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Supplier supplier = ...
@@ -693,7 +693,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolve the Kat {@link Event} and convert the result to {@link T}
+     * Resolves the Kat {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -724,7 +724,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Serialize to {@link Kat}
+     * Serializes to {@link Kat}
      *
      * <pre>{@code
      *   User user = ...
@@ -749,7 +749,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Serialize to {@link Kat}
+     * Serializes to {@link Kat}
      *
      * <pre>{@code
      *   User user = ...
@@ -777,7 +777,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolve the Doc {@code text} and convert the result to {@link T}
+     * Resolves the Doc {@code text} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Supplier supplier = ...
@@ -803,7 +803,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolve the Doc {@link Event} and convert the result to {@link T}
+     * Resolves the Doc {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -834,7 +834,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Serialize to {@link Doc}
+     * Serializes to {@link Doc}
      *
      * <pre>{@code
      *   User user = ...
@@ -859,7 +859,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Serialize to {@link Doc}
+     * Serializes to {@link Doc}
      *
      * <pre>{@code
      *   User user = ...
@@ -887,7 +887,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolve the Json {@code text} and convert the result to {@link T}
+     * Resolves the Json {@code text} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Supplier supplier = ...
@@ -913,7 +913,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolve the Json {@link Event} and convert the result to {@link T}
+     * Resolves the Json {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -944,7 +944,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Serialize to {@link Json}
+     * Serializes to {@link Json}
      *
      * <pre>{@code
      *   User user = ...
@@ -969,7 +969,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Serialize to {@link Json}
+     * Serializes to {@link Json}
      *
      * <pre>{@code
      *   User user = ...
@@ -1087,7 +1087,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolve the {@link Event} and convert the result to {@link T}
+     * Resolves the {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -1132,7 +1132,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolve the {@link Event} and convert the result to {@link T}
+     * Resolves the {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -1185,7 +1185,7 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolve the {@link Event} and convert the result to {@link T}
+     * Resolves the {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...

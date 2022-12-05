@@ -423,7 +423,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Resolve the Kat {@code text} and convert the result to {@link T}
+     * Resolves the Kat {@code text} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Spare<User> spare = ...
@@ -445,7 +445,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Resolve the Kat {@link Event} and convert the result to {@link T}
+     * Resolves the Kat {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -472,7 +472,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serialize to {@link Kat}
+     * Serializes to {@link Kat}
      *
      * <pre>{@code
      *   User user = ...
@@ -497,7 +497,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serialize to {@link Kat}
+     * Serializes to {@link Kat}
      *
      * <pre>{@code
      *   User user = ...
@@ -523,7 +523,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Resolve the Doc {@code text} and convert the result to {@link T}
+     * Resolves the Doc {@code text} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Spare<User> spare = ...
@@ -545,7 +545,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Resolve the Doc {@link Event} and convert the result to {@link T}
+     * Resolves the Doc {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -572,7 +572,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serialize to {@link Doc}
+     * Serializes to {@link Doc}
      *
      * <pre>{@code
      *   User user = ...
@@ -597,7 +597,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serialize to {@link Doc}
+     * Serializes to {@link Doc}
      *
      * <pre>{@code
      *   User user = ...
@@ -623,7 +623,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Resolve the Json {@code text} and convert the result to {@link T}
+     * Resolves the Json {@code text} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Spare<User> spare = ...
@@ -645,7 +645,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Resolve the Json {@link Event} and convert the result to {@link T}
+     * Resolves the Json {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Event<User> event = ...
@@ -672,7 +672,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serialize to {@link Json}
+     * Serializes to {@link Json}
      *
      * <pre>{@code
      *   User user = ...
@@ -697,7 +697,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serialize to {@link Json}
+     * Serializes to {@link Json}
      *
      * <pre>{@code
      *   User user = ...

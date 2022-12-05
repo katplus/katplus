@@ -79,17 +79,15 @@ public class ReaderTest {
     @Test
     public void test_byte_buffer() {
         String text = "{:id(1):name(kraity)}";
+        ByteBuffer buffer =
+            ByteBuffer.wrap(text.getBytes());
+
         Bean bean = Kat.decode(
-            Bean.class, new Event<>(
-                new ByteBufferReader(
-                    ByteBuffer.wrap(
-                        text.getBytes()
-                    )
-                )
-            )
+            Bean.class, new ByteBufferReader(buffer)
         );
 
         assertNotNull(bean);
+        assertFalse(buffer.hasRemaining());
         assertEquals(text, Kat.pure(bean));
     }
 }

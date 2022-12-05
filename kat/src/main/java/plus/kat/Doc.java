@@ -396,7 +396,7 @@ public class Doc extends Stream implements Chan {
     }
 
     /**
-     * Serialize to pretty {@link Doc} String
+     * Serializes to pretty {@link Doc} String
      *
      * @param value the specified value to serialized
      * @throws FatalCrash If an error occurs in serialization
@@ -411,7 +411,7 @@ public class Doc extends Stream implements Chan {
     }
 
     /**
-     * Serialize to {@link Doc} String
+     * Serializes to {@link Doc} String
      *
      * @param value the specified value to serialized
      * @throws FatalCrash If an error occurs in serialization
@@ -426,7 +426,7 @@ public class Doc extends Stream implements Chan {
     }
 
     /**
-     * Serialize to {@link Doc} String
+     * Serializes to {@link Doc} String
      *
      * @param value the specified value to serialized
      * @throws FatalCrash If an error occurs in serialization
@@ -442,7 +442,7 @@ public class Doc extends Stream implements Chan {
     }
 
     /**
-     * Serialize to {@link Doc} String
+     * Serializes to {@link Doc} String
      *
      * @param value the specified value to serialized
      * @throws FatalCrash If an error occurs in serialization
@@ -458,7 +458,7 @@ public class Doc extends Stream implements Chan {
     }
 
     /**
-     * Serialize to {@link Doc} String
+     * Serializes to {@link Doc} String
      *
      * @param value the specified value to serialized
      * @throws FatalCrash If an error occurs in serialization
@@ -482,7 +482,7 @@ public class Doc extends Stream implements Chan {
     }
 
     /**
-     * Parse {@link Doc} byte array
+     * Resolves the {@link Doc} byte array
      *
      * @param text the specified text to be parsed
      * @throws Collapse   If parsing fails or the result is null
@@ -494,7 +494,7 @@ public class Doc extends Stream implements Chan {
         @Nullable Class<T> klass,
         @Nullable byte[] text
     ) {
-        if (text == null |
+        if (text == null ||
             klass == null) {
             return null;
         }
@@ -505,7 +505,30 @@ public class Doc extends Stream implements Chan {
     }
 
     /**
-     * Parse {@link Doc} {@link CharSequence}
+     * Resolves the {@link Doc} {@link Reader}
+     *
+     * @param reader the specified reader to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
+     * @see Supplier#down(Class, Event)
+     */
+    @Nullable
+    public static <T> T decode(
+        @Nullable Class<T> klass,
+        @Nullable Reader reader
+    ) {
+        if (klass == null ||
+            reader == null) {
+            return null;
+        }
+
+        return INS.down(
+            klass, new Event<>(reader)
+        );
+    }
+
+    /**
+     * Resolves the {@link Doc} {@link CharSequence}
      *
      * @param text the specified text to be parsed
      * @throws Collapse   If parsing fails or the result is null
@@ -517,7 +540,7 @@ public class Doc extends Stream implements Chan {
         @Nullable Class<T> klass,
         @Nullable CharSequence text
     ) {
-        if (text == null |
+        if (text == null ||
             klass == null) {
             return null;
         }
@@ -528,7 +551,7 @@ public class Doc extends Stream implements Chan {
     }
 
     /**
-     * Parse {@link Doc} {@link CharSequence}
+     * Resolves the {@link Doc} {@link Event}
      *
      * @param event the specified event to be handled
      * @throws Collapse   If parsing fails or the result is null

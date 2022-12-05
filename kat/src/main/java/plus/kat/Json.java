@@ -567,7 +567,7 @@ public class Json extends Stream implements Chan {
     }
 
     /**
-     * Serialize to pretty {@link Json} String
+     * Serializes to pretty {@link Json} String
      *
      * @param value the specified value to serialized
      * @throws FatalCrash If an error occurs in serialization
@@ -582,7 +582,7 @@ public class Json extends Stream implements Chan {
     }
 
     /**
-     * Serialize to {@link Json} String
+     * Serializes to {@link Json} String
      *
      * @param value the specified value to serialized
      * @throws FatalCrash If an error occurs in serialization
@@ -597,7 +597,7 @@ public class Json extends Stream implements Chan {
     }
 
     /**
-     * Serialize to {@link Json} String
+     * Serializes to {@link Json} String
      *
      * @param value the specified value to serialized
      * @throws FatalCrash If an error occurs in serialization
@@ -620,7 +620,7 @@ public class Json extends Stream implements Chan {
     }
 
     /**
-     * Parse {@link Json} byte array
+     * Resolves the {@link Json} byte array
      *
      * @param text the specified text to be parsed
      * @throws Collapse   If parsing fails or the result is null
@@ -632,7 +632,7 @@ public class Json extends Stream implements Chan {
         @Nullable Class<T> klass,
         @Nullable byte[] text
     ) {
-        if (text == null |
+        if (text == null ||
             klass == null) {
             return null;
         }
@@ -643,7 +643,30 @@ public class Json extends Stream implements Chan {
     }
 
     /**
-     * Parse {@link Json} {@link CharSequence}
+     * Resolves the {@link Json} {@link Reader}
+     *
+     * @param reader the specified reader to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
+     * @see Supplier#parse(Class, Event)
+     */
+    @Nullable
+    public static <T> T decode(
+        @Nullable Class<T> klass,
+        @Nullable Reader reader
+    ) {
+        if (klass == null ||
+            reader == null) {
+            return null;
+        }
+
+        return INS.parse(
+            klass, new Event<>(reader)
+        );
+    }
+
+    /**
+     * Resolves the {@link Json} {@link CharSequence}
      *
      * @param text the specified text to be parsed
      * @throws Collapse   If parsing fails or the result is null
@@ -655,7 +678,7 @@ public class Json extends Stream implements Chan {
         @Nullable Class<T> klass,
         @Nullable CharSequence text
     ) {
-        if (text == null |
+        if (text == null ||
             klass == null) {
             return null;
         }
@@ -666,7 +689,7 @@ public class Json extends Stream implements Chan {
     }
 
     /**
-     * Parse {@link Json} {@link CharSequence}
+     * Resolves the {@link Json} {@link Event}
      *
      * @param event the specified event to be handled
      * @throws Collapse   If parsing fails or the result is null
