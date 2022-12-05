@@ -28,56 +28,79 @@ import static plus.kat.stream.Stream.Buffer.INS;
  */
 public class InputStreamReader extends AbstractReader {
 
-    private InputStream value;
+    protected InputStream source;
 
     public InputStreamReader(
         @NotNull InputStream data
     ) {
-        if (data == null) {
+        if (data != null) {
+            source = data;
+        } else {
             throw new NullPointerException();
         }
-
-        this.value = data;
     }
 
     @Override
     protected int load()
         throws IOException {
-        byte[] buf = cache;
-        if (buf == null) {
-            cache = buf = INS.alloc(range);
+        byte[] buf = queue;
+        InputStream in = source;
+
+        if (buf != null) {
+            return in.read(buf);
         }
 
-        int s = scale;
-        if (s == 0) {
-            return value.read(buf);
-        } else {
-            if (s <= buf.length) {
-                return value.read(
-                    buf, 0, s
+        int m, l = buflen;
+        if (l != 0) {
+            return in.read(
+                queue = INS.alloc(l)
+            );
+        }
+
+        if ((m = in.available()) > 0) {
+            if (m > 1024) {
+                return in.read(
+                    queue = INS.alloc(1024)
+                );
+            } else if (m > 512) {
+                return in.read(
+                    queue = new byte[256]
                 );
             } else {
-                throw new IOException(
-                    "The specified scale<" + s + "> exceeds " +
-                        "the buffer length<" + buf.length + ">"
+                return in.read(
+                    queue = new byte[Math.min(256, m)]
                 );
             }
+        } else {
+            if ((l = in.read()) < 0) {
+                return -1;
+            }
+
+            m = in.available();
+            if (m <= 0 || m > 1023) {
+                buf = INS.alloc(1024);
+            } else if (m > 512) {
+                buf = new byte[256];
+            } else {
+                buf = new byte[Math.min(256, m + 1)];
+            }
+
+            (queue = buf)[0] = (byte) l;
+            return 1 + in.read(buf, 1, buf.length - 1);
         }
     }
 
     @Override
     public void close() {
+        INS.join(queue);
         try {
-            INS.join(
-                cache
-            );
-            value.close();
+            source.close();
         } catch (Exception e) {
             // Nothing
         } finally {
             limit = -1;
-            cache = null;
-            value = null;
+            queue = null;
+            source = null;
         }
     }
 }

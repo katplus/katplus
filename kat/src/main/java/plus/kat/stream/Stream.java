@@ -810,28 +810,30 @@ public abstract class Stream extends Chain implements Flow {
         public byte[] alloc(
             @NotNull int size
         ) {
+            if (size * 2 < VALVE) {
+                if (size <= 0) {
+                    return EMPTY_BYTES;
+                } else {
+                    return new byte[size];
+                }
+            }
+
             Thread th = Thread.currentThread();
             int sh = th.hashCode() & 0xFFFFFFF;
 
-            int ix;
-            if (size <= 0) {
-                ix = sh % GROUP;
-            } else {
-                ix = (size / SCALE) * SIZE + sh % GROUP;
+            int i = size / SCALE;
+            if (i < SIZE) {
+                int ix = i * SIZE + sh % GROUP;
+                synchronized (this) {
+                    byte[] it = bucket[ix];
+                    if (it != null &&
+                        size <= it.length) {
+                        bucket[ix] = null;
+                        return it;
+                    }
+                }
             }
-
-            byte[] it;
-            synchronized (this) {
-                it = bucket[ix];
-                bucket[ix] = null;
-            }
-
-            if (it != null &&
-                size <= it.length) {
-                return it;
-            }
-
-            return new byte[SCALE];
+            return new byte[i * SCALE + VALVE];
         }
 
         @Override

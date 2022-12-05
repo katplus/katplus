@@ -57,7 +57,8 @@ public interface Reader extends Closeable {
     }
 
     /**
-     * Closes this {@link Reader}
+     * Closes this reader and releases
+     * any system resources associated with it
      */
     @Override
     default void close() {

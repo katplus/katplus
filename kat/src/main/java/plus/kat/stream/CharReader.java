@@ -23,13 +23,10 @@ import plus.kat.anno.NotNull;
  */
 public class CharReader extends AbstractReader {
 
-    protected int begin;
+    protected int start;
     protected final int end;
-    protected CharSequence value;
+    protected CharSequence source;
 
-    /**
-     * @throws NullPointerException If the data is null
-     */
     public CharReader(
         @NotNull CharSequence data
     ) {
@@ -37,14 +34,10 @@ public class CharReader extends AbstractReader {
             throw new NullPointerException();
         }
 
-        value = data;
+        source = data;
         end = data.length();
     }
 
-    /**
-     * @throws NullPointerException      If the data is null
-     * @throws IndexOutOfBoundsException If the index and the length are out of range
-     */
     public CharReader(
         @NotNull CharSequence data, int index, int length
     ) {
@@ -60,34 +53,36 @@ public class CharReader extends AbstractReader {
             throw new IndexOutOfBoundsException();
         }
 
-        this.value = data;
+        this.source = data;
         this.end = end;
-        this.begin = index;
+        this.start = index;
     }
 
     @Override
     protected int load() {
-        int cap = end - begin;
-        if (cap <= 0) {
+        int size = end - start;
+        if (size <= 0) {
             return -1;
         }
 
-        byte[] it = cache;
+        byte[] it = queue;
         if (it == null) {
-            int r = range;
-            if (r == 0) {
-                r = 128;
+            int l = buflen;
+            if (l == 0) {
+                l = 128;
             }
-            if ((cap *= 3) < r) {
-                r = cap;
+            if ((size *= 3) < l) {
+                l = size;
             }
-            cache = it = new byte[r];
+            queue = it = new byte[l];
         }
 
+        CharSequence ch = source;
         int i = 0, l = it.length;
-        for (; i < l && begin < end; begin++) {
-            // next char
-            char code = value.charAt(begin);
+
+        for (; i < l && start < end; start++) {
+
+            char code = ch.charAt(start);
 
             // U+0000 ~ U+007F
             if (code < 0x80) {
@@ -109,12 +104,12 @@ public class CharReader extends AbstractReader {
                     continue;
                 }
 
-                if (end == ++begin) {
+                if (end == ++start) {
                     it[i++] = '?';
                     break;
                 }
 
-                char arch = value.charAt(begin);
+                char arch = ch.charAt(start);
                 if (arch < 0xDC00 ||
                     arch > 0xDFFF) {
                     it[i++] = '?';
@@ -145,7 +140,7 @@ public class CharReader extends AbstractReader {
     @Override
     public void close() {
         limit = -1;
-        value = null;
-        cache = null;
+        queue = null;
+        source = null;
     }
 }

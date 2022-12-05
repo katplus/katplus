@@ -21,8 +21,8 @@ import plus.kat.anno.Nullable;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
+import java.nio.*;
 import java.nio.file.*;
-import javax.crypto.Cipher;
 
 import plus.kat.chain.*;
 import plus.kat.spare.*;
@@ -173,6 +173,23 @@ public class Event<T> implements Flag {
     /**
      * For example
      * <pre>{@code
+     *   ByteBuffer buffer = ...;
+     *   Event<User> event = new Event<>(buffer);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code buffer} is null
+     * @see ByteBufferReader#ByteBufferReader(ByteBuffer)
+     */
+    public Event(
+        @NotNull ByteBuffer buffer
+    ) {
+        this();
+        reader = new ByteBufferReader(buffer);
+    }
+
+    /**
+     * For example
+     * <pre>{@code
      *   InputStream stream = ...;
      *   Event<User> event = new Event<>(stream);
      * }</pre>
@@ -185,6 +202,87 @@ public class Event<T> implements Flag {
     ) {
         this();
         reader = new InputStreamReader(stream);
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   URL url = ...;
+     *   Event<User> event = new Event<>(url);
+     * }</pre>
+     *
+     * @throws IOException          If an I/O exception occurs
+     * @throws NullPointerException If the specified {@code url} is null
+     * @see URL#openStream()
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    public Event(
+        @NotNull URL url
+    ) throws IOException {
+        this(
+            url.openStream()
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   File file = ...;
+     *   Event<User> event = new Event<>(file);
+     * }</pre>
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code file} is null
+     * @see Files#newInputStream(Path, OpenOption...)
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    public Event(
+        @NotNull File file
+    ) throws IOException {
+        this(
+            file.toPath()
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   Path path = ...;
+     *   Event<User> event = new Event<>(path);
+     * }</pre>
+     *
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified {@code path} is null
+     * @see Files#newInputStream(Path, OpenOption...)
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    public Event(
+        @NotNull Path path
+    ) throws IOException {
+        this(
+            Files.newInputStream(path)
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
+     *   URLConnection conn = ...;
+     *   Event<User> event = new Event<>(conn);
+     * }</pre>
+     *
+     * @throws NullPointerException    If the specified {@code conn} is null
+     * @throws IOException             If an I/O error occurs while creating the input stream
+     * @throws UnknownServiceException If the protocol does not support input
+     * @see URLConnection#getInputStream()
+     * @see InputStreamReader#InputStreamReader(InputStream)
+     */
+    public Event(
+        @NotNull URLConnection conn
+    ) throws IOException {
+        this(
+            conn.getInputStream()
+        );
     }
 
     /**
@@ -272,144 +370,6 @@ public class Event<T> implements Flag {
                 data, index, length
             );
         }
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   URL url = ...;
-     *   Event<User> event = new Event<>(url);
-     * }</pre>
-     *
-     * @throws IOException          If an I/O exception occurs
-     * @throws NullPointerException If the specified {@code url} is null
-     * @see URL#openStream()
-     * @see InputStreamReader#InputStreamReader(InputStream)
-     */
-    public Event(
-        @NotNull URL url
-    ) throws IOException {
-        this(
-            url.openStream()
-        );
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   File file = ...;
-     *   Event<User> event = new Event<>(file);
-     * }</pre>
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code file} is null
-     * @see Files#newInputStream(Path, OpenOption...)
-     * @see InputStreamReader#InputStreamReader(InputStream)
-     */
-    public Event(
-        @NotNull File file
-    ) throws IOException {
-        this(
-            file.toPath()
-        );
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   Path path = ...;
-     *   Event<User> event = new Event<>(path);
-     * }</pre>
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code path} is null
-     * @see Files#newInputStream(Path, OpenOption...)
-     * @see InputStreamReader#InputStreamReader(InputStream)
-     */
-    public Event(
-        @NotNull Path path
-    ) throws IOException {
-        this();
-        reader = new InputStreamReader(
-            Files.newInputStream(path)
-        );
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   URLConnection conn = ...;
-     *   Event<User> event = new Event<>(conn);
-     * }</pre>
-     *
-     * @throws NullPointerException    If the specified {@code conn} is null
-     * @throws IOException             If an I/O error occurs while creating the input stream
-     * @throws UnknownServiceException If the protocol does not support input
-     * @see URLConnection#getInputStream()
-     * @see InputStreamReader#InputStreamReader(InputStream)
-     */
-    public Event(
-        @NotNull URLConnection conn
-    ) throws IOException {
-        this(
-            conn.getInputStream()
-        );
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   Cipher cipher = ...;
-     *   cipher.init(
-     *      Cipher.DECRYPT_MODE,
-     *      new SecretKeySpec(
-     *         "key".getBytes(), "AES"
-     *      ),
-     *      new IvParameterSpec(
-     *         "iv".getBytes()
-     *      )
-     *   );
-     *   byte[] data = ...;
-     *   Event<User> event = new Event<>(data, cipher);
-     * }</pre>
-     *
-     * @throws NullPointerException If the specified {@code data} or {@code cipher} is null
-     * @see CipherByteReader#CipherByteReader(byte[], Cipher)
-     */
-    public Event(
-        @NotNull byte[] data,
-        @NotNull Cipher cipher
-    ) {
-        this();
-        reader = new CipherByteReader(data, cipher);
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   Cipher cipher = ...;
-     *   cipher.init(
-     *      Cipher.DECRYPT_MODE,
-     *      new SecretKeySpec(
-     *         "key".getBytes(), "AES"
-     *      ),
-     *      new IvParameterSpec(
-     *         "iv".getBytes()
-     *      )
-     *   );
-     *   InputStream stream = ...;
-     *   Event<User> event = new Event<>(stream, cipher);
-     * }</pre>
-     *
-     * @throws NullPointerException If the specified {@code stream} is null
-     * @see CipherStreamReader#CipherStreamReader(InputStream, Cipher)
-     */
-    public Event(
-        @NotNull InputStream stream,
-        @NotNull Cipher cipher
-    ) {
-        this();
-        reader = new CipherStreamReader(stream, cipher);
     }
 
     /**

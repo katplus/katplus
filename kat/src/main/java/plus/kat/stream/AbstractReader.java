@@ -28,45 +28,8 @@ public abstract class AbstractReader implements Reader {
     protected int index;
     protected int limit;
 
-    protected int range;
-    protected int scale;
-    protected byte[] cache;
-
-    /**
-     * Returns the value of scale
-     */
-    public int getScale() {
-        return scale;
-    }
-
-    /**
-     * @param value the specified scale
-     */
-    public void setScale(
-        int value
-    ) {
-        if (value >= 0) {
-            scale = value;
-        }
-    }
-
-    /**
-     * Returns the value of range
-     */
-    public int getRange() {
-        return range;
-    }
-
-    /**
-     * @param value the specified range
-     */
-    public void setRange(
-        int value
-    ) {
-        if (value >= 0) {
-            range = value;
-        }
-    }
+    protected int buflen;
+    protected byte[] queue;
 
     /**
      * Returns the length of readable bytes
@@ -87,11 +50,8 @@ public abstract class AbstractReader implements Reader {
             return true;
         }
 
-        if (limit != -1) {
-            limit = load();
-            if (limit <= 0) {
-                limit = -1;
-            } else {
+        if (index == limit) {
+            if ((limit = load()) > 0) {
                 index = 0;
                 return true;
             }
@@ -102,32 +62,27 @@ public abstract class AbstractReader implements Reader {
 
     /**
      * Reads a byte in {@link Reader} and index switch to next
-     *
-     * @throws ArrayIndexOutOfBoundsException If the index is greater than or equal to the size of the array
      */
     @Override
     public byte read() {
-        return cache[index++];
+        return queue[index++];
     }
 
     /**
-     * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOException
+     * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOE
      *
-     * @throws IOException If this has been closed or I/O error occurs
+     * @throws FlowCrash,IOException If this has been closed or I/O error occurs
      */
     @Override
     public byte next() throws IOException {
         if (index < limit) {
-            return cache[index++];
+            return queue[index++];
         }
 
-        if (limit != -1) {
-            limit = load();
-            if (limit <= 0) {
-                limit = -1;
-            } else {
+        if (index == limit) {
+            if ((limit = load()) > 0) {
                 index = 1;
-                return cache[0];
+                return queue[0];
             }
         }
 
@@ -135,5 +90,15 @@ public abstract class AbstractReader implements Reader {
             "No readable byte, please " +
                 "check whether the stream is damaged"
         );
+    }
+
+    /**
+     * Closes this reader and releases
+     * any system resources associated with it
+     */
+    @Override
+    public void close() {
+        limit = -1;
+        queue = null;
     }
 }

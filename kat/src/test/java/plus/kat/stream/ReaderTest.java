@@ -3,15 +3,17 @@ package plus.kat.stream;
 import org.junit.jupiter.api.Test;
 
 import plus.kat.Event;
+import plus.kat.Kat;
 import plus.kat.Spare;
 import plus.kat.entity.User;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InputStreamReaderTest {
+public class ReaderTest {
 
     public void assertTest(User user) {
         assertNotNull(user);
@@ -22,7 +24,7 @@ public class InputStreamReaderTest {
     }
 
     @Test
-    public void test_kat() throws Exception {
+    public void test_stream_kat() throws Exception {
         Spare<User> spare = Spare
             .lookup(User.class);
 
@@ -38,7 +40,7 @@ public class InputStreamReaderTest {
     }
 
     @Test
-    public void test_json() throws Exception {
+    public void test_stream_json() throws Exception {
         Spare<User> spare = Spare
             .lookup(User.class);
 
@@ -54,7 +56,7 @@ public class InputStreamReaderTest {
     }
 
     @Test
-    public void test_xml() throws Exception {
+    public void test_stream_xml() throws Exception {
         Spare<User> spare = Spare
             .lookup(User.class);
 
@@ -67,5 +69,27 @@ public class InputStreamReaderTest {
         assertTest(user);
         assertEquals("6", user.resource.get("age"));
         assertEquals("1024", user.resource.get("devote"));
+    }
+
+    static class Bean {
+        public int id;
+        public String name;
+    }
+
+    @Test
+    public void test_byte_buffer() {
+        String text = "{:id(1):name(kraity)}";
+        Bean bean = Kat.decode(
+            Bean.class, new Event<>(
+                new ByteBufferReader(
+                    ByteBuffer.wrap(
+                        text.getBytes()
+                    )
+                )
+            )
+        );
+
+        assertNotNull(bean);
+        assertEquals(text, Kat.pure(bean));
     }
 }

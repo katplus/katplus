@@ -22,18 +22,13 @@ import plus.kat.anno.NotNull;
  * @since 0.0.1
  */
 public class CharLatinReader extends CharReader {
-    /**
-     * @throws NullPointerException If the data is null
-     */
+
     public CharLatinReader(
         @NotNull CharSequence data
     ) {
         super(data);
     }
 
-    /**
-     * @throws IndexOutOfBoundsException If the index and the length are out of range
-     */
     public CharLatinReader(
         @NotNull CharSequence data, int index, int length
     ) {
@@ -43,38 +38,39 @@ public class CharLatinReader extends CharReader {
     @Override
     @SuppressWarnings("deprecation")
     protected int load() {
-        int cap = end - begin;
-        if (cap <= 0) {
+        int size = end - start;
+        if (size <= 0) {
             return -1;
         }
 
-        byte[] buf = cache;
+        byte[] buf = queue;
         if (buf == null) {
-            int r = range;
-            if (r == 0) {
-                r = 128;
+            int l = buflen;
+            if (l == 0) {
+                l = 128;
             }
-            if (cap < r) {
-                r = cap;
+            if (size < l) {
+                l = size;
             }
-            cache = buf = new byte[r];
+            queue = buf = new byte[l];
         }
 
-        if (cap > buf.length) {
-            cap = buf.length;
+        if (size > buf.length) {
+            size = buf.length;
         }
 
-        if (value instanceof String) {
-            String s = (String) value;
+        CharSequence ch = source;
+        if (ch instanceof String) {
+            String s = (String) ch;
             s.getBytes(
-                begin, begin += cap, buf, 0
+                start, start += size, buf, 0
             );
         } else {
-            for (int i = 0; i < cap; i++) {
-                buf[i] = (byte) value.charAt(begin++);
+            for (int i = 0; i < size; i++) {
+                buf[i] = (byte) ch.charAt(start++);
             }
         }
 
-        return cap;
+        return size;
     }
 }

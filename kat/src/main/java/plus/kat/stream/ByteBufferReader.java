@@ -13,26 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.netty.buffer;
+package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
-import plus.kat.stream.*;
-
-import io.netty.buffer.ByteBuf;
+import java.nio.ByteBuffer;
 
 import static plus.kat.stream.Stream.Buffer.INS;
 
 /**
  * @author kraity
- * @since 0.0.2
+ * @since 0.0.5
  */
-public class ByteBufReader extends AbstractReader {
+public class ByteBufferReader extends AbstractReader {
 
-    protected ByteBuf source;
+    protected ByteBuffer source;
 
-    public ByteBufReader(
-        @NotNull ByteBuf data
+    public ByteBufferReader(
+        @NotNull ByteBuffer data
     ) {
         if (data != null) {
             source = data;
@@ -43,9 +41,9 @@ public class ByteBufReader extends AbstractReader {
 
     @Override
     protected int load() {
-        ByteBuf in = source;
-        int n = in.readerIndex(),
-            m = in.writerIndex();
+        ByteBuffer in = source;
+        int m = in.limit(),
+            n = in.position();
 
         int size = m - n;
         if (size <= 0) {
@@ -62,16 +60,15 @@ public class ByteBufReader extends AbstractReader {
             } else if (size > 512) {
                 buf = new byte[256];
             } else {
-                buf = new byte[Math.min(size, 256)];
+                buf = new byte[Math.min(256, size)];
             }
             queue = buf;
         }
 
-        if (size > buf.length) {
+        if (size < buf.length) {
             size = buf.length;
         }
-
-        in.readBytes(
+        in.get(
             buf, 0, size
         );
         return size;

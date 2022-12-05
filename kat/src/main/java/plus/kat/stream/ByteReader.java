@@ -32,7 +32,7 @@ public class ByteReader implements Reader {
 
     private int index;
     private int limit;
-    private byte[] value;
+    private byte[] queue;
 
     public ByteReader(
         @NotNull byte[] data
@@ -41,7 +41,7 @@ public class ByteReader implements Reader {
             throw new NullPointerException();
         }
 
-        this.value = data;
+        this.queue = data;
         this.limit = data.length;
     }
 
@@ -52,7 +52,7 @@ public class ByteReader implements Reader {
             throw new NullPointerException();
         }
 
-        this.value = value(data);
+        this.queue = value(data);
         this.limit = data.length();
     }
 
@@ -73,7 +73,7 @@ public class ByteReader implements Reader {
 
         this.index = index;
         this.limit = limit;
-        this.value = value(data);
+        this.queue = value(data);
     }
 
     public ByteReader(
@@ -91,7 +91,7 @@ public class ByteReader implements Reader {
             throw new IndexOutOfBoundsException();
         }
 
-        this.value = data;
+        this.queue = data;
         this.index = index;
         this.limit = limit;
     }
@@ -103,13 +103,13 @@ public class ByteReader implements Reader {
 
     @Override
     public byte read() {
-        return value[index++];
+        return queue[index++];
     }
 
     @Override
     public byte next() throws IOException {
         if (index < limit) {
-            return value[index++];
+            return queue[index++];
         }
 
         throw new FlowCrash(
@@ -121,6 +121,6 @@ public class ByteReader implements Reader {
     @Override
     public void close() {
         limit = 0;
-        value = null;
+        queue = null;
     }
 }
