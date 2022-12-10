@@ -3,6 +3,7 @@ package plus.kat.chain;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.*;
@@ -210,6 +211,34 @@ public class ChainTest {
         String s2 = v2.toString();
         assertEquals(s1.length(), s2.length());
         assertEquals(s1, s2);
+    }
+
+    @Test
+    public void test_join_ByteBuffer() {
+        Chain value = new Chain("name:");
+
+        ByteBuffer buffer =
+            ByteBuffer.wrap(
+                "kraity".getBytes()
+            );
+
+        value.join(buffer);
+        assertFalse(buffer.hasRemaining());
+        assertEquals("name:kraity", value.toString());
+    }
+
+    @Test
+    public void test_join_InputStream() throws IOException {
+        Chain value = new Chain("name:");
+
+        InputStream stream =
+            new ByteArrayInputStream(
+                "kraity".getBytes()
+            );
+
+        value.join(stream);
+        assertEquals(-1, stream.read());
+        assertEquals("name:kraity", value.toString());
     }
 
     @Test

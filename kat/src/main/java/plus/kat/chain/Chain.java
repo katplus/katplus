@@ -22,6 +22,7 @@ import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 import static java.nio.charset.StandardCharsets.*;
@@ -591,6 +592,26 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Concatenates the buffer to this
+     * {@link Chain}, copy it directly
+     *
+     * @param in the specified {@link ByteBuffer} to be joined
+     * @throws NullPointerException If the specified buffer is null
+     */
+    public void join(
+        @NotNull ByteBuffer in
+    ) {
+        int size = in.remaining();
+        if (size > 0) {
+            in.get(
+                grow(count + size), count, size
+            );
+            asset = 0;
+            count += size;
+        }
+    }
+
+    /**
      * Concatenates the stream to this
      * {@link Chain}, copy it directly
      *
@@ -666,18 +687,18 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
      * Concatenates the byte to this
      * {@link Chain}, copy it directly
      *
-     * @param b the specified byte value to be joined
+     * @param in the specified byte value to be joined
      */
     public void join(
-        @NotNull byte b
+        @NotNull byte in
     ) {
         byte[] it = value;
         if (count != it.length) {
             asset = 0;
-            it[count++] = b;
+            it[count++] = in;
         } else {
             asset = 0;
-            grow(count + 1)[count++] = b;
+            grow(count + 1)[count++] = in;
         }
     }
 
@@ -685,25 +706,25 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
      * Concatenates the array to this
      * {@link Chain}, copy it directly
      *
-     * @param b the specified source to be joined
+     * @param in the specified source to be joined
      * @throws NullPointerException If the specified array is null
      */
     public void join(
-        @NotNull byte[] b
+        @NotNull byte[] in
     ) {
         byte[] it;
         int d = count;
-        int l = b.length;
+        int l = in.length;
         if (l == 1) {
             it = grow(d + 1);
             asset = 0;
-            it[count++] = b[0];
+            it[count++] = in[0];
         } else if (l != 0) {
             it = grow(d + l);
             asset = 0;
             count += l;
             System.arraycopy(
-                b, 0, it, d, l
+                in, 0, it, d, l
             );
         }
     }
@@ -712,26 +733,26 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
      * Concatenates the array to this
      * {@link Chain}, copy it directly
      *
-     * @param b the specified source to be joined
-     * @param i the specified start index for array
-     * @param l the specified length of bytes to join
+     * @param in the specified source to be joined
+     * @param i  the specified start index for array
+     * @param l  the specified length of bytes to join
      * @throws NullPointerException           If the specified array is null
      * @throws ArrayIndexOutOfBoundsException If the index or length out of range
      */
     public void join(
-        @NotNull byte[] b, int i, int l
+        @NotNull byte[] in, int i, int l
     ) {
-        if (0 <= i && 0 <= l && i + l <= b.length) {
+        if (0 <= i && 0 <= l && i + l <= in.length) {
             if (l != 0) {
                 System.arraycopy(
-                    b, i, grow(count + l), count, l
+                    in, i, grow(count + l), count, l
                 );
                 asset = 0;
                 count += l;
             }
         } else {
             throw new ArrayIndexOutOfBoundsException(
-                "Out of bounds, i:" + i + " l:" + l + " length:" + b.length
+                "Out of bounds, i:" + i + " l:" + l + " length:" + in.length
             );
         }
     }
@@ -740,25 +761,25 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
      * Concatenates the chain to this
      * {@link Chain}, copy it directly
      *
-     * @param c the specified chain to be joined
+     * @param in the specified chain to be joined
      * @throws NullPointerException If the specified chain is null
      */
     public void join(
-        @NotNull Chain c
+        @NotNull Chain in
     ) {
         byte[] it;
         int d = count;
-        int l = c.count;
+        int l = in.count;
         if (l == 1) {
             it = grow(d + 1);
             asset = 0;
-            it[count++] = c.value[0];
+            it[count++] = in.value[0];
         } else if (l != 0) {
             it = grow(d + l);
             asset = 0;
             count += l;
             System.arraycopy(
-                c.value, 0, it, d, l
+                in.value, 0, it, d, l
             );
         }
     }
@@ -767,26 +788,26 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
      * Concatenates the chain to this
      * {@link Chain}, copy it directly
      *
-     * @param c the specified chain to be joined
-     * @param i the specified start index for chain
-     * @param l the specified length of chain to join
+     * @param in the specified chain to be joined
+     * @param i  the specified start index for chain
+     * @param l  the specified length of chain to join
      * @throws NullPointerException           If the specified chain is null
      * @throws ArrayIndexOutOfBoundsException If the index or length out of range
      */
     public void join(
-        @Nullable Chain c, int i, int l
+        @Nullable Chain in, int i, int l
     ) {
-        if (0 <= i && 0 <= l && i + l <= c.count) {
+        if (0 <= i && 0 <= l && i + l <= in.count) {
             if (l != 0) {
                 System.arraycopy(
-                    c.value, i, grow(count + l), count, l
+                    in.value, i, grow(count + l), count, l
                 );
                 asset = 0;
                 count += l;
             }
         } else {
             throw new ArrayIndexOutOfBoundsException(
-                "Out of bounds, i:" + i + " l:" + l + " length:" + c.count
+                "Out of bounds, i:" + i + " l:" + l + " length:" + in.count
             );
         }
     }
@@ -795,35 +816,35 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
      * Concatenates the char to this
      * {@link Chain}, converting it to UTF-8 first
      *
-     * @param c the specified character to be joined
+     * @param in the specified character to be joined
      */
     public void join(
-        @NotNull char c
+        @NotNull char in
     ) {
         asset = 0;
         byte[] it = value;
 
         // U+0000 ~ U+007F
-        if (c < 0x80) {
+        if (in < 0x80) {
             if (count != it.length) {
-                it[count++] = (byte) c;
+                it[count++] = (byte) in;
             } else {
-                grow(count + 1)[count++] = (byte) c;
+                grow(count + 1)[count++] = (byte) in;
             }
         }
 
         // U+0080 ~ U+07FF
-        else if (c < 0x800) {
+        else if (in < 0x800) {
             int size = count + 2;
             if (size > it.length) {
                 it = grow(size);
             }
-            it[count++] = (byte) (c >> 6 | 0xC0);
-            it[count++] = (byte) (c & 0x3F | 0x80);
+            it[count++] = (byte) (in >> 6 | 0xC0);
+            it[count++] = (byte) (in & 0x3F | 0x80);
         }
 
         // U+10000 ~ U+10FFFF
-        else if (0xD7FF < c && c < 0xE000) {
+        else if (0xD7FF < in && in < 0xE000) {
             // crippled surrogate pair
             if (count != it.length) {
                 it[count++] = (byte) '?';
@@ -838,9 +859,9 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
             if (size > it.length) {
                 it = grow(size);
             }
-            it[count++] = (byte) (c >> 12 | 0xE0);
-            it[count++] = (byte) (c >> 6 & 0x3F | 0x80);
-            it[count++] = (byte) (c & 0x3F | 0x80);
+            it[count++] = (byte) (in >> 12 | 0xE0);
+            it[count++] = (byte) (in >> 6 & 0x3F | 0x80);
+            it[count++] = (byte) (in & 0x3F | 0x80);
         }
     }
 
@@ -848,14 +869,14 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
      * Concatenates the array to this
      * {@link Chain}, converting it to UTF-8 first
      *
-     * @param ch the specified array to be joined
+     * @param in the specified array to be joined
      * @throws NullPointerException If the specified array is null
      */
     public void join(
-        @NotNull char[] ch
+        @NotNull char[] in
     ) {
         join(
-            ch, 0, ch.length
+            in, 0, in.length
         );
     }
 
@@ -863,17 +884,17 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
      * Concatenates the array to this
      * {@link Chain}, converting it to UTF-8 first
      *
-     * @param ch the specified array to be joined
+     * @param in the specified array to be joined
      * @param i  the specified start index for array
      * @param l  the specified length of array to join
      * @throws NullPointerException           If the specified array is null
      * @throws ArrayIndexOutOfBoundsException If the index or length out of range
      */
     public void join(
-        @NotNull char[] ch, int i, int l
+        @NotNull char[] in, int i, int l
     ) {
         int k = i + l;
-        if (0 <= i && 0 <= l && k <= ch.length) {
+        if (0 <= i && 0 <= l && k <= in.length) {
             if (l != 0) {
                 asset = 0;
                 byte[] it = grow(
@@ -881,7 +902,7 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
                 );
                 do {
                     // next char
-                    char code = ch[i++];
+                    char code = in[i++];
 
                     // U+0000 ~ U+007F
                     if (code < 0x80) {
@@ -905,7 +926,7 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
                     else if (0xD7FF < code && code < 0xE000) {
                         int hi = -1, lo = -1;
                         if (code < 0xDC00 && i != k) {
-                            char arch = ch[i];
+                            char arch = in[i];
                             if (arch > 0xDBFF &&
                                 arch < 0xE000) {
                                 hi = code - 0xD7C0;
@@ -946,7 +967,7 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
             }
         } else {
             throw new ArrayIndexOutOfBoundsException(
-                "Out of bounds, i:" + i + " l:" + l + " length:" + ch.length
+                "Out of bounds, i:" + i + " l:" + l + " length:" + in.length
             );
         }
     }
@@ -955,14 +976,14 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
      * Concatenates the char sequence to this
      * {@link Chain}, converting it to UTF-8 first
      *
-     * @param ch the specified sequence to be joined
+     * @param in the specified sequence to be joined
      * @throws NullPointerException If the specified sequence is null
      */
     public void join(
-        @NotNull CharSequence ch
+        @NotNull CharSequence in
     ) {
         join(
-            ch, 0, ch.length()
+            in, 0, in.length()
         );
     }
 
@@ -970,17 +991,17 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
      * Concatenates the char sequence to this
      * {@link Chain}, converting it to UTF-8 first
      *
-     * @param ch the specified sequence to be joined
+     * @param in the specified sequence to be joined
      * @param i  the specified start index for sequence
      * @param l  the specified length of sequence to join
      * @throws NullPointerException           If the specified sequence is null
      * @throws ArrayIndexOutOfBoundsException If the index or length out of range
      */
     public void join(
-        @NotNull CharSequence ch, int i, int l
+        @NotNull CharSequence in, int i, int l
     ) {
         int k = i + l;
-        if (0 <= i && 0 <= l && k <= ch.length()) {
+        if (0 <= i && 0 <= l && k <= in.length()) {
             if (l != 0) {
                 asset = 0;
                 byte[] it = grow(
@@ -988,7 +1009,7 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
                 );
                 do {
                     // next char
-                    char code = ch.charAt(i++);
+                    char code = in.charAt(i++);
 
                     // U+0000 ~ U+007F
                     if (code < 0x80) {
@@ -1012,7 +1033,7 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
                     else if (0xD7FF < code && code < 0xE000) {
                         int hi = -1, lo = -1;
                         if (code < 0xDC00 && i != k) {
-                            char arch = ch.charAt(i);
+                            char arch = in.charAt(i);
                             if (arch > 0xDBFF &&
                                 arch < 0xE000) {
                                 hi = code - 0xD7C0;
@@ -1053,7 +1074,7 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
             }
         } else {
             throw new ArrayIndexOutOfBoundsException(
-                "Out of bounds, i:" + i + " l:" + l + " length:" + ch.length()
+                "Out of bounds, i:" + i + " l:" + l + " length:" + in.length()
             );
         }
     }
