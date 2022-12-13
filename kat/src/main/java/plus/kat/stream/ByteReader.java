@@ -107,6 +107,25 @@ public class ByteReader implements Reader {
     }
 
     @Override
+    public int skip(
+        int size
+    ) {
+        if (size > 0) {
+            int length = limit - index;
+            if (length > size) {
+                index += size;
+                return size;
+            }
+
+            if (length > 0) {
+                index = limit;
+                return length;
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public byte next() throws IOException {
         if (index < limit) {
             return queue[index++];

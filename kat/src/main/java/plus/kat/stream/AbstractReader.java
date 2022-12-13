@@ -69,6 +69,45 @@ public abstract class AbstractReader implements Reader {
     }
 
     /**
+     * Skips and discards bytes of the specified length from this {@link Reader}
+     *
+     * @throws FlowCrash,IOException If this has been closed or I/O error occurs
+     */
+    @Override
+    public int skip(
+        int size
+    ) throws IOException {
+        int num = 0;
+        while (num < size) {
+            int cap = limit - index;
+            if (cap > 0) {
+                int n = size - num;
+                if (n <= cap) {
+                    index += n;
+                    return size;
+                }
+                if ((limit = load()) > 0) {
+                    index = 0;
+                    num += cap;
+                } else {
+                    index += cap;
+                    return num + cap;
+                }
+                continue;
+            }
+
+            if (cap == 0) {
+                if ((limit = load()) > 0) {
+                    index = 0;
+                    continue;
+                }
+            }
+            return num;
+        }
+        return num;
+    }
+
+    /**
      * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOE
      *
      * @throws FlowCrash,IOException If this has been closed or I/O error occurs
@@ -97,7 +136,7 @@ public abstract class AbstractReader implements Reader {
      * any system resources associated with it
      */
     @Override
-    public void close() {
+    public void close() throws IOException {
         limit = -1;
         queue = null;
     }

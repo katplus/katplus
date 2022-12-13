@@ -7,13 +7,52 @@ import plus.kat.Kat;
 import plus.kat.Spare;
 import plus.kat.entity.User;
 
+import java.io.*;
+import java.nio.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ReaderTest {
+
+    @Test
+    public void test_skip() throws Exception {
+        byte[] bs = new byte[3072];
+        for (int i = 0; i < 3072; i++) {
+            bs[i] = (byte) (i % 128);
+        }
+
+        for (Reader in : new Reader[]{
+            new ByteReader(bs),
+            new CharReader(new String(bs)),
+            new ByteBufferReader(ByteBuffer.wrap(bs)),
+            new InputStreamReader(new ByteArrayInputStream(bs))
+        }) {
+            try (Reader reader = in) {
+                assertEquals(0, reader.skip(0));
+                assertEquals(0, reader.skip(-1));
+
+                assertEquals(6, reader.skip(6));
+                assertEquals((byte) 6, reader.next());
+
+                assertEquals(2, reader.skip(2));
+                assertEquals((byte) 9, reader.next());
+
+                assertEquals(6, reader.skip(6));
+                assertEquals((byte) 16, reader.next());
+
+                assertEquals(512, reader.skip(512));
+                assertEquals((byte) 17, reader.next());
+
+                assertEquals(1024, reader.skip(1024));
+                assertEquals((byte) 18, reader.next());
+
+                assertEquals(1517, reader.skip(2048));
+                assertThrows(IOException.class, reader::next);
+            }
+        }
+    }
 
     public void assertTest(User user) {
         assertNotNull(user);

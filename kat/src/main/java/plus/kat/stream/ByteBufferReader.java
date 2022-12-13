@@ -65,7 +65,7 @@ public class ByteBufferReader extends AbstractReader {
             queue = buf;
         }
 
-        if (size < buf.length) {
+        if (size > buf.length) {
             size = buf.length;
         }
         in.get(

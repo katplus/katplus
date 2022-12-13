@@ -26,7 +26,7 @@ import java.io.IOException;
  */
 public interface Reader extends Closeable {
     /**
-     * Reads a byte in {@link Reader} and index switch to next
+     * Reads a byte in this {@link Reader} and index switch to next
      *
      * @throws IOException                    If this has been closed or I/O error occurs
      * @throws ArrayIndexOutOfBoundsException If the index is greater than or equal to the size of the array
@@ -34,14 +34,35 @@ public interface Reader extends Closeable {
     byte read() throws IOException;
 
     /**
-     * Checks {@link Reader} for readable bytes
+     * Checks this {@link Reader} for readable bytes
      *
      * @throws IOException If this has been closed or I/O error occurs
      */
     boolean also() throws IOException;
 
     /**
-     * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOException
+     * Skips and discards bytes of the specified length from this {@link Reader}
+     *
+     * @return the actual number of bytes skipped which might be zero
+     * @throws IOException If this has been closed or I/O error occurs
+     */
+    default int skip(
+        int size
+    ) throws IOException {
+        int num = 0;
+        while (num < size) {
+            if (also()) {
+                num++;
+                read();
+            } else {
+                return num;
+            }
+        }
+        return num;
+    }
+
+    /**
+     * Reads a byte if this {@link Reader} has readable bytes, otherwise raise IOException
      *
      * @throws IOException If this has been closed or I/O error occurs
      */
@@ -54,14 +75,5 @@ public interface Reader extends Closeable {
             "No readable byte, please " +
                 "check whether the stream is damaged"
         );
-    }
-
-    /**
-     * Closes this reader and releases
-     * any system resources associated with it
-     */
-    @Override
-    default void close() {
-        // Nothing
     }
 }
