@@ -30,26 +30,26 @@ public class ReaderTest {
             new InputStreamReader(new ByteArrayInputStream(bs))
         }) {
             try (Reader reader = in) {
-                assertEquals(0, reader.skip(0));
-                assertEquals(0, reader.skip(-1));
+                reader.skip(0);
+                reader.skip(-1);
 
-                assertEquals(6, reader.skip(6));
+                reader.skip(6);
                 assertEquals((byte) 6, reader.next());
 
-                assertEquals(2, reader.skip(2));
+                reader.skip(2);
                 assertEquals((byte) 9, reader.next());
 
-                assertEquals(6, reader.skip(6));
+                reader.skip(6);
                 assertEquals((byte) 16, reader.next());
 
-                assertEquals(512, reader.skip(512));
+                reader.skip(512);
                 assertEquals((byte) 17, reader.next());
 
-                assertEquals(1024, reader.skip(1024));
+                reader.skip(1024);
                 assertEquals((byte) 18, reader.next());
 
-                assertEquals(1517, reader.skip(2048));
-                assertThrows(IOException.class, reader::next);
+                reader.skip(1024);
+                assertThrows(EOFException.class, () -> reader.skip(1024));
             }
         }
     }

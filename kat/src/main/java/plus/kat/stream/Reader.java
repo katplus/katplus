@@ -19,6 +19,7 @@ import plus.kat.crash.*;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.EOFException;
 
 /**
  * @author kraity
@@ -41,28 +42,27 @@ public interface Reader extends Closeable {
     boolean also() throws IOException;
 
     /**
-     * Skips and discards bytes of the specified length from this {@link Reader}
+     * Skips over and discards exactly bytes of the specified length from this {@link Reader}
      *
-     * @return the actual number of bytes skipped which might be zero
      * @throws IOException If this has been closed or I/O error occurs
      */
-    default int skip(
+    default void skip(
         int size
     ) throws IOException {
-        int num = 0;
-        while (num < size) {
+        while (size > 0) {
             if (also()) {
-                num++;
                 read();
+                size--;
             } else {
-                return num;
+                throw new EOFException(
+                    "Unable to skip exactly"
+                );
             }
         }
-        return num;
     }
 
     /**
-     * Reads a byte if this {@link Reader} has readable bytes, otherwise raise IOException
+     * Reads a byte if this {@link Reader} has readable bytes, otherwise raise {@link IOException}
      *
      * @throws IOException If this has been closed or I/O error occurs
      */

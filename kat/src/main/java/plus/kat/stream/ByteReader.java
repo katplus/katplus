@@ -21,6 +21,7 @@ import plus.kat.chain.*;
 import plus.kat.crash.*;
 
 import java.io.IOException;
+import java.io.EOFException;
 
 import static plus.kat.chain.Chain.Unsafe.value;
 
@@ -107,22 +108,18 @@ public class ByteReader implements Reader {
     }
 
     @Override
-    public int skip(
+    public void skip(
         int size
-    ) {
+    ) throws IOException {
         if (size > 0) {
-            int length = limit - index;
-            if (length > size) {
+            if (size <= limit - index) {
                 index += size;
-                return size;
-            }
-
-            if (length > 0) {
-                index = limit;
-                return length;
+            } else {
+                throw new EOFException(
+                    "Unable to skip exactly"
+                );
             }
         }
-        return 0;
     }
 
     @Override

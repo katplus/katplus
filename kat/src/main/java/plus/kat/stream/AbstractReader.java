@@ -18,6 +18,7 @@ package plus.kat.stream;
 import plus.kat.crash.*;
 
 import java.io.IOException;
+import java.io.EOFException;
 
 /**
  * @author kraity
@@ -69,46 +70,49 @@ public abstract class AbstractReader implements Reader {
     }
 
     /**
-     * Skips and discards bytes of the specified length from this {@link Reader}
+     * Skips over and discards exactly bytes of the specified length from this {@link Reader}
      *
-     * @throws FlowCrash,IOException If this has been closed or I/O error occurs
+     * @throws IOException If this has been closed or I/O error occurs
      */
     @Override
-    public int skip(
+    public void skip(
         int size
     ) throws IOException {
-        int num = 0;
-        while (num < size) {
-            int cap = limit - index;
-            if (cap > 0) {
-                int n = size - num;
-                if (n <= cap) {
-                    index += n;
-                    return size;
+        while (size > 0) {
+            int num = limit - index;
+            if (num > 0) {
+                if (size <= num) {
+                    index += size;
+                    return;
                 }
                 if ((limit = load()) > 0) {
                     index = 0;
-                    num += cap;
+                    size -= num;
                 } else {
-                    index += cap;
-                    return num + cap;
+                    size -= num;
+                    index += num;
                 }
                 continue;
             }
 
-            if (cap == 0) {
+            if (num == 0) {
                 if ((limit = load()) > 0) {
                     index = 0;
                     continue;
+                } else {
+                    throw new EOFException(
+                        "Unable to skip exactly"
+                    );
                 }
             }
-            return num;
+            throw new EOFException(
+                "Failed to skip the <" + size + "> exactly"
+            );
         }
-        return num;
     }
 
     /**
-     * Reads a byte if {@link Reader} has readable bytes, otherwise raise IOE
+     * Reads a byte if {@link Reader} has readable bytes, otherwise raise {@link IOException}
      *
      * @throws FlowCrash,IOException If this has been closed or I/O error occurs
      */
