@@ -637,11 +637,10 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
         @NotNull InputStream in, int scale
     ) throws IOException {
         if (scale > 0) {
-            int m, n, length;
             byte[] it = value;
-            while (true) {
+            for (int m, n; ; asset = 0) {
                 m = in.available();
-                if (m != 0) {
+                if (m > 0) {
                     if (scale < m) {
                         m = scale;
                     }
@@ -653,28 +652,25 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
                         );
                     }
 
-                    length = in.read(
+                    int size = in.read(
                         it, count, n
                     );
-                    if (length == -1) {
-                        break;
-                    } else {
-                        asset = 0;
-                        count += length;
+                    if (0 <= size) {
+                        count += size;
+                        continue;
                     }
                 } else {
-                    m = in.read();
-                    if (m == -1) {
-                        break;
-                    } else {
+                    int data = in.read();
+                    if (0 <= data) {
                         int size = count + 1;
                         if (size > it.length) {
                             it = grow(size);
                         }
-                        asset = 0;
-                        it[count++] = (byte) m;
+                        it[count++] = (byte) data;
+                        continue;
                     }
                 }
+                break;
             }
         } else {
             throw new IOException(
