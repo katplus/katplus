@@ -75,7 +75,6 @@
         <module>kat</module>
         <module>kat-netty</module>
         <module>kat-spring</module>
-        <module>kat-client/caller</module>
         <module>kat-client/okhttp</module>
         <module>kat-client/retrofit</module>
     </modules>
