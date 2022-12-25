@@ -141,13 +141,17 @@ Java:
 import plus.kat.*;
 
 // kat
+String kat = Kat.pure(obj);
 String kat = Kat.encode(obj);
+String kat = Kat.pretty(obj);
 
 // xml
 String xml = Doc.encode(obj);
+String xml = Doc.pretty(obj);
 
 // json
 String json = Json.encode(obj);
+String json = Json.pretty(obj);
 ```
 
 ### 2.2 **Text** to **Map**
@@ -277,7 +281,7 @@ import plus.kat.*;
 
 // kat
 try (Kat kat = new Kat()) {
-    chan.set("meta", it -> {
+    kat.set("meta", it -> {
         it.set("id", 100001);
         it.set("title", "kat");
         it.set("author", "User", user -> {
@@ -588,6 +592,10 @@ Event<User> event = new Event<>(data);
 // use byte array
 byte[] data = ...;
 Event<User> event = new Event<>(data);
+
+// use ByteBuffer
+ByteBuffer buffer = ...;
+Event<User> event = new Event<>(buffer);
 
 // use InputStream
 InputStream stream = ...;
