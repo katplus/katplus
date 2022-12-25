@@ -17,7 +17,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 </dependency>
 ```
 
@@ -25,7 +25,7 @@ Gradle:
 
 ```groovy
 dependencies {
-    implementation 'plus.kat:kat:0.0.4'
+    implementation 'plus.kat:kat:0.0.5'
 }
 ```
 
@@ -33,7 +33,7 @@ Kotlin Gradle:
 
 ```kotlin
 dependencies {
-    implementation("plus.kat:kat:0.0.4")
+    implementation("plus.kat:kat:0.0.5")
 }
 ```
 
@@ -47,7 +47,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-netty</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 </dependency>
 ```
 
@@ -57,14 +57,8 @@ Java:
 import plus.kat.*;
 import plus.kat.netty.buffer.*;
 
-// ByteBuf
-Kat chan = Kat.encode(...);
-Doc chan = Doc.encode(...);
-Json chan = Json.encode(...);
-
 ByteBuf buf = ChanBuf.wrappedBuffer(chan);
 ByteBuf buf = ChanBuf.wrappedBuffer(chan.getFlow());
-ByteBuf buf = ChanBuf.wrappedBuffer(new Value("..."));
 
 // ByteBuf Reader
 ByteBuf buf = ...;
@@ -81,7 +75,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-spring</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 </dependency>
 ```
 
@@ -99,51 +93,21 @@ public class Application implements WebMvcConfigurer {
     ) {
         // kat
         converters.add(
-            new MutableHttpMessageConverter(Job.KAT)
+            new MutableHttpMessageConverter(Algo.KAT)
         );
         // xml
         converters.add(
-            new MutableHttpMessageConverter(Job.DOC)
+            new MutableHttpMessageConverter(Algo.DOC)
         );
         // json
         converters.add(
-            0, new MutableHttpMessageConverter(Job.JSON)
+            0, new MutableHttpMessageConverter(Algo.JSON)
         );
     }
 }
 ```
 
-### 1.2.3 Client
-
-#### 1.2.3.1 Caller
-
-Maven:
-
-```xml
-<dependency>
-    <groupId>plus.kat</groupId>
-    <artifactId>kat-caller</artifactId>
-    <version>0.0.4</version>
-</dependency>
-```
-
-Java:
-
-```java
-import plus.kat.*;
-import plus.kat.caller.*;
-
-String url = "https://kat.plus/test/user";
-User user = new Client(url).get().to(User.class);
-
-Supplier supplier = Supplier.ins();
-User bean = new User(1, "kraity");
-
-Json json = supplier.serial(bean);
-User user = new Client(url).post(json).to(User.class);
-```
-
-#### 1.2.3.2 Okhttp
+#### 1.2.3 Okhttp
 
 Maven:
 
@@ -151,11 +115,11 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-okhttp</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 </dependency>
 ```
 
-#### 1.2.3.3 Retrofit
+#### 1.2.4 Retrofit
 
 Maven:
 
@@ -163,7 +127,7 @@ Maven:
 <dependency>
     <groupId>plus.kat</groupId>
     <artifactId>kat-retrofit</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 </dependency>
 ```
 
@@ -218,7 +182,7 @@ import plus.kat.*;
 
 // kat
 ArrayList<Integer> data = Kat.decode(
-    ArrayList.class, "{i(1)i(2)i(3)}"
+    ArrayList.class, "{(1)(2)(3)}"
 );
 
 // xml
@@ -312,7 +276,7 @@ Java:
 import plus.kat.*;
 
 // kat
-try (Chan chan = new Chan()) {
+try (Kat kat = new Kat()) {
     chan.set("meta", it -> {
         it.set("id", 100001);
         it.set("title", "kat");
@@ -323,8 +287,8 @@ try (Chan chan = new Chan()) {
     });
 
     // M:meta{i:id(100001)s:title(kat)User:author{i:id(1)s:name(kraity)}}
-    byte[] src = chan.toBytes();
-    String text = chan.toString();
+    byte[] src = kat.toBytes();
+    String text = kat.toString();
 }
 
 // json
@@ -436,7 +400,7 @@ Spare<User> spare = Spare.lookup(User.class);
 User user = spare.read(
     "{:id(1):name(kraity)}"
 );
-Chan chan = spare.write(user);
+Kat kat = spare.write(user);
 
 // xml
 User user = spare.down(
@@ -625,30 +589,9 @@ Event<User> event = new Event<>(data);
 byte[] data = ...;
 Event<User> event = new Event<>(data);
 
-// use byte array with Cipher
-byte[] data = ...;
-Cipher cipher = ...;
-Event<User> event = new Event<>(data, cipher);
-
 // use InputStream
 InputStream stream = ...;
 Event<User> event = new Event<>(stream);
-
-// use InputStream with Cipher
-Cipher cipher = Cipher.getInstance(
-    "AES/CBC/PKCS5Padding"
-);
-cipher.init(
-    Cipher.DECRYPT_MODE,
-    new SecretKeySpec(
-        "key".getBytes(), "AES"
-    ),
-    new IvParameterSpec(
-        "iv".getBytes()
-    )
-);
-InputStream stream = ...;
-Event<User> event = new Event<>(stream, cipher);
 ```
 
 # 4. 进阶使用
@@ -728,7 +671,7 @@ User user = supplier.cast(
 // kat
 User user = supplier.read(
     "plus.kat.entity.User", new Event<>(
-        "{i:id(1):name(kraity)}"
+        "{:id(1):name(kraity)}"
     );
 );
 
@@ -877,6 +820,8 @@ import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.spare.*;
 
+import java.io.IOException;
+
 class AuthorCoder implements Coder<User> {
 
     @Override
@@ -906,52 +851,12 @@ class AuthorBuilder extends Builder<User> {
     private User user;
 
     @Override
-    public void onCreate(
-        Alias alias
-    ) throws Crash, IOException {
+    public void onOpen() {
         user = new User();
     }
 
     @Override
-    public void onAccept(
-        Alias alias,
-        Builder<?> child
-    ) throws IOException {
-        // check key
-        if (alias.is("collaborator")) {
-            user.setCollaborator(
-                (User) child.getResult()
-            );
-        }
-    }
-
-    @Override
-    public void onAccept(
-        Space space,
-        Alias alias,
-        Value value
-    ) throws IOException {
-        if (alias.is("id")) {
-            user.setId(
-                value.toInt()
-            );
-        }
-
-        else if (alias.is("name")) {
-            user.setName(
-                value.toString()
-            );
-        }
-
-        else if (alias.is("blocked")) {
-            user.setBlocked(
-                value.toBoolean()
-            );
-        }
-    }
-
-    @Override
-    public Builder<?> getBuilder(
+    public Pipage onOpen(
         Space space,
         Alias alias
     ) throws IOException {
@@ -961,24 +866,53 @@ class AuthorBuilder extends Builder<User> {
             Spare<?> spare =
                 supplier.lookup(User.class);
 
-            // skip if null
-            if (spare == null) {
-                // by custom builder
-                return new AuthorBuilder();
-            }
+            // child builder
+            Builder<?> child = new AuthorBuilder();
 
-            return spare.getBuilder(User.class);
+            return child.init(this, (node, result) -> {
+                user.setCollaborator(
+                    (User) result
+                );
+            });
         }
-        return null;
+
+        throw new IOException(
+            "Unknown attribute: " + alias
+        );
     }
 
     @Override
-    public User getResult() {
+    public void onEmit(
+        Space space,
+        Alias alias,
+        Value value
+    ) {
+        if (alias.is("id")) {
+            user.setId(
+                value.toInt()
+            );
+        } else if (alias.is("name")) {
+            user.setName(
+                value.toString()
+            );
+        } else if (alias.is("blocked")) {
+            user.setBlocked(
+                value.toBoolean()
+            );
+        } else {
+            throw new IOException(
+                "Unknown attribute: " + alias
+            );
+        }
+    }
+
+    @Override
+    public User build() {
         return user;
     }
 
     @Override
-    public void onDestroy() {
+    public void onClose() {
         user = null;
     }
 }
@@ -1006,7 +940,7 @@ import plus.kat.*;
 class UserSpare implements Spare<User> {
 
     @Override
-    public CharSequence getSpace() {
+    public String getSpace() {
         return "plus.kat.entity.User";
     }
 
@@ -1016,10 +950,10 @@ class UserSpare implements Spare<User> {
     }
 
     @Override
-    public boolean accept(
-        Class<?> klass
+    public Boolean getBorder(
+        Flag flag
     ) {
-        return klass.isAssignableFrom(User.class);
+        return null;
     }
 
     @Override
