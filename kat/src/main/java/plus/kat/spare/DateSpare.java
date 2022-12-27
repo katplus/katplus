@@ -154,15 +154,15 @@ public class DateSpare extends SimpleDateFormat implements Spare<Date> {
     }
 
     @Override
-    public Supplier getSupplier() {
-        return Supplier.ins();
-    }
-
-    @Override
-    public Builder<Date> getBuilder(
+    public Factory getFactory(
         @Nullable Type type
     ) {
         return null;
+    }
+
+    @Override
+    public Supplier getSupplier() {
+        return Supplier.ins();
     }
 
     @Override

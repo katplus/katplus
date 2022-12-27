@@ -108,7 +108,7 @@ public class RecordSpare<T> extends AbstractSpare<T> {
     }
 
     @Override
-    public Builder<T> getBuilder(
+    public Factory getFactory(
         @Nullable Type type
     ) {
         return new Builder1<>(

@@ -196,7 +196,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
     }
 
     @Override
-    public Builder<T> getBuilder(
+    public Factory getFactory(
         @Nullable Type type
     ) {
         Class<?>[] as = args;

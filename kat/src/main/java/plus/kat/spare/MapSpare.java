@@ -283,7 +283,7 @@ public class MapSpare extends Property<Map> {
     }
 
     @Override
-    public Builder<Map> getBuilder(
+    public Factory getFactory(
         @Nullable Type type
     ) {
         return new Builder0(
@@ -413,8 +413,8 @@ public class MapSpare extends Property<Map> {
                 }
             }
 
-            Builder<?> child =
-                s1.getBuilder(val);
+            Factory child =
+                s1.getFactory(val);
 
             if (child == null) {
                 return null;

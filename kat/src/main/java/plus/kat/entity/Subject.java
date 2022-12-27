@@ -85,12 +85,12 @@ public interface Subject<T> extends Spare<T> {
     }
 
     /**
-     * Returns a {@link Builder} of {@link T}
+     * Returns a {@link Factory} of {@link T}
      *
      * @param type the specified actual type
      */
     @Override
-    default Builder<T> getBuilder(
+    default Factory getFactory(
         @Nullable Type type
     ) {
         return new Builder0<>(
@@ -430,8 +430,8 @@ public interface Subject<T> extends Spare<T> {
                 Coder<?> coder = member.coder();
 
                 if (coder != null) {
-                    Builder<?> child =
-                        coder.getBuilder(
+                    Factory child =
+                        coder.getFactory(
                             locate(type)
                         );
                     if (child != null) {
@@ -463,8 +463,8 @@ public interface Subject<T> extends Spare<T> {
                         }
 
                         if (coder != null) {
-                            Builder<?> child =
-                                coder.getBuilder(type);
+                            Factory child =
+                                coder.getFactory(type);
                             if (child != null) {
                                 setter = member;
                                 return child.init(this, this);
@@ -701,8 +701,8 @@ public interface Subject<T> extends Spare<T> {
                 Coder<?> coder = member.coder();
 
                 if (coder != null) {
-                    Builder<?> child =
-                        coder.getBuilder(
+                    Factory child =
+                        coder.getFactory(
                             locate(type)
                         );
                     if (child != null) {
@@ -734,8 +734,8 @@ public interface Subject<T> extends Spare<T> {
                         }
 
                         if (coder != null) {
-                            Builder<?> child =
-                                coder.getBuilder(type);
+                            Factory child =
+                                coder.getFactory(type);
                             if (child != null) {
                                 target = member;
                                 return child.init(this, this);
@@ -899,7 +899,7 @@ public interface Subject<T> extends Spare<T> {
         public void onOpen() throws IOException {
             Class<?> o = self;
             if (o != null) {
-                Channel holder = holder();
+                Factory holder = holder();
                 if (holder instanceof Builder) {
                     Object bean = ((Builder<?>) holder).build();
                     if (bean == null) {
@@ -940,8 +940,8 @@ public interface Subject<T> extends Spare<T> {
                 Coder<?> coder = member.coder();
 
                 if (coder != null) {
-                    Builder<?> child =
-                        coder.getBuilder(
+                    Factory child =
+                        coder.getFactory(
                             locate(type)
                         );
                     if (child != null) {
@@ -973,8 +973,8 @@ public interface Subject<T> extends Spare<T> {
                         }
 
                         if (coder != null) {
-                            Builder<?> child =
-                                coder.getBuilder(type);
+                            Factory child =
+                                coder.getFactory(type);
                             if (child != null) {
                                 target = member;
                                 return child.init(this, this);
@@ -995,8 +995,8 @@ public interface Subject<T> extends Spare<T> {
                     Coder<?> coder = member.coder();
 
                     if (coder != null) {
-                        Builder<?> child =
-                            coder.getBuilder(
+                        Factory child =
+                            coder.getFactory(
                                 locate(type)
                             );
                         if (child != null) {
@@ -1029,8 +1029,8 @@ public interface Subject<T> extends Spare<T> {
                             }
 
                             if (coder != null) {
-                                Builder<?> child =
-                                    coder.getBuilder(type);
+                                Factory child =
+                                    coder.getFactory(type);
                                 if (child != null) {
                                     return child.init(
                                         this, new Cache(member)

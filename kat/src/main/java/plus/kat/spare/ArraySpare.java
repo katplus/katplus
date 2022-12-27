@@ -370,7 +370,7 @@ public class ArraySpare extends Property<Object> {
     }
 
     @Override
-    public Builder<Object> getBuilder(
+    public Factory getFactory(
         @Nullable Type type
     ) {
         if (type == null) {
@@ -581,8 +581,8 @@ public class ArraySpare extends Property<Object> {
                 }
             }
 
-            Builder<?> child =
-                spare0.getBuilder(visa);
+            Factory child =
+                spare0.getFactory(visa);
 
             if (child == null) {
                 return null;
@@ -674,8 +674,8 @@ public class ArraySpare extends Property<Object> {
                     return null;
                 }
 
-                Builder<?> child =
-                    spare.getBuilder(type);
+                Factory child =
+                    spare.getFactory(type);
 
                 if (child == null) {
                     return null;

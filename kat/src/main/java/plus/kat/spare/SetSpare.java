@@ -255,7 +255,7 @@ public class SetSpare extends Property<Set> {
     }
 
     @Override
-    public Builder<Set> getBuilder(
+    public Factory getFactory(
         @Nullable Type type
     ) {
         return new ListSpare.Builder0(

@@ -62,12 +62,12 @@ public interface Coder<T> {
     }
 
     /**
-     * Create a {@link Builder} of {@link T}
+     * Create a {@link Factory} of {@link T}
      *
-     * @see Spare#getBuilder(Type)
+     * @see Spare#getFactory(Type)
      */
     @Nullable
-    default Builder<? extends T> getBuilder(
+    default Factory getFactory(
         @Nullable Type type
     ) {
         return null;

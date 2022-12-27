@@ -115,8 +115,10 @@ public abstract class Property<T> implements Spare<T> {
     }
 
     @Override
-    public Class<T> getType() {
-        return klass;
+    public Factory getFactory(
+        @Nullable Type type
+    ) {
+        return null;
     }
 
     @Override
@@ -140,14 +142,12 @@ public abstract class Property<T> implements Spare<T> {
     }
 
     @Override
-    public Supplier getSupplier() {
-        return supplier;
+    public Class<T> getType() {
+        return klass;
     }
 
     @Override
-    public Builder<? extends T> getBuilder(
-        @Nullable Type type
-    ) {
-        return null;
+    public Supplier getSupplier() {
+        return supplier;
     }
 }

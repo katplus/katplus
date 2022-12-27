@@ -70,6 +70,16 @@ public interface Spare<T> extends Coder<T> {
     );
 
     /**
+     * Create a {@link Factory} of {@link T}
+     *
+     * @param type the specified actual type
+     */
+    @Nullable
+    Factory getFactory(
+        @Nullable Type type
+    );
+
+    /**
      * Returns the {@link Class} of {@link T}
      */
     @NotNull
@@ -81,16 +91,6 @@ public interface Spare<T> extends Coder<T> {
      */
     @NotNull
     Supplier getSupplier();
-
-    /**
-     * Create a {@link Builder} of {@link T}
-     *
-     * @param type the specified actual type
-     */
-    @Nullable
-    Builder<? extends T> getBuilder(
-        @Nullable Type type
-    );
 
     /**
      * If this {@link Spare} can create an instance,

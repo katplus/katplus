@@ -33,7 +33,7 @@ import java.lang.reflect.*;
  * @author kraity
  * @since 0.0.1
  */
-public class Parser implements Channel, Callback, Closeable {
+public class Parser implements Factory, Callback, Closeable {
     /**
      * state etc.
      */
@@ -52,6 +52,12 @@ public class Parser implements Channel, Callback, Closeable {
      */
     protected Radar radar;
     protected Solver podar, sodar;
+
+    /**
+     * holder etc.
+     */
+    protected Factory holder;
+    protected Callback handler;
 
     /**
      * snapshot etc.
@@ -209,6 +215,30 @@ public class Parser implements Channel, Callback, Closeable {
     }
 
     /**
+     * Initializes the handler for
+     * this pipage from the parent
+     *
+     * @return this or the proxy pipage
+     * @throws IOException If an I/O error occurs
+     */
+    @Override
+    public Pipage init(
+        @NotNull Factory parent,
+        @NotNull Callback callback
+    ) throws IOException {
+        if (holder == null) {
+            holder = parent;
+            handler = callback;
+        } else {
+            throw new IOException(
+                this + " is already working," +
+                    " and its parent is " + holder
+            );
+        }
+        return this;
+    }
+
+    /**
      * Starts a sub pipage of this pipage
      *
      * @return the sub pipage, may be null
@@ -219,12 +249,13 @@ public class Parser implements Channel, Callback, Closeable {
         @NotNull Space space,
         @NotNull Alias alias
     ) throws IOException {
-        Type type = event.getType();
-        Coder<?> coder = event.getCoder();
+        Event<?> refer = event;
+        Type type = refer.getType();
+        Coder<?> coder = refer.getCoder();
 
         if (coder != null) {
-            Builder<?> child =
-                coder.getBuilder(type);
+            Factory child =
+                coder.getFactory(type);
             if (child != null) {
                 return child.init(this, this);
             }
@@ -233,8 +264,8 @@ public class Parser implements Channel, Callback, Closeable {
                 Space.wipe(type), space
             );
             if (coder != null) {
-                Builder<?> child =
-                    coder.getBuilder(type);
+                Factory child =
+                    coder.getFactory(type);
                 if (child != null) {
                     return child.init(this, this);
                 }
@@ -276,18 +307,19 @@ public class Parser implements Channel, Callback, Closeable {
         @NotNull Alias alias,
         @NotNull Value value
     ) throws IOException {
-        Coder<?> coder = event.getCoder();
+        Event<?> refer = event;
+        Coder<?> coder = refer.getCoder();
         if (coder != null) {
             result = coder.read(
-                event, value
+                refer, value
             );
         } else {
             coder = supplier.lookup(
-                Space.wipe(event.getType()), space
+                Space.wipe(refer.getType()), space
             );
             if (coder != null) {
                 result = coder.read(
-                    event, value
+                    refer, value
                 );
             } else {
                 throw new IOException(
@@ -308,9 +340,19 @@ public class Parser implements Channel, Callback, Closeable {
         boolean state,
         boolean alarm
     ) throws IOException {
+        Factory parent = holder;
+        if (parent != null) {
+            if (state) {
+                handler.onEmit(
+                    this, result
+                );
+            }
+            holder = null;
+            handler = null;
+        }
         event = null;
         supplier = null;
-        return null;
+        return parent;
     }
 
     /**
@@ -430,7 +472,7 @@ public class Parser implements Channel, Callback, Closeable {
     }
 
     /**
-     * Returns the flag of this {@link Channel}
+     * Returns the flag of this {@link Factory}
      *
      * @return {@link Flag} or {@code null}
      */
@@ -440,17 +482,17 @@ public class Parser implements Channel, Callback, Closeable {
     }
 
     /**
-     * Returns the parent of this {@link Channel}
+     * Returns the parent of this {@link Factory}
      *
-     * @return {@link Channel} or {@code null}
+     * @return {@link Factory} or {@code null}
      */
     @Nullable
-    public Channel holder() {
+    public Factory holder() {
         return null;
     }
 
     /**
-     * Returns the supplier of this {@link Channel}
+     * Returns the supplier of this {@link Factory}
      *
      * @return {@link Supplier} or {@code null}
      */

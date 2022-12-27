@@ -13,39 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.stream;
-
-import plus.kat.anno.Nullable;
+package plus.kat.spare;
 
 import plus.kat.*;
-import plus.kat.spare.*;
+import plus.kat.stream.*;
+
+import java.io.IOException;
 
 /**
  * @author kraity
- * @since 0.0.5
+ * @since 0.0.6
  */
-public interface Channel extends Pipage, Helper {
+public interface Factory extends Pipage, Helper {
     /**
-     * Returns the flag of this {@link Channel}
+     * Initializes the flag and supplier for
+     * this pipage from the holder, and so on
+     *
+     * @return this or the proxy pipage
+     * @throws IOException If an I/O error occurs
+     */
+    Pipage init(
+        Factory holder,
+        Callback handler
+    ) throws IOException;
+
+    /**
+     * Returns the flag of this {@link Factory}
      *
      * @return {@link Flag} or {@code null}
      */
-    @Nullable
     Flag flag();
 
     /**
-     * Returns the holder of this {@link Channel}
+     * Returns the holder of this {@link Factory}
      *
-     * @return {@link Channel} or {@code null}
+     * @return {@link Factory} or {@code null}
      */
-    @Nullable
-    Channel holder();
+    Factory holder();
 
     /**
-     * Returns the supplier of this {@link Channel}
+     * Returns the supplier of this {@link Factory}
      *
      * @return {@link Supplier} or {@code null}
      */
-    @Nullable
     Supplier supplier();
 }

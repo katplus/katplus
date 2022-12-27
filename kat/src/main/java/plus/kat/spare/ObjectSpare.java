@@ -201,7 +201,7 @@ public class ObjectSpare extends Property<Object> {
     }
 
     @Override
-    public Builder<?> getBuilder(
+    public Factory getFactory(
         @Nullable Type type
     ) {
         if (type != null &&
@@ -213,9 +213,9 @@ public class ObjectSpare extends Property<Object> {
                 return null;
             }
             if (spare != this) {
-                return spare.getBuilder(type);
+                return spare.getFactory(type);
             }
         }
-        return MapSpare.INSTANCE.getBuilder(type);
+        return MapSpare.INSTANCE.getFactory(type);
     }
 }

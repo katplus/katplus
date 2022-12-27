@@ -29,9 +29,9 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.1
  */
-public abstract class Builder<T> implements Channel {
+public abstract class Builder<T> implements Factory {
 
-    protected Channel holder;
+    protected Factory holder;
     protected Callback handler;
 
     protected Flag flag;
@@ -41,12 +41,12 @@ public abstract class Builder<T> implements Channel {
      * Initializes the flag and supplier for
      * this pipage from the parent, and so on
      *
-     * @return the proxy pipage
+     * @return this or the proxy pipage
      * @throws IOException If an I/O error occurs
      */
     @NotNull
     public Pipage init(
-        @NotNull Channel parent,
+        @NotNull Factory parent,
         @NotNull Callback callback
     ) throws IOException {
         if (holder == null) {
@@ -151,7 +151,7 @@ public abstract class Builder<T> implements Channel {
     }
 
     /**
-     * Returns the flag of this {@link Channel}
+     * Returns the flag of this {@link Factory}
      *
      * @return {@link Flag} or {@code null}
      */
@@ -161,17 +161,17 @@ public abstract class Builder<T> implements Channel {
     }
 
     /**
-     * Returns the parent of this {@link Channel}
+     * Returns the parent of this {@link Factory}
      *
-     * @return {@link Channel} or {@code null}
+     * @return {@link Factory} or {@code null}
      */
     @Nullable
-    public final Channel holder() {
+    public final Factory holder() {
         return holder;
     }
 
     /**
-     * Returns the supplier of this {@link Channel}
+     * Returns the supplier of this {@link Factory}
      *
      * @return {@link Supplier} or {@code null}
      */

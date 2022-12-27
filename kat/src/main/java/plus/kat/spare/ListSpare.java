@@ -264,7 +264,7 @@ public class ListSpare extends Property<List> {
     }
 
     @Override
-    public Builder<List> getBuilder(
+    public Factory getFactory(
         @Nullable Type type
     ) {
         return new Builder0(
@@ -339,8 +339,8 @@ public class ListSpare extends Property<List> {
                 }
             }
 
-            Builder<?> child =
-                spare.getBuilder(elem);
+            Factory child =
+                spare.getFactory(elem);
 
             if (child == null) {
                 return null;
