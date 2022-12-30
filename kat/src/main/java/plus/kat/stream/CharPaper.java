@@ -17,11 +17,13 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
+import static plus.kat.stream.Stream.Buffer.INS;
+
 /**
  * @author kraity
  * @since 0.0.1
  */
-public class CharPaper extends AbstractPaper {
+public class CharPaper extends TransferPaper {
 
     protected int start;
     protected final int end;
@@ -60,85 +62,41 @@ public class CharPaper extends AbstractPaper {
 
     @Override
     protected int load() {
-        int size = end - start;
+        int i = start;
+        int size = end - i;
+
         if (size <= 0) {
             return -1;
         }
 
         byte[] it = queue;
         if (it == null) {
-            int l = buflen;
-            if (l == 0) {
-                l = 128;
-            }
-            if ((size *= 3) < l) {
-                l = size;
-            }
-            queue = it = new byte[l];
-        }
-
-        CharSequence ch = source;
-        int i = 0, l = it.length;
-
-        for (; i < l && start < end; start++) {
-
-            char code = ch.charAt(start);
-
-            // U+0000 ~ U+007F
-            if (code < 0x80) {
-                it[i++] = (byte) code;
-            }
-
-            // U+0080 ~ U+07FF
-            else if (code < 0x800) {
-                if (i + 2 > l) break;
-                it[i++] = (byte) (code >> 6 | 0xC0);
-                it[i++] = (byte) (code & 0x3F | 0x80);
-            }
-
-            // U+10000 ~ U+10FFFF
-            else if (0xD7FF < code && code < 0xE000) {
-                if (i + 4 > l) break;
-                if (code > 0xDBFF) {
-                    it[i++] = '?';
-                    continue;
+            int n = buflen;
+            if (n > 31) {
+                queue = it = INS.alloc(n);
+            } else {
+                n = size * 3;
+                if (n > 1024) {
+                    queue = it = INS.alloc(1024);
+                } else if (n > 512) {
+                    queue = it = new byte[256];
+                } else {
+                    queue = it = new byte[Math.min(256, n)];
                 }
-
-                if (end == ++start) {
-                    it[i++] = '?';
-                    break;
-                }
-
-                char arch = ch.charAt(start);
-                if (arch < 0xDC00 ||
-                    arch > 0xDFFF) {
-                    it[i++] = '?';
-                    continue;
-                }
-
-                int hi = code - 0xD7C0;
-                int lo = arch - 0xDC00;
-
-                it[i++] = (byte) (hi >> 8 | 0xF0);
-                it[i++] = (byte) (hi >> 2 & 0x3F | 0x80);
-                it[i++] = (byte) (lo >> 6 | hi << 4 & 0x30 | 0x80);
-                it[i++] = (byte) (lo & 0x3F | 0x80);
-            }
-
-            // U+0800 ~ U+FFFF
-            else {
-                if (i + 3 > l) break;
-                it[i++] = (byte) (code >> 12 | 0xE0);
-                it[i++] = (byte) (code >> 6 & 0x3F | 0x80);
-                it[i++] = (byte) (code & 0x3F | 0x80);
             }
         }
 
-        return i;
+        int k = it.length / 3;
+        if (size > k) size = k;
+
+        return load(
+            source, 0, i, start += size
+        );
     }
 
     @Override
     public void close() {
+        INS.join(queue);
         limit = -1;
         queue = null;
         source = null;

@@ -143,6 +143,27 @@ public class Event<T> implements Flag {
     }
 
     /**
+     * Constructs an {@link Event} where
+     * calling {@link Reader#close()} has no effect
+     * <p>
+     * For example
+     * <pre>{@code
+     *   try (Reader reader = ...) {
+     *      Event<User> event = new Event<>(reader);
+     *   }
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code reader} is null
+     * @see ReaderPaper#ReaderPaper(Reader)
+     */
+    public Event(
+        @NotNull Reader reader
+    ) {
+        this();
+        paper = new ReaderPaper(reader);
+    }
+
+    /**
      * For example
      * <pre>{@code
      *   CharSequence data = ...;

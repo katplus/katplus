@@ -61,10 +61,10 @@ public class InputStreamPaper extends AbstractPaper {
             return in.read(buf);
         }
 
-        int m, l = buflen;
-        if (l != 0) {
+        int m, n = buflen;
+        if (n > 31) {
             return in.read(
-                queue = INS.alloc(l)
+                queue = INS.alloc(n)
             );
         }
 
@@ -83,21 +83,24 @@ public class InputStreamPaper extends AbstractPaper {
                 );
             }
         } else {
-            if ((l = in.read()) < 0) {
+            if ((n = in.read()) < 0) {
                 return -1;
             }
 
             m = in.available();
             if (m <= 0 || m > 1023) {
                 buf = INS.alloc(1024);
-            } else if (m > 512) {
+            } else if (m > 511) {
                 buf = new byte[256];
             } else {
                 buf = new byte[Math.min(256, m + 1)];
             }
 
-            (queue = buf)[0] = (byte) l;
-            return 1 + in.read(buf, 1, buf.length - 1);
+            (queue = buf)[0] = (byte) n;
+            int size = in.read(
+                buf, 1, buf.length - 1
+            );
+            return size > 0 ? size + 1 : size;
         }
     }
 

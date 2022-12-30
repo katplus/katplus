@@ -14,21 +14,24 @@ import java.math.BigInteger;
 
 import static plus.kat.Spare.lookup;
 import static org.junit.jupiter.api.Assertions.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class PaperTest {
 
     @Test
     public void test_skip() throws Exception {
-        byte[] bs = new byte[3072];
+        byte[] bt = new byte[3072];
         for (int i = 0; i < 3072; i++) {
-            bs[i] = (byte) (i % 128);
+            bt[i] = (byte) (i % 128);
         }
+        String text = new String(bt);
 
         for (Paper in : new Paper[]{
-            new BytePaper(bs),
-            new CharPaper(new String(bs)),
-            new ByteBufferPaper(ByteBuffer.wrap(bs)),
-            new InputStreamPaper(new ByteArrayInputStream(bs))
+            new BytePaper(bt),
+            new CharPaper(text),
+            new ReaderPaper(new StringReader(text)),
+            new ByteBufferPaper(ByteBuffer.wrap(bt)),
+            new InputStreamPaper(new ByteArrayInputStream(bt))
         }) {
             try (Paper paper = in) {
                 paper.skip(0);
@@ -118,9 +121,11 @@ public class PaperTest {
 
     @Test
     public void test_byte_buffer() {
-        String text = "{:id(1):name(kraity)}";
+        String text = "{:id(1):name(陆之岇)}";
         ByteBuffer buffer =
-            ByteBuffer.wrap(text.getBytes());
+            ByteBuffer.wrap(
+                text.getBytes(UTF_8)
+            );
 
         Bean bean = Kat.decode(
             Bean.class, new ByteBufferPaper(buffer)
@@ -129,5 +134,19 @@ public class PaperTest {
         assertNotNull(bean);
         assertFalse(buffer.hasRemaining());
         assertEquals(text, Kat.pure(bean));
+    }
+
+    @Test
+    public void test_byte_reader() throws IOException {
+        String text = "{:id(1):name(陆之岇)}";
+        try (Reader reader = new StringReader(text)) {
+            Bean bean = Kat.decode(
+                Bean.class, new ReaderPaper(reader)
+            );
+
+            assertNotNull(bean);
+            assertEquals(-1, reader.read());
+            assertEquals(text, Kat.pure(bean));
+        }
     }
 }
