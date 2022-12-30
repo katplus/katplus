@@ -108,15 +108,15 @@ public class Podar implements Solver {
      *  </User>
      * }</pre>
      *
+     * @param r the specified source to be parsed
      * @param e the specified data transfer pipeline
-     * @param r the specified data source to be parsed
      * @throws IOException If an I/O error occurs by pipage
-     * @throws FlowCrash   If an I/O error occurs by reader
+     * @throws FlowCrash   If an I/O error occurs by paper
      * @throws SolverCrash If an I/O error occurs by solver
      */
     @Override
     public void read(
-        @NotNull Reader r,
+        @NotNull Paper r,
         @NotNull Pipage e
     ) throws IOException {
         try {
@@ -261,7 +261,7 @@ public class Podar implements Solver {
         @NotNull Space s,
         @NotNull Alias a,
         @NotNull Value v,
-        @NotNull Reader r,
+        @NotNull Paper r,
         @NotNull Pipage e
     ) throws IOException {
         Boot:
@@ -322,7 +322,7 @@ public class Podar implements Solver {
      * @throws IOException If an I/O error occurs
      */
     protected void decide(
-        @NotNull Reader r
+        @NotNull Paper r
     ) throws IOException {
         byte b;
         while (true) {
@@ -349,7 +349,7 @@ public class Podar implements Solver {
      */
     protected void escape(
         @NotNull Chain c,
-        @NotNull Reader r
+        @NotNull Paper r
     ) throws IOException {
         byte b = r.next();
         switch (b) {
@@ -441,7 +441,7 @@ public class Podar implements Solver {
      */
     protected void explain(
         @NotNull Value v,
-        @NotNull Reader r
+        @NotNull Paper r
     ) throws IOException {
         byte b;
         Boot:
@@ -520,7 +520,7 @@ public class Podar implements Solver {
      */
     protected void washing(
         int i,
-        Reader r
+        Paper r
     ) throws IOException {
         boolean in = true;
         Boot:

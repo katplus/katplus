@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author kraity
  */
-public class ByteBufReaderTest {
+public class ByteBufPaperTest {
 
     @Test
     public void test() {
@@ -27,7 +27,7 @@ public class ByteBufReaderTest {
 
         User user = supplier.read(
             User.class, new Event<>(
-                new ByteBufReader(buf)
+                new ByteBufPaper(buf)
             )
         );
 
@@ -53,7 +53,7 @@ public class ByteBufReaderTest {
         for (int i = 0; i < 3; i++) {
             User user = supplier.read(
                 User.class, new Event<>(
-                    new ByteBufReader(
+                    new ByteBufPaper(
                         Unpooled.wrappedBuffer(bytes)
                     )
                 )

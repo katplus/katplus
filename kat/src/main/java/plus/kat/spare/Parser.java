@@ -25,8 +25,7 @@ import plus.kat.utils.*;
 import plus.kat.solver.*;
 import plus.kat.stream.*;
 
-import java.io.Closeable;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.*;
 
 /**
@@ -99,7 +98,7 @@ public class Parser implements Factory, Callback, Closeable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
-     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Paper}
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -116,7 +115,7 @@ public class Parser implements Factory, Callback, Closeable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
-     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Paper}
      * @throws NullPointerException If the specified {@code radar} or {@code event} is null
      */
     @NotNull
@@ -125,11 +124,11 @@ public class Parser implements Factory, Callback, Closeable {
         @NotNull Solver radar,
         @NotNull Event<T> event
     ) throws IOException {
-        Reader reader =
-            event.getReader();
-        if (reader == null) {
+        Paper paper =
+            event.getPaper();
+        if (paper == null) {
             throw new Collapse(
-                "Reader is null"
+                "Paper is null"
             );
         }
 
@@ -145,9 +144,9 @@ public class Parser implements Factory, Callback, Closeable {
         this.supplier = supplier;
 
         try {
-            if (reader.also()) {
+            if (paper.also()) {
                 radar.read(
-                    reader, this
+                    paper, this
                 );
                 Object data = result;
                 if (data != null) {
@@ -156,7 +155,7 @@ public class Parser implements Factory, Callback, Closeable {
             }
         } finally {
             radar.clear();
-            reader.close();
+            paper.close();
         }
 
         throw new Collapse(
@@ -170,7 +169,7 @@ public class Parser implements Factory, Callback, Closeable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no solver available for algo is found
-     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Reader}
+     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Paper}
      * @throws NullPointerException If the specified {@code algo} or {@code event} is null
      */
     @NotNull

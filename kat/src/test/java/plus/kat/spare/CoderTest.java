@@ -23,7 +23,7 @@ public class CoderTest {
             Spare.lookup(Note.class);
 
         Note note = spare.read(
-            Event.latin(
+            new Event<>(
                 "Note{i:id(101)s:title(kat+)s:status(PUBLISH)}"
             )
         );

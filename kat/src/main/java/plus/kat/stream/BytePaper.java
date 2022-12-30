@@ -29,13 +29,13 @@ import static plus.kat.chain.Chain.Unsafe.value;
  * @author kraity
  * @since 0.0.1
  */
-public class ByteReader implements Reader {
+public class BytePaper implements Paper {
 
     private int index;
     private int limit;
     private byte[] queue;
 
-    public ByteReader(
+    public BytePaper(
         @NotNull byte[] data
     ) {
         if (data == null) {
@@ -46,7 +46,7 @@ public class ByteReader implements Reader {
         this.limit = data.length;
     }
 
-    public ByteReader(
+    public BytePaper(
         @NotNull Chain data
     ) {
         if (data == null) {
@@ -57,7 +57,7 @@ public class ByteReader implements Reader {
         this.limit = data.length();
     }
 
-    public ByteReader(
+    public BytePaper(
         @NotNull Chain data, int index, int length
     ) {
         if (data == null) {
@@ -77,7 +77,7 @@ public class ByteReader implements Reader {
         this.queue = value(data);
     }
 
-    public ByteReader(
+    public BytePaper(
         @NotNull byte[] data, int index, int length
     ) {
         if (data == null) {

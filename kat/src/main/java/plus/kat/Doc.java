@@ -505,9 +505,9 @@ public class Doc extends Stream implements Chan {
     }
 
     /**
-     * Resolves the {@link Doc} {@link Reader}
+     * Resolves the {@link Doc} {@link Paper}
      *
-     * @param reader the specified reader to be parsed
+     * @param paper the specified paper to be parsed
      * @throws Collapse   If parsing fails or the result is null
      * @throws FatalCrash If no spare available for klass is found
      * @see Supplier#down(Class, Event)
@@ -515,15 +515,15 @@ public class Doc extends Stream implements Chan {
     @Nullable
     public static <T> T decode(
         @Nullable Class<T> klass,
-        @Nullable Reader reader
+        @Nullable Paper paper
     ) {
-        if (klass == null ||
-            reader == null) {
+        if (paper == null ||
+            klass == null) {
             return null;
         }
 
         return INS.down(
-            klass, new Event<>(reader)
+            klass, new Event<>(paper)
         );
     }
 

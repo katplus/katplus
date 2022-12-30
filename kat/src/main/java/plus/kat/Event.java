@@ -19,16 +19,12 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
 import java.nio.*;
-import java.nio.file.*;
+import java.lang.reflect.*;
 
 import plus.kat.chain.*;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
-import plus.kat.stream.Reader;
-import plus.kat.stream.InputStreamReader;
 
 /**
  * @author kraity
@@ -40,7 +36,7 @@ public class Event<T> implements Flag {
     protected Type type;
     protected long flags;
 
-    protected Reader reader;
+    protected Paper paper;
     protected Coder<?> coder;
     protected Supplier supplier;
 
@@ -61,38 +57,38 @@ public class Event<T> implements Flag {
     /**
      * For example
      * <pre>{@code
-     *   Reader reader = ...;
-     *   Event<User> event = new Event<>(reader);
+     *   Paper paper = ...;
+     *   Event<User> event = new Event<>(paper);
      * }</pre>
      *
-     * @param reader the specified {@link Reader} to be used
+     * @param paper the specified {@link Paper} to be used
      */
     public Event(
-        @Nullable Reader reader
+        @Nullable Paper paper
     ) {
         this();
-        this.reader = reader;
+        this.paper = paper;
     }
 
     /**
      * For example
      * <pre>{@code
      *   Flag flag = ...;
-     *   Reader reader = ...;
-     *   Event<User> event = new Event<>(flag, reader);
+     *   Paper paper = ...;
+     *   Event<User> event = new Event<>(flag, paper);
      * }</pre>
      *
-     * @param flag   the specified {@link Flag} to be used
-     * @param reader the specified {@link Reader} to be used
+     * @param flag  the specified {@link Flag} to be used
+     * @param paper the specified {@link Paper} to be used
      * @since 0.0.2
      */
     public Event(
         @Nullable Flag flag,
-        @Nullable Reader reader
+        @Nullable Paper paper
     ) {
         this();
         this.flag = flag;
-        this.reader = reader;
+        this.paper = paper;
     }
 
     /**
@@ -103,13 +99,13 @@ public class Event<T> implements Flag {
      * }</pre>
      *
      * @throws NullPointerException If the specified {@code data} is null
-     * @see ByteReader#ByteReader(byte[])
+     * @see BytePaper#BytePaper(byte[])
      */
     public Event(
         @NotNull byte[] data
     ) {
         this();
-        reader = new ByteReader(data);
+        paper = new BytePaper(data);
     }
 
     /**
@@ -120,13 +116,13 @@ public class Event<T> implements Flag {
      * }</pre>
      *
      * @throws NullPointerException If the specified {@code data} is null
-     * @see ByteReader#ByteReader(Chain)
+     * @see BytePaper#BytePaper(Chain)
      */
     public Event(
         @NotNull Chain data
     ) {
         this();
-        reader = new ByteReader(data);
+        paper = new BytePaper(data);
     }
 
     /**
@@ -137,13 +133,13 @@ public class Event<T> implements Flag {
      * }</pre>
      *
      * @throws NullPointerException If the specified {@code data} is null
-     * @see CharReader#CharReader(CharSequence)
+     * @see CharPaper#CharPaper(CharSequence)
      */
     public Event(
         @NotNull String data
     ) {
         this();
-        reader = new CharReader(data);
+        paper = new CharPaper(data);
     }
 
     /**
@@ -154,19 +150,19 @@ public class Event<T> implements Flag {
      * }</pre>
      *
      * @throws NullPointerException If the specified {@code data} is null
-     * @see ByteReader#ByteReader(Chain)
-     * @see CharReader#CharReader(CharSequence)
+     * @see BytePaper#BytePaper(Chain)
+     * @see CharPaper#CharPaper(CharSequence)
      */
     public Event(
         @NotNull CharSequence data
     ) {
         this();
         if (data instanceof Chain) {
-            reader = new ByteReader(
+            paper = new BytePaper(
                 (Chain) data
             );
         } else {
-            reader = new CharReader(data);
+            paper = new CharPaper(data);
         }
     }
 
@@ -178,111 +174,34 @@ public class Event<T> implements Flag {
      * }</pre>
      *
      * @throws NullPointerException If the specified {@code buffer} is null
-     * @see ByteBufferReader#ByteBufferReader(ByteBuffer)
+     * @see ByteBufferPaper#ByteBufferPaper(ByteBuffer)
      */
     public Event(
         @NotNull ByteBuffer buffer
     ) {
         this();
-        reader = new ByteBufferReader(buffer);
+        paper = new ByteBufferPaper(buffer);
     }
 
     /**
+     * Constructs an {@link Event} where
+     * calling {@link InputStream#close()} has no effect
+     * <p>
      * For example
      * <pre>{@code
-     *   InputStream stream = ...;
-     *   Event<User> event = new Event<>(stream);
+     *   try (InputStream stream = ...) {
+     *      Event<User> event = new Event<>(stream);
+     *   }
      * }</pre>
      *
      * @throws NullPointerException If the specified {@code stream} is null
-     * @see InputStreamReader#InputStreamReader(InputStream)
+     * @see InputStreamPaper#InputStreamPaper(InputStream)
      */
     public Event(
         @NotNull InputStream stream
     ) {
         this();
-        reader = new InputStreamReader(stream);
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   URL url = ...;
-     *   Event<User> event = new Event<>(url);
-     * }</pre>
-     *
-     * @throws IOException          If an I/O exception occurs
-     * @throws NullPointerException If the specified {@code url} is null
-     * @see URL#openStream()
-     * @see InputStreamReader#InputStreamReader(InputStream)
-     */
-    public Event(
-        @NotNull URL url
-    ) throws IOException {
-        this(
-            url.openStream()
-        );
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   File file = ...;
-     *   Event<User> event = new Event<>(file);
-     * }</pre>
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code file} is null
-     * @see Files#newInputStream(Path, OpenOption...)
-     * @see InputStreamReader#InputStreamReader(InputStream)
-     */
-    public Event(
-        @NotNull File file
-    ) throws IOException {
-        this(
-            file.toPath()
-        );
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   Path path = ...;
-     *   Event<User> event = new Event<>(path);
-     * }</pre>
-     *
-     * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified {@code path} is null
-     * @see Files#newInputStream(Path, OpenOption...)
-     * @see InputStreamReader#InputStreamReader(InputStream)
-     */
-    public Event(
-        @NotNull Path path
-    ) throws IOException {
-        this(
-            Files.newInputStream(path)
-        );
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   URLConnection conn = ...;
-     *   Event<User> event = new Event<>(conn);
-     * }</pre>
-     *
-     * @throws NullPointerException    If the specified {@code conn} is null
-     * @throws IOException             If an I/O error occurs while creating the input stream
-     * @throws UnknownServiceException If the protocol does not support input
-     * @see URLConnection#getInputStream()
-     * @see InputStreamReader#InputStreamReader(InputStream)
-     */
-    public Event(
-        @NotNull URLConnection conn
-    ) throws IOException {
-        this(
-            conn.getInputStream()
-        );
+        paper = new InputStreamPaper(stream);
     }
 
     /**
@@ -294,13 +213,13 @@ public class Event<T> implements Flag {
      *
      * @throws NullPointerException      If the specified {@code data} is null
      * @throws IndexOutOfBoundsException If the index and the length are out of range
-     * @see ByteReader#ByteReader(byte[], int, int)
+     * @see BytePaper#BytePaper(byte[], int, int)
      */
     public Event(
         @NotNull byte[] data, int index, int length
     ) {
         this();
-        reader = new ByteReader(
+        paper = new BytePaper(
             data, index, length
         );
     }
@@ -314,13 +233,13 @@ public class Event<T> implements Flag {
      *
      * @throws NullPointerException      If the specified {@code data} is null
      * @throws IndexOutOfBoundsException If the index and the length are out of range
-     * @see ByteReader#ByteReader(Chain, int, int)
+     * @see BytePaper#BytePaper(Chain, int, int)
      */
     public Event(
         @NotNull Chain data, int index, int length
     ) {
         this();
-        reader = new ByteReader(
+        paper = new BytePaper(
             data, index, length
         );
     }
@@ -334,13 +253,13 @@ public class Event<T> implements Flag {
      *
      * @throws NullPointerException      If the specified {@code data} is null
      * @throws IndexOutOfBoundsException If the index and the length are out of range
-     * @see CharReader#CharReader(CharSequence, int, int)
+     * @see CharPaper#CharPaper(CharSequence, int, int)
      */
     public Event(
         @NotNull String data, int index, int length
     ) {
         this();
-        reader = new CharReader(
+        paper = new CharPaper(
             data, index, length
         );
     }
@@ -354,19 +273,19 @@ public class Event<T> implements Flag {
      *
      * @throws NullPointerException      If the specified {@code data} is null
      * @throws IndexOutOfBoundsException If the index and the length are out of range
-     * @see ByteReader#ByteReader(Chain, int, int)
-     * @see CharReader#CharReader(CharSequence, int, int)
+     * @see BytePaper#BytePaper(Chain, int, int)
+     * @see CharPaper#CharPaper(CharSequence, int, int)
      */
     public Event(
         @NotNull CharSequence data, int index, int length
     ) {
         this();
         if (data instanceof Chain) {
-            reader = new ByteReader(
+            paper = new BytePaper(
                 (Chain) data, index, length
             );
         } else {
-            reader = new CharReader(
+            paper = new CharPaper(
                 data, index, length
             );
         }
@@ -490,20 +409,20 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Uses the specified {@link Reader}
+     * Uses the specified {@link Paper}
      *
      * <pre>{@code
-     *  Reader reader = ...
+     *  Paper paper = ...
      *  Event<User> event = ...
-     *  event.with(reader);
+     *  event.with(paper);
      * }</pre>
      *
-     * @param reader the specified {@link Reader} to be read
+     * @param paper the specified {@link Paper} to be read
      */
     public Event<T> with(
-        @Nullable Reader reader
+        @Nullable Paper paper
     ) {
-        this.reader = reader;
+        this.paper = paper;
         return this;
     }
 
@@ -613,11 +532,11 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Returns the {@link Reader} of this {@link Event}
+     * Returns the {@link Paper} of this {@link Event}
      */
     @Nullable
-    public Reader getReader() {
-        return reader;
+    public Paper getPaper() {
+        return paper;
     }
 
     /**
@@ -626,120 +545,5 @@ public class Event<T> implements Flag {
     @Nullable
     public Supplier getSupplier() {
         return supplier;
-    }
-
-    /**
-     * @see CharLatinReader#CharLatinReader(CharSequence)
-     */
-    @NotNull
-    public static <T> Event<T> latin(
-        @NotNull CharSequence data
-    ) {
-        return new Event<>(
-            new CharLatinReader(data)
-        );
-    }
-
-    /**
-     * @throws IndexOutOfBoundsException If the index and the length are out of range
-     * @see CharLatinReader#CharLatinReader(CharSequence, int, int)
-     */
-    @NotNull
-    public static <T> Event<T> latin(
-        @NotNull CharSequence data, int index, int length
-    ) {
-        return new Event<>(
-            new CharLatinReader(
-                data, index, length
-            )
-        );
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   Event.file("./test/entity/user.kat");
-     * }</pre>
-     *
-     * @param path the file path
-     * @throws IOException If an I/O error occurs
-     */
-    @NotNull
-    public static <T> Event<T> file(
-        @NotNull String path
-    ) throws IOException {
-        return new Event<>(
-            Paths.get(path)
-        );
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   Event.file(getClass(), "/entity/user.kat");
-     * }</pre>
-     *
-     * @param path the file path
-     * @throws NullPointerException  If the specified {@code path} or {@code klass} is null
-     * @throws FileNotFoundException If the file does not exist or is not a regular file or for some other reason cannot be opened for reading.
-     * @see Class#getResourceAsStream(String)
-     * @see InputStreamReader#InputStreamReader(InputStream)
-     */
-    @NotNull
-    public static <T> Event<T> file(
-        @NotNull Class<?> klass,
-        @NotNull String path
-    ) throws FileNotFoundException {
-        InputStream in = klass
-            .getResourceAsStream(path);
-
-        if (in == null) {
-            throw new FileNotFoundException(
-                "the file does not exist"
-            );
-        }
-
-        return new Event<>(
-            new InputStreamReader(in)
-        );
-    }
-
-    /**
-     * For example
-     * <pre>{@code
-     *   Event.remote("https://kat.plus/test/entity/user.kat");
-     * }</pre>
-     *
-     * @param url the String to parse as a URL.
-     * @throws IOException             If an I/O error occurs while creating the input stream
-     * @throws UnknownServiceException If the protocol does not support input
-     * @throws MalformedURLException   If the url is {@code null} or no protocol is specified or an unknown protocol is found
-     * @see URL#URL(String)
-     * @see URL#openConnection()
-     * @see URLConnection#getInputStream()
-     * @see InputStreamReader#InputStreamReader(InputStream)
-     */
-    @NotNull
-    public static <T> Event<T> remote(
-        @NotNull String url
-    ) throws IOException {
-        URL $url = new URL(url);
-        URLConnection conn = $url.openConnection();
-
-        conn.setReadTimeout(6000);
-        conn.setConnectTimeout(3000);
-
-        conn.setRequestProperty(
-            "User-Agent", "kat/0.0.1"
-        );
-        conn.setRequestProperty(
-            "Accept", "text/kat,text/xml,text/plain,application/kat,application/xml,application/json"
-        );
-
-        return new Event<>(
-            new InputStreamReader(
-                conn.getInputStream()
-            )
-        );
     }
 }

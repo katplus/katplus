@@ -16,7 +16,7 @@
 package plus.kat.okhttp;
 
 import plus.kat.*;
-import plus.kat.stream.Stream;
+import plus.kat.stream.*;
 
 import okio.BufferedSink;
 import okhttp3.MediaType;
@@ -30,12 +30,12 @@ import static plus.kat.okhttp.MediaTypes.of;
  * @author kraity
  * @since 0.0.3
  */
-public class RequestPaper extends RequestBody {
+public class RequestStream extends RequestBody {
 
     protected final byte[] data;
     protected final MediaType mediaType;
 
-    public RequestPaper(
+    public RequestStream(
         Chan chan
     ) throws IOException {
         this(
@@ -43,7 +43,7 @@ public class RequestPaper extends RequestBody {
         );
     }
 
-    public RequestPaper(
+    public RequestStream(
         Chan chan,
         MediaType mediaType
     ) throws IOException {
@@ -53,7 +53,7 @@ public class RequestPaper extends RequestBody {
         }
     }
 
-    public RequestPaper(
+    public RequestStream(
         Stream stream
     ) {
         this(
@@ -61,7 +61,7 @@ public class RequestPaper extends RequestBody {
         );
     }
 
-    public RequestPaper(
+    public RequestStream(
         Stream stream,
         MediaType mediaType
     ) {

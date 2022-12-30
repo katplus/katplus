@@ -21,13 +21,13 @@ import plus.kat.anno.NotNull;
  * @author kraity
  * @since 0.0.1
  */
-public class CharReader extends AbstractReader {
+public class CharPaper extends AbstractPaper {
 
     protected int start;
     protected final int end;
     protected CharSequence source;
 
-    public CharReader(
+    public CharPaper(
         @NotNull CharSequence data
     ) {
         if (data == null) {
@@ -38,7 +38,7 @@ public class CharReader extends AbstractReader {
         end = data.length();
     }
 
-    public CharReader(
+    public CharPaper(
         @NotNull CharSequence data, int index, int length
     ) {
         if (data == null) {

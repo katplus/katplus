@@ -109,14 +109,14 @@ public class Radar implements Solver {
      *  }
      * }</pre>
      *
+     * @param r the specified source to be parsed
      * @param e the specified data transfer pipeline
-     * @param r the specified data source to be parsed
-     * @throws FlowCrash   If an I/O error occurs by reader
+     * @throws FlowCrash   If an I/O error occurs by paper
      * @throws SolverCrash If an I/O error occurs by solver
      */
     @Override
     public void read(
-        @NotNull Reader r,
+        @NotNull Paper r,
         @NotNull Pipage e
     ) throws IOException {
         try {
@@ -398,7 +398,7 @@ public class Radar implements Solver {
      */
     protected void escape(
         @NotNull Chain c,
-        @NotNull Reader r
+        @NotNull Paper r
     ) throws IOException {
         byte b = r.next();
         switch (b) {
@@ -443,7 +443,7 @@ public class Radar implements Solver {
      */
     static void rotate(
         @NotNull Chain c,
-        @NotNull Reader r
+        @NotNull Paper r
     ) throws IOException {
         // hex number
         int c1 = digit(r.next());
@@ -559,7 +559,7 @@ public class Radar implements Solver {
      * @throws IOException If an I/O error occurs
      */
     protected void washing(
-        @NotNull Reader r
+        @NotNull Paper r
     ) throws IOException {
         Stream:
         for (int i = 0; ; ) {

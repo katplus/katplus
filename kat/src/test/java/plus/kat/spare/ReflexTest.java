@@ -14,7 +14,7 @@ public class ReflexTest {
         Supplier supplier = Supplier.ins();
 
         User user = supplier.read(
-            User.class, Event.latin(
+            User.class, new Event<>(
                 "User{i:id(1)s:name(kraity)}"
             )
         );
@@ -29,7 +29,7 @@ public class ReflexTest {
         Supplier supplier = Supplier.ins();
 
         Meta meta = supplier.read(
-            Meta.class, Event.latin(
+            Meta.class, new Event<>(
                 "Meta{i:id(1)s:tag(kat)}"
             )
         );
@@ -44,7 +44,7 @@ public class ReflexTest {
         Supplier supplier = Supplier.ins();
 
         Author author = supplier.read(
-            Author.class, Event.latin(
+            Author.class, new Event<>(
                 "Author{$:id(1)$:tag(kat)$:name(kraity)$:meta(kat.plus)}"
             )
         );
@@ -62,7 +62,7 @@ public class ReflexTest {
         Supplier supplier = Supplier.ins();
 
         Bean bean = supplier.read(
-            Bean.class, Event.latin(
+            Bean.class, new Event<>(
                 "{:a(1):URL(kat.plus)}"
             )
         );
@@ -77,7 +77,7 @@ public class ReflexTest {
         Supplier supplier = Supplier.ins();
 
         Tag tag = supplier.read(
-            Tag.class, Event.latin(
+            Tag.class, new Event<>(
                 "{:id(1)}"
             )
         );

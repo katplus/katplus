@@ -54,7 +54,7 @@ public class MutableRequestBodyConverter<T> implements Converter<T, RequestBody>
     ) throws IOException {
         try (Chan chan = supplier.telex(algo, plan)) {
             if (chan.set(null, value)) {
-                return new RequestPaper(
+                return new RequestStream(
                     chan, MediaTypes.of(algo)
                 );
             }

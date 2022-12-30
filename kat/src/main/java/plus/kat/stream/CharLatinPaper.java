@@ -21,15 +21,15 @@ import plus.kat.anno.NotNull;
  * @author kraity
  * @since 0.0.1
  */
-public class CharLatinReader extends CharReader {
+public class CharLatinPaper extends CharPaper {
 
-    public CharLatinReader(
+    public CharLatinPaper(
         @NotNull CharSequence data
     ) {
         super(data);
     }
 
-    public CharLatinReader(
+    public CharLatinPaper(
         @NotNull CharSequence data, int index, int length
     ) {
         super(data, index, length);

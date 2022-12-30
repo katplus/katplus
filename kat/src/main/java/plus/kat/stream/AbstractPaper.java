@@ -24,7 +24,7 @@ import java.io.EOFException;
  * @author kraity
  * @since 0.0.3
  */
-public abstract class AbstractReader implements Reader {
+public abstract class AbstractPaper implements Paper {
 
     protected int index;
     protected int limit;
@@ -41,7 +41,7 @@ public abstract class AbstractReader implements Reader {
         throws IOException;
 
     /**
-     * Checks {@link Reader} for readable bytes
+     * Checks {@link Paper} for readable bytes
      *
      * @throws IOException If this has been closed or I/O error occurs
      */
@@ -62,7 +62,7 @@ public abstract class AbstractReader implements Reader {
     }
 
     /**
-     * Reads a byte in {@link Reader} and index switch to next
+     * Reads a byte in {@link Paper} and index switch to next
      */
     @Override
     public byte read() {
@@ -70,7 +70,7 @@ public abstract class AbstractReader implements Reader {
     }
 
     /**
-     * Skips over and discards exactly bytes of the specified length from this {@link Reader}
+     * Skips over and discards exactly bytes of the specified length from this {@link Paper}
      *
      * @throws IOException If this has been closed or I/O error occurs
      */
@@ -112,7 +112,7 @@ public abstract class AbstractReader implements Reader {
     }
 
     /**
-     * Reads a byte if {@link Reader} has readable bytes, otherwise raise {@link IOException}
+     * Reads a byte if {@link Paper} has readable bytes, otherwise raise {@link IOException}
      *
      * @throws FlowCrash,IOException If this has been closed or I/O error occurs
      */
@@ -136,7 +136,7 @@ public abstract class AbstractReader implements Reader {
     }
 
     /**
-     * Closes this reader and releases
+     * Closes this paper and releases
      * any system resources associated with it
      */
     @Override

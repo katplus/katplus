@@ -26,11 +26,22 @@ import static plus.kat.stream.Stream.Buffer.INS;
  * @author kraity
  * @since 0.0.1
  */
-public class InputStreamReader extends AbstractReader {
+public class InputStreamPaper extends AbstractPaper {
 
     protected InputStream source;
 
-    public InputStreamReader(
+    /**
+     * Constructs a {@link Paper} where
+     * calling {@link InputStream#close()} has no effect
+     * <p>
+     * For example
+     * <pre>{@code
+     *   try (InputStream stream = ...) {
+     *      Paper paper = new InputStreamPaper(stream);
+     *   }
+     * }</pre>
+     */
+    public InputStreamPaper(
         @NotNull InputStream data
     ) {
         if (data != null) {
@@ -93,14 +104,8 @@ public class InputStreamReader extends AbstractReader {
     @Override
     public void close() {
         INS.join(queue);
-        try {
-            source.close();
-        } catch (Exception e) {
-            // Nothing
-        } finally {
-            limit = -1;
-            queue = null;
-            source = null;
-        }
+        limit = -1;
+        queue = null;
+        source = null;
     }
 }

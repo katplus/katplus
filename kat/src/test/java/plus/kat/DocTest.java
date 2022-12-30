@@ -48,7 +48,7 @@ public class DocTest {
         Supplier supplier = Supplier.ins();
 
         User user = supplier.down(
-            User.class, Event.latin(
+            User.class, new Event<>(
                 "<author><id>1</id><name>kraity</name><extra id=\"1\" /><extra><key>\"/\"</key><key>true</key><!-- comment --><data><![CDATA[this is data]]></data></extra><blocked>true</blocked></author>"
             )
         );

@@ -37,15 +37,16 @@ public interface Solver extends Closeable {
     Algo algo();
 
     /**
-     * {@link Reader} as the data source and {@link Pipage} as the data pipeline
+     * Reads the specified {@link Paper} where the
+     * {@link Paper} as the source and {@link Pipage} as the pipeline
      *
+     * @param paper  the specified source to be parsed
      * @param pipage the specified data transfer pipeline
-     * @param reader the specified data source to be parsed
-     * @throws FlowCrash   If an I/O error occurs by reader
+     * @throws FlowCrash   If an I/O error occurs by paper
      * @throws SolverCrash If an I/O error occurs by solver
      */
     void read(
-        @NotNull Reader reader,
+        @NotNull Paper paper,
         @NotNull Pipage pipage
     ) throws IOException;
 

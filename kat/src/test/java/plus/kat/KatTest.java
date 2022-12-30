@@ -209,7 +209,7 @@ public class KatTest {
         String text = "plus.kat.User{i:id(1)s:name(kraity)b:blocked(1)}";
 
         User user = spare.read(
-            Event.latin(text)
+            new Event<>(text)
         );
 
         assertNotNull(user);
@@ -225,7 +225,7 @@ public class KatTest {
         Supplier supplier = Supplier.ins();
 
         User user = supplier.read(
-            User.class, Event.latin(
+            User.class, new Event<>(
                 "User{i:id(1)s:name(kraity)M:m{i:i(123)M:m{d:d()}}b:disabled(1)}"
             )
         );
@@ -270,7 +270,7 @@ public class KatTest {
         Supplier supplier = Supplier.ins();
 
         Map<String, Object> user = supplier.read(
-            Map.class, Event.latin(
+            Map.class, new Event<>(
                 "User{:id(1):name(kraity):blocked(true)}"
             )
         );

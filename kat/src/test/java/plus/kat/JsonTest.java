@@ -50,7 +50,7 @@ public class JsonTest {
         Supplier supplier = Supplier.ins();
 
         User user = supplier.parse(
-            User.class, Event.latin(
+            User.class, new Event<>(
                 "{\"id\":1,\"name\":\"kraity\",\"extra\":[123,456,789,{\"key\":\"val\"}],\"disabled\":true}"
             )
         );
@@ -96,7 +96,7 @@ public class JsonTest {
         Supplier supplier = Supplier.ins();
 
         User user = supplier.parse(
-            User.class, Event.latin(
+            User.class, new Event<>(
                 "{'id':1,'name':'kraity','disabled':true}"
             )
         );

@@ -111,14 +111,14 @@ public class Sodar implements Solver {
      *  }
      * }</pre>
      *
+     * @param r the specified source to be parsed
      * @param e the specified data transfer pipeline
-     * @param r the specified data source to be parsed
-     * @throws FlowCrash   If an I/O error occurs by reader
+     * @throws FlowCrash   If an I/O error occurs by paper
      * @throws SolverCrash If an I/O error occurs by solver
      */
     @Override
     public void read(
-        @NotNull Reader r,
+        @NotNull Paper r,
         @NotNull Pipage e
     ) throws IOException {
         try {
@@ -470,7 +470,7 @@ public class Sodar implements Solver {
      * @throws IOException If an I/O error occurs
      */
     protected void escape(
-        Reader r
+        Paper r
     ) throws IOException {
         byte b2 = r.next();
         byte b3 = r.next();
@@ -496,7 +496,7 @@ public class Sodar implements Solver {
     protected void escape(
         Chain c,
         byte e,
-        Reader r
+        Paper r
     ) throws IOException {
         while (true) {
             byte b = r.next();
@@ -547,7 +547,7 @@ public class Sodar implements Solver {
      */
     protected void washing(
         byte a,
-        Reader r
+        Paper r
     ) throws IOException {
         while (true) {
             byte b = r.next();
