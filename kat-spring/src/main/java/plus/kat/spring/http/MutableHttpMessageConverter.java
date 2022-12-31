@@ -15,10 +15,12 @@
  */
 package plus.kat.spring.http;
 
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
-import org.springframework.core.GenericTypeResolver;
 import org.springframework.http.converter.*;
 import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
@@ -26,14 +28,15 @@ import org.springframework.util.StreamUtils;
 import plus.kat.*;
 import plus.kat.chain.*;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.chain.Chain.Unsafe.value;
+import static org.springframework.core.GenericTypeResolver.resolveType;
 
 /**
  * @author kraity
@@ -52,7 +55,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
      * @since 0.0.2
      */
     public MutableHttpMessageConverter(
-        Algo algo
+        @NonNull Algo algo
     ) {
         this(algo, Supplier.ins());
     }
@@ -63,8 +66,8 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
      * @since 0.0.2
      */
     public MutableHttpMessageConverter(
-        Algo algo,
-        Supplier supplier
+        @NonNull Algo algo,
+        @NonNull Supplier supplier
     ) {
         super();
         Assert.notNull(algo, "Algo must not be null");
@@ -103,7 +106,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
 
     @Override
     protected boolean canRead(
-        MediaType mediaType
+        @Nullable MediaType mediaType
     ) {
         if (mediaType == null) {
             return false;
@@ -120,36 +123,49 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
 
     @Override
     public Object read(
-        Type type,
-        Class<?> cxt,
-        HttpInputMessage in
+        @NonNull Type type,
+        @Nullable Class<?> cxt,
+        @NonNull HttpInputMessage message
     ) throws IOException, HttpMessageNotReadableException {
         if (type instanceof Class) {
             return readInternal(
-                (Class<?>) type, in
+                (Class<?>) type, message
             );
         }
 
-        Type visa = GenericTypeResolver.resolveType(type, cxt);
+        Charset charset = null;
+        MediaType mediaType = message
+            .getHeaders().getContentType();
+        if (mediaType != null) {
+            charset = mediaType.getCharset();
+        }
 
+        Type visa = resolveType(type, cxt);
         return supplier.solve(
-            visa, algo, new Event<>(in.getBody()).with(plan)
+            visa, algo, new Event<>(message.getBody(), charset).with(plan)
         );
     }
 
     @Override
     protected Object readInternal(
-        Class<?> clazz,
-        HttpInputMessage in
+        @NonNull Class<?> clazz,
+        @NonNull HttpInputMessage message
     ) throws IOException, HttpMessageNotReadableException {
+        Charset charset = null;
+        MediaType mediaType = message
+            .getHeaders().getContentType();
+        if (mediaType != null) {
+            charset = mediaType.getCharset();
+        }
+
         return supplier.solve(
-            clazz, algo, new Event<>(in.getBody()).with(plan)
+            clazz, algo, new Event<>(message.getBody(), charset).with(plan)
         );
     }
 
     @Override
     protected boolean canWrite(
-        MediaType mediaType
+        @Nullable MediaType mediaType
     ) {
         if (mediaType == null) {
             return false;
@@ -166,9 +182,9 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
 
     @Override
     protected void writeInternal(
-        Object data,
-        Type type,
-        HttpOutputMessage output
+        @Nullable Object data,
+        @Nullable Type type,
+        @NonNull HttpOutputMessage message
     ) throws IOException, HttpMessageNotWritableException {
         byte[] stream;
         try (Chan chan = supplier.telex(algo, plan)) {
@@ -176,7 +192,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
                 Flow flow = chan.getFlow();
                 if (flow instanceof Chain) {
                     Chain chain = (Chain) flow;
-                    OutputStream out = output.getBody();
+                    OutputStream out = message.getBody();
                     out.write(
                         value(chain), 0, chain.length()
                     );
@@ -192,7 +208,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             }
         }
         StreamUtils.copy(
-            stream, output.getBody()
+            stream, message.getBody()
         );
     }
 
@@ -200,7 +216,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
      * @since 0.0.3
      */
     public void setPlan(
-        Plan target
+        @NonNull Plan target
     ) {
         Assert.notNull(target, "Plan must not be null");
         plan = target;
@@ -209,6 +225,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     /**
      * @since 0.0.3
      */
+    @NonNull
     public Plan getPlan() {
         return plan;
     }
@@ -217,7 +234,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
      * @since 0.0.5
      */
     public void setSupportedMediaTypes(
-        MediaType[] types
+        @NonNull MediaType[] types
     ) {
         mediaTypes = types.clone();
     }
@@ -227,7 +244,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
      */
     @Override
     public void setSupportedMediaTypes(
-        List<MediaType> types
+        @NonNull List<MediaType> types
     ) {
         mediaTypes = types.toArray(
             new MediaType[types.size()]

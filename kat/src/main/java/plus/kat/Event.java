@@ -20,6 +20,7 @@ import plus.kat.anno.Nullable;
 
 import java.io.*;
 import java.nio.*;
+import java.nio.charset.*;
 import java.lang.reflect.*;
 
 import plus.kat.chain.*;
@@ -222,6 +223,45 @@ public class Event<T> implements Flag {
         @NotNull InputStream stream
     ) {
         this();
+        paper = new InputStreamPaper(stream);
+    }
+
+    /**
+     * Constructs an {@link Event} where
+     * calling {@link InputStream#close()} has no effect
+     * <p>
+     * For example
+     * <pre>{@code
+     *   Charset charset = ...
+     *   try (InputStream stream = ...) {
+     *      Event<User> event = new Event<>(stream, charset);
+     *   }
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code stream} is null
+     * @see ReaderPaper#ReaderPaper(InputStream, Charset)
+     * @see InputStreamPaper#InputStreamPaper(InputStream)
+     */
+    public Event(
+        @NotNull InputStream stream,
+        @Nullable Charset charset
+    ) {
+        this();
+        if (charset != null) {
+            switch (charset.name()) {
+                case "UTF-8":
+                case "US-ASCII":
+                case "ISO-8859-1": {
+                    break;
+                }
+                default: {
+                    paper = new ReaderPaper(
+                        stream, charset
+                    );
+                    return;
+                }
+            }
+        }
         paper = new InputStreamPaper(stream);
     }
 

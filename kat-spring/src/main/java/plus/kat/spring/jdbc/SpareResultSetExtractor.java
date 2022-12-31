@@ -15,11 +15,13 @@
  */
 package plus.kat.spring.jdbc;
 
-import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.util.Assert;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
-import plus.kat.Spare;
-import plus.kat.Supplier;
+import org.springframework.util.Assert;
+import org.springframework.jdbc.core.ResultSetExtractor;
+
+import plus.kat.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,20 +40,20 @@ public class SpareResultSetExtractor<T> implements ResultSetExtractor<List<T>> {
     protected final Supplier supplier;
 
     public SpareResultSetExtractor(
-        Spare<T> spare
+        @NonNull Spare<T> spare
     ) {
         this(spare, null);
     }
 
     public SpareResultSetExtractor(
-        Class<T> klass
+        @NonNull Class<T> klass
     ) {
         this(klass, null);
     }
 
     public SpareResultSetExtractor(
-        Class<T> klass,
-        Supplier supplier
+        @NonNull Class<T> klass,
+        @Nullable Supplier supplier
     ) {
         Assert.notNull(klass, "Class must not be null");
         this.supplier = supplier;
@@ -64,8 +66,8 @@ public class SpareResultSetExtractor<T> implements ResultSetExtractor<List<T>> {
     }
 
     public SpareResultSetExtractor(
-        Spare<T> spare,
-        Supplier supplier
+        @NonNull Spare<T> spare,
+        @Nullable Supplier supplier
     ) {
         Assert.notNull(spare, "Spare must not be null");
         this.spare = spare;
@@ -74,7 +76,7 @@ public class SpareResultSetExtractor<T> implements ResultSetExtractor<List<T>> {
 
     @Override
     public List<T> extractData(
-        ResultSet rs
+        @NonNull ResultSet rs
     ) throws SQLException {
         Supplier supplied = supplier;
         List<T> results = new ArrayList<>();

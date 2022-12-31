@@ -15,6 +15,9 @@
  */
 package plus.kat.spring.data;
 
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
 import org.springframework.util.Assert;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
@@ -45,7 +48,8 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
      * @since 0.0.3
      */
     public MutableRedisSerializer(
-        Algo algo, Class<T> type
+        @NonNull Algo algo,
+        @NonNull Class<T> type
     ) {
         this(algo, type, Supplier.ins());
     }
@@ -57,9 +61,9 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
      * @since 0.0.3
      */
     public MutableRedisSerializer(
-        Algo algo,
-        Class<T> type,
-        Supplier supplier
+        @NonNull Algo algo,
+        @NonNull Class<T> type,
+        @NonNull Supplier supplier
     ) {
         super();
         Assert.notNull(algo, "Algo must not be null");
@@ -73,7 +77,7 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
 
     @Override
     public byte[] serialize(
-        T data
+        @Nullable T data
     ) throws SerializationException {
         if (data == null) {
             return Chain.EMPTY_BYTES;
@@ -99,7 +103,7 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
 
     @Override
     public T deserialize(
-        byte[] data
+        @Nullable byte[] data
     ) throws SerializationException {
         if (data == null ||
             data.length == 0) {
@@ -115,7 +119,7 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
      * @since 0.0.3
      */
     public void setPlan(
-        Plan target
+        @NonNull Plan target
     ) {
         Assert.notNull(target, "Plan must not be null");
         plan = target;
@@ -124,6 +128,7 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
     /**
      * @since 0.0.3
      */
+    @NonNull
     public Plan getPlan() {
         return plan;
     }

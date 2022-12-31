@@ -17,8 +17,11 @@ package plus.kat.stream;
 
 import plus.kat.anno.NotNull;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import static plus.kat.stream.Stream.Buffer.INS;
 
@@ -47,6 +50,30 @@ public class ReaderPaper extends TransferPaper {
     ) {
         if (data != null) {
             source = data;
+        } else {
+            throw new NullPointerException();
+        }
+    }
+
+    /**
+     * Constructs a {@link Paper} where
+     * calling {@link InputStream#close()} has no effect
+     * <p>
+     * For example
+     * <pre>{@code
+     *   Charset charset = ...
+     *   try (InputStream stream = ...) {
+     *      Paper paper = new ReaderPaper(stream, charset);
+     *   }
+     * }</pre>
+     */
+    public ReaderPaper(
+        @NotNull InputStream data, @NotNull Charset charset
+    ) {
+        if (data != null) {
+            source = new InputStreamReader(
+                data, charset
+            );
         } else {
             throw new NullPointerException();
         }

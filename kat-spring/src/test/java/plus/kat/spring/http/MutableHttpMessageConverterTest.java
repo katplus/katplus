@@ -10,10 +10,12 @@ import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.HttpInputMessage;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
+import static java.nio.charset.StandardCharsets.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author kraity
@@ -25,16 +27,20 @@ public class MutableHttpMessageConverterTest {
         HashMap<Algo, String> in = new HashMap<>();
         HashMap<Algo, String> out = new HashMap<>();
 
-        in.put(Algo.KAT, "{i:id(1)s:name(kraity)}");
-        out.put(Algo.KAT, "plus.kat.spring.http.MutableHttpMessageConverterTest$User{s:name(kraity)i:id(1)}");
+        in.put(Algo.KAT, "{i:id(1)s:name(陆之岇)}");
+        out.put(Algo.KAT, "plus.kat.spring.http.MutableHttpMessageConverterTest$User{s:name(陆之岇)i:id(1)}");
 
-        in.put(Algo.DOC, "<User><id>1</id><name>kraity</name></User>");
-        out.put(Algo.DOC, "<plus.kat.spring.http.MutableHttpMessageConverterTest$User><name>kraity</name><id>1</id></plus.kat.spring.http.MutableHttpMessageConverterTest$User>");
+        in.put(Algo.DOC, "<User><id>1</id><name>陆之岇</name></User>");
+        out.put(Algo.DOC, "<plus.kat.spring.http.MutableHttpMessageConverterTest$User><name>陆之岇</name><id>1</id></plus.kat.spring.http.MutableHttpMessageConverterTest$User>");
 
-        in.put(Algo.JSON, "{\"id\":1,\"name\":\"kraity\"}");
-        out.put(Algo.JSON, "{\"name\":\"kraity\",\"id\":1}");
+        in.put(Algo.JSON, "{\"id\":1,\"name\":\"陆之岇\"}");
+        out.put(Algo.JSON, "{\"name\":\"陆之岇\",\"id\":1}");
 
+        Charset[] charsets = {
+            UTF_8, UTF_16, UTF_16LE, UTF_16BE
+        };
         HashMap<Algo, MediaType[]> mediaTypes = new HashMap<>();
+
         mediaTypes.put(
             Algo.KAT, new MediaType[]{
                 MediaTypes.TEXT_KAT,
@@ -57,6 +63,7 @@ public class MutableHttpMessageConverterTest {
             MutableHttpMessageConverter converter =
                 new MutableHttpMessageConverter(algo);
 
+            User user = null;
             for (MediaType mediaType : mediaTypes.get(algo)) {
                 assertTrue(converter.canRead(
                     User.class, User.class, mediaType
@@ -64,27 +71,38 @@ public class MutableHttpMessageConverterTest {
                 assertTrue(converter.canWrite(
                     User.class, User.class, mediaType
                 ));
+
+                for (Charset charset : charsets) {
+                    user = (User) converter.read(
+                        User.class, User.class, new HttpInputMessage() {
+                            @Override
+                            public InputStream getBody() {
+                                return new ByteArrayInputStream(
+                                    in.get(algo).getBytes(charset)
+                                );
+                            }
+
+                            @Override
+                            public HttpHeaders getHeaders() {
+                                HttpHeaders headers =
+                                    new HttpHeaders();
+                                headers.setContentType(
+                                    new MediaType(
+                                        mediaType, charset
+                                    )
+                                );
+                                return headers;
+                            }
+                        }
+                    );
+                    assertEquals(1, user.id, charset::name);
+                    assertEquals("陆之岇", user.name, charset::name);
+                }
             }
 
-            User user = (User) converter.read(
-                User.class, User.class, new HttpInputMessage() {
-                    @Override
-                    public InputStream getBody() {
-                        return new ByteArrayInputStream(
-                            in.get(algo).getBytes(UTF_8)
-                        );
-                    }
-
-                    @Override
-                    public HttpHeaders getHeaders() {
-                        return new HttpHeaders();
-                    }
-                }
-            );
-            assertEquals(1, user.id);
-            assertEquals("kraity", user.name);
-
+            assertNotNull(user);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
+
             converter.write(
                 user, User.class, MediaType.APPLICATION_JSON, new HttpOutputMessage() {
                     @Override
