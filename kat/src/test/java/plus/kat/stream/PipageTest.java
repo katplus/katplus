@@ -19,7 +19,7 @@ public class PipageTest {
     public void test() throws IOException {
         Work note = new Work();
         try (Radar radar = Radar.apply();
-             Paper paper = new CharPaper(
+             Paper paper = new CharSequencePaper(
                  ":id(2022):job(kat.plus)" +
                      ":master{:id(1):name(kat)}" +
                      ":partner{:id(2):name(plus)}"

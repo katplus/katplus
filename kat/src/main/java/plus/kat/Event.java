@@ -112,6 +112,23 @@ public class Event<T> implements Flag {
     /**
      * For example
      * <pre>{@code
+     *   char[] data = ...;
+     *   Event<User> event = new Event<>(data);
+     * }</pre>
+     *
+     * @throws NullPointerException If the specified {@code data} is null
+     * @see CharPaper#CharPaper(char[])
+     */
+    public Event(
+        @NotNull char[] data
+    ) {
+        this();
+        paper = new CharPaper(data);
+    }
+
+    /**
+     * For example
+     * <pre>{@code
      *   Chain data = ...;
      *   Event<User> event = new Event<>(data);
      * }</pre>
@@ -134,13 +151,13 @@ public class Event<T> implements Flag {
      * }</pre>
      *
      * @throws NullPointerException If the specified {@code data} is null
-     * @see CharPaper#CharPaper(CharSequence)
+     * @see CharSequencePaper#CharSequencePaper(CharSequence)
      */
     public Event(
         @NotNull String data
     ) {
         this();
-        paper = new CharPaper(data);
+        paper = new CharSequencePaper(data);
     }
 
     /**
@@ -173,7 +190,7 @@ public class Event<T> implements Flag {
      *
      * @throws NullPointerException If the specified {@code data} is null
      * @see BytePaper#BytePaper(Chain)
-     * @see CharPaper#CharPaper(CharSequence)
+     * @see CharSequencePaper#CharSequencePaper(CharSequence)
      */
     public Event(
         @NotNull CharSequence data
@@ -184,7 +201,7 @@ public class Event<T> implements Flag {
                 (Chain) data
             );
         } else {
-            paper = new CharPaper(data);
+            paper = new CharSequencePaper(data);
         }
     }
 
@@ -288,6 +305,26 @@ public class Event<T> implements Flag {
     /**
      * For example
      * <pre>{@code
+     *   char[] data = ...;
+     *   Event<User> event = new Event<>(data, 0, 6);
+     * }</pre>
+     *
+     * @throws NullPointerException      If the specified {@code data} is null
+     * @throws IndexOutOfBoundsException If the index and the length are out of range
+     * @see CharPaper#CharPaper(char[], int, int)
+     */
+    public Event(
+        @NotNull char[] data, int index, int length
+    ) {
+        this();
+        paper = new CharPaper(
+            data, index, length
+        );
+    }
+
+    /**
+     * For example
+     * <pre>{@code
      *   Chain data = ...;
      *   Event<User> event = new Event<>(data, 0, 6);
      * }</pre>
@@ -314,13 +351,13 @@ public class Event<T> implements Flag {
      *
      * @throws NullPointerException      If the specified {@code data} is null
      * @throws IndexOutOfBoundsException If the index and the length are out of range
-     * @see CharPaper#CharPaper(CharSequence, int, int)
+     * @see CharSequencePaper#CharSequencePaper(CharSequence, int, int)
      */
     public Event(
         @NotNull String data, int index, int length
     ) {
         this();
-        paper = new CharPaper(
+        paper = new CharSequencePaper(
             data, index, length
         );
     }
@@ -335,7 +372,7 @@ public class Event<T> implements Flag {
      * @throws NullPointerException      If the specified {@code data} is null
      * @throws IndexOutOfBoundsException If the index and the length are out of range
      * @see BytePaper#BytePaper(Chain, int, int)
-     * @see CharPaper#CharPaper(CharSequence, int, int)
+     * @see CharSequencePaper#CharSequencePaper(CharSequence, int, int)
      */
     public Event(
         @NotNull CharSequence data, int index, int length
@@ -346,7 +383,7 @@ public class Event<T> implements Flag {
                 (Chain) data, index, length
             );
         } else {
-            paper = new CharPaper(
+            paper = new CharSequencePaper(
                 data, index, length
             );
         }

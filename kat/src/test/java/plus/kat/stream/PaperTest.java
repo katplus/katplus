@@ -21,14 +21,17 @@ public class PaperTest {
     @Test
     public void test_skip() throws Exception {
         byte[] bt = new byte[3072];
+        char[] ch = new char[3072];
         for (int i = 0; i < 3072; i++) {
             bt[i] = (byte) (i % 128);
+            ch[i] = (char) (i % 128);
         }
-        String text = new String(bt);
+        String text = new String(ch);
 
         for (Paper in : new Paper[]{
             new BytePaper(bt),
-            new CharPaper(text),
+            new CharPaper(ch),
+            new CharSequencePaper(text),
             new ReaderPaper(new StringReader(text)),
             new ByteBufferPaper(ByteBuffer.wrap(bt)),
             new InputStreamPaper(new ByteArrayInputStream(bt))
@@ -117,6 +120,33 @@ public class PaperTest {
     static class Bean {
         public int id;
         public String name;
+    }
+
+    @Test
+    public void test_byte_char() {
+        String text = "{:id(1):name(陆之岇)}";
+        char[] chars = new char[text.length()];
+
+        text.getChars(
+            0, chars.length, chars, 0
+        );
+        Bean bean = Kat.decode(
+            Bean.class, new CharPaper(chars)
+        );
+
+        assertNotNull(bean);
+        assertEquals(text, Kat.pure(bean));
+    }
+
+    @Test
+    public void test_byte_chars() {
+        String text = "{:id(1):name(陆之岇)}";
+        Bean bean = Kat.decode(
+            Bean.class, new CharSequencePaper(text)
+        );
+
+        assertNotNull(bean);
+        assertEquals(text, Kat.pure(bean));
     }
 
     @Test

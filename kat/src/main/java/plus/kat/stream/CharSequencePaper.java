@@ -23,25 +23,25 @@ import static plus.kat.stream.Stream.Buffer.INS;
  * @author kraity
  * @since 0.0.1
  */
-public class CharPaper extends TransferPaper {
+public class CharSequencePaper extends TransferPaper {
 
-    protected char[] source;
     protected int left;
     protected final int right;
+    protected CharSequence source;
 
-    public CharPaper(
-        @NotNull char[] data
+    public CharSequencePaper(
+        @NotNull CharSequence data
     ) {
         if (data == null) {
             throw new NullPointerException();
         }
 
         this.source = data;
-        this.right = data.length;
+        this.right = data.length();
     }
 
-    public CharPaper(
-        @NotNull char[] data, int index, int length
+    public CharSequencePaper(
+        @NotNull CharSequence data, int index, int length
     ) {
         if (data == null) {
             throw new NullPointerException();
@@ -50,7 +50,7 @@ public class CharPaper extends TransferPaper {
         int right = index + length;
         if (index < 0 ||
             right <= index ||
-            right > data.length
+            right > data.length()
         ) {
             throw new IndexOutOfBoundsException();
         }
