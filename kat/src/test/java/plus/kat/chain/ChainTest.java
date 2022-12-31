@@ -214,31 +214,52 @@ public class ChainTest {
     }
 
     @Test
-    public void test_join_ByteBuffer() {
-        Chain value = new Chain("name:");
+    public void test_join_Reader() throws IOException {
+        byte[] source = new byte[1024];
+        for (int i = 0; i < 1024; i++) {
+            source[i] = (byte) (i % 128);
+        }
 
+        Chain value = new Chain();
+        Reader reader = new InputStreamReader(
+            new ByteArrayInputStream(source)
+        );
+
+        value.join(reader);
+        assertEquals(-1, reader.read());
+        assertArrayEquals(source, value.toBytes());
+    }
+
+    @Test
+    public void test_join_ByteBuffer() {
+        byte[] source = new byte[1024];
+        for (int i = 0; i < 1024; i++) {
+            source[i] = (byte) (i % 128);
+        }
+
+        Chain value = new Chain();
         ByteBuffer buffer =
-            ByteBuffer.wrap(
-                "kraity".getBytes()
-            );
+            ByteBuffer.wrap(source);
 
         value.join(buffer);
         assertFalse(buffer.hasRemaining());
-        assertEquals("name:kraity", value.toString());
+        assertArrayEquals(source, value.toBytes());
     }
 
     @Test
     public void test_join_InputStream() throws IOException {
-        Chain value = new Chain("name:");
+        byte[] source = new byte[1024];
+        for (int i = 0; i < 1024; i++) {
+            source[i] = (byte) (i % 128);
+        }
 
+        Chain value = new Chain();
         InputStream stream =
-            new ByteArrayInputStream(
-                "kraity".getBytes()
-            );
+            new ByteArrayInputStream(source);
 
         value.join(stream);
         assertEquals(-1, stream.read());
-        assertEquals("name:kraity", value.toString());
+        assertArrayEquals(source, value.toBytes());
     }
 
     @Test

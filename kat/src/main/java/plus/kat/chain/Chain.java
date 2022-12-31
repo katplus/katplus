@@ -22,6 +22,7 @@ import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -592,6 +593,47 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Concatenates the reader to this {@link Chain}, converting it to
+     * UTF-8 where calling {@link Reader#close() close()} has no effect
+     *
+     * @param in the specified {@link Reader} to be joined
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified reader is null
+     */
+    public void join(
+        @NotNull Reader in
+    ) throws IOException {
+        join(in, 128);
+    }
+
+    /**
+     * Concatenates the reader to this {@link Chain}, converting it to
+     * UTF-8 where calling {@link Reader#close() close()} has no effect
+     *
+     * @param in the specified {@link Reader} to be joined
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the specified reader is null
+     */
+    public void join(
+        @NotNull Reader in, int scale
+    ) throws IOException {
+        if (scale > 0) {
+            int i = in.read();
+            if (i > -1) {
+                join((char) i);
+                char[] ch = new char[scale];
+                while ((i = in.read(ch)) > 0) {
+                    join(ch, 0, i);
+                }
+            }
+        } else {
+            throw new IOException(
+                "The specified scale(" + scale + ") is not positive number"
+            );
+        }
+    }
+
+    /**
      * Concatenates the buffer to this
      * {@link Chain}, copy it directly
      *
@@ -612,8 +654,8 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Concatenates the stream to this
-     * {@link Chain}, copy it directly
+     * Concatenates the stream to this {@link Chain}, copy it directly
+     * where calling {@link InputStream#close() close()} has no effect
      *
      * @param in the specified {@link InputStream} to be joined
      * @throws IOException          If an I/O error occurs
@@ -626,8 +668,8 @@ public class Chain implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * Concatenates the stream to this
-     * {@link Chain}, copy it directly
+     * Concatenates the stream to this {@link Chain}, copy it directly
+     * where calling {@link InputStream#close() close()} has no effect
      *
      * @param in the specified {@link InputStream} to be joined
      * @throws IOException          If an I/O error occurs
