@@ -10,7 +10,7 @@ class SpareKtTest {
     @Test
     fun test_flat() {
         val user = User()
-        val data = HashMap<String, Any>()
+        val data = HashMap<String, Any?>()
 
         val spare = lookup<User>()
         assertTrue(

@@ -536,7 +536,7 @@ inline fun <reified T : Any>
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Supplier?.mark(value: Any?, alias: String?): Chan = Doc(Plan.DEF, this).also { it[alias] = value }
+fun Supplier.mark(value: Any?, alias: String?): Chan = Doc(Plan.DEF, this).also { it[alias] = value }
 
 /**
  * E.g.
@@ -551,4 +551,4 @@ fun Supplier?.mark(value: Any?, alias: String?): Chan = Doc(Plan.DEF, this).also
  * @since 0.0.4
  */
 @Throws(IOException::class)
-fun Supplier?.write(value: Any?, alias: String?): Chan = Kat(Plan.DEF, this).also { it[alias] = value }
+fun Supplier.write(value: Any?, alias: String?): Chan = Kat(Plan.DEF, this).also { it[alias] = value }

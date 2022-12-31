@@ -941,12 +941,12 @@ public interface Spare<T> extends Coder<T> {
      * @param klass the specified klass for embed
      * @param spare the specified spare to be embedded
      * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
+     * @throws NullPointerException If the parameters contains null
      */
     @Nullable
     static Spare<?> embed(
         @NotNull Class<?> klass,
-        @Nullable Spare<?> spare
+        @NotNull Spare<?> spare
     ) {
         return INS.put(
             klass, spare

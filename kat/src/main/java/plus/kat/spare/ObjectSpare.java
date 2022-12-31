@@ -206,9 +206,12 @@ public class ObjectSpare extends Property<Object> {
     ) {
         if (type != null &&
             type != Object.class) {
-            Spare<?> spare = supplier.lookup(
-                Space.wipe(type), null
-            );
+            Class<?> clazz = Space.wipe(type);
+            if (clazz == null) {
+                return null;
+            }
+            Spare<?> spare =
+                supplier.lookup(clazz);
             if (spare == null) {
                 return null;
             }
