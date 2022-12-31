@@ -62,7 +62,7 @@ public interface Coder<T> {
     }
 
     /**
-     * Create a {@link Factory} of {@link T}
+     * Returns a {@link Factory} of {@link T}
      *
      * @see Spare#getFactory(Type)
      */
@@ -77,7 +77,7 @@ public interface Coder<T> {
      * Reads the {@link Chain} as {@link T}
      *
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the flag or alias is null
+     * @throws NullPointerException If the flag or chain is null
      */
     @Nullable
     default T read(

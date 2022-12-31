@@ -65,6 +65,13 @@ public class StringSpare extends Property<String> {
     }
 
     @Override
+    public Boolean getBorder(
+        @NotNull Flag flag
+    ) {
+        return Boolean.TRUE;
+    }
+
+    @Override
     public String read(
         @NotNull Flag flag,
         @NotNull Chain chain

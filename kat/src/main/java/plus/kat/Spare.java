@@ -70,7 +70,7 @@ public interface Spare<T> extends Coder<T> {
     );
 
     /**
-     * Create a {@link Factory} of {@link T}
+     * Returns a {@link Factory} of {@link T}
      *
      * @param type the specified actual type
      */
@@ -334,7 +334,7 @@ public interface Spare<T> extends Coder<T> {
      *
      * @param name the property name of the bean
      * @return {@link Setter} or {@code null}
-     * @throws NullPointerException If the specified key is null
+     * @throws NullPointerException If the specified name is null
      * @since 0.0.4
      */
     @Nullable
@@ -356,7 +356,7 @@ public interface Spare<T> extends Coder<T> {
      *
      * @param name the property name of the bean
      * @return {@link Getter} or {@code null}
-     * @throws NullPointerException If the specified key is null
+     * @throws NullPointerException If the specified name is null
      * @since 0.0.4
      */
     @Nullable
@@ -472,7 +472,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serializes to {@link Kat}
+     * Serializes the specified {@link T} to {@link Kat}
      *
      * <pre>{@code
      *   User user = ...
@@ -497,7 +497,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serializes to {@link Kat}
+     * Serializes the specified {@link T} to {@link Kat}
      *
      * <pre>{@code
      *   User user = ...
@@ -572,7 +572,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serializes to {@link Doc}
+     * Serializes the specified {@link T} to {@link Doc}
      *
      * <pre>{@code
      *   User user = ...
@@ -597,7 +597,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serializes to {@link Doc}
+     * Serializes the specified {@link T} to {@link Doc}
      *
      * <pre>{@code
      *   User user = ...
@@ -672,7 +672,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serializes to {@link Json}
+     * Serializes the specified {@link T} to {@link Json}
      *
      * <pre>{@code
      *   User user = ...
@@ -697,7 +697,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Serializes to {@link Json}
+     * Serializes the specified {@link T} to {@link Json}
      *
      * <pre>{@code
      *   User user = ...
@@ -765,8 +765,8 @@ public interface Spare<T> extends Coder<T> {
      *  );
      * }</pre>
      *
+     * @param object   the object to be converted
      * @param supplier the specified supplier to be used
-     * @param object   the specified object to be to converted
      * @return {@link T} or {@code null}
      * @throws Collapse              If a build error occurs
      * @throws NullPointerException  If the specified supplier is null
@@ -946,7 +946,7 @@ public interface Spare<T> extends Coder<T> {
     @Nullable
     static Spare<?> embed(
         @NotNull Class<?> klass,
-        @NotNull Spare<?> spare
+        @Nullable Spare<?> spare
     ) {
         return INS.put(
             klass, spare

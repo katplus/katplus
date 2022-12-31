@@ -104,7 +104,7 @@ public interface Subject<T> extends Spare<T> {
      *
      * @param name the property name of the bean
      * @return {@link Member} or {@code null}
-     * @throws NullPointerException If the specified alias is null
+     * @throws NullPointerException If the specified name is null
      */
     @Override
     default Member<T, ?> set(
@@ -119,7 +119,7 @@ public interface Subject<T> extends Spare<T> {
      *
      * @param name the property name of the bean
      * @return {@link Member} or {@code null}
-     * @throws NullPointerException If the specified alias is null
+     * @throws NullPointerException If the specified name is null
      */
     @Override
     default Member<T, ?> get(
@@ -134,7 +134,7 @@ public interface Subject<T> extends Spare<T> {
      *
      * @param name the parameter name of the bean
      * @return {@link Member} or {@code null}
-     * @throws NullPointerException If the specified alias is null
+     * @throws NullPointerException If the specified name is null
      */
     @Nullable
     default Member<Object[], ?> arg(
