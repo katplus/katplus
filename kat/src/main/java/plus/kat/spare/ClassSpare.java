@@ -107,9 +107,7 @@ public class ClassSpare extends Property<Class> {
         }
 
         if (object instanceof Type) {
-            return Space.wipe(
-                (Type) object
-            );
+            return Space.wipe((Type) object);
         }
 
         if (object instanceof CharSequence) {

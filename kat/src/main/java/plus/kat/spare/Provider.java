@@ -21,6 +21,8 @@ import plus.kat.anno.Nullable;
 import plus.kat.*;
 import plus.kat.crash.*;
 
+import java.lang.reflect.Type;
+
 /**
  * @author kraity
  * @since 0.0.2
@@ -67,7 +69,7 @@ public interface Provider extends Comparable<Provider> {
      * Returns the {@link Spare} of the specified {@code klass}
      *
      * @throws Collapse             If this provider signals to interrupt subsequent lookup
-     * @throws NullPointerException If the specified {@code name} or {@code supplier} is null
+     * @throws NullPointerException If the specified {@code klass} or {@code supplier} is null
      */
     @Nullable
     default Spare<?> lookup(
@@ -78,16 +80,28 @@ public interface Provider extends Comparable<Provider> {
     }
 
     /**
-     * Returns the {@link Spare} of the specified {@code name} and {@code type}
+     * Returns the {@link Spare} of the specified {@code type}
      *
-     * @throws Collapse             If this provider signals to interrupt subsequent search
-     * @throws NullPointerException If the specified {@code name} or {@code supplier} is null
-     * @see Supplier#lookup(Class, CharSequence)
-     * @see Supplier#search(Class, CharSequence)
+     * @throws Collapse             If this provider signals to interrupt subsequent lookup
+     * @throws NullPointerException If the specified {@code type} or {@code supplier} is null
      */
     @Nullable
     default Spare<?> search(
-        @Nullable Class<?> type,
+        @NotNull Type type,
+        @NotNull Supplier supplier
+    ) {
+        return null;
+    }
+
+    /**
+     * Returns the {@link Spare} of the specified {@code name} and {@code type}
+     *
+     * @throws Collapse             If this provider signals to interrupt subsequent search
+     * @throws NullPointerException If the specified {@code type}, {@code name} or {@code supplier} is null
+     */
+    @Nullable
+    default Spare<?> search(
+        @NotNull Class<?> type,
         @NotNull String name,
         @NotNull Supplier supplier
     ) {

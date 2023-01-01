@@ -575,10 +575,9 @@ public class SpareTest {
         assertNotNull(type);
         assertNotNull(method);
 
-        Spare<Object[]> spare =
-            Supplier.ins().lookup(
-                Space.wipe(type), null
-            );
+        Supplier supplier = Supplier.ins();
+        Spare<Object[]> spare = supplier.search(type);
+
         method.invoke(
             new Hook(), spare.read(
                 new Event<Object[]>("{{(1)(2)}{:name(kraity)}}").with(type)

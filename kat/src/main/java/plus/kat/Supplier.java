@@ -141,8 +141,8 @@ public interface Supplier extends Converter {
     );
 
     /**
-     * Returns the {@link Spare} of {@code klass}, if not cached first through
-     * the custom {@link Provider} set and then through this {@link Supplier} final lookup
+     * Returns the {@link Spare} of {@code klass}.
+     * If there is no cache, uses {@link Provider}s to search for it
      *
      * <pre>{@code
      *  Supplier supplier = ...
@@ -160,7 +160,7 @@ public interface Supplier extends Converter {
 
     /**
      * Returns the {@link Spare} of {@code klass}.
-     * If there is no cache, use the {@link Provider} to search for it
+     * If there is no cache, try calling {@code #search(null, klass)}
      *
      * <pre>{@code
      *  Supplier supplier = ...
@@ -179,8 +179,8 @@ public interface Supplier extends Converter {
     );
 
     /**
-     * Returns the {@link Spare} of {@code type}.
-     * If the spare of the type does not exist, search according to klass
+     * Returns the {@link Spare} of {@code type} or {@code klass}.
+     * If there is no cache, try calling {@code #search(type, klass)}
      *
      * <pre>{@code
      *  Supplier supplier = ...
@@ -192,7 +192,7 @@ public interface Supplier extends Converter {
      * @param type  the specified type for lookup
      * @param klass the specified alternate klass
      * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
+     * @throws NullPointerException If the parameters contains null
      * @since 0.0.4
      */
     @Nullable <T>
@@ -202,8 +202,28 @@ public interface Supplier extends Converter {
     );
 
     /**
-     * Returns the {@link Spare} of {@code klass}. If there is no cache,
-     * use the {@link Provider} to search for it, if null try to search as class name
+     * Returns the {@link Spare} of {@code type}. If there is
+     * no cache, the {@link Provider}s is used to search for it
+     *
+     * <pre>{@code
+     *  Type type = ...
+     *  Supplier supplier = ...
+     *  Spare<User> spare = supplier.search(type);
+     * }</pre>
+     *
+     * @param type the specified type for search
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code type} is null
+     * @since 0.0.6
+     */
+    @Nullable <T>
+    Spare<T> search(
+        @NotNull Type type
+    );
+
+    /**
+     * Returns the {@link Spare} of {@code klass}. If there is
+     * no cache, try calling {@code #search(Object.class, klass)}
      *
      * <pre>{@code
      *  Supplier supplier = ...
@@ -224,7 +244,7 @@ public interface Supplier extends Converter {
 
     /**
      * Returns the {@link Spare} of {@code klass}.
-     * If not cached first through uses the {@link Provider} to search for it,
+     * If not cached first through uses {@link Provider}s to search for it,
      * if not found, then use {@link Class#forName(String, boolean, ClassLoader)}
      * to find and judge whether it is a subclass of {@code type} and then find its {@link Spare}.
      *
@@ -237,7 +257,6 @@ public interface Supplier extends Converter {
      * @param type  the specified parent class
      * @param klass the specified actual class
      * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
      * @since 0.0.4
      */
     @Nullable <K, T extends K>
@@ -1163,14 +1182,7 @@ public interface Supplier extends Converter {
         @NotNull Algo algo,
         @NotNull Event<T> event
     ) {
-        Class<T> clazz = Space.wipe(type);
-        if (clazz == null) {
-            throw new FatalCrash(
-                "Not found the class of " + type
-            );
-        }
-
-        Spare<T> spare = lookup(clazz);
+        Spare<T> spare = search(type);
 
         if (spare != null) {
             event.with(this);
@@ -1235,7 +1247,7 @@ public interface Supplier extends Converter {
      * @since 0.0.1
      */
     @SuppressWarnings("rawtypes")
-    class Impl extends ConcurrentHashMap<Class<?>, Spare<?>> implements Supplier, Provider {
+    class Impl extends ConcurrentHashMap<Type, Spare<?>> implements Supplier, Provider {
         /**
          * default supplier
          */
@@ -1472,6 +1484,36 @@ public interface Supplier extends Converter {
 
         @Override
         public <T> Spare<T> search(
+            @NotNull Type type
+        ) {
+            Spare<?> spare = get(type);
+
+            if (spare != null) {
+                return (Spare<T>) spare;
+            }
+
+            Provider[] PS = PRO;
+            if (PS != null) {
+                for (Provider p : PS) {
+                    try {
+                        spare = p.search(
+                            type, this
+                        );
+                    } catch (Collapse e) {
+                        return null;
+                    }
+
+                    if (spare != null) {
+                        return (Spare<T>) spare;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public <T> Spare<T> search(
             @NotNull CharSequence klass
         ) {
             return search(
@@ -1499,6 +1541,10 @@ public interface Supplier extends Converter {
                 return null;
             }
 
+            if (type == null) {
+                return null;
+            }
+
             int i = klass.length();
             if (i < 2 || i > 127) {
                 return null;
@@ -1523,6 +1569,59 @@ public interface Supplier extends Converter {
             }
 
             return null;
+        }
+
+        @Override
+        public Spare<?> search(
+            @NotNull Type type,
+            @NotNull Supplier supplier
+        ) {
+            if (type instanceof Class) {
+                return lookup(
+                    (Class<?>) type
+                );
+            }
+
+            if (type instanceof ParameterizedType) {
+                return search(
+                    ((ParameterizedType) type).getRawType(), supplier
+                );
+            }
+
+            if (type instanceof Space) {
+                return search(
+                    Object.class, (CharSequence) type
+                );
+            }
+
+            if (type instanceof WildcardType) {
+                return search(
+                    ((WildcardType) type).getUpperBounds()[0], supplier
+                );
+            }
+
+            if (type instanceof GenericArrayType) {
+                GenericArrayType g = (GenericArrayType) type;
+                Class<?> cls = Space.wipe(
+                    g.getGenericComponentType()
+                );
+                if (cls != null) {
+                    if (cls == Object.class) {
+                        return lookup(Object[].class);
+                    }
+                    return lookup(
+                        Array.newInstance(cls, 0).getClass()
+                    );
+                }
+            }
+
+            if (type != null) {
+                return null;
+            } else {
+                throw new NullPointerException(
+                    "Method #lookup(Type, Supplier) receives null type"
+                );
+            }
         }
 
         @Override
@@ -1689,7 +1788,7 @@ public interface Supplier extends Converter {
 
         @Override
         public Spare<?> search(
-            @Nullable Class<?> type,
+            @NotNull Class<?> type,
             @NotNull String name,
             @NotNull Supplier supplier
         ) {
@@ -1737,6 +1836,10 @@ public interface Supplier extends Converter {
                     }
                     return spare;
                 }
+            } else {
+                throw new NullPointerException(
+                    "Method #search(Class, String, Supplier) receives null type"
+                );
             }
 
             return null;
