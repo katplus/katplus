@@ -156,7 +156,7 @@ public class KatTest {
         String cipher = "s(hello world)";
 
         assertEquals(
-            plain, spare.read(cipher)
+            plain, spare.read(new Event<>(cipher))
         );
         try (Chan kat = spare.write(plain)) {
             assertEquals(
@@ -174,7 +174,7 @@ public class KatTest {
         String cipher = "i(123456789)";
 
         assertEquals(
-            plain, spare.read(cipher)
+            plain, spare.read(new Event<>(cipher))
         );
         try (Chan kat = spare.write(plain)) {
             assertEquals(
@@ -192,7 +192,7 @@ public class KatTest {
         String cipher = "l(123456789)";
 
         assertEquals(
-            plain, spare.read(cipher)
+            plain, spare.read(new Event<>(cipher))
         );
         try (Chan kat = spare.write(plain)) {
             assertEquals(
@@ -340,8 +340,9 @@ public class KatTest {
             Supplier.ins();
         supplier.lookup(User.class);
 
-        User u1 = supplier.read(
-            "plus.kat.User", new Event<>(
+        String clazz = "plus.kat.User";
+        User u1 = supplier.solve(
+            clazz, Algo.KAT, new Event<>(
                 "${$:id(1)$:name(kraity)$:blocked(1)}"
             )
         );
@@ -368,8 +369,7 @@ public class KatTest {
 
     @Test
     public void test_member_cast_2() {
-        Spare<User> spare =
-            lookup(User.class);
+        Spare<User> spare = lookup(User.class);
 
         User u1 = spare.cast(
             "${$:id(1)$:name(kraity)$:blocked(1)}"
@@ -395,11 +395,10 @@ public class KatTest {
 
     @Test
     public void test_enum() {
-        Spare<State> spare =
-            lookup(State.class);
+        Spare<State> spare = lookup(State.class);
 
-        assertEquals(State.OPEN, spare.read("State(OPEN)"));
-        assertEquals(State.SELF, spare.read("State(SELF)"));
+        assertEquals(State.OPEN, spare.read(new Event<>("State(OPEN)")));
+        assertEquals(State.SELF, spare.read(new Event<>("State(SELF)")));
 
         Supplier supplier = Supplier.ins();
         Note note = supplier.read(

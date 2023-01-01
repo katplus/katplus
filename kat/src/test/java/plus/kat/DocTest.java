@@ -84,7 +84,9 @@ public class DocTest {
 
         String text = "<plus.kat.article><title>mark</title><author><id>1</id><name>kraity</name><blocked>false</blocked></author><extra><date>2022-22-22</date></extra></plus.kat.article>";
 
-        Article article = spare.down(text);
+        Article article = spare.down(
+            new Event<>(text)
+        );
         assertNotNull(article);
 
         try (Chan chan = spare.mark(article)) {

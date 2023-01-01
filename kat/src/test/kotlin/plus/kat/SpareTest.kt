@@ -1,9 +1,12 @@
 package plus.kat
 
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
 import plus.kat.anno.Embed
 import plus.kat.anno.Expose
+
+import plus.kat.*
+
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
 
 class SpareKtTest {
 
@@ -25,22 +28,17 @@ class SpareKtTest {
 
     @Test
     fun test_marker() {
-        val spare = lookup<User>()
-        val u1 = spare.read(
-            "User{}"
-        )
-        assertNotNull(u1)
-        assertEquals(1, u1.id)
-        assertEquals("kraity", u1.name)
-        assertEquals("User{s:name(kraity)i:id(1)}", u1.toKat())
+        val user0 = "User{}".read<User>()
+        assertNotNull(user0)
+        assertEquals(1, user0.id)
+        assertEquals("kraity", user0.name)
+        assertEquals("User{s:name(kraity)i:id(1)}", user0.toKat())
 
-        val u2 = spare.read(
-            "User{:id(2)}"
-        )
-        assertNotNull(u2)
-        assertEquals(2, u2.id)
-        assertEquals("kraity", u2.name)
-        assertEquals("User{s:name(kraity)i:id(2)}", u2.toKat())
+        val user2 = "User{:id(2)}".read<User>()
+        assertNotNull(user2)
+        assertEquals(2, user2.id)
+        assertEquals("kraity", user2.name)
+        assertEquals("User{s:name(kraity)i:id(2)}", user2.toKat())
     }
 
     @Embed("User")

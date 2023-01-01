@@ -685,29 +685,31 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolves the Kat {@code text} and converts the result to {@link T}
+     * Resolves the Kat {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
+     *   Event<User> event = ...
      *   Supplier supplier = ...
-     *   String text = ...
-     *   User user = supplier.read(text);
+     *
+     *   Type type = ...
+     *   User user = supplier.read(type, event);
      * }</pre>
      *
-     * @param klass the specified klass for lookup
+     * @param type  the specified type for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
-     * @throws FatalCrash           If no spare available for klass is found
-     * @throws ClassCastException   If {@link T} is not an instance of {@code klass}
-     * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Supplier#solve(CharSequence, Algo, Event)
+     * @throws FatalCrash           If no spare available for type is found
+     * @throws ClassCastException   If {@link T} is not an instance of {@code type}
+     * @throws NullPointerException If the specified {@code type} or {@code event} is null
+     * @see Supplier#solve(Type, Algo, Event)
      */
     @NotNull
     default <T> T read(
-        @NotNull CharSequence klass,
+        @NotNull Type type,
         @NotNull Event<T> event
     ) {
         return solve(
-            klass, Algo.KAT, event
+            type, Algo.KAT, event
         );
     }
 
@@ -718,11 +720,8 @@ public interface Supplier extends Converter {
      *   Event<User> event = ...
      *   Supplier supplier = ...
      *
-     *   User user = supplier.read(
-     *      event.with(
-     *         Flag.VALUE_AS_BEAN
-     *      )
-     *   );
+     *   Class<User> clazz = ...
+     *   User user = supplier.read(clazz, event);
      * }</pre>
      *
      * @param klass the specified klass for lookup
@@ -796,28 +795,30 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolves the Doc {@code text} and converts the result to {@link T}
+     * Resolves the Doc {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
+     *   Event<User> event = ...
      *   Supplier supplier = ...
-     *   String text = ...
-     *   User user = supplier.down(text);
+     *
+     *   Type type = ...
+     *   User user = supplier.down(type, event);
      * }</pre>
      *
-     * @param klass the specified klass for lookup
+     * @param type  the specified type for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
-     * @throws FatalCrash           If no spare available for klass is found
-     * @throws NullPointerException If the specified {@code klass} or {@code event} is null
-     * @see Supplier#solve(CharSequence, Algo, Event)
+     * @throws FatalCrash           If no spare available for type is found
+     * @throws NullPointerException If the specified {@code type} or {@code event} is null
+     * @see Supplier#solve(Type, Algo, Event)
      */
     @NotNull
     default <T> T down(
-        @NotNull CharSequence klass,
+        @NotNull Type type,
         @NotNull Event<T> event
     ) {
         return solve(
-            klass, Algo.DOC, event
+            type, Algo.DOC, event
         );
     }
 
@@ -828,11 +829,8 @@ public interface Supplier extends Converter {
      *   Event<User> event = ...
      *   Supplier supplier = ...
      *
-     *   User user = supplier.down(
-     *      event.with(
-     *         Flag.VALUE_AS_BEAN
-     *      )
-     *   );
+     *   Class<User> clazz = ...
+     *   User user = supplier.down(clazz, event);
      * }</pre>
      *
      * @param klass the specified klass for lookup
@@ -906,28 +904,30 @@ public interface Supplier extends Converter {
     }
 
     /**
-     * Resolves the Json {@code text} and converts the result to {@link T}
+     * Resolves the Json {@link Event} and converts the result to {@link T}
      *
      * <pre>{@code
+     *   Event<User> event = ...
      *   Supplier supplier = ...
-     *   String text = ...
-     *   User user = supplier.parse(text);
+     *
+     *   Type type = ...
+     *   User user = supplier.parse(type, event);
      * }</pre>
      *
-     * @param klass the specified klass for lookup
+     * @param type  the specified type for lookup
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
-     * @throws FatalCrash           If no spare available for klass is found
-     * @throws NullPointerException If the specified {@code klass} {@code event} is null
-     * @see Supplier#solve(CharSequence, Algo, Event)
+     * @throws FatalCrash           If no spare available for type is found
+     * @throws NullPointerException If the specified {@code type} {@code event} is null
+     * @see Supplier#solve(Type, Algo, Event)
      */
     @NotNull
     default <T> T parse(
-        @NotNull CharSequence klass,
+        @NotNull Type type,
         @NotNull Event<T> event
     ) {
         return solve(
-            klass, Algo.JSON, event
+            type, Algo.JSON, event
         );
     }
 
@@ -938,11 +938,8 @@ public interface Supplier extends Converter {
      *   Event<User> event = ...
      *   Supplier supplier = ...
      *
-     *   User user = supplier.parse(
-     *      event.with(
-     *         Flag.VALUE_AS_BEAN
-     *      )
-     *   );
+     *   Class<User> clazz = ...
+     *   User user = supplier.parse(clazz, event);
      * }</pre>
      *
      * @param klass the specified klass for lookup

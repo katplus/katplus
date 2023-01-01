@@ -408,9 +408,9 @@ public class SupplierTest {
     public void test_lookup_name() {
         Supplier supplier = Supplier.ins();
 
-        Entity entity = supplier.read(
-            "plus.kat.SupplierTest$Entity",
-            new Event<>(
+        String clazz = "plus.kat.SupplierTest$Entity";
+        Entity entity = supplier.solve(
+            clazz, Algo.KAT, new Event<>(
                 "{:id(1):name(kraity)}"
             )
         );

@@ -21,6 +21,7 @@ import plus.kat.anno.Nullable;
 import plus.kat.spare.*;
 import plus.kat.crash.*;
 import plus.kat.entity.*;
+import plus.kat.stream.*;
 
 import java.sql.*;
 import java.io.IOException;
@@ -423,24 +424,24 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Resolves the Kat {@code text} and converts the result to {@link T}
+     * Resolves the Kat {@link Paper} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Spare<User> spare = ...
-     *   String text = ...
-     *   User user = spare.read(text);
+     *   Paper paper = ...
+     *   User user = spare.read(paper);
      * }</pre>
      *
-     * @param text the specified text to be parsed
+     * @param paper the specified paper to be parsed
      * @throws Collapse             If parsing fails or the result is null
-     * @throws NullPointerException If the specified {@code text} is null
+     * @throws NullPointerException If the specified {@code paper} is null
      */
     @NotNull
     default T read(
-        @NotNull CharSequence text
+        @NotNull Paper paper
     ) {
         return read(
-            new Event<>(text)
+            new Event<>(paper)
         );
     }
 
@@ -517,30 +518,32 @@ public interface Spare<T> extends Coder<T> {
     default Chan write(
         @Nullable T value, long flags
     ) throws IOException {
-        Chan chan = new Kat(flags);
+        Chan chan = new Kat(
+            flags, getSupplier()
+        );
         chan.set(null, this, value);
         return chan;
     }
 
     /**
-     * Resolves the Doc {@code text} and converts the result to {@link T}
+     * Resolves the Doc {@link Paper} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Spare<User> spare = ...
-     *   String text = ...
-     *   User user = spare.down(text);
+     *   Paper paper = ...
+     *   User user = spare.down(paper);
      * }</pre>
      *
-     * @param text the specified text to be parsed
+     * @param paper the specified paper to be parsed
      * @throws Collapse             If parsing fails or the result is null
-     * @throws NullPointerException If the specified {@code text} is null
+     * @throws NullPointerException If the specified {@code paper} is null
      */
     @NotNull
     default T down(
-        @NotNull CharSequence text
+        @NotNull Paper paper
     ) {
         return down(
-            new Event<>(text)
+            new Event<>(paper)
         );
     }
 
@@ -617,30 +620,32 @@ public interface Spare<T> extends Coder<T> {
     default Chan mark(
         @Nullable T value, long flags
     ) throws IOException {
-        Chan chan = new Doc(flags);
+        Chan chan = new Doc(
+            flags, getSupplier()
+        );
         chan.set(null, this, value);
         return chan;
     }
 
     /**
-     * Resolves the Json {@code text} and converts the result to {@link T}
+     * Resolves the Json {@link Paper} and converts the result to {@link T}
      *
      * <pre>{@code
      *   Spare<User> spare = ...
-     *   String text = ...
-     *   User user = spare.parse(text);
+     *   Paper paper = ...
+     *   User user = spare.parse(paper);
      * }</pre>
      *
-     * @param text the specified text to be parsed
+     * @param paper the specified paper to be parsed
      * @throws Collapse             If parsing fails or the result is null
-     * @throws NullPointerException If the specified {@code text} is null
+     * @throws NullPointerException If the specified {@code paper} is null
      */
     @NotNull
     default T parse(
-        @NotNull CharSequence text
+        @NotNull Paper paper
     ) {
         return parse(
-            new Event<>(text)
+            new Event<>(paper)
         );
     }
 
@@ -717,7 +722,9 @@ public interface Spare<T> extends Coder<T> {
     default Chan serial(
         @Nullable T value, long flags
     ) throws IOException {
-        Chan chan = new Json(flags);
+        Chan chan = new Json(
+            flags, getSupplier()
+        );
         chan.set(null, this, value);
         return chan;
     }
@@ -915,7 +922,9 @@ public interface Spare<T> extends Coder<T> {
         try {
             event.with(this);
             return parser.read(
-                algo, event.setup(INS)
+                algo, event.setup(
+                    getSupplier()
+                )
             );
         } catch (Collapse error) {
             throw error;

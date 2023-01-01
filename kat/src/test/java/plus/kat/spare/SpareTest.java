@@ -79,40 +79,40 @@ public class SpareTest {
     public void test_object() {
         Spare<Object> spare = ObjectSpare.INSTANCE;
 
-        assertEquals(123, spare.read("$(123)"));
-        assertEquals(Integer.MAX_VALUE, spare.read("$(2147483647)"));
-        assertEquals(Integer.MIN_VALUE, spare.read("$(-2147483648)"));
+        assertEquals(123, spare.read(new Event<Object>("$(123)")));
+        assertEquals(Integer.MAX_VALUE, spare.read(new Event<Object>("$(2147483647)")));
+        assertEquals(Integer.MIN_VALUE, spare.read(new Event<Object>("$(-2147483648)")));
 
-        assertNotEquals(123L, spare.read("$(123)"));
-        assertEquals(2147483648L, spare.read("$(2147483648)"));
-        assertEquals(-2147483649L, spare.read("$(-2147483649)"));
-        assertEquals(Long.MAX_VALUE, spare.read("$(9223372036854775807)"));
-        assertEquals(Long.MIN_VALUE, spare.read("$(-9223372036854775808)"));
+        assertNotEquals(123L, spare.read(new Event<Object>("$(123)")));
+        assertEquals(2147483648L, spare.read(new Event<Object>("$(2147483648)")));
+        assertEquals(-2147483649L, spare.read(new Event<Object>("$(-2147483649)")));
+        assertEquals(Long.MAX_VALUE, spare.read(new Event<Object>("$(9223372036854775807)")));
+        assertEquals(Long.MIN_VALUE, spare.read(new Event<Object>("$(-9223372036854775808)")));
 
-        assertNotEquals(true, spare.read("$(1)"));
-        assertEquals(true, spare.read("$(true)"));
-        assertEquals(true, spare.read("$(TRUE)"));
-        assertEquals(true, spare.read("$(True)"));
-        assertEquals(false, spare.read("$(false)"));
-        assertEquals(false, spare.read("$(FALSE)"));
-        assertEquals(false, spare.read("$(False)"));
-        assertEquals("TRue", spare.read("$(TRue)"));
-        assertEquals("FALse", spare.read("$(FALse)"));
+        assertNotEquals(true, spare.read(new Event<>("$(1)")));
+        assertEquals(true, spare.read(new Event<>("$(true)")));
+        assertEquals(true, spare.read(new Event<>("$(TRUE)")));
+        assertEquals(true, spare.read(new Event<>("$(True)")));
+        assertEquals(false, spare.read(new Event<>("$(false)")));
+        assertEquals(false, spare.read(new Event<>("$(FALSE)")));
+        assertEquals(false, spare.read(new Event<>("$(False)")));
+        assertEquals("TRue", spare.read(new Event<>("$(TRue)")));
+        assertEquals("FALse", spare.read(new Event<>("$(FALse)")));
 
-        assertEquals("null", spare.read("$(null)"));
-        assertEquals("1A", spare.read("$(1A)"));
-        assertEquals(255, spare.read("$(0xFF)"));
-        assertEquals("0xGG", spare.read("$(0xGG)"));
-        assertEquals("test", spare.read("$(test)"));
-        assertEquals("kraity", spare.read("$(kraity)"));
+        assertEquals("null", spare.read(new Event<>("$(null)")));
+        assertEquals("1A", spare.read(new Event<>("$(1A)")));
+        assertEquals(255, spare.read(new Event<Object>("$(0xFF)")));
+        assertEquals("0xGG", spare.read(new Event<>("$(0xGG)")));
+        assertEquals("test", spare.read(new Event<>("$(test)")));
+        assertEquals("kraity", spare.read(new Event<>("$(kraity)")));
 
-        assertEquals("-", spare.read("$(-)"));
-        assertEquals("-A", spare.read("$(-A)"));
-        assertEquals(12, spare.read("$(12)"));
-        assertEquals(12.35555, spare.read("$(12.35555)"));
-        assertEquals(12.355555555555554, spare.read("$(12.355555555555554)"));
-        assertEquals("123.456AA", spare.read("$(123.456AA)"));
-        assertEquals("-123.456AA", spare.read("$(-123.456AA)"));
+        assertEquals("-", spare.read(new Event<>("$(-)")));
+        assertEquals("-A", spare.read(new Event<>("$(-A)")));
+        assertEquals(12, spare.read(new Event<Object>("$(12)")));
+        assertEquals(12.35555, spare.read(new Event<Object>("$(12.35555)")));
+        assertEquals(12.355555555555554, spare.read(new Event<Object>("$(12.355555555555554)")));
+        assertEquals("123.456AA", spare.read(new Event<>("$(123.456AA)")));
+        assertEquals("-123.456AA", spare.read(new Event<>("$(-123.456AA)")));
     }
 
     @Embed("Time")
@@ -187,7 +187,7 @@ public class SpareTest {
             Spare.lookup(Art.class);
 
         Art a1 = spare.read(
-            "{:id(1):name(kraity):meta(katplus)}"
+            new Event<>("{:id(1):name(kraity):meta(katplus)}")
         );
 
         assertNotNull(a1);
@@ -341,10 +341,10 @@ public class SpareTest {
         UUIDSpare spare = UUIDSpare.INSTANCE;
 
         String uid = "UUID(" + spare.apply() + ")";
-        assertEquals(uid, Kat.encode(spare.read(uid)));
+        assertEquals(uid, Kat.encode(spare.read(new Event<>(uid))));
 
         UUID uuid = spare.read(
-            "$(092f7929-d2d6-44d6-9cc1-694c2e360c56)"
+            new Event<>("$(092f7929-d2d6-44d6-9cc1-694c2e360c56)")
         );
 
         assertEquals("092f7929-d2d6-44d6-9cc1-694c2e360c56", uuid.toString());
@@ -361,7 +361,7 @@ public class SpareTest {
         AtomicIntegerSpare spare = AtomicIntegerSpare.INSTANCE;
 
         AtomicInteger atom = spare.read(
-            "$(143)"
+            new Event<>("$(143)")
         );
 
         assertEquals(143, atom.get());
@@ -372,7 +372,7 @@ public class SpareTest {
         AtomicLongSpare spare = AtomicLongSpare.INSTANCE;
 
         AtomicLong atom = spare.read(
-            "$(14725836913579)"
+            new Event<>("$(14725836913579)")
         );
 
         assertEquals(14725836913579L, atom.get());
@@ -382,23 +382,23 @@ public class SpareTest {
     public void test_AtomicBoolean_read() {
         AtomicBooleanSpare spare = AtomicBooleanSpare.INSTANCE;
 
-        assertTrue(spare.read("$(1)").get());
-        assertFalse(spare.read("$(0)").get());
-        assertTrue(spare.read("$(true)").get());
-        assertFalse(spare.read("$(false)").get());
-        assertFalse(spare.read("$(katplus)").get());
+        assertTrue(spare.read(new Event<>("$(1)")).get());
+        assertFalse(spare.read(new Event<>("$(0)")).get());
+        assertTrue(spare.read(new Event<>("$(true)")).get());
+        assertFalse(spare.read(new Event<>("$(false)")).get());
+        assertFalse(spare.read(new Event<>("$(katplus)")).get());
     }
 
     @Test
     public void test_Currency_read() {
         CurrencySpare spare = CurrencySpare.INSTANCE;
 
-        Currency c0 = spare.read("$(CNY)");
+        Currency c0 = spare.read(new Event<>("$(CNY)"));
         assertNotNull(c0);
         assertEquals("CNY", c0.getCurrencyCode());
         assertEquals("Currency(CNY)", Kat.encode(c0));
 
-        Currency c1 = spare.read("$(USD)");
+        Currency c1 = spare.read(new Event<>("$(USD)"));
         assertNotNull(c1);
         assertEquals("USD", c1.getCurrencyCode());
         assertEquals("Currency(USD)", Kat.encode(c1));
@@ -408,9 +408,9 @@ public class SpareTest {
     public void test_Locale_read() throws Exception {
         LocaleSpare spare = LocaleSpare.INSTANCE;
 
-        assertEquals("zh", spare.read("$(zh)").toString());
-        assertEquals("zh_CN", spare.read("$(zh_CN)").toString());
-        assertEquals("Locale(zh_CN)", Kat.encode(spare.read("$(zh_CN)")));
+        assertEquals("zh", spare.read(new Event<>("$(zh)")).toString());
+        assertEquals("zh_CN", spare.read(new Event<>("$(zh_CN)")).toString());
+        assertEquals("Locale(zh_CN)", Kat.encode(spare.read(new Event<>("$(zh_CN)"))));
 
         assertNull(LocaleSpare.lookup(""));
         assertNull(LocaleSpare.lookup("A"));
@@ -438,7 +438,7 @@ public class SpareTest {
     public void test_File_read() {
         FileSpare spare = FileSpare.INSTANCE;
 
-        File f0 = spare.read("$(file:\\kat.plus\\user.kat)");
+        File f0 = spare.read(new Event<>("$(file:\\kat.plus\\user.kat)"));
         assertEquals("File(file:\\kat.plus\\user.kat)", Kat.encode(f0));
     }
 
@@ -446,7 +446,7 @@ public class SpareTest {
     public void test_URL_read() {
         URLSpare spare = URLSpare.INSTANCE;
 
-        URL u0 = spare.read("$(https://kat.plus/user.kat)");
+        URL u0 = spare.read(new Event<>("$(https://kat.plus/user.kat)"));
         assertEquals("URL(https://kat.plus/user.kat)", Kat.encode(u0));
     }
 
@@ -454,7 +454,7 @@ public class SpareTest {
     public void test_URI_read() {
         URISpare spare = URISpare.INSTANCE;
 
-        URI u0 = spare.read("$(https://kat.plus/user.kat)");
+        URI u0 = spare.read(new Event<>("$(https://kat.plus/user.kat)"));
         assertEquals("URI(https://kat.plus/user.kat)", Kat.encode(u0));
     }
 
@@ -463,7 +463,7 @@ public class SpareTest {
         ByteBufferSpare spare = ByteBufferSpare.INSTANCE;
         assertNull(spare.cast(null));
 
-        ByteBuffer buf = spare.read("$(a3JhaXR5)");
+        ByteBuffer buf = spare.read(new Event<>("$(a3JhaXR5)"));
         assertEquals("kraity", new String(buf.array()));
         assertEquals("B(a3JhaXR5)", Kat.encode(buf));
         assertEquals("\"a3JhaXR5\"", Json.encode(buf));
@@ -514,7 +514,7 @@ public class SpareTest {
     public void test_string_buffer() {
         StringBufferSpare spare = StringBufferSpare.INSTANCE;
 
-        StringBuffer sb = spare.read("$(kat)");
+        StringBuffer sb = spare.read(new Event<>("$(kat)"));
         assertNotNull(sb);
 
         sb.append(".plus");
@@ -525,7 +525,7 @@ public class SpareTest {
     public void test_string_builder() {
         StringBuilderSpare spare = StringBuilderSpare.INSTANCE;
 
-        StringBuilder sb = spare.read("$(kat)");
+        StringBuilder sb = spare.read(new Event<>("$(kat)"));
         assertNotNull(sb);
 
         sb.append(".plus");
