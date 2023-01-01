@@ -23,6 +23,9 @@ import plus.kat.spare.*;
 import plus.kat.stream.*;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Set;
 import java.util.Optional;
@@ -691,7 +694,6 @@ public class Kat extends Stream implements Chan {
      * @param text the specified text to be parsed
      * @throws Collapse   If parsing fails or the result is null
      * @throws FatalCrash If no spare available for klass is found
-     * @see Supplier#read(Class, Event)
      */
     @Nullable
     public static <T> T decode(
@@ -709,12 +711,33 @@ public class Kat extends Stream implements Chan {
     }
 
     /**
+     * Resolves the {@link Kat} char array
+     *
+     * @param text the specified text to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
+     */
+    @Nullable
+    public static <T> T decode(
+        @Nullable Class<T> klass,
+        @Nullable char[] text
+    ) {
+        if (text == null ||
+            klass == null) {
+            return null;
+        }
+
+        return INS.read(
+            klass, new Event<>(text)
+        );
+    }
+
+    /**
      * Resolves the {@link Kat} {@link Paper}
      *
      * @param paper the specified paper to be parsed
      * @throws Collapse   If parsing fails or the result is null
      * @throws FatalCrash If no spare available for klass is found
-     * @see Supplier#read(Class, Event)
      */
     @Nullable
     public static <T> T decode(
@@ -732,12 +755,34 @@ public class Kat extends Stream implements Chan {
     }
 
     /**
+     * Resolves the {@link Kat} {@link Reader}
+     * where calling {@link Reader#close()} has no effect
+     *
+     * @param reader the specified reader to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
+     */
+    @Nullable
+    public static <T> T decode(
+        @Nullable Class<T> klass,
+        @Nullable Reader reader
+    ) {
+        if (klass == null ||
+            reader == null) {
+            return null;
+        }
+
+        return INS.read(
+            klass, new Event<>(reader)
+        );
+    }
+
+    /**
      * Resolves the {@link Kat} {@link CharSequence}
      *
      * @param text the specified text to be parsed
      * @throws Collapse   If parsing fails or the result is null
      * @throws FatalCrash If no spare available for klass is found
-     * @see Supplier#read(Class, Event)
      */
     @Nullable
     public static <T> T decode(
@@ -755,12 +800,56 @@ public class Kat extends Stream implements Chan {
     }
 
     /**
+     * Resolves the {@link Kat} {@link ByteBuffer}
+     *
+     * @param buffer the specified buffer to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
+     */
+    @Nullable
+    public static <T> T decode(
+        @Nullable Class<T> klass,
+        @Nullable ByteBuffer buffer
+    ) {
+        if (klass == null ||
+            buffer == null) {
+            return null;
+        }
+
+        return INS.read(
+            klass, new Event<>(buffer)
+        );
+    }
+
+    /**
+     * Resolves the {@link Kat} {@link InputStream}
+     * where calling {@link InputStream#close()} has no effect
+     *
+     * @param stream the specified stream to be parsed
+     * @throws Collapse   If parsing fails or the result is null
+     * @throws FatalCrash If no spare available for klass is found
+     */
+    @Nullable
+    public static <T> T decode(
+        @Nullable Class<T> klass,
+        @Nullable InputStream stream
+    ) {
+        if (klass == null ||
+            stream == null) {
+            return null;
+        }
+
+        return INS.read(
+            klass, new Event<>(stream)
+        );
+    }
+
+    /**
      * Resolves the {@link Kat} {@link Event}
      *
      * @param event the specified event to be handled
      * @throws Collapse   If parsing fails or the result is null
      * @throws FatalCrash If no spare available for klass is found
-     * @see Supplier#read(Class, Event)
      */
     @Nullable
     public static <E, T extends E> T decode(
@@ -770,8 +859,10 @@ public class Kat extends Stream implements Chan {
         if (klass == null ||
             event == null) {
             return null;
+        } else {
+            return INS.read(
+                klass, event
+            );
         }
-
-        return INS.read(klass, event);
     }
 }

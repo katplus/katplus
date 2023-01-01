@@ -2,9 +2,7 @@ package plus.kat.stream;
 
 import org.junit.jupiter.api.Test;
 
-import plus.kat.Event;
-import plus.kat.Kat;
-import plus.kat.Spare;
+import plus.kat.*;
 import plus.kat.entity.User;
 
 import java.io.*;
@@ -12,7 +10,6 @@ import java.nio.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static plus.kat.Spare.lookup;
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -61,25 +58,19 @@ public class PaperTest {
         }
     }
 
-    public void assertTest(User user) {
-        assertNotNull(user);
-        assertEquals(1, user.uid);
-        assertFalse(user.blocked);
-        assertEquals("kraity", user.name);
-        assertEquals("developer", user.role);
-    }
-
     @Test
     public void test_stream_kat() throws Exception {
-        Spare<User> spare = lookup(User.class);
-
         try (InputStream in = getClass()
             .getResourceAsStream("/entity/user.kat")) {
-            User user = spare.read(
-                new Event<>(in)
+            User user = Kat.decode(
+                User.class, in
             );
 
-            assertTest(user);
+            assertNotNull(user);
+            assertEquals(1, user.uid);
+            assertFalse(user.blocked);
+            assertEquals("kraity", user.name);
+            assertEquals("developer", user.role);
             assertEquals(new BigInteger("6"), user.resource.get("age"));
             assertEquals(new BigDecimal("1024"), user.resource.get("devote"));
         }
@@ -87,15 +78,17 @@ public class PaperTest {
 
     @Test
     public void test_stream_json() throws Exception {
-        Spare<User> spare = lookup(User.class);
-
         try (InputStream in = getClass()
             .getResourceAsStream("/entity/user.json")) {
-            User user = spare.parse(
-                new Event<>(in)
+            User user = Json.decode(
+                User.class, in
             );
 
-            assertTest(user);
+            assertNotNull(user);
+            assertEquals(1, user.uid);
+            assertFalse(user.blocked);
+            assertEquals("kraity", user.name);
+            assertEquals("developer", user.role);
             assertEquals(6, user.resource.get("age"));
             assertEquals(1024, user.resource.get("devote"));
         }
@@ -103,15 +96,17 @@ public class PaperTest {
 
     @Test
     public void test_stream_xml() throws Exception {
-        Spare<User> spare = lookup(User.class);
-
         try (InputStream in = getClass()
             .getResourceAsStream("/entity/user.xml")) {
-            User user = spare.down(
-                new Event<>(in)
+            User user = Doc.decode(
+                User.class, in
             );
 
-            assertTest(user);
+            assertNotNull(user);
+            assertEquals(1, user.uid);
+            assertFalse(user.blocked);
+            assertEquals("kraity", user.name);
+            assertEquals("developer", user.role);
             assertEquals("6", user.resource.get("age"));
             assertEquals("1024", user.resource.get("devote"));
         }
