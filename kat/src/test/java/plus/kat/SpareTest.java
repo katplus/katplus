@@ -11,7 +11,7 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 
-import static plus.kat.Supplier.Impl.INS;
+import static plus.kat.Supplier.Sample;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -21,17 +21,17 @@ public class SpareTest {
 
     @Test
     public void test_embed() {
-        Spare<User> spare =
-            INS.lookup(User.class);
+        Sample sample = (Sample) Sample.INS;
+        Spare<User> spare = sample.lookup(User.class);
+
         assertNotNull(spare);
+        assertEquals(spare, spare.drop(sample));
+        assertNull(sample.major.get(User.class));
+        assertNull(sample.minor.get("plus.kat.spare.User"));
 
-        assertEquals(spare, spare.drop(INS));
-        assertNull(INS.get(User.class));
-        assertNull(INS.extra.get("plus.kat.spare.User"));
-
-        assertEquals(spare, spare.join(INS));
-        assertEquals(spare, INS.get(User.class));
-        assertEquals(spare, INS.extra.get("plus.kat.spare.User"));
+        assertEquals(spare, spare.join(sample));
+        assertEquals(spare, sample.major.get(User.class));
+        assertEquals(spare, sample.minor.get("plus.kat.spare.User"));
 
         Object[] list = new Object[]{
             Collections.EMPTY_MAP,

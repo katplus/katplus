@@ -28,8 +28,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 
 import static plus.kat.Plan.DEF;
-import static plus.kat.Supplier.Impl.INS;
 import static plus.kat.spare.Parser.Group;
+import static plus.kat.Supplier.Sample.INS;
 
 /**
  * @author kraity
@@ -954,7 +954,7 @@ public interface Spare<T> extends Coder<T> {
         @NotNull Class<?> klass,
         @NotNull Spare<?> spare
     ) {
-        return INS.put(
+        return INS.embed(
             klass, spare
         );
     }

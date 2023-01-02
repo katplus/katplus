@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.Optional;
 
 import static plus.kat.Plan.DEF;
-import static plus.kat.Supplier.Impl.INS;
+import static plus.kat.Supplier.Sample.INS;
 import static plus.kat.stream.Binary.Unsafe.UPPER;
 
 /**

@@ -270,7 +270,7 @@ public interface Supplier extends Converter {
      */
     @NotNull
     static Supplier ins() {
-        return Impl.INS;
+        return Sample.INS;
     }
 
     /**
@@ -1244,11 +1244,11 @@ public interface Supplier extends Converter {
      * @since 0.0.1
      */
     @SuppressWarnings("rawtypes")
-    class Impl extends ConcurrentHashMap<Type, Spare<?>> implements Supplier, Provider {
+    class Sample implements Supplier, Provider {
         /**
          * default supplier
          */
-        static final Impl INS;
+        static Supplier INS;
 
         /**
          * default providers
@@ -1256,63 +1256,64 @@ public interface Supplier extends Converter {
         static Provider[] PRO;
 
         static {
-            INS = new Impl(
+            Sample sample;
+            INS = sample = new Sample(
                 Config.get(
-                    "kat.supplier.weight", 32
+                    "kat.supplier.buffer", 32
                 ),
                 Config.get(
                     "kat.supplier.capacity", 64
                 )
             );
 
-            INS.put(String.class, StringSpare.INSTANCE);
-            INS.put(int.class, IntegerSpare.INSTANCE);
-            INS.put(Integer.class, IntegerSpare.INSTANCE);
-            INS.put(long.class, LongSpare.INSTANCE);
-            INS.put(Long.class, LongSpare.INSTANCE);
-            INS.put(float.class, FloatSpare.INSTANCE);
-            INS.put(Float.class, FloatSpare.INSTANCE);
-            INS.put(double.class, DoubleSpare.INSTANCE);
-            INS.put(Double.class, DoubleSpare.INSTANCE);
-            INS.put(boolean.class, BooleanSpare.INSTANCE);
-            INS.put(Boolean.class, BooleanSpare.INSTANCE);
-            INS.put(byte.class, ByteSpare.INSTANCE);
-            INS.put(Byte.class, ByteSpare.INSTANCE);
-            INS.put(short.class, ShortSpare.INSTANCE);
-            INS.put(Short.class, ShortSpare.INSTANCE);
-            INS.put(Map.class, MapSpare.INSTANCE);
-            INS.put(Set.class, SetSpare.INSTANCE);
-            INS.put(List.class, ListSpare.INSTANCE);
-            INS.put(void.class, VoidSpare.INSTANCE);
-            INS.put(Void.class, VoidSpare.INSTANCE);
-            INS.put(char.class, CharSpare.INSTANCE);
-            INS.put(Character.class, CharSpare.INSTANCE);
-            INS.put(Number.class, NumberSpare.INSTANCE);
-            INS.put(Object.class, ObjectSpare.INSTANCE);
-            INS.put(byte[].class, ByteArraySpare.INSTANCE);
-            INS.put(Object[].class, ArraySpare.INSTANCE);
-            INS.put(BigInteger.class, BigIntegerSpare.INSTANCE);
-            INS.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
+            sample.minor.put("", ObjectSpare.INSTANCE);
+            sample.minor.put("$", ObjectSpare.INSTANCE);
+            sample.minor.put("s", StringSpare.INSTANCE);
+            sample.minor.put("b", BooleanSpare.INSTANCE);
+            sample.minor.put("i", IntegerSpare.INSTANCE);
+            sample.minor.put("l", LongSpare.INSTANCE);
+            sample.minor.put("f", FloatSpare.INSTANCE);
+            sample.minor.put("d", DoubleSpare.INSTANCE);
+            sample.minor.put("c", CharSpare.INSTANCE);
+            sample.minor.put("o", ByteSpare.INSTANCE);
+            sample.minor.put("u", ShortSpare.INSTANCE);
+            sample.minor.put("n", NumberSpare.INSTANCE);
+            sample.minor.put("M", MapSpare.INSTANCE);
+            sample.minor.put("A", ArraySpare.INSTANCE);
+            sample.minor.put("L", ListSpare.INSTANCE);
+            sample.minor.put("S", SetSpare.INSTANCE);
+            sample.minor.put("B", ByteArraySpare.INSTANCE);
+            sample.minor.put("I", BigIntegerSpare.INSTANCE);
+            sample.minor.put("D", BigDecimalSpare.INSTANCE);
 
-            INS.extra.put("", ObjectSpare.INSTANCE);
-            INS.extra.put("$", ObjectSpare.INSTANCE);
-            INS.extra.put("s", StringSpare.INSTANCE);
-            INS.extra.put("b", BooleanSpare.INSTANCE);
-            INS.extra.put("i", IntegerSpare.INSTANCE);
-            INS.extra.put("l", LongSpare.INSTANCE);
-            INS.extra.put("f", FloatSpare.INSTANCE);
-            INS.extra.put("d", DoubleSpare.INSTANCE);
-            INS.extra.put("c", CharSpare.INSTANCE);
-            INS.extra.put("o", ByteSpare.INSTANCE);
-            INS.extra.put("u", ShortSpare.INSTANCE);
-            INS.extra.put("n", NumberSpare.INSTANCE);
-            INS.extra.put("M", MapSpare.INSTANCE);
-            INS.extra.put("A", ArraySpare.INSTANCE);
-            INS.extra.put("L", ListSpare.INSTANCE);
-            INS.extra.put("S", SetSpare.INSTANCE);
-            INS.extra.put("B", ByteArraySpare.INSTANCE);
-            INS.extra.put("I", BigIntegerSpare.INSTANCE);
-            INS.extra.put("D", BigDecimalSpare.INSTANCE);
+            sample.major.put(String.class, StringSpare.INSTANCE);
+            sample.major.put(int.class, IntegerSpare.INSTANCE);
+            sample.major.put(Integer.class, IntegerSpare.INSTANCE);
+            sample.major.put(long.class, LongSpare.INSTANCE);
+            sample.major.put(Long.class, LongSpare.INSTANCE);
+            sample.major.put(float.class, FloatSpare.INSTANCE);
+            sample.major.put(Float.class, FloatSpare.INSTANCE);
+            sample.major.put(double.class, DoubleSpare.INSTANCE);
+            sample.major.put(Double.class, DoubleSpare.INSTANCE);
+            sample.major.put(boolean.class, BooleanSpare.INSTANCE);
+            sample.major.put(Boolean.class, BooleanSpare.INSTANCE);
+            sample.major.put(byte.class, ByteSpare.INSTANCE);
+            sample.major.put(Byte.class, ByteSpare.INSTANCE);
+            sample.major.put(short.class, ShortSpare.INSTANCE);
+            sample.major.put(Short.class, ShortSpare.INSTANCE);
+            sample.major.put(Map.class, MapSpare.INSTANCE);
+            sample.major.put(Set.class, SetSpare.INSTANCE);
+            sample.major.put(List.class, ListSpare.INSTANCE);
+            sample.major.put(void.class, VoidSpare.INSTANCE);
+            sample.major.put(Void.class, VoidSpare.INSTANCE);
+            sample.major.put(char.class, CharSpare.INSTANCE);
+            sample.major.put(Character.class, CharSpare.INSTANCE);
+            sample.major.put(Number.class, NumberSpare.INSTANCE);
+            sample.major.put(Object.class, ObjectSpare.INSTANCE);
+            sample.major.put(byte[].class, ByteArraySpare.INSTANCE);
+            sample.major.put(Object[].class, ArraySpare.INSTANCE);
+            sample.major.put(BigInteger.class, BigIntegerSpare.INSTANCE);
+            sample.major.put(BigDecimal.class, BigDecimalSpare.INSTANCE);
 
             try (KatLoader<Provider> loader =
                      new KatLoader<>(Provider.class)) {
@@ -1328,7 +1329,7 @@ public interface Supplier extends Converter {
                     Provider[] PS = new Provider[size];
 
                     int i = 0;
-                    PS[i++] = INS;
+                    PS[i++] = sample;
                     while (loader.hasNext()) {
                         PS[i++] = loader.next();
                     }
@@ -1337,7 +1338,7 @@ public interface Supplier extends Converter {
                     for (; i < size; i++) {
                         Provider P = PS[i];
                         try {
-                            if (P.alive(INS)) {
+                            if (P.alive(sample)) {
                                 PS[k++] = P;
                             }
                         } catch (Exception e) {
@@ -1361,7 +1362,7 @@ public interface Supplier extends Converter {
                     }
                     PRO = PS;
                 } else {
-                    PRO = new Provider[]{INS};
+                    PRO = new Provider[]{sample};
                 }
             } catch (Exception e) {
                 throw new Error(
@@ -1371,15 +1372,26 @@ public interface Supplier extends Converter {
         }
 
         /**
-         * default extra mapping table
+         * the minor internal mapping table
          */
-        protected final Map<Object, Spare<?>> extra;
+        protected final Map<Object, Spare<?>> minor;
 
-        public Impl(
-            int weight, int capacity
+        /**
+         * the major internal mapping table
+         */
+        protected final Map<Object, Spare<?>> major;
+
+        /**
+         * Constructs a default {@link Supplier}
+         *
+         * @param buffer   the init capacity of minor mapping table
+         * @param capacity the init capacity of major mapping table
+         */
+        public Sample(
+            int buffer, int capacity
         ) {
-            super(capacity);
-            extra = new ConcurrentHashMap<>(weight);
+            minor = new ConcurrentHashMap<>(buffer);
+            major = new ConcurrentHashMap<>(capacity);
         }
 
         @Override
@@ -1392,9 +1404,7 @@ public interface Supplier extends Converter {
             @NotNull Class<?> klass,
             @NotNull Spare<?> spare
         ) {
-            return put(
-                klass, spare
-            );
+            return major.put(klass, spare);
         }
 
         @Override
@@ -1403,9 +1413,10 @@ public interface Supplier extends Converter {
             @Nullable Spare<?> spare
         ) {
             if (spare == null) {
-                return remove(klass);
+                return major.remove(klass);
             }
-            return remove(klass, spare) ? spare : null;
+            return major.remove(
+                klass, spare) ? spare : null;
         }
 
         @Override
@@ -1413,9 +1424,7 @@ public interface Supplier extends Converter {
             @NotNull CharSequence klass,
             @NotNull Spare<?> spare
         ) {
-            return extra.put(
-                klass, spare
-            );
+            return minor.put(klass, spare);
         }
 
         @Override
@@ -1424,16 +1433,17 @@ public interface Supplier extends Converter {
             @Nullable Spare<?> spare
         ) {
             if (spare == null) {
-                return extra.remove(klass);
+                return minor.remove(klass);
             }
-            return extra.remove(klass, spare) ? spare : null;
+            return minor.remove(
+                klass, spare) ? spare : null;
         }
 
         @Override
         public <T> Spare<T> lookup(
             @NotNull Class<T> klass
         ) {
-            Spare<?> spare = get(klass);
+            Spare<?> spare = major.get(klass);
 
             if (spare != null) {
                 return (Spare<T>) spare;
@@ -1483,7 +1493,7 @@ public interface Supplier extends Converter {
         public <T> Spare<T> search(
             @NotNull Type type
         ) {
-            Spare<?> spare = get(type);
+            Spare<?> spare = major.get(type);
 
             if (spare != null) {
                 return (Spare<T>) spare;
@@ -1527,7 +1537,7 @@ public interface Supplier extends Converter {
                 return null;
             }
 
-            Spare<?> spare = extra.get(klass);
+            Spare<?> spare = minor.get(klass);
             if (spare != null) {
                 if (type == null ||
                     type.isAssignableFrom(
@@ -1688,7 +1698,7 @@ public interface Supplier extends Converter {
                         isAssignableFrom(clazz)) {
                         Spare<?> spare = lookup(clazz);
                         if (spare != null) {
-                            putIfAbsent(
+                            major.putIfAbsent(
                                 klass, spare
                             );
                         }
@@ -1697,7 +1707,7 @@ public interface Supplier extends Converter {
 
                     try {
                         // double-checking
-                        Spare<?> spare = get(klass);
+                        Spare<?> spare = major.get(klass);
 
                         // check for cache
                         if (spare != null ||
@@ -1827,7 +1837,7 @@ public interface Supplier extends Converter {
                 if (type.isAssignableFrom(child)) {
                     Spare<?> spare = lookup(child);
                     if (spare != null) {
-                        extra.putIfAbsent(
+                        minor.putIfAbsent(
                             name, spare
                         );
                     }
@@ -1863,7 +1873,7 @@ public interface Supplier extends Converter {
                     } else {
                         return null;
                     }
-                    this.put(klass, spare);
+                    major.put(klass, spare);
                     return (Spare<T>) spare;
                 }
                 // java.nio
@@ -1879,7 +1889,7 @@ public interface Supplier extends Converter {
                         return null;
                     }
 
-                    this.put(klass, spare);
+                    major.put(klass, spare);
                     return (Spare<T>) spare;
                 }
                 // java.lang
@@ -1898,7 +1908,7 @@ public interface Supplier extends Converter {
                         return null;
                     }
 
-                    this.put(klass, spare);
+                    major.put(klass, spare);
                     return (Spare<T>) spare;
                 }
                 // java.util
@@ -1945,7 +1955,7 @@ public interface Supplier extends Converter {
                                 return null;
                             }
 
-                            this.put(klass, spare);
+                            major.put(klass, spare);
                             return (Spare<T>) spare;
                         }
                         // java.util.concurrent.
@@ -1960,7 +1970,7 @@ public interface Supplier extends Converter {
                                 return null;
                             }
 
-                            this.put(klass, spare);
+                            major.put(klass, spare);
                             return (Spare<T>) spare;
                         }
                         // java.util.concurrent.atomic.
@@ -1975,7 +1985,7 @@ public interface Supplier extends Converter {
                                 return null;
                             }
 
-                            this.put(klass, spare);
+                            major.put(klass, spare);
                             return (Spare<T>) spare;
                         }
                         default: {
@@ -1991,7 +2001,7 @@ public interface Supplier extends Converter {
 
         @Override
         public String toString() {
-            return "plus.kat.Supplier.Impl@"
+            return "plus.kat.Supplier.Sample@"
                 + Integer.toHexString(
                 System.identityHashCode(this)
             );
