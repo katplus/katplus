@@ -34,7 +34,6 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-import static plus.kat.Plan.DEF;
 import static plus.kat.chain.Chain.Unsafe.value;
 import static org.springframework.core.GenericTypeResolver.resolveType;
 
@@ -44,10 +43,10 @@ import static org.springframework.core.GenericTypeResolver.resolveType;
  */
 public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConverter<Object> {
 
-    protected final Algo algo;
+    protected Plan plan;
     protected Supplier supplier;
 
-    protected Plan plan = DEF;
+    protected final Algo algo;
     protected MediaType[] mediaTypes;
 
     /**
@@ -69,12 +68,29 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         @NonNull Algo algo,
         @NonNull Supplier supplier
     ) {
+        this(algo, Plan.DEF, supplier);
+    }
+
+    /**
+     * @param algo     the specified algo
+     * @param plan     the specified plan
+     * @param supplier the specified supplier
+     * @since 0.0.6
+     */
+    public MutableHttpMessageConverter(
+        @NonNull Algo algo,
+        @NonNull Plan plan,
+        @NonNull Supplier supplier
+    ) {
         super();
         Assert.notNull(algo, "Algo must not be null");
+        Assert.notNull(plan, "Plan must not be null");
         Assert.notNull(supplier, "Supplier must not be null");
 
         this.algo = algo;
+        this.plan = plan;
         this.supplier = supplier;
+
         switch (algo.name()) {
             case "kat": {
                 mediaTypes = new MediaType[]{
@@ -210,24 +226,6 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         StreamUtils.copy(
             stream, message.getBody()
         );
-    }
-
-    /**
-     * @since 0.0.3
-     */
-    public void setPlan(
-        @NonNull Plan target
-    ) {
-        Assert.notNull(target, "Plan must not be null");
-        plan = target;
-    }
-
-    /**
-     * @since 0.0.3
-     */
-    @NonNull
-    public Plan getPlan() {
-        return plan;
     }
 
     /**

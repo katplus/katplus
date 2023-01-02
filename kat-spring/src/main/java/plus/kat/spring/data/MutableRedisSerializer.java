@@ -28,18 +28,16 @@ import plus.kat.crash.*;
 
 import java.io.IOException;
 
-import static plus.kat.Plan.DEF;
-
 /**
  * @author kraity
  * @since 0.0.3
  */
 public class MutableRedisSerializer<T> implements RedisSerializer<T> {
 
-    protected final Algo algo;
+    protected Plan plan;
     protected Supplier supplier;
 
-    protected Plan plan = DEF;
+    protected final Algo algo;
     protected final Class<T> type;
 
     /**
@@ -65,12 +63,30 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
         @NonNull Class<T> type,
         @NonNull Supplier supplier
     ) {
+        this(algo, Plan.DEF, type, supplier);
+    }
+
+    /**
+     * @param algo     the specified algo
+     * @param plan     the specified plan
+     * @param type     the specified type
+     * @param supplier the specified supplier
+     * @since 0.0.6
+     */
+    public MutableRedisSerializer(
+        @NonNull Algo algo,
+        @NonNull Plan plan,
+        @NonNull Class<T> type,
+        @NonNull Supplier supplier
+    ) {
         super();
         Assert.notNull(algo, "Algo must not be null");
+        Assert.notNull(plan, "Plan must not be null");
         Assert.notNull(type, "Class must not be null");
         Assert.notNull(supplier, "Supplier must not be null");
 
         this.algo = algo;
+        this.plan = plan;
         this.type = type;
         this.supplier = supplier;
     }
@@ -113,23 +129,5 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
         return supplier.solve(
             type, algo, new Event<T>(data).with(plan)
         );
-    }
-
-    /**
-     * @since 0.0.3
-     */
-    public void setPlan(
-        @NonNull Plan target
-    ) {
-        Assert.notNull(target, "Plan must not be null");
-        plan = target;
-    }
-
-    /**
-     * @since 0.0.3
-     */
-    @NonNull
-    public Plan getPlan() {
-        return plan;
     }
 }
