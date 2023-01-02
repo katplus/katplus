@@ -98,7 +98,7 @@ public class Parser implements Factory, Callback, Closeable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
-     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Paper}
+     * @throws IOException          Unexpected errors by {@link Paper} or {@link Pipage}
      * @throws NullPointerException If the specified {@code event} is null
      */
     @NotNull
@@ -115,7 +115,7 @@ public class Parser implements Factory, Callback, Closeable {
      *
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
-     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Paper}
+     * @throws IOException          Unexpected errors by {@link Paper} or {@link Pipage}
      * @throws NullPointerException If the specified {@code radar} or {@code event} is null
      */
     @NotNull
@@ -135,9 +135,7 @@ public class Parser implements Factory, Callback, Closeable {
         Supplier supplier =
             event.getSupplier();
         if (supplier == null) {
-            throw new Collapse(
-                "Supplier is null"
-            );
+            supplier = Supplier.ins();
         }
 
         this.event = event;
@@ -169,7 +167,7 @@ public class Parser implements Factory, Callback, Closeable {
      * @param event the specified event to be handled
      * @throws Collapse             If parsing fails or the result is null
      * @throws FatalCrash           If no solver available for algo is found
-     * @throws IOException          Unexpected errors by {@link Pipage} or {@link Paper}
+     * @throws IOException          Unexpected errors by {@link Paper} or {@link Pipage}
      * @throws NullPointerException If the specified {@code algo} or {@code event} is null
      */
     @NotNull
@@ -249,31 +247,21 @@ public class Parser implements Factory, Callback, Closeable {
         @NotNull Alias alias
     ) throws IOException {
         Event<?> refer = event;
-        Type type = refer.getType();
-        Coder<?> coder = refer.getCoder();
+        Coder<?> coder = refer.seek(space, alias);
 
         if (coder != null) {
             Factory child =
-                coder.getFactory(type);
+                coder.getFactory(
+                    refer.getType()
+                );
             if (child != null) {
                 return child.init(this, this);
             }
         } else {
-            coder = supplier.lookup(
-                Space.wipe(type), space
+            throw new IOException(
+                "The spare of " + alias
+                    + "<" + space + "> was not found"
             );
-            if (coder != null) {
-                Factory child =
-                    coder.getFactory(type);
-                if (child != null) {
-                    return child.init(this, this);
-                }
-            } else {
-                throw new IOException(
-                    "The spare of " + alias
-                        + "<" + space + "> was not found"
-                );
-            }
         }
 
         throw new IOException(
@@ -307,25 +295,17 @@ public class Parser implements Factory, Callback, Closeable {
         @NotNull Value value
     ) throws IOException {
         Event<?> refer = event;
-        Coder<?> coder = refer.getCoder();
+        Coder<?> coder = refer.seek(space, alias);
+
         if (coder != null) {
             result = coder.read(
                 refer, value
             );
         } else {
-            coder = supplier.lookup(
-                Space.wipe(refer.getType()), space
+            throw new IOException(
+                "The spare of " + alias
+                    + "<" + space + "> was not found"
             );
-            if (coder != null) {
-                result = coder.read(
-                    refer, value
-                );
-            } else {
-                throw new IOException(
-                    "The spare of " + alias
-                        + "<" + space + "> was not found"
-                );
-            }
         }
     }
 

@@ -561,6 +561,17 @@ public class Event<T> implements Flag {
     }
 
     /**
+     * Seeks the {@link Coder} by space and alias
+     */
+    @Nullable
+    public Coder<?> seek(
+        @NotNull Space space,
+        @NotNull Alias alias
+    ) {
+        return coder;
+    }
+
+    /**
      * If no type is set for this event,
      * the candidate {@link Type} will be used
      *
@@ -622,19 +633,19 @@ public class Event<T> implements Flag {
     }
 
     /**
-     * Returns the {@link Coder} of this {@link Event}
-     */
-    @Nullable
-    public Coder<?> getCoder() {
-        return coder;
-    }
-
-    /**
      * Returns the {@link Paper} of this {@link Event}
      */
     @Nullable
     public Paper getPaper() {
         return paper;
+    }
+
+    /**
+     * Returns the {@link Coder} of this {@link Event}
+     */
+    @Nullable
+    public Coder<?> getCoder() {
+        return coder;
     }
 
     /**

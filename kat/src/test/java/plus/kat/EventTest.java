@@ -2,8 +2,12 @@ package plus.kat;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import plus.kat.chain.Alias;
+import plus.kat.chain.Space;
+import plus.kat.spare.Coder;
+
 import java.util.Map;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -93,5 +97,51 @@ public class EventTest {
         assertEquals(123L, list.get(0));
         assertEquals(456L, list.get(1));
         assertEquals(789L, list.get(2));
+    }
+
+    @Test
+    public void test_getCoderWithSpace() {
+        Supplier supplier = Supplier.ins();
+
+        Coder<?> intCoder = supplier.lookup(int.class);
+        Coder<?> longCoder = supplier.lookup(long.class);
+        Coder<?> floatCoder = supplier.lookup(float.class);
+        Coder<?> stringCoder = supplier.lookup(String.class);
+
+        class TestEvent extends Event<Object> {
+
+            TestEvent(String text) {
+                super(text);
+            }
+
+            @Override
+            public Coder<?> seek(
+                Space space, Alias alias
+            ) {
+                if (space.equals("int_type")) {
+                    return intCoder;
+                }
+
+                if (space.equals("long_type")) {
+                    return longCoder;
+                }
+
+                return alias.equals("decimal") ?
+                    floatCoder : stringCoder;
+            }
+        }
+
+        assertEquals(143, Kat.decode(
+            Object.class, new TestEvent("int_type(143)"))
+        );
+        assertEquals(143L, Kat.decode(
+            Object.class, new TestEvent("long_type(143)"))
+        );
+        assertEquals("143", Kat.decode(
+            Object.class, new TestEvent("super_type(143)"))
+        );
+        assertEquals(143F, Kat.decode(
+            Object.class, new TestEvent("super_type:decimal(143)"))
+        );
     }
 }

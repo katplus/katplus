@@ -920,11 +920,8 @@ public interface Spare<T> extends Coder<T> {
         Parser parser = group.borrow();
 
         try {
-            event.with(this);
             return parser.read(
-                algo, event.setup(
-                    getSupplier()
-                )
+                algo, event.with(this)
             );
         } catch (Collapse error) {
             throw error;
