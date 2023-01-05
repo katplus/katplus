@@ -706,7 +706,7 @@ public class Kat extends Stream implements Chan {
         }
 
         return INS.read(
-            klass, new Event<>(text)
+            klass, new Event<T>(text).with(DEF.readFlags)
         );
     }
 
@@ -728,7 +728,7 @@ public class Kat extends Stream implements Chan {
         }
 
         return INS.read(
-            klass, new Event<>(text)
+            klass, new Event<T>(text).with(DEF.readFlags)
         );
     }
 
@@ -750,7 +750,7 @@ public class Kat extends Stream implements Chan {
         }
 
         return INS.read(
-            klass, new Event<>(paper)
+            klass, new Event<T>(paper).with(DEF.readFlags)
         );
     }
 
@@ -773,7 +773,7 @@ public class Kat extends Stream implements Chan {
         }
 
         return INS.read(
-            klass, new Event<>(reader)
+            klass, new Event<T>(reader).with(DEF.readFlags)
         );
     }
 
@@ -795,7 +795,7 @@ public class Kat extends Stream implements Chan {
         }
 
         return INS.read(
-            klass, new Event<>(text)
+            klass, new Event<T>(text).with(DEF.readFlags)
         );
     }
 
@@ -817,7 +817,7 @@ public class Kat extends Stream implements Chan {
         }
 
         return INS.read(
-            klass, new Event<>(buffer)
+            klass, new Event<T>(buffer).with(DEF.readFlags)
         );
     }
 
@@ -840,7 +840,7 @@ public class Kat extends Stream implements Chan {
         }
 
         return INS.read(
-            klass, new Event<>(stream)
+            klass, new Event<T>(stream).with(DEF.readFlags)
         );
     }
 
@@ -856,13 +856,6 @@ public class Kat extends Stream implements Chan {
         @Nullable Class<E> klass,
         @Nullable Event<T> event
     ) {
-        if (klass == null ||
-            event == null) {
-            return null;
-        } else {
-            return INS.read(
-                klass, event
-            );
-        }
+        return klass == null || event == null ? null : INS.read(klass, event);
     }
 }

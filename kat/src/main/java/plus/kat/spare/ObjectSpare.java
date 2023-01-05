@@ -207,7 +207,7 @@ public class ObjectSpare extends Property<Object> {
         if (type != null &&
             type != Object.class) {
             Spare<?> spare =
-                supplier.search(type);
+                supplier.lookup(type);
             if (spare == null) {
                 return null;
             }

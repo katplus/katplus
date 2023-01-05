@@ -19,6 +19,7 @@ import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
 import plus.kat.*;
+import plus.kat.chain.*;
 import plus.kat.crash.*;
 
 import java.lang.reflect.Type;
@@ -33,8 +34,6 @@ public interface Provider extends Comparable<Provider> {
      *
      * @param o the specified supplier to be loaded
      * @return true, indicating to remain active as a provider
-     * @see Provider#lookup(Class, Supplier)
-     * @see Provider#search(Class, String, Supplier)
      */
     default boolean alive(
         @NotNull Supplier o
@@ -66,20 +65,6 @@ public interface Provider extends Comparable<Provider> {
     }
 
     /**
-     * Returns the {@link Spare} of the specified {@code klass}
-     *
-     * @throws Collapse             If this provider signals to interrupt subsequent lookup
-     * @throws NullPointerException If the specified {@code klass} or {@code supplier} is null
-     */
-    @Nullable
-    default Spare<?> lookup(
-        @NotNull Class<?> klass,
-        @NotNull Supplier supplier
-    ) {
-        return null;
-    }
-
-    /**
      * Returns the {@link Spare} of the specified {@code type}
      *
      * @throws Collapse             If this provider signals to interrupt subsequent lookup
@@ -94,17 +79,46 @@ public interface Provider extends Comparable<Provider> {
     }
 
     /**
-     * Returns the {@link Spare} of the specified {@code name} and {@code type}
+     * Returns the {@link Spare} of the specified {@code klass}
      *
-     * @throws Collapse             If this provider signals to interrupt subsequent search
-     * @throws NullPointerException If the specified {@code type}, {@code name} or {@code supplier} is null
+     * @throws Collapse             If this provider signals to interrupt subsequent lookup
+     * @throws NullPointerException If the specified {@code klass} or {@code supplier} is null
      */
     @Nullable
     default Spare<?> search(
-        @NotNull Class<?> type,
-        @NotNull String name,
+        @NotNull Class<?> klass,
         @NotNull Supplier supplier
     ) {
         return null;
+    }
+
+    /**
+     * Returns the {@link Spare} of the specified {@code name} and {@code type}
+     *
+     * @throws Collapse             If this provider signals to interrupt subsequent lookup
+     * @throws NullPointerException If the specified {@code name} or {@code supplier} is null
+     */
+    @Nullable
+    default Spare<?> search(
+        @NotNull Space name,
+        @Nullable Class<?> parent,
+        @NotNull Supplier supplier
+    ) {
+        return parent == null ? null : search(parent, supplier);
+    }
+
+    /**
+     * Returns the {@link Spare} of the specified {@code name} and {@code type}
+     *
+     * @throws Collapse             If this provider signals to interrupt subsequent lookup
+     * @throws NullPointerException If the specified {@code name} or {@code supplier} is null
+     */
+    @Nullable
+    default Spare<?> search(
+        @NotNull String name,
+        @Nullable Class<?> parent,
+        @NotNull Supplier supplier
+    ) {
+        return parent == null ? null : search(parent, supplier);
     }
 }

@@ -331,11 +331,16 @@ public class ListSpare extends Property<List> {
         ) throws IOException {
             Spare<?> spare = elemSpare;
             if (spare == null) {
-                spare = supplier.search(
-                    elemType, space
-                );
+                Class<?> klass = elemType;
+                if (klass == null) {
+                    spare = supplier.lookup(space);
+                } else {
+                    spare = supplier.lookup(space, klass);
+                }
                 if (spare == null) {
-                    return null;
+                    throw new IOException(
+                        "Not found the spare of " + space
+                    );
                 }
             }
 
@@ -365,11 +370,16 @@ public class ListSpare extends Property<List> {
         ) throws IOException {
             Spare<?> spare = elemSpare;
             if (spare == null) {
-                spare = supplier.search(
-                    elemType, space
-                );
+                Class<?> klass = elemType;
+                if (klass == null) {
+                    spare = supplier.lookup(space);
+                } else {
+                    spare = supplier.lookup(space, klass);
+                }
                 if (spare == null) {
-                    return;
+                    throw new IOException(
+                        "Not found the spare of " + space
+                    );
                 }
             }
 

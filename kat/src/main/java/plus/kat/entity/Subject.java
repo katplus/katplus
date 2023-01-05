@@ -442,16 +442,15 @@ public interface Subject<T> extends Spare<T> {
                     while (true) {
                         if (type instanceof Class) {
                             coder = supplier.lookup(
-                                (Class<?>) type, space
+                                space, (Class<?>) type
                             );
                         } else if (type instanceof GenericArrayType) {
                             coder = supplier.lookup(
-                                Object[].class, space
+                                space, Object[].class
                             );
                         } else if (type instanceof ParameterizedType) {
-                            coder = supplier.lookup((Class<?>) (
-                                    (ParameterizedType) type
-                                ).getRawType(), space
+                            coder = supplier.lookup(space,
+                                (Class<?>) ((ParameterizedType) type).getRawType()
                             );
                         } else {
                             if (type == (type = locate(type))) {
@@ -527,16 +526,15 @@ public interface Subject<T> extends Spare<T> {
                     while (true) {
                         if (type instanceof Class) {
                             coder = supplier.lookup(
-                                (Class<?>) type, space
+                                space, (Class<?>) type
                             );
                         } else if (type instanceof GenericArrayType) {
                             coder = supplier.lookup(
-                                Object[].class, space
+                                space, Object[].class
                             );
                         } else if (type instanceof ParameterizedType) {
-                            coder = supplier.lookup((Class<?>) (
-                                    (ParameterizedType) type
-                                ).getRawType(), space
+                            coder = supplier.lookup(space,
+                                (Class<?>) ((ParameterizedType) type).getRawType()
                             );
                         } else {
                             if (type == (type = locate(type))) {
@@ -713,16 +711,15 @@ public interface Subject<T> extends Spare<T> {
                     while (true) {
                         if (type instanceof Class) {
                             coder = supplier.lookup(
-                                (Class<?>) type, space
+                                space, (Class<?>) type
                             );
                         } else if (type instanceof GenericArrayType) {
                             coder = supplier.lookup(
-                                Object[].class, space
+                                space, Object[].class
                             );
                         } else if (type instanceof ParameterizedType) {
-                            coder = supplier.lookup((Class<?>) (
-                                    (ParameterizedType) type
-                                ).getRawType(), space
+                            coder = supplier.lookup(space,
+                                (Class<?>) ((ParameterizedType) type).getRawType()
                             );
                         } else {
                             if (type == (type = locate(type))) {
@@ -798,16 +795,15 @@ public interface Subject<T> extends Spare<T> {
                     while (true) {
                         if (type instanceof Class) {
                             coder = supplier.lookup(
-                                (Class<?>) type, space
+                                space, (Class<?>) type
                             );
                         } else if (type instanceof GenericArrayType) {
                             coder = supplier.lookup(
-                                Object[].class, space
+                                space, Object[].class
                             );
                         } else if (type instanceof ParameterizedType) {
-                            coder = supplier.lookup((Class<?>) (
-                                    (ParameterizedType) type
-                                ).getRawType(), space
+                            coder = supplier.lookup(space,
+                                (Class<?>) ((ParameterizedType) type).getRawType()
                             );
                         } else {
                             if (type == (type = locate(type))) {
@@ -952,16 +948,15 @@ public interface Subject<T> extends Spare<T> {
                     while (true) {
                         if (type instanceof Class) {
                             coder = supplier.lookup(
-                                (Class<?>) type, space
+                                space, (Class<?>) type
                             );
                         } else if (type instanceof GenericArrayType) {
                             coder = supplier.lookup(
-                                Object[].class, space
+                                space, Object[].class
                             );
                         } else if (type instanceof ParameterizedType) {
-                            coder = supplier.lookup((Class<?>) (
-                                    (ParameterizedType) type
-                                ).getRawType(), space
+                            coder = supplier.lookup(space,
+                                (Class<?>) ((ParameterizedType) type).getRawType()
                             );
                         } else {
                             if (type == (type = locate(type))) {
@@ -1008,16 +1003,15 @@ public interface Subject<T> extends Spare<T> {
                         while (true) {
                             if (type instanceof Class) {
                                 coder = supplier.lookup(
-                                    (Class<?>) type, space
+                                    space, (Class<?>) type
                                 );
                             } else if (type instanceof GenericArrayType) {
                                 coder = supplier.lookup(
-                                    Object[].class, space
+                                    space, Object[].class
                                 );
                             } else if (type instanceof ParameterizedType) {
-                                coder = supplier.lookup((Class<?>) (
-                                        (ParameterizedType) type
-                                    ).getRawType(), space
+                                coder = supplier.lookup(space,
+                                    (Class<?>) ((ParameterizedType) type).getRawType()
                                 );
                             } else {
                                 if (type == (type = locate(type))) {
@@ -1094,16 +1088,15 @@ public interface Subject<T> extends Spare<T> {
                     while (true) {
                         if (type instanceof Class) {
                             coder = supplier.lookup(
-                                (Class<?>) type, space
+                                space, (Class<?>) type
                             );
                         } else if (type instanceof GenericArrayType) {
                             coder = supplier.lookup(
-                                Object[].class, space
+                                space, Object[].class
                             );
                         } else if (type instanceof ParameterizedType) {
-                            coder = supplier.lookup((Class<?>) (
-                                    (ParameterizedType) type
-                                ).getRawType(), space
+                            coder = supplier.lookup(space,
+                                (Class<?>) ((ParameterizedType) type).getRawType()
                             );
                         } else {
                             if (type == (type = locate(type))) {
@@ -1144,16 +1137,15 @@ public interface Subject<T> extends Spare<T> {
                         while (true) {
                             if (type instanceof Class) {
                                 coder = supplier.lookup(
-                                    (Class<?>) type, space
+                                    space, (Class<?>) type
                                 );
                             } else if (type instanceof GenericArrayType) {
                                 coder = supplier.lookup(
-                                    Object[].class, space
+                                    space, Object[].class
                                 );
                             } else if (type instanceof ParameterizedType) {
-                                coder = supplier.lookup((Class<?>) (
-                                        (ParameterizedType) type
-                                    ).getRawType(), space
+                                coder = supplier.lookup(space,
+                                    (Class<?>) ((ParameterizedType) type).getRawType()
                                 );
                             } else {
                                 if (type == (type = locate(type))) {

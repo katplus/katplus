@@ -273,7 +273,7 @@ public interface Spare<T> extends Coder<T> {
      * @return this {@link Spare}
      * @see AbstractSpare#join(Supplier)
      * @see Supplier#embed(Class, Spare)
-     * @see Supplier#embed(CharSequence, Spare)
+     * @see Supplier#embed(String, Spare)
      * @since 0.0.5
      */
     @NotNull
@@ -310,7 +310,7 @@ public interface Spare<T> extends Coder<T> {
      * @return this {@link Spare}
      * @see AbstractSpare#drop(Supplier)
      * @see Supplier#revoke(Class, Spare)
-     * @see Supplier#revoke(CharSequence, Spare)
+     * @see Supplier#revoke(String, Spare)
      * @since 0.0.5
      */
     @NotNull
@@ -492,9 +492,7 @@ public interface Spare<T> extends Coder<T> {
     default Chan write(
         @Nullable T value
     ) throws IOException {
-        return write(
-            value, DEF.writeFlags
-        );
+        return write(value, 0);
     }
 
     /**
@@ -594,9 +592,7 @@ public interface Spare<T> extends Coder<T> {
     default Chan mark(
         @Nullable T value
     ) throws IOException {
-        return mark(
-            value, DEF.writeFlags
-        );
+        return mark(value, 0);
     }
 
     /**
@@ -696,9 +692,7 @@ public interface Spare<T> extends Coder<T> {
     default Chan serial(
         @Nullable T value
     ) throws IOException {
-        return serial(
-            value, DEF.writeFlags
-        );
+        return serial(value, 0);
     }
 
     /**
@@ -984,7 +978,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Returns the {@link Spare} of {@code klass}
+     * Returns the {@link Spare} of the {@code klass}
      *
      * <pre>{@code
      *  Spare<User> spare = Spare.lookup(User.class);
@@ -1003,7 +997,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Returns the {@link Spare} of {@code klass}
+     * Returns the {@link Spare} of the {@code klass}
      *
      * <pre>{@code
      *  Spare<User> spare = Spare.search("plus.kat.entity.User");
@@ -1012,13 +1006,12 @@ public interface Spare<T> extends Coder<T> {
      * @param klass the specified klass for search
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Supplier#search(CharSequence)
-     * @since 0.0.5
+     * @see Supplier#lookup(String)
      */
     @Nullable
-    static <T> Spare<T> search(
-        @NotNull CharSequence klass
+    static <T> Spare<T> lookup(
+        @NotNull String klass
     ) {
-        return INS.search(klass);
+        return INS.lookup(klass);
     }
 }

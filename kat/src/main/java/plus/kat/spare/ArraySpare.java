@@ -573,11 +573,16 @@ public class ArraySpare extends Property<Object> {
         ) throws IOException {
             Spare<?> spare0 = spare;
             if (spare0 == null) {
-                spare0 = supplier.search(
-                    kind, space
-                );
+                Class<?> klass = kind;
+                if (klass == null) {
+                    spare0 = supplier.lookup(space);
+                } else {
+                    spare0 = supplier.lookup(space, klass);
+                }
                 if (spare0 == null) {
-                    return null;
+                    throw new IOException(
+                        "Not found the spare of " + space
+                    );
                 }
             }
 
@@ -612,11 +617,16 @@ public class ArraySpare extends Property<Object> {
         ) throws IOException {
             Spare<?> spare0 = spare;
             if (spare0 == null) {
-                spare0 = supplier.search(
-                    kind, space
-                );
+                Class<?> klass = kind;
+                if (klass == null) {
+                    spare0 = supplier.lookup(space);
+                } else {
+                    spare0 = supplier.lookup(space, klass);
+                }
                 if (spare0 == null) {
-                    return;
+                    throw new IOException(
+                        "Not found the spare of " + space
+                    );
                 }
             }
 
@@ -661,27 +671,22 @@ public class ArraySpare extends Property<Object> {
             Type[] types = elems;
             if (++index < types.length) {
                 Type type = types[index];
-                Class<?> clazz = Space.wipe(type);
+                Spare<?> spare = supplier.lookup(type);
 
-                Spare<?> spare;
-                if (clazz == Object.class) {
-                    spare = supplier.lookup(space);
+                if (spare != null) {
+                    Factory child =
+                        spare.getFactory(type);
+
+                    if (child == null) {
+                        return null;
+                    }
+
+                    return child.init(this, this);
                 } else {
-                    spare = supplier.lookup(clazz, space);
+                    throw new IOException(
+                        "Not found the spare of " + space
+                    );
                 }
-
-                if (spare == null) {
-                    return null;
-                }
-
-                Factory child =
-                    spare.getFactory(type);
-
-                if (child == null) {
-                    return null;
-                }
-
-                return child.init(this, this);
             } else {
                 throw new IOException(
                     "The number of elements exceeds the range: " + types.length
@@ -705,22 +710,20 @@ public class ArraySpare extends Property<Object> {
         ) throws IOException {
             Type[] types = elems;
             if (++index < types.length) {
-                Class<?> clazz = Space.wipe(
-                    types[index]
-                );
-
-                Spare<?> spare;
-                if (clazz == Object.class) {
-                    spare = supplier.lookup(space);
-                } else {
-                    spare = supplier.lookup(clazz, space);
-                }
+                Spare<?> spare =
+                    supplier.lookup(
+                        types[index]
+                    );
 
                 if (spare != null) {
                     bean[index] =
                         spare.read(
                             flag, value
                         );
+                } else {
+                    throw new IOException(
+                        "Not found the spare of " + space
+                    );
                 }
             } else {
                 throw new IOException(

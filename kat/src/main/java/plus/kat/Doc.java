@@ -502,7 +502,7 @@ public class Doc extends Stream implements Chan {
         }
 
         return INS.down(
-            klass, new Event<>(text)
+            klass, new Event<T>(text).with(DEF.readFlags)
         );
     }
 
@@ -524,7 +524,7 @@ public class Doc extends Stream implements Chan {
         }
 
         return INS.down(
-            klass, new Event<>(text)
+            klass, new Event<T>(text).with(DEF.readFlags)
         );
     }
 
@@ -546,7 +546,7 @@ public class Doc extends Stream implements Chan {
         }
 
         return INS.down(
-            klass, new Event<>(paper)
+            klass, new Event<T>(paper).with(DEF.readFlags)
         );
     }
 
@@ -569,7 +569,7 @@ public class Doc extends Stream implements Chan {
         }
 
         return INS.down(
-            klass, new Event<>(reader)
+            klass, new Event<T>(reader).with(DEF.readFlags)
         );
     }
 
@@ -591,7 +591,7 @@ public class Doc extends Stream implements Chan {
         }
 
         return INS.down(
-            klass, new Event<>(text)
+            klass, new Event<T>(text).with(DEF.readFlags)
         );
     }
 
@@ -613,7 +613,7 @@ public class Doc extends Stream implements Chan {
         }
 
         return INS.down(
-            klass, new Event<>(buffer)
+            klass, new Event<T>(buffer).with(DEF.readFlags)
         );
     }
 
@@ -636,7 +636,7 @@ public class Doc extends Stream implements Chan {
         }
 
         return INS.down(
-            klass, new Event<>(stream)
+            klass, new Event<T>(stream).with(DEF.readFlags)
         );
     }
 
@@ -652,13 +652,6 @@ public class Doc extends Stream implements Chan {
         @Nullable Class<E> klass,
         @Nullable Event<T> event
     ) {
-        if (klass == null ||
-            event == null) {
-            return null;
-        } else {
-            return INS.down(
-                klass, event
-            );
-        }
+        return klass == null || event == null ? null : INS.down(klass, event);
     }
 }

@@ -576,7 +576,7 @@ public class SpareTest {
         assertNotNull(method);
 
         Supplier supplier = Supplier.ins();
-        Spare<Object[]> spare = supplier.search(type);
+        Spare<Object[]> spare = supplier.lookup(type);
 
         method.invoke(
             new Hook(), spare.read(

@@ -405,11 +405,16 @@ public class MapSpare extends Property<Map> {
         ) throws IOException {
             Spare<?> s1 = valSpace;
             if (s1 == null) {
-                s1 = supplier.search(
-                    valType, space
-                );
+                Class<?> klass = valType;
+                if (klass == null) {
+                    s1 = supplier.lookup(space);
+                } else {
+                    s1 = supplier.lookup(space, klass);
+                }
                 if (s1 == null) {
-                    return null;
+                    throw new IOException(
+                        "Not found the spare of " + space
+                    );
                 }
             }
 
@@ -448,11 +453,16 @@ public class MapSpare extends Property<Map> {
         ) throws IOException {
             Spare<?> s1 = valSpace;
             if (s1 == null) {
-                s1 = supplier.search(
-                    valType, space
-                );
+                Class<?> klass = valType;
+                if (klass == null) {
+                    s1 = supplier.lookup(space);
+                } else {
+                    s1 = supplier.lookup(space, klass);
+                }
                 if (s1 == null) {
-                    return;
+                    throw new IOException(
+                        "Not found the spare of " + space
+                    );
                 }
             }
 

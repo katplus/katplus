@@ -1,8 +1,10 @@
 package plus.kat;
 
 import org.junit.jupiter.api.Test;
+
 import plus.kat.anno.Embed;
 import plus.kat.anno.Expose;
+import plus.kat.chain.Space;
 import plus.kat.crash.Collapse;
 
 import java.lang.reflect.Array;
@@ -54,10 +56,12 @@ public class SupplierTest {
         Supplier supplier = Supplier.ins();
         for (String clazz : list) {
             assertNull(
-                supplier.lookup(clazz)
+                supplier.lookup(
+                    new Space(clazz)
+                )
             );
             assertNotNull(
-                supplier.search(clazz)
+                supplier.lookup(clazz)
             );
         }
     }
@@ -516,53 +520,53 @@ public class SupplierTest {
     public void test_compare_spare() {
         Supplier supplier = Supplier.ins();
 
-        Class<?> user = User.class;
-        Class<?> object = Object.class;
+        Spare<User> userSpare = supplier.lookup(User.class);
+        Spare<UserVO> userVOSpare = supplier.lookup(UserVO.class);
 
-        Spare<User> spare1 = supplier.lookup(User.class);
-        Spare<UserVO> spare2 = supplier.lookup(UserVO.class);
+        assertNull(supplier.lookup("", User.class));
+        assertNull(supplier.lookup("A", User.class));
+        assertNull(supplier.lookup("M", User.class));
 
-        assertNull(supplier.search(user, ""));
-        assertNull(supplier.search(user, "A"));
-        assertNull(supplier.search(user, "M"));
+        assertNull(supplier.lookup("SuperUser", User.class));
+        assertSame(userSpare, supplier.lookup(new Space("SuperUser"), User.class));
 
-        assertNull(supplier.search(user, "SuperUser"));
-        assertSame(spare1, supplier.lookup(user, "SuperUser"));
+        String userClass = "plus.kat.supplier.User";
+        Space userSpace = new Space(userClass);
 
-        assertNull(supplier.search(UserVO.class, "plus.kat.supplier.User"));
-        assertNotNull(supplier.lookup(UserVO.class, "plus.kat.supplier.User"));
+        assertNull(supplier.lookup(userClass, UserVO.class));
+        assertNotNull(supplier.lookup(userSpace, UserVO.class));
 
-        assertSame(spare1, supplier.lookup(user, "plus.kat.supplier.User"));
-        assertSame(spare1, supplier.search(user, "plus.kat.supplier.User"));
+        assertSame(userSpare, supplier.lookup(userSpace, User.class));
+        assertSame(userSpare, supplier.lookup(userClass, User.class));
 
-        assertSame(spare1, supplier.lookup(user, "plus.kat.supplier.UserVO"));
-        assertSame(spare2, supplier.search(user, "plus.kat.supplier.UserVO"));
+        String userVOClass = "plus.kat.supplier.UserVO";
+        Space userVOSpace = new Space(userVOClass);
 
-        assertSame(spare1, supplier.lookup(User.class, "plus.kat.supplier.User"));
-        assertSame(spare1, supplier.search(User.class, "plus.kat.supplier.User"));
+        assertSame(userSpare, supplier.lookup(userVOSpace, User.class));
+        assertSame(userVOSpare, supplier.lookup(userVOClass, User.class));
 
-        assertSame(spare1, supplier.lookup(User.class, "plus.kat.supplier.UserVO"));
-        assertSame(spare2, supplier.search(User.class, "plus.kat.supplier.UserVO"));
+        assertSame(userSpare, supplier.lookup(userVOSpace, User.class));
+        assertSame(userVOSpare, supplier.lookup(userVOClass, User.class));
 
-        assertSame(spare2, supplier.lookup(UserVO.class, "plus.kat.supplier.UserVO"));
-        assertSame(spare2, supplier.search(UserVO.class, "plus.kat.supplier.UserVO"));
+        assertSame(userVOSpare, supplier.lookup(userVOSpace, UserVO.class));
+        assertSame(userVOSpare, supplier.lookup(userVOClass, UserVO.class));
 
-        Spare<Object> spare3 = supplier.lookup(Object.class);
-        Spare<Object[]> spare4 = supplier.lookup(Object[].class);
+        Spare<Object> objectSpare = supplier.lookup(Object.class);
+        Spare<Object[]> objectArraySpare = supplier.lookup(Object[].class);
 
-        assertNull(supplier.search(object, "SuperUser"));
-        assertSame(spare3, supplier.lookup(object, "SuperUser"));
+        assertSame(objectSpare, supplier.lookup(new Space(""), Object.class));
+        assertSame(objectSpare, supplier.lookup(new Space("$"), Object.class));
 
-        assertSame(spare3, supplier.search(object, "$"));
-        assertSame(spare3, supplier.search(object, ""));
+        assertSame(objectArraySpare, supplier.lookup("A", Object.class));
+        assertSame(objectSpare, supplier.lookup(new Space("A"), Object.class));
 
-        assertSame(spare3, supplier.lookup(object, "plus.kat.supplier.User"));
-        assertSame(spare1, supplier.search(object, "plus.kat.supplier.User"));
+        assertSame(userSpare, supplier.lookup(userClass, Object.class));
+        assertSame(objectSpare, supplier.lookup(userSpace, Object.class));
 
-        assertSame(spare3, supplier.lookup(object, "plus.kat.supplier.UserVO"));
-        assertSame(spare2, supplier.search(object, "plus.kat.supplier.UserVO"));
+        assertSame(userVOSpare, supplier.lookup(userVOClass, Object.class));
+        assertSame(objectSpare, supplier.lookup(userVOSpace, Object.class));
 
-        assertSame(spare3, supplier.lookup(object, "A"));
-        assertSame(spare4, supplier.search(object, "A"));
+        assertNull(supplier.lookup("SuperUser", Object.class));
+        assertSame(objectSpare, supplier.lookup(new Space("SuperUser"), Object.class));
     }
 }

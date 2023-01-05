@@ -27,6 +27,32 @@ public interface Converter {
      * Converts the {@link Object} to {@link E}
      *
      * <pre>{@code
+     *  String clazz = "plus.kat.entity.User";
+     *  Converter converter = ...
+     *
+     *  User user = converter.cast(
+     *      clazz, "{:id(1):name(kraity)}"
+     *  );
+     *  User user = converter.cast(
+     *      clazz, Map.of("id", 1, "name", "kraity")
+     *  );
+     * }</pre>
+     *
+     * @param klass  the specified klass for lookup
+     * @param object the specified object to be converted
+     * @return {@link E} or {@code null}
+     * @throws ClassCastException    If {@link E} is not an instance of the klass
+     * @throws IllegalStateException If the object cannot be converted to {@link E}
+     */
+    @Nullable <E> E cast(
+        @NotNull String klass,
+        @Nullable Object object
+    );
+
+    /**
+     * Converts the {@link Object} to {@link E}
+     *
+     * <pre>{@code
      *  Class<User> clazz = ...
      *  Converter converter = ...
      *
@@ -45,32 +71,6 @@ public interface Converter {
      */
     @Nullable <E> E cast(
         @NotNull Class<E> klass,
-        @Nullable Object object
-    );
-
-    /**
-     * Converts the {@link Object} to {@link E}
-     *
-     * <pre>{@code
-     *  String clazz = "plus.kat.entity.User"
-     *  Converter converter = ...
-     *
-     *  User user = converter.cast(
-     *      clazz, "{:id(1):name(kraity)}"
-     *  );
-     *  User user = converter.cast(
-     *      clazz, Map.of("id", 1, "name", "kraity")
-     *  );
-     * }</pre>
-     *
-     * @param klass  the specified klass for lookup
-     * @param object the specified object to be converted
-     * @return {@link E} or {@code null}
-     * @throws ClassCastException    If {@link E} is not an instance of the klass
-     * @throws IllegalStateException If the object cannot be converted to {@link E}
-     */
-    @Nullable <E> E cast(
-        @NotNull CharSequence klass,
         @Nullable Object object
     );
 }

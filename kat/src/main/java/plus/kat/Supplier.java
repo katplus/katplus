@@ -60,7 +60,6 @@ public interface Supplier extends Converter {
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Supplier#revoke(Class, Spare)
-     * @since 0.0.2
      */
     @Nullable
     Spare<?> embed(
@@ -107,11 +106,11 @@ public interface Supplier extends Converter {
      * @param spare the specified spare to be embedded
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} or {@code spare} is null
-     * @see Supplier#revoke(CharSequence, Spare)
+     * @see Supplier#revoke(String, Spare)
      */
     @Nullable
     Spare<?> embed(
-        @NotNull CharSequence klass,
+        @NotNull String klass,
         @NotNull Spare<?> spare
     );
 
@@ -131,18 +130,76 @@ public interface Supplier extends Converter {
      * @param spare the specified spare to be removed
      * @return the previous {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
-     * @see Supplier#embed(CharSequence, Spare)
+     * @see Supplier#embed(String, Spare)
      * @since 0.0.5
      */
     @Nullable
     Spare<?> revoke(
-        @NotNull CharSequence klass,
+        @NotNull String klass,
         @Nullable Spare<?> spare
     );
 
     /**
-     * Returns the {@link Spare} of {@code klass}.
-     * If there is no cache, uses {@link Provider}s to search for it
+     * Look up the {@link Spare} of the {@code type}. If there's
+     * no cache, the {@link Provider}s is used to search for the spare
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Type type = ...
+     *  Spare<User> spare = supplier.lookup(type);
+     * }</pre>
+     *
+     * @param type the specified type for search
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code type} is null
+     */
+    @Nullable <T>
+    Spare<T> lookup(
+        @NotNull Type type
+    );
+
+    /**
+     * Look up the {@link Spare} of the {@code klass}. If there's
+     * no cache, the {@link Provider}s is used to search for the spare
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Space klass = ...
+     *  Spare<User> spare = supplier.lookup(klass);
+     * }</pre>
+     *
+     * @param klass the specified klass for lookup
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     */
+    @Nullable <T>
+    Spare<T> lookup(
+        @NotNull Space klass
+    );
+
+    /**
+     * Look up the {@link Spare} of the {@code klass}. If there's
+     * no cache, the {@link Provider}s is used to search for the spare
+     *
+     * <pre>{@code
+     *  Supplier supplier = ...
+     *  Spare<User> spare = supplier.lookup(
+     *      "plus.kat.entity.User"
+     *  );
+     * }</pre>
+     *
+     * @param klass the specified klass for lookup
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     */
+    @Nullable <T>
+    Spare<T> lookup(
+        @NotNull String klass
+    );
+
+    /**
+     * Look up the {@link Spare} of the {@code klass}. If there's
+     * no cache, the {@link Provider}s is used to search for the spare
      *
      * <pre>{@code
      *  Supplier supplier = ...
@@ -159,110 +216,50 @@ public interface Supplier extends Converter {
     );
 
     /**
-     * Returns the {@link Spare} of {@code klass}.
-     * If there is no cache, try calling {@code #search(null, klass)}
+     * Look up the {@link Spare} of the {@code type}. If there's
+     * no cache, the {@link Provider}s is used to look for the spare
+     * If still not found, use the {@code type} and {@code klass} to search for spare
      *
      * <pre>{@code
      *  Supplier supplier = ...
-     *  Spare<User> spare = supplier.lookup(
-     *      "plus.kat.entity.User"
+     *  Space name = new Space(
+     *      "plus.kat.entity.UserVO"
      *  );
+     *  Spare<UserVO> spare = supplier.lookup(name, User.class);
      * }</pre>
      *
-     * @param klass the specified klass for lookup
+     * @param name  the specified actual name
+     * @param klass the specified parent class
      * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
+     * @throws NullPointerException If the specified {@code params} is null
      */
     @Nullable <T>
     Spare<T> lookup(
-        @NotNull CharSequence klass
+        @NotNull Space name,
+        @NotNull Class<T> klass
     );
 
     /**
-     * Returns the {@link Spare} of {@code type} or {@code klass}.
-     * If there is no cache, try calling {@code #search(type, klass)}
+     * Look up the {@link Spare} of {@code klass}. If there's
+     * no cache, the {@link Provider}s is used to search for the spare.
+     * {@link Class#forName(String, boolean, ClassLoader)} method maybe used to
+     * find and judge whether it's a subclass of the type and then find its spare
      *
      * <pre>{@code
      *  Supplier supplier = ...
-     *  Spare<User> spare = supplier.lookup(
-     *      User.class, "plus.kat.entity.User"
-     *  );
+     *  String klass = "plus.kat.entity.UserVO";
+     *  Spare<UserVO> spare = supplier.lookup(klass, User.class);
      * }</pre>
      *
-     * @param type  the specified type for lookup
-     * @param klass the specified alternate klass
+     * @param klass  the specified actual klass
+     * @param parent the specified parent class
      * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the parameters contains null
-     * @since 0.0.4
-     */
-    @Nullable <T>
-    Spare<T> lookup(
-        @NotNull Class<T> type,
-        @NotNull CharSequence klass
-    );
-
-    /**
-     * Returns the {@link Spare} of {@code type}. If there is
-     * no cache, the {@link Provider}s is used to search for it
-     *
-     * <pre>{@code
-     *  Type type = ...
-     *  Supplier supplier = ...
-     *  Spare<User> spare = supplier.search(type);
-     * }</pre>
-     *
-     * @param type the specified type for search
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code type} is null
-     * @since 0.0.6
-     */
-    @Nullable <T>
-    Spare<T> search(
-        @NotNull Type type
-    );
-
-    /**
-     * Returns the {@link Spare} of {@code klass}. If there is
-     * no cache, try calling {@code #search(Object.class, klass)}
-     *
-     * <pre>{@code
-     *  Supplier supplier = ...
-     *  Spare<User> spare = supplier.search(
-     *      "plus.kat.entity.User"
-     *  );
-     * }</pre>
-     *
-     * @param klass the specified klass for search
-     * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
-     * @since 0.0.4
-     */
-    @Nullable <T>
-    Spare<T> search(
-        @NotNull CharSequence klass
-    );
-
-    /**
-     * Returns the {@link Spare} of {@code klass}.
-     * If not cached first through uses {@link Provider}s to search for it,
-     * if not found, then use {@link Class#forName(String, boolean, ClassLoader)}
-     * to find and judge whether it is a subclass of {@code type} and then find its {@link Spare}.
-     *
-     * <pre>{@code
-     *  Supplier supplier = ...
-     *  Class<User> type = User.class;
-     *  Spare<UserVO> spare = supplier.search(type, "plus.kat.entity.UserVO");
-     * }</pre>
-     *
-     * @param type  the specified parent class
-     * @param klass the specified actual class
-     * @return {@link Spare} or {@code null}
-     * @since 0.0.4
+     * @throws NullPointerException If the specified {@code params} is null
      */
     @Nullable <K, T extends K>
-    Spare<T> search(
-        @Nullable Class<K> type,
-        @Nullable CharSequence klass
+    Spare<T> lookup(
+        @NotNull String klass,
+        @NotNull Class<K> parent
     );
 
     /**
@@ -394,6 +391,48 @@ public interface Supplier extends Converter {
      * Converts the {@link Object} to {@link E}
      *
      * <pre>{@code
+     *  String clazz = "plus.kat.entity.User"
+     *  Supplier supplier = ...
+     *
+     *  User user = supplier.cast(
+     *      clazz, "{:id(1):name(kraity)}"
+     *  );
+     *  User user = supplier.cast(
+     *      clazz, Map.of("id", 1, "name", "kraity")
+     *  );
+     * }</pre>
+     *
+     * @param klass  the specified klass for lookup
+     * @param object the specified data to be converted
+     * @return {@link E} or {@code null}
+     * @throws Collapse              If a build error occurs
+     * @throws FatalCrash            If no spare available for klass is found
+     * @throws ClassCastException    If {@link E} is not an instance of the klass
+     * @throws IllegalStateException If the object cannot be converted to {@link E}
+     * @see Spare#cast(Object, Supplier)
+     */
+    @Nullable
+    default <E> E cast(
+        @NotNull String klass,
+        @Nullable Object object
+    ) {
+        Spare<E> spare = lookup(klass);
+
+        if (spare != null) {
+            return spare.cast(
+                object, this
+            );
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + klass
+            );
+        }
+    }
+
+    /**
+     * Converts the {@link Object} to {@link E}
+     *
+     * <pre>{@code
      *  Class<User> clazz = ...
      *  Supplier supplier = ...
      *
@@ -419,48 +458,6 @@ public interface Supplier extends Converter {
         @Nullable Object object
     ) {
         Spare<E> spare = lookup(klass);
-
-        if (spare != null) {
-            return spare.cast(
-                object, this
-            );
-        } else {
-            throw new FatalCrash(
-                "Not found the spare of " + klass
-            );
-        }
-    }
-
-    /**
-     * Converts the {@link Object} to {@link E}
-     *
-     * <pre>{@code
-     *  String clazz = "plus.kat.entity.User"
-     *  Supplier supplier = ...
-     *
-     *  User user = supplier.cast(
-     *      clazz, "{:id(1):name(kraity)}"
-     *  );
-     *  User user = supplier.cast(
-     *      clazz, Map.of("id", 1, "name", "kraity")
-     *  );
-     * }</pre>
-     *
-     * @param klass  the specified klass for lookup
-     * @param object the specified data to be converted
-     * @return {@link E} or {@code null}
-     * @throws Collapse              If a build error occurs
-     * @throws FatalCrash            If no spare available for klass is found
-     * @throws ClassCastException    If {@link E} is not an instance of the klass
-     * @throws IllegalStateException If the object cannot be converted to {@link E}
-     * @see Spare#cast(Object, Supplier)
-     */
-    @Nullable
-    default <E> E cast(
-        @NotNull CharSequence klass,
-        @Nullable Object object
-    ) {
-        Spare<E> spare = search(klass);
 
         if (spare != null) {
             return spare.cast(
@@ -761,9 +758,7 @@ public interface Supplier extends Converter {
     default Chan write(
         @Nullable Object value
     ) throws IOException {
-        return write(
-            value, Plan.DEF.writeFlags
-        );
+        return write(value, 0);
     }
 
     /**
@@ -870,9 +865,7 @@ public interface Supplier extends Converter {
     default Chan mark(
         @Nullable Object value
     ) throws IOException {
-        return mark(
-            value, Plan.DEF.writeFlags
-        );
+        return mark(value, 0);
     }
 
     /**
@@ -979,9 +972,7 @@ public interface Supplier extends Converter {
     default Chan serial(
         @Nullable Object value
     ) throws IOException {
-        return serial(
-            value, Plan.DEF.writeFlags
-        );
+        return serial(value, 0);
     }
 
     /**
@@ -1110,51 +1101,6 @@ public interface Supplier extends Converter {
      *   Supplier supplier = ...
      *
      *   Algo algo = ...
-     *   String type = "plus.kat.entity.User";
-     *
-     *   User user = supplier.solve(
-     *      type, algo, event.with(
-     *         Flag.VALUE_AS_BEAN
-     *      )
-     *   );
-     * }</pre>
-     *
-     * @param algo  the specified algo for solve
-     * @param klass the specified klass for lookup
-     * @param event the specified event to be handled
-     * @throws Collapse             If parsing fails or the result is null
-     * @throws FatalCrash           If no spare available for klass is found
-     * @throws NullPointerException If the specified klass, algo or the event is null
-     * @see Spare#solve(Algo, Event)
-     * @since 0.0.2
-     */
-    @NotNull
-    default <T> T solve(
-        @NotNull CharSequence klass,
-        @NotNull Algo algo,
-        @NotNull Event<T> event
-    ) {
-        Spare<T> spare = search(klass);
-
-        if (spare != null) {
-            return spare.solve(
-                algo, event.with(this)
-            );
-        } else {
-            throw new FatalCrash(
-                "Not found the spare of " + klass
-            );
-        }
-    }
-
-    /**
-     * Resolves the {@link Event} and converts the result to {@link T}
-     *
-     * <pre>{@code
-     *   Event<User> event = ...
-     *   Supplier supplier = ...
-     *
-     *   Algo algo = ...
      *   Type type = User.class;
      *
      *   User user = supplier.solve(
@@ -1179,7 +1125,7 @@ public interface Supplier extends Converter {
         @NotNull Algo algo,
         @NotNull Event<T> event
     ) {
-        Spare<T> spare = search(type);
+        Spare<T> spare = lookup(type);
 
         if (spare != null) {
             event.with(this);
@@ -1189,6 +1135,96 @@ public interface Supplier extends Converter {
         } else {
             throw new FatalCrash(
                 "Not found the spare of " + type
+            );
+        }
+    }
+
+    /**
+     * Resolves the {@link Event} and converts the result to {@link T}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Supplier supplier = ...
+     *
+     *   Algo algo = ...
+     *   Space type = new Space("plus.kat.entity.User");
+     *
+     *   User user = supplier.solve(
+     *      type, algo, event.with(
+     *         Flag.VALUE_AS_BEAN
+     *      )
+     *   );
+     * }</pre>
+     *
+     * @param algo  the specified algo for solve
+     * @param klass the specified klass for lookup
+     * @param event the specified event to be handled
+     * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
+     * @throws NullPointerException If the specified klass, algo or the event is null
+     * @see Spare#solve(Algo, Event)
+     * @since 0.0.6
+     */
+    @NotNull
+    default <T> T solve(
+        @NotNull Space klass,
+        @NotNull Algo algo,
+        @NotNull Event<T> event
+    ) {
+        Spare<T> spare = lookup(klass);
+
+        if (spare != null) {
+            return spare.solve(
+                algo, event.with(this)
+            );
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + klass
+            );
+        }
+    }
+
+    /**
+     * Resolves the {@link Event} and converts the result to {@link T}
+     *
+     * <pre>{@code
+     *   Event<User> event = ...
+     *   Supplier supplier = ...
+     *
+     *   Algo algo = ...
+     *   String type = "plus.kat.entity.User";
+     *
+     *   User user = supplier.solve(
+     *      type, algo, event.with(
+     *         Flag.VALUE_AS_BEAN
+     *      )
+     *   );
+     * }</pre>
+     *
+     * @param algo  the specified algo for solve
+     * @param klass the specified klass for lookup
+     * @param event the specified event to be handled
+     * @throws Collapse             If parsing fails or the result is null
+     * @throws FatalCrash           If no spare available for klass is found
+     * @throws NullPointerException If the specified klass, algo or the event is null
+     * @see Spare#solve(Algo, Event)
+     * @since 0.0.2
+     */
+    @NotNull
+    default <T> T solve(
+        @NotNull String klass,
+        @NotNull Algo algo,
+        @NotNull Event<T> event
+    ) {
+        Spare<T> spare = lookup(klass);
+
+        if (spare != null) {
+            return spare.solve(
+                algo, event.with(this)
+            );
+        } else {
+            throw new FatalCrash(
+                "Not found the spare of " + klass
             );
         }
     }
@@ -1382,7 +1418,7 @@ public interface Supplier extends Converter {
         protected final Map<Object, Spare<?>> major;
 
         /**
-         * Constructs a default {@link Supplier}
+         * Constructs a supplier which has a service provider
          *
          * @param buffer   the init capacity of minor mapping table
          * @param capacity the init capacity of major mapping table
@@ -1421,7 +1457,7 @@ public interface Supplier extends Converter {
 
         @Override
         public Spare<?> embed(
-            @NotNull CharSequence klass,
+            @NotNull String klass,
             @NotNull Spare<?> spare
         ) {
             return minor.put(klass, spare);
@@ -1429,7 +1465,7 @@ public interface Supplier extends Converter {
 
         @Override
         public Spare<?> revoke(
-            @NotNull CharSequence klass,
+            @NotNull String klass,
             @Nullable Spare<?> spare
         ) {
             if (spare == null) {
@@ -1441,56 +1477,6 @@ public interface Supplier extends Converter {
 
         @Override
         public <T> Spare<T> lookup(
-            @NotNull Class<T> klass
-        ) {
-            Spare<?> spare = major.get(klass);
-
-            if (spare != null) {
-                return (Spare<T>) spare;
-            }
-
-            Provider[] PS = PRO;
-            if (PS != null) {
-                for (Provider p : PS) {
-                    try {
-                        spare = p.lookup(
-                            klass, this
-                        );
-                    } catch (Collapse e) {
-                        return null;
-                    }
-
-                    if (spare != null) {
-                        return (Spare<T>) spare;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        public <T> Spare<T> lookup(
-            @NotNull CharSequence klass
-        ) {
-            return search(null, klass);
-        }
-
-        @Override
-        public <T> Spare<T> lookup(
-            @NotNull Class<T> type,
-            @NotNull CharSequence klass
-        ) {
-            Spare<T> spare = lookup(type);
-            if (spare != null) {
-                return spare;
-            } else {
-                return search(type, klass);
-            }
-        }
-
-        @Override
-        public <T> Spare<T> search(
             @NotNull Type type
         ) {
             Spare<?> spare = major.get(type);
@@ -1520,50 +1506,21 @@ public interface Supplier extends Converter {
         }
 
         @Override
-        public <T> Spare<T> search(
-            @NotNull CharSequence klass
+        public <T> Spare<T> lookup(
+            @NotNull Class<T> klass
         ) {
-            return search(
-                Object.class, klass
-            );
-        }
+            Spare<?> spare = major.get(klass);
 
-        @Override
-        public <K, T extends K> Spare<T> search(
-            @Nullable Class<K> type,
-            @Nullable CharSequence klass
-        ) {
-            if (klass == null) {
-                return null;
-            }
-
-            Spare<?> spare = minor.get(klass);
             if (spare != null) {
-                if (type == null ||
-                    type.isAssignableFrom(
-                        spare.getType()
-                    )) {
-                    return (Spare<T>) spare;
-                }
-                return null;
-            }
-
-            if (type == null) {
-                return null;
-            }
-
-            int i = klass.length();
-            if (i < 2 || i > 127) {
-                return null;
+                return (Spare<T>) spare;
             }
 
             Provider[] PS = PRO;
             if (PS != null) {
-                String name = klass.toString();
                 for (Provider p : PS) {
                     try {
                         spare = p.search(
-                            type, name, this
+                            klass, this
                         );
                     } catch (Collapse e) {
                         return null;
@@ -1573,6 +1530,139 @@ public interface Supplier extends Converter {
                         return (Spare<T>) spare;
                     }
                 }
+            }
+
+            return null;
+        }
+
+        @Override
+        public <T> Spare<T> lookup(
+            @NotNull Space klass
+        ) {
+            Spare<?> spare = minor.get(klass);
+
+            if (spare != null) {
+                return (Spare<T>) spare;
+            }
+
+            Provider[] PS = PRO;
+            if (PS != null) {
+                for (Provider p : PS) {
+                    try {
+                        spare = p.search(
+                            klass, null, this
+                        );
+                    } catch (Collapse e) {
+                        return null;
+                    }
+
+                    if (spare != null) {
+                        return (Spare<T>) spare;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public <T> Spare<T> lookup(
+            @NotNull String klass
+        ) {
+            Spare<?> spare = minor.get(klass);
+
+            if (spare != null) {
+                return (Spare<T>) spare;
+            }
+
+            Provider[] PS = PRO;
+            if (PS != null) {
+                for (Provider p : PS) {
+                    try {
+                        spare = p.search(
+                            klass, Object.class, this
+                        );
+                    } catch (Collapse e) {
+                        return null;
+                    }
+
+                    if (spare != null) {
+                        return (Spare<T>) spare;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public <T> Spare<T> lookup(
+            @NotNull Space name,
+            @NotNull Class<T> klass
+        ) {
+            Spare<?> spare = major.get(klass);
+
+            if (spare != null) {
+                return (Spare<T>) spare;
+            }
+
+            Provider[] PS = PRO;
+            if (PS != null) {
+                for (Provider p : PS) {
+                    try {
+                        spare = p.search(
+                            name, klass, this
+                        );
+                    } catch (Collapse e) {
+                        return null;
+                    }
+
+                    if (spare != null) {
+                        return (Spare<T>) spare;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public <K, T extends K> Spare<T> lookup(
+            @NotNull String klass,
+            @NotNull Class<K> parent
+        ) {
+            Spare<?> spare = minor.get(klass);
+
+            if (spare != null) {
+                if (parent.isAssignableFrom(
+                    spare.getType()
+                )) {
+                    return (Spare<T>) spare;
+                }
+                return null;
+            }
+
+            if (parent != null) {
+                Provider[] PS = PRO;
+                if (PS != null) {
+                    for (Provider p : PS) {
+                        try {
+                            spare = p.search(
+                                klass, parent, this
+                            );
+                        } catch (Collapse e) {
+                            return null;
+                        }
+
+                        if (spare != null) {
+                            return (Spare<T>) spare;
+                        }
+                    }
+                }
+            } else {
+                throw new NullPointerException(
+                    "Method #lookup(String, Class) receives null type"
+                );
             }
 
             return null;
@@ -1596,8 +1686,8 @@ public interface Supplier extends Converter {
             }
 
             if (type instanceof Space) {
-                return search(
-                    Object.class, (CharSequence) type
+                return lookup(
+                    (Space) type, Object.class
                 );
             }
 
@@ -1632,7 +1722,7 @@ public interface Supplier extends Converter {
         }
 
         @Override
-        public Spare<?> lookup(
+        public Spare<?> search(
             @NotNull Class<?> klass,
             @NotNull Supplier supplier
         ) {
@@ -1795,11 +1885,42 @@ public interface Supplier extends Converter {
 
         @Override
         public Spare<?> search(
-            @NotNull Class<?> type,
-            @NotNull String name,
+            @NotNull Space name,
+            @Nullable Class<?> parent,
             @NotNull Supplier supplier
         ) {
-            if (type != null) {
+            if (parent != null) {
+                Spare<?> spare = search(
+                    parent, supplier
+                );
+
+                if (spare != null) {
+                    return spare;
+                }
+
+                spare = minor.get(name);
+                if (spare != null) {
+                    if (parent.isAssignableFrom(
+                        spare.getType())) {
+                        return spare;
+                    }
+                    return null;
+                }
+
+                return search(
+                    name.toString(), parent, supplier
+                );
+            }
+            return null;
+        }
+
+        @Override
+        public Spare<?> search(
+            @NotNull String name,
+            @Nullable Class<?> parent,
+            @NotNull Supplier supplier
+        ) {
+            if (parent != null) {
                 ClassLoader cl = null;
                 try {
                     cl = Thread.currentThread()
@@ -1810,7 +1931,7 @@ public interface Supplier extends Converter {
 
                 if (cl == null) {
                     try {
-                        cl = type.getClassLoader();
+                        cl = parent.getClassLoader();
                     } catch (Throwable e) {
                         // Cannot access caller ClassLoader
                     }
@@ -1834,7 +1955,7 @@ public interface Supplier extends Converter {
                     return null;
                 }
 
-                if (type.isAssignableFrom(child)) {
+                if (parent.isAssignableFrom(child)) {
                     Spare<?> spare = lookup(child);
                     if (spare != null) {
                         minor.putIfAbsent(
@@ -1843,10 +1964,6 @@ public interface Supplier extends Converter {
                     }
                     return spare;
                 }
-            } else {
-                throw new NullPointerException(
-                    "Method #search(Class, String, Supplier) receives null type"
-                );
             }
 
             return null;
