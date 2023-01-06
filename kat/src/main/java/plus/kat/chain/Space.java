@@ -439,10 +439,33 @@ public class Space extends Chain implements Type {
             );
             if (cls != null) {
                 if (cls == Object.class) {
-                    return (Class<T>) Object[].class;
+                    cls = Object[].class;
+                } else if (cls == String.class) {
+                    cls = String[].class;
+                } else if (cls.isPrimitive()) {
+                    if (cls == int.class) {
+                        cls = int[].class;
+                    } else if (cls == long.class) {
+                        cls = long[].class;
+                    } else if (cls == float.class) {
+                        cls = float[].class;
+                    } else if (cls == double.class) {
+                        cls = double[].class;
+                    } else if (cls == byte.class) {
+                        cls = byte[].class;
+                    } else if (cls == short.class) {
+                        cls = short[].class;
+                    } else if (cls == char.class) {
+                        cls = char[].class;
+                    } else if (cls == boolean.class) {
+                        cls = boolean[].class;
+                    } else {
+                        return null;
+                    }
                 } else {
-                    return (Class<T>) Array.newInstance(cls, 0).getClass();
+                    cls = Array.newInstance(cls, 0).getClass();
                 }
+                return (Class<T>) cls;
             }
         }
 

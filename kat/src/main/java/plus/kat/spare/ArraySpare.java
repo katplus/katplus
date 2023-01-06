@@ -38,7 +38,9 @@ import java.util.Map;
 public class ArraySpare extends Property<Object> {
 
     public static final ArraySpare
-        INSTANCE = new ArraySpare(Object[].class);
+        INSTANCE = new ArraySpare(
+        Object[].class, Supplier.ins()
+    );
 
     public static final Object[]
         EMPTY_ARRAY = new Object[0];
@@ -47,9 +49,10 @@ public class ArraySpare extends Property<Object> {
     protected final Class<?> elem;
 
     public ArraySpare(
-        @NotNull Class<?> clazz
+        @NotNull Class<?> clazz,
+        @NotNull Supplier supplier
     ) {
-        super((Class<Object>) clazz);
+        super((Class<Object>) clazz, supplier);
         if ((elem = clazz.getComponentType()) == null) {
             throw new IllegalStateException(
                 "Specified `" + clazz + "` is not an array type"

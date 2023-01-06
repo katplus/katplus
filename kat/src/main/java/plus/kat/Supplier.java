@@ -1679,15 +1679,16 @@ public interface Supplier extends Converter {
                 );
             }
 
-            if (type instanceof ParameterizedType) {
-                return search(
-                    ((ParameterizedType) type).getRawType(), supplier
+            if (type instanceof Space) {
+                Space name = (Space) type;
+                return !name.isClass() ? null : search(
+                    name.toString(), Object.class, supplier
                 );
             }
 
-            if (type instanceof Space) {
-                return lookup(
-                    (Space) type, Object.class
+            if (type instanceof ParameterizedType) {
+                return search(
+                    ((ParameterizedType) type).getRawType(), supplier
                 );
             }
 
@@ -1706,19 +1707,43 @@ public interface Supplier extends Converter {
                     if (cls == Object.class) {
                         return lookup(Object[].class);
                     }
-                    return lookup(
-                        Array.newInstance(cls, 0).getClass()
-                    );
+                    if (cls == String.class) {
+                        return lookup(String[].class);
+                    }
+                    if (cls.isPrimitive()) {
+                        if (cls == int.class) {
+                            return lookup(int[].class);
+                        }
+                        if (cls == long.class) {
+                            return lookup(long[].class);
+                        }
+                        if (cls == float.class) {
+                            return lookup(float[].class);
+                        }
+                        if (cls == double.class) {
+                            return lookup(double[].class);
+                        }
+                        if (cls == byte.class) {
+                            return lookup(byte[].class);
+                        }
+                        if (cls == short.class) {
+                            return lookup(short[].class);
+                        }
+                        if (cls == char.class) {
+                            return lookup(char[].class);
+                        }
+                        if (cls == boolean.class) {
+                            return lookup(boolean[].class);
+                        }
+                    } else {
+                        return lookup(
+                            Array.newInstance(cls, 0).getClass()
+                        );
+                    }
                 }
             }
 
-            if (type != null) {
-                return null;
-            } else {
-                throw new NullPointerException(
-                    "Method #lookup(Type, Supplier) receives null type"
-                );
-            }
+            return null;
         }
 
         @Override
@@ -1762,7 +1787,7 @@ public interface Supplier extends Converter {
                     break;
                 }
                 case '[': {
-                    return new ArraySpare(klass).join(this);
+                    return new ArraySpare(klass, this).join(this);
                 }
             }
 
@@ -1778,7 +1803,7 @@ public interface Supplier extends Converter {
                     if (klass == Chain.class) {
                         return ChainSpare.INSTANCE.join(this);
                     } else {
-                        return new ChainSpare(klass).join(this);
+                        return new ChainSpare(klass, this).join(this);
                     }
                 }
             } else {
@@ -1807,22 +1832,22 @@ public interface Supplier extends Converter {
 
                         Constructor<?>[] cs = clazz
                             .getDeclaredConstructors();
-                        Constructor<?> d, c = cs[0];
+                        Constructor<?> buffer, latest = cs[0];
                         for (int i = 1; i < cs.length; i++) {
-                            d = cs[i];
-                            if (c.getParameterCount() <=
-                                d.getParameterCount()) c = d;
+                            buffer = cs[i];
+                            if (latest.getParameterCount() <=
+                                buffer.getParameterCount()) latest = buffer;
                         }
 
                         Object[] args;
-                        int size = c.getParameterCount();
+                        int size = latest.getParameterCount();
 
                         if (size == 0) {
                             args = ArraySpare.EMPTY_ARRAY;
                         } else {
                             args = new Object[size];
                             Class<?>[] cls =
-                                c.getParameterTypes();
+                                latest.getParameterTypes();
                             for (int i = 0; i < size; i++) {
                                 Class<?> m = cls[i];
                                 if (m == Class.class) {
@@ -1841,12 +1866,11 @@ public interface Supplier extends Converter {
                             }
                         }
 
-                        if (!c.isAccessible()) {
-                            c.setAccessible(true);
+                        if (!latest.isAccessible()) {
+                            latest.setAccessible(true);
                         }
-                        return ((Spare<?>)
-                            c.newInstance(args)
-                        ).join(this);
+                        return ((Spare<?>) latest
+                            .newInstance(args)).join(this);
                     } catch (Exception e) {
                         throw new FatalCrash(
                             "Failed to build the '"
@@ -1907,10 +1931,13 @@ public interface Supplier extends Converter {
                     return null;
                 }
 
-                return search(
-                    name.toString(), parent, supplier
-                );
+                if (name.isClass()) {
+                    return search(
+                        name.toString(), parent, supplier
+                    );
+                }
             }
+
             return null;
         }
 

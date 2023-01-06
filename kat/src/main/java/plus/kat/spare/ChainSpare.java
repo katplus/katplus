@@ -33,12 +33,15 @@ import java.lang.reflect.Type;
 public class ChainSpare extends Property<Chain> {
 
     public static final ChainSpare
-        INSTANCE = new ChainSpare(Chain.class);
+        INSTANCE = new ChainSpare(
+        Chain.class, Supplier.ins()
+    );
 
     public ChainSpare(
-        @NotNull Class<?> clazz
+        @NotNull Class<?> clazz,
+        @NotNull Supplier supplier
     ) {
-        super((Class<Chain>) clazz);
+        super((Class<Chain>) clazz, supplier);
     }
 
     @Override

@@ -43,8 +43,6 @@ public interface Provider extends Comparable<Provider> {
 
     /**
      * Returns the level of this provider
-     *
-     * @see #compareTo(Provider)
      */
     default int grade() {
         return 0;
@@ -53,7 +51,7 @@ public interface Provider extends Comparable<Provider> {
     /**
      * Returns the result of the comparison
      *
-     * @see Comparable#compareTo(Object)
+     * @see Provider#grade()
      */
     @Override
     default int compareTo(
@@ -75,6 +73,16 @@ public interface Provider extends Comparable<Provider> {
         @NotNull Type type,
         @NotNull Supplier supplier
     ) {
+        if (type instanceof Class) {
+            return search(
+                (Class<?>) type, supplier
+            );
+        }
+        if (type instanceof Space) {
+            return search(
+                (Space) type, null, supplier
+            );
+        }
         return null;
     }
 

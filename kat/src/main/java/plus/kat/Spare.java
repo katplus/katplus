@@ -27,7 +27,6 @@ import java.sql.*;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import static plus.kat.Plan.DEF;
 import static plus.kat.spare.Parser.Group;
 import static plus.kat.Supplier.Sample.INS;
 

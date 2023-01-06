@@ -37,16 +37,21 @@ public abstract class Property<T> implements Spare<T> {
     protected Property(
         @NotNull Class<T> klass
     ) {
-        this.klass = klass;
-        this.supplier = Supplier.ins();
+        this(klass, Supplier.ins());
     }
 
     protected Property(
         @NotNull Class<T> klass,
         @NotNull Supplier supplier
     ) {
-        this.klass = klass;
-        this.supplier = supplier;
+        if (klass != null && supplier != null) {
+            this.klass = klass;
+            this.supplier = supplier;
+        } else {
+            throw new NullPointerException(
+                "Received: (" + klass + ", " + supplier + ")"
+            );
+        }
     }
 
     @Override
