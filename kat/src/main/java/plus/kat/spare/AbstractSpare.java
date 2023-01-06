@@ -1026,7 +1026,7 @@ public abstract class AbstractSpare<T> implements Subject<T> {
                         } else if (m == Supplier.class) {
                             args[i] = subject.getSupplier();
                         } else if (m.isPrimitive()) {
-                            args[i] = Spare.lookup(m).apply();
+                            args[i] = Spare.of(m).apply();
                         } else if (m.isAnnotation()) {
                             args[i] = custom(
                                 (Class<? extends Annotation>) m

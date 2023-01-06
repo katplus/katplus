@@ -9,7 +9,6 @@ import java.io.*;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static plus.kat.Spare.lookup;
 
 public class DocTest {
 
@@ -61,7 +60,7 @@ public class DocTest {
 
     @Test
     public void test_markup() {
-        lookup(User.class);
+        Spare.of(User.class);
 
         User user = new User();
         user.id = 1;
@@ -80,7 +79,7 @@ public class DocTest {
     @Test
     public void test_parse() throws IOException {
         Spare<Article> spare =
-            lookup(Article.class);
+            Spare.of(Article.class);
 
         String text = "<plus.kat.article><title>mark</title><author><id>1</id><name>kraity</name><blocked>false</blocked></author><extra><date>2022-22-22</date></extra></plus.kat.article>";
 

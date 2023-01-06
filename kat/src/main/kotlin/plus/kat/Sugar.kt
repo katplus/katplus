@@ -22,8 +22,52 @@
 
 package plus.kat
 
-import java.io.IOException
 import kotlin.jvm.Throws
+
+import java.io.IOException
+import plus.kat.chain.Space
+
+/**
+ * E.g.
+ * ```
+ *  val spare = spare<User>()
+ * ```
+ *
+ * @return [Spare]?
+ * @since 0.0.6
+ * @see Spare.of
+ */
+inline fun <reified T : Any>
+    spare() = Spare.of(T::class.java)
+
+/**
+ * E.g.
+ * ```
+ *  val name = Space(
+ *     "plus.kat.entity.UserVO"
+ *  )
+ *  val spare = spare<User>(name)
+ * ```
+ *
+ * @return [Spare]?
+ * @since 0.0.6
+ * @see Spare.of
+ */
+inline fun <reified T : Any>
+    spare(name: Space) = Spare.of(name, T::class.java)
+
+/**
+ * E.g.
+ * ```
+ *  val spare = spare<User>("plus.kat.entity.UserVO")
+ * ```
+ *
+ * @return [Spare]?
+ * @since 0.0.6
+ * @see Spare.of
+ */
+inline fun <reified T : Any>
+    spare(klass: String) = Spare.of(klass, T::class.java)
 
 /**
  * Serialize the entity to Kat [String]
@@ -379,46 +423,6 @@ inline fun <reified T : Any>
  */
 inline fun <reified T : Any>
     CharSequence?.parse() = Json.decode(T::class.java, this)
-
-/**
- * E.g.
- * ```
- *  val spare = lookup<User>()
- * ```
- *
- * @return [Spare]?
- * @since 0.0.4
- * @see Spare.lookup
- */
-inline fun <reified T : Any>
-    lookup() = Spare.lookup(T::class.java)
-
-/**
- * E.g.
- * ```
- *  val spare = ...
- *  val previous = embed<User>(spare)
- * ```
- *
- * @return [Spare]?
- * @since 0.0.4
- * @see Spare.embed
- */
-inline fun <reified T : Any>
-    embed(spare: Spare<*>) = Spare.embed(T::class.java, spare)
-
-/**
- * E.g.
- * ```
- *  val previous = revoke<User>()
- * ```
- *
- * @return [Spare]?
- * @since 0.0.4
- * @see Spare.revoke
- */
-inline fun <reified T : Any>
-    revoke() = Spare.revoke(T::class.java, null)
 
 /**
  * E.g.

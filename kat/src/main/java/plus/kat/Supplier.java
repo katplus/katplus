@@ -216,7 +216,7 @@ public interface Supplier extends Converter {
     );
 
     /**
-     * Look up the {@link Spare} of the {@code type}. If there's
+     * Look up the {@link Spare} of the {@code klass}. If there's
      * no cache, the {@link Provider}s is used to look for the spare
      * If still not found, use the {@code type} and {@code klass} to search for spare
      *
@@ -240,7 +240,7 @@ public interface Supplier extends Converter {
     );
 
     /**
-     * Look up the {@link Spare} of {@code klass}. If there's
+     * Look up the {@link Spare} of the {@code klass}. If there's
      * no cache, the {@link Provider}s is used to search for the spare.
      * {@link Class#forName(String, boolean, ClassLoader)} method maybe used to
      * find and judge whether it's a subclass of the type and then find its spare
@@ -1428,6 +1428,15 @@ public interface Supplier extends Converter {
         ) {
             minor = new ConcurrentHashMap<>(buffer);
             major = new ConcurrentHashMap<>(capacity);
+        }
+
+        @Override
+        public boolean alive(
+            @NotNull Supplier o
+        ) {
+            throw new FatalCrash(
+                "It's a private provider"
+            );
         }
 
         @Override

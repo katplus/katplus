@@ -107,7 +107,7 @@ public class ReflectSpare<T> extends AbstractSpare<T> {
                 flag |= (1 << i);
                 Class<?> c = as[i];
                 if (c.isPrimitive()) {
-                    data[i] = Spare.lookup(c).apply();
+                    data[i] = Spare.of(c).apply();
                 }
             }
         }

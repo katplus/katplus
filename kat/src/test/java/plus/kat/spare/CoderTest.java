@@ -20,7 +20,7 @@ public class CoderTest {
     @Test
     public void test() throws IOException {
         Spare<Note> spare =
-            Spare.lookup(Note.class);
+            Spare.of(Note.class);
 
         Note note = spare.read(
             new Event<>(

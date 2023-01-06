@@ -41,7 +41,7 @@ public class SpareTest {
 
         for (Object o : list) {
             assertNull(
-                Spare.lookup(o.getClass())
+                Spare.of(o.getClass())
             );
         }
     }
@@ -49,7 +49,7 @@ public class SpareTest {
     @Test
     public void test_flat() {
         Spare<User> spare =
-            Spare.lookup(User.class);
+            Spare.of(User.class);
 
         User user = new User();
         user.id = 1;
@@ -105,7 +105,7 @@ public class SpareTest {
     @Test
     public void test_cast0() {
         Spare<User> spare =
-            Spare.lookup(User.class);
+            Spare.of(User.class);
 
         User user = spare.cast(
             "   ${$:id(1)$:name(kraity)}   "
@@ -119,7 +119,7 @@ public class SpareTest {
     @Test
     public void test_cast1() {
         Spare<User> spare =
-            Spare.lookup(User.class);
+            Spare.of(User.class);
 
         HashMap<String, Object>
             data = new HashMap<>();
@@ -142,7 +142,7 @@ public class SpareTest {
     @Test
     public void test_cast2() {
         Spare<Entity> spare =
-            Spare.lookup(Entity.class);
+            Spare.of(Entity.class);
 
         User user = new User();
         user.id = 1;
@@ -206,7 +206,7 @@ public class SpareTest {
     @Test
     public void test_supplier() {
         Spare<User> spare =
-            Spare.lookup(User.class);
+            Spare.of(User.class);
 
         assertNotNull(spare);
         assertNotNull(spare.getSupplier());
@@ -228,7 +228,7 @@ public class SpareTest {
     @Test
     public void test_apply() {
         Spare<User> spare =
-            Spare.lookup(User.class);
+            Spare.of(User.class);
 
         assertNotNull(spare.apply());
     }
@@ -236,7 +236,7 @@ public class SpareTest {
     @Test
     public void test_apply_type() {
         Spare<User> spare =
-            Spare.lookup(User.class);
+            Spare.of(User.class);
 
         assertSame(User.class, spare.apply(User.class).getClass());
         assertSame(User.class, spare.apply((Type) null).getClass());

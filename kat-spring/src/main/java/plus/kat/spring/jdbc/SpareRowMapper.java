@@ -54,7 +54,7 @@ public class SpareRowMapper<T> implements RowMapper<T> {
         Assert.notNull(klass, "Class must not be null");
         this.supplier = supplier;
         if (supplier == null) {
-            spare = Spare.lookup(klass);
+            spare = Spare.of(klass);
         } else {
             spare = supplier.lookup(klass);
         }

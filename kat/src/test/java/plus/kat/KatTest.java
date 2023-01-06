@@ -12,7 +12,6 @@ import java.io.*;
 import java.util.*;
 
 import static plus.kat.Flag.*;
-import static plus.kat.Spare.lookup;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class KatTest {
@@ -134,7 +133,7 @@ public class KatTest {
 
     @Test
     public void test_decode2() {
-        lookup(User.class);
+        Spare.of(User.class);
         HashMap<String, User> map = Kat.decode(
             Map.class, new Event<>(
                 "M{plus.kat.User:user{i:id(1)s:name(kraity)b:blocked(1)}}"
@@ -150,7 +149,7 @@ public class KatTest {
     @Test
     public void test_decode_string() throws IOException {
         Spare<String> spare =
-            lookup(String.class);
+            Spare.of(String.class);
 
         String plain = "hello world";
         String cipher = "s(hello world)";
@@ -168,7 +167,7 @@ public class KatTest {
     @Test
     public void test_decode_integer() throws IOException {
         Spare<Integer> spare =
-            lookup(Integer.class);
+            Spare.of(Integer.class);
 
         int plain = 123456789;
         String cipher = "i(123456789)";
@@ -186,7 +185,7 @@ public class KatTest {
     @Test
     public void test_decode_long() throws IOException {
         Spare<Long> spare =
-            lookup(Long.class);
+            Spare.of(Long.class);
 
         long plain = 123456789;
         String cipher = "l(123456789)";
@@ -204,7 +203,7 @@ public class KatTest {
     @Test
     public void test_write() throws IOException {
         Spare<User> spare =
-            lookup(User.class);
+            Spare.of(User.class);
 
         String text = "plus.kat.User{i:id(1)s:name(kraity)b:blocked(1)}";
 
@@ -291,7 +290,7 @@ public class KatTest {
         map.put("list", "${i(123)i(456)}");
 
         Spare<Data> spare =
-            lookup(Data.class);
+            Spare.of(Data.class);
 
         Data data = spare.cast(map);
         assertNotNull(data);
@@ -369,7 +368,7 @@ public class KatTest {
 
     @Test
     public void test_member_cast_2() {
-        Spare<User> spare = lookup(User.class);
+        Spare<User> spare = Spare.of(User.class);
 
         User u1 = spare.cast(
             "${$:id(1)$:name(kraity)$:blocked(1)}"
@@ -395,7 +394,7 @@ public class KatTest {
 
     @Test
     public void test_enum() {
-        Spare<State> spare = lookup(State.class);
+        Spare<State> spare = Spare.of(State.class);
 
         assertEquals(State.OPEN, spare.read(new Event<>("State(OPEN)")));
         assertEquals(State.SELF, spare.read(new Event<>("State(SELF)")));
@@ -416,7 +415,7 @@ public class KatTest {
     @Test
     public void test_reflect() throws IOException {
         Spare<Note> spare =
-            lookup(Note.class);
+            Spare.of(Note.class);
 
         String text = "plus.kat.Note{i:id(1)s:title(KAT+)B:cipher(S0FUKw==)A:meta{A{i(8)i(16)}A{i(32)}}A:tags{s(kat)}State:state(OPEN)f:version(0.1)l:created(1645539742000)b:deleted(1)L:authors{plus.kat.User{i:id(1)s:name(kraity)b:blocked(1)}}}";
         Note note = spare.read(

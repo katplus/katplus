@@ -130,7 +130,7 @@ public class SpareTest {
     @Test
     public void test_date() throws IOException {
         Spare<Time> spare =
-            Spare.lookup(Time.class);
+            Spare.of(Time.class);
 
         String text = "${$:now(2022-01-11 11:11:11)$:time(1641871353000)$:date(2022-02-22T22:22:22.222Z)$:just(03,三月 2022)}";
 
@@ -184,7 +184,7 @@ public class SpareTest {
     @Test
     public void test_record() throws IOException {
         Spare<Art> spare =
-            Spare.lookup(Art.class);
+            Spare.of(Art.class);
 
         Art a1 = spare.read(
             new Event<>("{:id(1):name(kraity):meta(katplus)}")
@@ -323,7 +323,7 @@ public class SpareTest {
 
     @Test
     public void test_enum_cast() {
-        Spare<Meta> spare = Spare.lookup(Meta.class);
+        Spare<Meta> spare = Spare.of(Meta.class);
 
         assertEquals(Meta.KAT, spare.cast(0));
         assertEquals(Meta.KAT, spare.cast("KAT"));
@@ -575,11 +575,8 @@ public class SpareTest {
         assertNotNull(type);
         assertNotNull(method);
 
-        Supplier supplier = Supplier.ins();
-        Spare<Object[]> spare = supplier.lookup(type);
-
         method.invoke(
-            new Hook(), spare.read(
+            new Hook(), Spare.of(type).read(
                 new Event<Object[]>("{{(1)(2)}{:name(kraity)}}").with(type)
             )
         );

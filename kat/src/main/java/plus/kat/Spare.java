@@ -18,8 +18,9 @@ package plus.kat;
 import plus.kat.anno.NotNull;
 import plus.kat.anno.Nullable;
 
-import plus.kat.spare.*;
+import plus.kat.chain.*;
 import plus.kat.crash.*;
+import plus.kat.spare.*;
 import plus.kat.entity.*;
 import plus.kat.stream.*;
 
@@ -977,19 +978,84 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
+     * Returns the {@link Spare} of the {@code type}
+     *
+     * <pre>{@code
+     *  Type type = ...
+     *  Spare<User> spare = Spare.lookup(type);
+     * }</pre>
+     *
+     * @param type the specified type for lookup
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code type} is null
+     * @see Supplier#lookup(Type)
+     * @since 0.0.6
+     */
+    @Nullable
+    static <T> Spare<T> of(
+        @NotNull Type type
+    ) {
+        return INS.lookup(type);
+    }
+
+    /**
      * Returns the {@link Spare} of the {@code klass}
      *
      * <pre>{@code
-     *  Spare<User> spare = Spare.lookup(User.class);
+     *  Space klass = ...;
+     *  Spare<User> spare = Spare.lookup(klass);
+     * }</pre>
+     *
+     * @param klass the specified klass for lookup
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @see Supplier#lookup(Space)
+     * @since 0.0.6
+     */
+    @Nullable
+    static <T> Spare<T> of(
+        @NotNull Space klass
+    ) {
+        return INS.lookup(klass);
+    }
+
+    /**
+     * Returns the {@link Spare} of the {@code klass}
+     *
+     * <pre>{@code
+     *  String klass = "plus.kat.entity.User";
+     *  Spare<User> spare = Spare.lookup(klass);
+     * }</pre>
+     *
+     * @param klass the specified klass for lookup
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code klass} is null
+     * @see Supplier#lookup(String)
+     * @since 0.0.6
+     */
+    @Nullable
+    static <T> Spare<T> of(
+        @NotNull String klass
+    ) {
+        return INS.lookup(klass);
+    }
+
+    /**
+     * Returns the {@link Spare} of the {@code klass}
+     *
+     * <pre>{@code
+     *  Class<User> klass = User.class;
+     *  Spare<User> spare = Spare.lookup(klass);
      * }</pre>
      *
      * @param klass the specified klass for lookup
      * @return {@link Spare} or {@code null}
      * @throws NullPointerException If the specified {@code klass} is null
      * @see Supplier#lookup(Class)
+     * @since 0.0.6
      */
     @Nullable
-    static <T> Spare<T> lookup(
+    static <T> Spare<T> of(
         @NotNull Class<T> klass
     ) {
         return INS.lookup(klass);
@@ -999,18 +1065,51 @@ public interface Spare<T> extends Coder<T> {
      * Returns the {@link Spare} of the {@code klass}
      *
      * <pre>{@code
-     *  Spare<User> spare = Spare.search("plus.kat.entity.User");
+     *  Space name = new Space(
+     *      "plus.kat.entity.UserVO"
+     *  );
+     *  Spare<UserVO> spare = Spare.lookup(name, User.class);
      * }</pre>
      *
-     * @param klass the specified klass for search
+     * @param name  the specified actual name
+     * @param klass the specified parent class
      * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code klass} is null
-     * @see Supplier#lookup(String)
+     * @throws NullPointerException If the specified {@code params} is null
+     * @see Supplier#lookup(Space, Class)
+     * @since 0.0.6
      */
     @Nullable
-    static <T> Spare<T> lookup(
-        @NotNull String klass
+    static <T> Spare<T> of(
+        @NotNull Space name,
+        @NotNull Class<T> klass
     ) {
-        return INS.lookup(klass);
+        return INS.lookup(
+            name, klass
+        );
+    }
+
+    /**
+     * Returns the {@link Spare} of the {@code klass}
+     *
+     * <pre>{@code
+     *  String klass = "plus.kat.entity.UserVO";
+     *  Spare<UserVO> spare = Spare.lookup(klass, User.class);
+     * }</pre>
+     *
+     * @param klass  the specified actual klass
+     * @param parent the specified parent class
+     * @return {@link Spare} or {@code null}
+     * @throws NullPointerException If the specified {@code params} is null
+     * @see Supplier#lookup(String, Class)
+     * @since 0.0.6
+     */
+    @Nullable
+    static <K, T extends K> Spare<T> of(
+        @NotNull String klass,
+        @NotNull Class<K> parent
+    ) {
+        return INS.lookup(
+            klass, parent
+        );
     }
 }

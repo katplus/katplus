@@ -59,7 +59,7 @@ public class AlgoTest {
         };
 
         Spare<User> spare =
-            Spare.lookup(User.class);
+            Spare.of(User.class);
         for (String text : list) {
             Algo algo = Algo.of(text);
             assertNotNull(algo);

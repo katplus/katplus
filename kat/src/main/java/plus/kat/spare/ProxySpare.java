@@ -310,7 +310,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                 Class<?> c = method
                     .getReturnType();
                 if (c.isPrimitive()) {
-                    return Spare.lookup(c).apply();
+                    return Spare.of(c).apply();
                 }
                 return null;
             } catch (Throwable e) {
@@ -372,7 +372,7 @@ public class ProxySpare extends AbstractSpare<Object> {
                 Class<?> c = method
                     .getReturnType();
                 if (c.isPrimitive()) {
-                    return Spare.lookup(c).apply();
+                    return Spare.of(c).apply();
                 }
                 return null;
             }

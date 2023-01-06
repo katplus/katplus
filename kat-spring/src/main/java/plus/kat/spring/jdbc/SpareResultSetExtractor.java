@@ -58,7 +58,7 @@ public class SpareResultSetExtractor<T> implements ResultSetExtractor<List<T>> {
         Assert.notNull(klass, "Class must not be null");
         this.supplier = supplier;
         if (supplier == null) {
-            spare = Spare.lookup(klass);
+            spare = Spare.of(klass);
         } else {
             spare = supplier.lookup(klass);
         }
