@@ -14,7 +14,7 @@
 
     <properties>
         <findbugs.version>3.0.1</findbugs.version>
-        <spring.version>5.3.24</spring.version>
+        <spring.version>5.3.25</spring.version>
         <spring.redis.version>2.7.6</spring.redis.version>
     </properties>
 
