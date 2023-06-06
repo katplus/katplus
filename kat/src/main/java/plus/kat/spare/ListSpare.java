@@ -18,13 +18,13 @@ package plus.kat.spare;
 import plus.kat.actor.NotNull;
 import plus.kat.actor.Nullable;
 
+import plus.kat.*;
+import plus.kat.chain.*;
+
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.concurrent.*;
-
-import plus.kat.*;
-import plus.kat.chain.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static plus.kat.spare.Parser.*;
 import static plus.kat.stream.Toolkit.*;

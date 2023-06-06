@@ -8,9 +8,7 @@ import plus.kat.actor.Magus;
 import plus.kat.chain.*;
 import plus.kat.spare.*;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.*;
 
