@@ -13,7 +13,7 @@
     <artifactId>kat</artifactId>
     <name>${project.artifactId}</name>
     <url>https://github.com/katplus/katplus</url>
-    <description>KAT+ a lightweight KAT + XML + JSON library</description>
+    <description>Kat+ a lightweight KAT + XML + JSON library</description>
     <inceptionYear>2022</inceptionYear>
 
     <organization>

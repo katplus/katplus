@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
     <url>https://github.com/katplus/katplus</url>
-    <description>KAT+ a lightweight KAT + XML + JSON library</description>
+    <description>Kat+ a lightweight KAT + XML + JSON library</description>
     <inceptionYear>2022</inceptionYear>
 
     <organization>
@@ -83,7 +83,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <kotlin.version>1.8.0</kotlin.version>
+        <kotlin.version>1.8.10</kotlin.version>
         <kotlin.jvm.target>1.8</kotlin.jvm.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
