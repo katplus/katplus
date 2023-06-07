@@ -934,11 +934,7 @@ public interface Supplier extends Context {
                         if (clazz == File.class) {
                             spare = FileSpare.INSTANCE;
                         } else {
-                            if (name != null) {
-                                break edge;
-                            } else {
-                                return null;
-                            }
+                            break edge;
                         }
                         major.put(clazz, spare);
                         return spare;
@@ -953,11 +949,7 @@ public interface Supplier extends Context {
                         } else if (ByteBuffer.class.isAssignableFrom(clazz)) {
                             spare = ByteBufferSpare.INSTANCE;
                         } else {
-                            if (name != null) {
-                                break edge;
-                            } else {
-                                return null;
-                            }
+                            break edge;
                         }
                         major.put(clazz, spare);
                         return spare;
@@ -969,11 +961,7 @@ public interface Supplier extends Context {
                         } else if (clazz == BigDecimal.class) {
                             spare = BigDecimalSpare.INSTANCE;
                         } else {
-                            if (name != null) {
-                                break edge;
-                            } else {
-                                return null;
-                            }
+                            break edge;
                         }
                         major.put(clazz, spare);
                         return spare;
@@ -1007,11 +995,7 @@ public interface Supplier extends Context {
                         } else if (clazz == StringBuilder.class) {
                             spare = StringBuilderSpare.INSTANCE;
                         } else {
-                            if (name != null) {
-                                break edge;
-                            } else {
-                                return null;
-                            }
+                            break edge;
                         }
                         major.put(clazz, spare);
                         return spare;
@@ -1028,11 +1012,7 @@ public interface Supplier extends Context {
                                 } else if (List.class.isAssignableFrom(clazz)) {
                                     spare = new ListSpare(clazz);
                                 } else {
-                                    if (name != null) {
-                                        break edge;
-                                    } else {
-                                        return null;
-                                    }
+                                    break edge;
                                 }
                                 major.put(clazz, spare);
                                 return spare;
@@ -1046,11 +1026,7 @@ public interface Supplier extends Context {
                                 } else if (clazz == AtomicBoolean.class) {
                                     spare = AtomicBooleanSpare.INSTANCE;
                                 } else {
-                                    if (name != null) {
-                                        break edge;
-                                    } else {
-                                        return null;
-                                    }
+                                    break edge;
                                 }
                                 major.put(clazz, spare);
                                 return spare;
@@ -1132,11 +1108,7 @@ public interface Supplier extends Context {
                                         }
                                     }
                                 } else {
-                                    if (name != null) {
-                                        break edge;
-                                    } else {
-                                        return null;
-                                    }
+                                    break edge;
                                 }
                                 major.put(clazz, spare);
                                 return spare;
@@ -1146,7 +1118,7 @@ public interface Supplier extends Context {
                 }
             }
 
-            if (name.isClass()) {
+            if (name != null && name.isClass()) {
                 Class<?> child;
                 ClassLoader cl = null;
 
