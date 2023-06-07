@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.netty.buffer;
+package plus.kat.netty.flow;
 
-import plus.kat.Flow;
+import plus.kat.*;
 import plus.kat.actor.*;
 
 import io.netty.buffer.ByteBuf;
@@ -26,9 +26,9 @@ import static plus.kat.stream.Toolkit.Streams.*;
  * @author kraity
  * @since 0.0.6
  */
-public class ByteBufFlow extends Flow {
+public final class ByteBufFlow extends Flow {
 
-    protected ByteBuf source;
+    private ByteBuf source;
 
     public ByteBufFlow(
         @NotNull ByteBuf data

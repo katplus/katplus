@@ -55,11 +55,17 @@ Java:
 
 ```java
 import plus.kat.*;
-import plus.kat.netty.buffer.*;
+import plus.kat.netty.flow.*;
 
-Chan chan = ...
-ByteBuf buf = ChanBuf.wrappedBuffer(chan);
-ByteBuf buf = ChanBuf.wrappedBuffer(chan.getFlux());
+ByteBuf buf = ...
+Flow flow = new ByteBufFlow(buf);
+
+Spare<User> spare = Spare.of(User.class);
+User user = spare.read(flow); // see: 3.1 Use Spare
+
+AsciiString str = ...
+Flow flow = new AsciiStringFlow(str);
+Flow flow = new AsciiStringFlow(str, index(), length());
 ```
 
 ### 1.2.2 Spring
