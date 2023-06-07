@@ -22,6 +22,8 @@ import java.beans.Transient;
 import java.lang.reflect.*;
 import java.lang.annotation.*;
 
+import static plus.kat.spare.ArraySpare.*;
+
 /**
  * @author kraity
  * @since 0.0.2
@@ -36,8 +38,20 @@ public class ReflectSpare<T> extends BeanSpare<T> {
     private boolean variable;
     private Constructor<T> builder;
 
-    static final Object[] ARGS
-        = ArraySpare.EMPTY_ARRAY;
+    static boolean TRANSIENT;
+
+    static {
+        try {
+            // Generally no
+            // @Transient in Android
+            Class.forName(
+                "java.beans.Transient"
+            );
+            TRANSIENT = true;
+        } catch (ClassNotFoundException e) {
+            // Ignore this exception
+        }
+    }
 
     public ReflectSpare(
         @Nilable String space,
@@ -73,7 +87,9 @@ public class ReflectSpare<T> extends BeanSpare<T> {
         }
 
         try {
-            return maker.newInstance(ARGS);
+            return maker.newInstance(
+                EMPTY_ARRAY
+            );
         } catch (Throwable e) {
             throw new IllegalStateException(
                 "Failed to apply", e
@@ -93,7 +109,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
         }
 
         if (data == null) {
-            data = ARGS;
+            data = EMPTY_ARRAY;
         } else {
             int i = 0;
             Class<?>[] as = args;
@@ -258,10 +274,12 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                 continue;
             }
 
-            Transient hidden = method
-                .getAnnotation(Transient.class);
-            if (hidden != null && hidden.value()) {
-                continue;
+            if (TRANSIENT) {
+                Transient hidden = method
+                    .getAnnotation(Transient.class);
+                if (hidden != null && hidden.value()) {
+                    continue;
+                }
             }
 
             Member member;
@@ -701,7 +719,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
         ) {
             try {
                 return method.invoke(
-                    bean, ARGS
+                    bean, EMPTY_ARRAY
                 );
             } catch (Throwable e) {
                 throw new IllegalStateException(

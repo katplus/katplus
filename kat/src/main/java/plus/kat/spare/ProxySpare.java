@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.lang.reflect.*;
 
 import static plus.kat.stream.Toolkit.*;
+import static plus.kat.spare.ReflectSpare.*;
 
 /**
  * @author kraity
@@ -149,10 +150,12 @@ public class ProxySpare extends BeanSpare<Object> {
                 continue;
             }
 
-            Transient hidden = method
-                .getAnnotation(Transient.class);
-            if (hidden != null && hidden.value()) {
-                continue;
+            if (TRANSIENT) {
+                Transient hidden = method
+                    .getAnnotation(Transient.class);
+                if (hidden != null && hidden.value()) {
+                    continue;
+                }
             }
 
             Magic magic = method

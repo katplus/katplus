@@ -19,6 +19,7 @@ import plus.kat.actor.*;
 
 import java.lang.reflect.*;
 
+import static plus.kat.spare.ArraySpare.*;
 import static plus.kat.spare.ReflectSpare.*;
 
 /**
@@ -60,8 +61,7 @@ public class RecordSpare<T> extends BeanSpare<T> {
 
         try {
             return maker.newInstance(
-                data != null ? data :
-                    ReflectSpare.ARGS
+                data != null ? data : EMPTY_ARRAY
             );
         } catch (Throwable e) {
             throw new IllegalStateException(
