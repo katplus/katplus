@@ -15,7 +15,7 @@
  */
 package plus.kat.stream;
 
-import plus.kat.Flow;
+import plus.kat.*;
 import plus.kat.actor.*;
 
 /**
@@ -24,6 +24,11 @@ import plus.kat.actor.*;
  */
 public final class ByteFlow extends Flow {
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @throws NullPointerException If the specified text is null
+     */
     public ByteFlow(
         @NotNull byte[] text
     ) {
@@ -35,6 +40,13 @@ public final class ByteFlow extends Flow {
         }
     }
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @param index  the start index of the text
+     * @param length the specified length of the text
+     * @throws NullPointerException If the specified text is null
+     */
     public ByteFlow(
         @NotNull byte[] text, int index, int length
     ) {
@@ -43,9 +55,8 @@ public final class ByteFlow extends Flow {
         }
 
         int limit = index + length;
-        if (index >= 0 &&
-            limit > index &&
-            limit <= text.length) {
+        if (limit <= text.length &&
+            index >= 0 && length >= 0) {
             this.value = text;
             this.index = index;
             this.limit = limit;
@@ -54,6 +65,11 @@ public final class ByteFlow extends Flow {
         }
     }
 
+    /**
+     * Constructs a flow for the specified text
+     *
+     * @throws NullPointerException If the specified text is null
+     */
     public ByteFlow(
         @NotNull Binary text
     ) {
@@ -65,6 +81,13 @@ public final class ByteFlow extends Flow {
         }
     }
 
+    /**
+     * Constructs a flow for the specified text
+     *
+     * @param index  the start index of the text
+     * @param length the specified length of the text
+     * @throws NullPointerException If the specified text is null
+     */
     public ByteFlow(
         @NotNull Binary text, int index, int length
     ) {
@@ -73,9 +96,8 @@ public final class ByteFlow extends Flow {
         }
 
         int limit = index + length;
-        if (index >= 0 &&
-            limit > index &&
-            limit <= text.size) {
+        if (limit <= text.size &&
+            index >= 0 && length >= 0) {
             this.index = index;
             this.limit = limit;
             this.value = text.value;

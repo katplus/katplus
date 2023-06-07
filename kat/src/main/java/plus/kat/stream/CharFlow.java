@@ -29,6 +29,11 @@ public final class CharFlow extends TransferFlow {
     private int left;
     private final int right;
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @throws NullPointerException If the specified text is null
+     */
     public CharFlow(
         @NotNull char[] text
     ) {
@@ -40,6 +45,13 @@ public final class CharFlow extends TransferFlow {
         this.right = text.length;
     }
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @param index  the start index of the text
+     * @param length the specified length of the text
+     * @throws NullPointerException If the specified text is null
+     */
     public CharFlow(
         @NotNull char[] text, int index, int length
     ) {
@@ -47,17 +59,15 @@ public final class CharFlow extends TransferFlow {
             throw new NullPointerException();
         }
 
-        int right = index + length;
-        if (index < 0 ||
-            right <= index ||
-            right > text.length
-        ) {
+        int limit = index + length;
+        if (limit <= text.length &&
+            index >= 0 && length >= 0) {
+            this.source = text;
+            this.left = index;
+            this.right = limit;
+        } else {
             throw new IndexOutOfBoundsException();
         }
-
-        this.source = text;
-        this.left = index;
-        this.right = right;
     }
 
     @Override

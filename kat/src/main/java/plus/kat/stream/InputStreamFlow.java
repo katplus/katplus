@@ -15,7 +15,7 @@
  */
 package plus.kat.stream;
 
-import plus.kat.Flow;
+import plus.kat.*;
 import plus.kat.actor.*;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ public final class InputStreamFlow extends Flow {
     private InputStream source;
 
     /**
-     * Constructs a {@link Flow} where
+     * Constructs this flow where
      * calling {@link InputStream#close()} has no effect
      * <p>
      * For example
@@ -41,6 +41,8 @@ public final class InputStreamFlow extends Flow {
      *      Flow flow = new InputStreamFlow(stream);
      *   }
      * }</pre>
+     *
+     * @throws NullPointerException If the specified text is null
      */
     public InputStreamFlow(
         @NotNull InputStream text

@@ -15,7 +15,7 @@
  */
 package plus.kat.stream;
 
-import plus.kat.Flow;
+import plus.kat.*;
 import plus.kat.actor.*;
 
 import java.nio.ByteBuffer;
@@ -30,6 +30,11 @@ public final class ByteBufferFlow extends Flow {
 
     private ByteBuffer source;
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @throws NullPointerException If the specified text is null
+     */
     public ByteBufferFlow(
         @NotNull ByteBuffer text
     ) {

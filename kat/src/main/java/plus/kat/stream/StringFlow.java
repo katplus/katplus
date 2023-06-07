@@ -31,35 +31,45 @@ public final class StringFlow extends TransferFlow {
     private int left;
     private final int right;
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @throws NullPointerException If the specified text is null
+     */
     public StringFlow(
-        @NotNull String data
+        @NotNull String text
     ) {
-        if (data == null) {
+        if (text == null) {
             throw new NullPointerException();
         }
 
-        this.source = data;
-        this.right = data.length();
+        this.source = text;
+        this.right = text.length();
     }
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @param index  the start index of the text
+     * @param length the specified length of the text
+     * @throws NullPointerException If the specified text is null
+     */
     public StringFlow(
-        @NotNull String data, int index, int length
+        @NotNull String text, int index, int length
     ) {
-        if (data == null) {
+        if (text == null) {
             throw new NullPointerException();
         }
 
-        int right = index + length;
-        if (index < 0 ||
-            right <= index ||
-            right > data.length()
-        ) {
+        int limit = index + length;
+        if (limit <= text.length() &&
+            index >= 0 && length >= 0) {
+            this.source = text;
+            this.left = index;
+            this.right = limit;
+        } else {
             throw new IndexOutOfBoundsException();
         }
-
-        this.source = data;
-        this.left = index;
-        this.right = right;
     }
 
     @Override

@@ -30,11 +30,16 @@ public final class ByteBufFlow extends Flow {
 
     private ByteBuf source;
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @throws NullPointerException If the specified text is null
+     */
     public ByteBufFlow(
-        @NotNull ByteBuf data
+        @NotNull ByteBuf text
     ) {
-        if (data != null) {
-            source = data;
+        if (text != null) {
+            source = text;
         } else {
             throw new NullPointerException();
         }

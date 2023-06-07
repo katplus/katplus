@@ -15,10 +15,10 @@
  */
 package plus.kat.stream;
 
-import plus.kat.Flow;
 import plus.kat.actor.*;
 
-import java.io.*;
+import java.io.Reader;
+import java.io.IOException;
 
 import static plus.kat.stream.Toolkit.Streams.*;
 
@@ -32,7 +32,7 @@ public final class ReaderFlow extends TransferFlow {
     private Reader source;
 
     /**
-     * Constructs a {@link Flow} where
+     * Constructs this flow where
      * calling {@link Reader#close()} has no effect
      * <p>
      * For example
@@ -41,6 +41,8 @@ public final class ReaderFlow extends TransferFlow {
      *      Flow flow = new ReaderFlow(stream);
      *   }
      * }</pre>
+     *
+     * @throws NullPointerException If the specified text is null
      */
     public ReaderFlow(
         @NotNull Reader data

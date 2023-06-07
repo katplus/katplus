@@ -26,32 +26,44 @@ import io.netty.util.AsciiString;
  */
 public final class AsciiStringFlow extends Flow {
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @throws NullPointerException If the specified text is null
+     */
     public AsciiStringFlow(
-        @NotNull AsciiString data
+        @NotNull AsciiString text
     ) {
-        if (data != null) {
-            value = data.array();
-            limit = (index = data.arrayOffset()) + data.length();
+        if (text != null) {
+            value = text.array();
+            limit = (index = text.arrayOffset()) + text.length();
         } else {
             throw new NullPointerException();
         }
     }
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @param index  the start index of the text
+     * @param length the specified length of the text
+     * @throws NullPointerException If the specified text is null
+     */
     public AsciiStringFlow(
-        @NotNull AsciiString data, int index, int length
+        @NotNull AsciiString text, int index, int length
     ) {
-        if (data == null) {
+        if (text == null) {
             throw new NullPointerException();
         }
 
-        int len = data.length();
-        int off = data.arrayOffset();
+        int len = text.length();
+        int off = text.arrayOffset();
 
         int limit = index + length;
         if (limit <= off + len && off <= index && length >= 0) {
             this.index = index;
             this.limit = limit;
-            this.value = data.array();
+            this.value = text.array();
         } else {
             throw new IndexOutOfBoundsException();
         }

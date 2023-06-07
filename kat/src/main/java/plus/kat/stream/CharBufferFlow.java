@@ -30,6 +30,11 @@ public final class CharBufferFlow extends TransferFlow {
     private char[] buffer;
     private CharBuffer source;
 
+    /**
+     * Constructs this flow for the specified text
+     *
+     * @throws NullPointerException If the specified text is null
+     */
     public CharBufferFlow(
         @NotNull CharBuffer text
     ) {
