@@ -28,14 +28,21 @@ import static java.nio.charset.StandardCharsets.*;
  * @author kraity
  * @since 0.0.5
  */
-public abstract class Stream extends Binary implements Flux {
+public class Stream extends Binary implements Flux {
 
     protected int depth;
     protected long flags;
     protected Bucket bucket;
 
     /**
-     * Constructs a steam with the specified flags
+     * Constructs a default stream
+     */
+    public Stream() {
+        this(0);
+    }
+
+    /**
+     * Constructs a stream with the specified flags
      *
      * @param flags the specified flags of {@link Flux}
      */
@@ -48,7 +55,7 @@ public abstract class Stream extends Binary implements Flux {
     }
 
     /**
-     * Constructs a steam with the specified flags and bucket
+     * Constructs a stream with the specified flags and bucket
      *
      * @param flags  the specified flags of {@link Flux}
      * @param bucket the specified bucket of {@link Flux}
@@ -1094,7 +1101,7 @@ public abstract class Stream extends Binary implements Flux {
         if (it.length != 0) {
             size = 0;
             Bucket bt = bucket;
-            if (bt == null) {
+            if (bt != null) {
                 value = bt.store(it);
             }
         }
