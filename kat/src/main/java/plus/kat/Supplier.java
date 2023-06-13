@@ -345,18 +345,9 @@ public interface Supplier extends Context {
         static Provider[] PRO;
 
         static {
-            INS = new Vendor(
-                Config.get(
-                    "kat.supplier.buffer", 64
-                ),
-                Config.get(
-                    "kat.supplier.capacity", 64
-                )
-            );
-
-            Map<Object, Spare<?>>
-                minor = INS.minor,
-                major = INS.major;
+            Vendor.INS = new Vendor();
+            ConcurrentHashMap<Object, Spare<?>>
+                minor = INS.minor, major = INS.major;
 
             minor.put("", ObjectSpare.INSTANCE);
             minor.put("{", MapSpare.INSTANCE);
@@ -463,6 +454,20 @@ public interface Supplier extends Context {
             <Object, Spare<?>> minor, major;
 
         /**
+         * Constructs a supplier with default config
+         */
+        public Vendor() {
+            this(
+                Config.get(
+                    "kat.supplier.buffer", 64
+                ),
+                Config.get(
+                    "kat.supplier.capacity", 64
+                )
+            );
+        }
+
+        /**
          * Constructs a supplier which has a service provider
          *
          * @param buffer   the init capacity of minor mapping table
@@ -475,12 +480,24 @@ public interface Supplier extends Context {
             major = new ConcurrentHashMap<>(capacity);
         }
 
+        /**
+         * Loads this vendor from default vendor
+         */
+        public void onCreate() {
+            if (major.isEmpty()) {
+                major.putAll(INS.major);
+            }
+            if (minor.isEmpty()) {
+                minor.putAll(INS.minor);
+            }
+        }
+
         @Override
         public boolean alive(
             @NotNull Context o
         ) {
             throw new IllegalStateException(
-                "This is a private provider"
+                "Vendor is a private provider"
             );
         }
 
@@ -1194,6 +1211,16 @@ public interface Supplier extends Context {
             }
 
             return null;
+        }
+
+        /**
+         * Releases the resources of this vendor
+         */
+        public void onDestroy() {
+            if (this != INS) {
+                minor.clear();
+                major.clear();
+            }
         }
 
         @Override

@@ -54,6 +54,28 @@ public class SupplierTest {
     }
 
     @Test
+    public void test_agent() {
+        Vendor vendor = new Vendor();
+        vendor.onCreate();
+        assertEquals(
+            vendor.major.size(),
+            Vendor.INS.major.size()
+        );
+        assertEquals(
+            vendor.minor.size(),
+            Vendor.INS.minor.size()
+        );
+        vendor.onDestroy();
+        assertTrue(vendor.major.isEmpty());
+        assertTrue(vendor.minor.isEmpty());
+
+        // rejects the default vendor
+        Vendor.INS.onDestroy();
+        assertFalse(Vendor.INS.major.isEmpty());
+        assertFalse(Vendor.INS.minor.isEmpty());
+    }
+
+    @Test
     public void test_context() {
         Supplier supplier = Supplier.ins();
         for (Class<?> c : new Class[]{

@@ -29,11 +29,6 @@ import plus.kat.spare.*;
 public class MutableConfiguration {
 
     @Bean
-    public Plan getPlan() {
-        return new Plan();
-    }
-
-    @Bean
     public Context getContext() {
         return Supplier.ins();
     }
