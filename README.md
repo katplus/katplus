@@ -61,7 +61,12 @@ ByteBuf buf = ...
 Flow flow = new ByteBufFlow(buf);
 
 Spare<User> spare = Spare.of(User.class);
-User user = spare.read(flow); // see: 3.1 Use Spare
+User user = spare.read(flow); // see: 3.1
+
+try(Chan chan = spare.write(user)) {
+    // Use buffer before calling Chan#close
+    ByteBuf buffer = ByteBufStream.of(chan);
+}
 
 AsciiString str = ...
 Flow flow = new AsciiStringFlow(str);
@@ -92,20 +97,43 @@ public class Application implements WebMvcConfigurer {
     public void configureMessageConverters(
         List<HttpMessageConverter<?>> converters
     ) {
-        // kat
+        // kat (if you need it)
         converters.add(
             new MutableHttpMessageConverter(Algo.KAT)
         );
-        // xml
+        // xml (if you need it)
         converters.add(
             new MutableHttpMessageConverter(Algo.DOC)
         );
-        // json
+        // json (if you need it)
         converters.add(
             0, new MutableHttpMessageConverter(Algo.JSON)
         );
     }
 }
+```
+
+Config:
+
+```xml
+<beans>
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <!-- kat (if you need it) -->
+            <bean class="plus.kat.spring.http.MutableHttpMessageConverter">
+                <constructor-arg index="0" value="kat"/>
+            </bean>
+            <!-- xml (if you need it) -->
+            <bean class="plus.kat.spring.http.MutableHttpMessageConverter">
+                <constructor-arg index="0" value="xml"/>
+            </bean>
+            <!-- json (if you need it) -->
+            <bean class="plus.kat.spring.http.MutableHttpMessageConverter">
+                <constructor-arg index="0" value="json"/>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+</beans>
 ```
 
 #### 1.2.3 Okhttp
