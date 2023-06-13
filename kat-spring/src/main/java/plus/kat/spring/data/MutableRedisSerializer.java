@@ -48,7 +48,9 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
         @NonNull Algo algo,
         @NonNull Class<T> type
     ) {
-        this(algo, type, Supplier.ins());
+        this(
+            algo, type, Supplier.ins()
+        );
     }
 
     /**
@@ -62,7 +64,39 @@ public class MutableRedisSerializer<T> implements RedisSerializer<T> {
         @NonNull Class<T> type,
         @NonNull Supplier supplier
     ) {
-        this(algo, Plan.DEF, type, supplier);
+        this(
+            algo, Plan.DEF, type, supplier
+        );
+    }
+
+    /**
+     * @param algo the specified algo
+     * @param type the specified type
+     * @since 0.0.6
+     */
+    public MutableRedisSerializer(
+        @NonNull String algo,
+        @NonNull Class<T> type
+    ) {
+        this(
+            algo, type, Supplier.ins()
+        );
+    }
+
+    /**
+     * @param algo     the specified algo
+     * @param type     the specified type
+     * @param supplier the specified supplier
+     * @since 0.0.6
+     */
+    public MutableRedisSerializer(
+        @NonNull String algo,
+        @NonNull Class<T> type,
+        @NonNull Supplier supplier
+    ) {
+        this(
+            Algo.of(algo), Plan.DEF, type, supplier
+        );
     }
 
     /**

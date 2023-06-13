@@ -99,7 +99,31 @@ public final class Algo {
     }
 
     /**
-     * Return the concatenated string for this {@link Algo}'s name
+     * Returns the algo of this name
+     *
+     * @param name the specified algo name
+     * @see #Algo(String)
+     * @since 0.0.6
+     */
+    public static Algo of(
+        @NotNull String name
+    ) {
+        switch (name) {
+            case "kat": {
+                return KAT;
+            }
+            case "xml": {
+                return DOC;
+            }
+            case "json": {
+                return JSON;
+            }
+        }
+        return new Algo(name);
+    }
+
+    /**
+     * Return a literal string for this {@link Algo}'s name
      */
     @Override
     public String toString() {

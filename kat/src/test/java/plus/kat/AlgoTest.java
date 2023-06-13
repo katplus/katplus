@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AlgoTest {
 
     @Test
-    public void test0() {
+    public void test_equals() {
         assertEquals(KAT, KAT);
         assertEquals(DOC, DOC);
         assertEquals(JSON, JSON);
@@ -20,7 +20,7 @@ public class AlgoTest {
     }
 
     @Test
-    public void test1() {
+    public void test_build() {
         assertEquals(DOC, new Algo("xml"));
         assertEquals(JSON, new Algo("json"));
 
@@ -38,5 +38,23 @@ public class AlgoTest {
         assertThrows(
             Exception.class, () -> new Algo("text/kat")
         );
+    }
+
+    @Test
+    public void test_of_name() {
+        assertSame(KAT, Algo.of("kat"));
+        assertSame(DOC, Algo.of("xml"));
+        assertSame(JSON, Algo.of("json"));
+        assertNotNull(Algo.of("yaml"));
+        assertNotSame(KAT, Algo.of("KAT"));
+        assertNotSame(DOC, Algo.of("XML"));
+        assertNotSame(JSON, Algo.of("JSON"));
+    }
+
+    @Test
+    public void test_toString() {
+        assertEquals("Algo(kat)", KAT.toString());
+        assertEquals("Algo(xml)", DOC.toString());
+        assertEquals("Algo(json)", JSON.toString());
     }
 }

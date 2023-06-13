@@ -88,7 +88,6 @@ Maven:
 Java:
 
 ```java
-import plus.kat.*;
 import plus.kat.spring.http.*;
 
 @Configuration
@@ -99,15 +98,15 @@ public class Application implements WebMvcConfigurer {
     ) {
         // kat (if you need it)
         converters.add(
-            new MutableHttpMessageConverter(Algo.KAT)
+            new MutableHttpMessageConverter("kat")
         );
         // xml (if you need it)
         converters.add(
-            new MutableHttpMessageConverter(Algo.DOC)
+            new MutableHttpMessageConverter("xml")
         );
         // json (if you need it)
         converters.add(
-            0, new MutableHttpMessageConverter(Algo.JSON)
+            0, new MutableHttpMessageConverter("json")
         );
     }
 }

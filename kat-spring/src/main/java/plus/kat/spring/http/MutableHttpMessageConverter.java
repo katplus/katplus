@@ -56,7 +56,9 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     public MutableHttpMessageConverter(
         @NonNull Algo algo
     ) {
-        this(algo, Supplier.ins());
+        this(
+            algo, Supplier.ins()
+        );
     }
 
     /**
@@ -68,7 +70,35 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         @NonNull Algo algo,
         @NonNull Supplier supplier
     ) {
-        this(algo, Plan.DEF, supplier);
+        this(
+            algo, Plan.DEF, supplier
+        );
+    }
+
+    /**
+     * @param algo the specified algo
+     * @since 0.0.6
+     */
+    public MutableHttpMessageConverter(
+        @NonNull String algo
+    ) {
+        this(
+            algo, Supplier.ins()
+        );
+    }
+
+    /**
+     * @param algo     the specified algo
+     * @param supplier the specified supplier
+     * @since 0.0.6
+     */
+    public MutableHttpMessageConverter(
+        @NonNull String algo,
+        @NonNull Supplier supplier
+    ) {
+        this(
+            Algo.of(algo), Plan.DEF, supplier
+        );
     }
 
     /**
