@@ -34,9 +34,6 @@ public class ByteBufStreamTest {
         );
 
         ByteBuf buffer = ByteBufStream.of(space);
-        assertFalse(
-            ((ByteBufStream) buffer).recycle
-        );
         assertEquals(name, buffer.toString(UTF_8));
     }
 
@@ -51,9 +48,6 @@ public class ByteBufStreamTest {
 
         try (Chan chan = spare.write(user)) {
             ByteBuf buffer = ByteBufStream.of(chan);
-            assertTrue(
-                ((ByteBufStream) buffer).recycle
-            );
             assertEquals("{id=1,name=\"kraity\"}", buffer.toString(UTF_8));
             assertTrue(buffer.release()); // finally, call #release
         }
@@ -67,8 +61,8 @@ public class ByteBufStreamTest {
         ByteBuf buf = ByteBufStream.of(stream);
 
         assertTrue(isIsolate(stream));
-        assertTrue(
-            ((ByteBufStream) buf).recycle
+        assertSame(cache,
+            ((ByteBufStream) buf).bucket
         );
 
         stream.close();
@@ -80,8 +74,7 @@ public class ByteBufStreamTest {
         );
 
         assertTrue(buf.release());
-        // avoid value being used by others
-        assertFalse(cache.status);
+        assertTrue(cache.status);
         assertEquals(0, valueOf(stream).length);
     }
 
@@ -95,19 +88,20 @@ public class ByteBufStreamTest {
         ByteBuf buf = ByteBufStream.of(stream);
 
         assertTrue(isIsolate(stream));
-        assertTrue(
-            ((ByteBufStream) buf).recycle
+        assertSame(cache,
+            ((ByteBufStream) buf).bucket
         );
         assertEquals(
             "kat.plus", buf.toString(UTF_8)
         );
 
         assertTrue(buf.release());
-        // avoid value being used by others
-        assertFalse(cache.status);
+        assertTrue(cache.status);
         assertSame(val, valueOf(stream));
 
+        cache.status = false;
         stream.close();
+
         // avoid value being used by others
         assertFalse(cache.status);
         assertEquals(0, valueOf(stream).length);

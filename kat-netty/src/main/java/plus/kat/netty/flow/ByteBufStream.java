@@ -25,7 +25,6 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledHeapByteBuf;
 
 import static plus.kat.stream.Toolkit.*;
-import static plus.kat.stream.Toolkit.Streams.*;
 
 /**
  * @author kraity
@@ -36,23 +35,23 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
     static final ByteBufAllocator
         ALLOC = ByteBufAllocator.DEFAULT;
 
-    final boolean recycle;
+    final Bucket bucket;
 
     public ByteBufStream(
-        byte[] flow
+        byte[] buf
     ) {
-        this(flow, false);
+        this(buf, null);
     }
 
     public ByteBufStream(
-        byte[] flow,
-        boolean recycle
+        byte[] buf,
+        Bucket bucket
     ) {
         super(
             ALLOC,
-            flow, flow.length
+            buf, buf.length
         );
-        this.recycle = recycle;
+        this.bucket = bucket;
     }
 
     /**
@@ -94,13 +93,13 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
         byte[] buffer = space.flow();
         if (buffer != null) {
             return new ByteBufStream(
-                buffer, false
+                buffer, null
             ).writerIndex(
                 space.size()
             );
         } else {
             return new ByteBufStream(
-                valueOf(space), false
+                valueOf(space), null
             );
         }
     }
@@ -121,16 +120,16 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
     public static ByteBuf of(
         @NotNull Stream stream
     ) {
-        byte[] buffer = sourceOf(stream);
+        byte[] buffer = valueOf(stream);
         if (buffer != null) {
             return new ByteBufStream(
-                buffer, true
+                buffer, isolate(stream)
             ).writerIndex(
                 stream.size()
             );
         } else {
             return new ByteBufStream(
-                stream.toBinary(), false
+                stream.toBinary(), null
             );
         }
     }
@@ -142,8 +141,8 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
      */
     @Override
     protected void freeArray(byte[] array) {
-        if (recycle) {
-            STREAMS.store(array);
+        if (bucket != null) {
+            bucket.store(array);
         }
     }
 
@@ -154,6 +153,12 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
      */
     @Override
     protected byte[] allocateArray(int capacity) {
-        return STREAMS.apply(capacity);
+        if (bucket == null) {
+            return new byte[capacity];
+        } else {
+            return bucket.apply(
+                EMPTY_BYTES, 0, capacity
+            );
+        }
     }
 }

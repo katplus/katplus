@@ -131,11 +131,11 @@ public final class Toolkit {
     /**
      * Unsafe and may be deleted
      */
-    public static byte[] sourceOf(
+    public static Bucket isolate(
         @NotNull Stream stream
     ) {
         stream.isolate = true;
-        return stream.value;
+        return stream.bucket;
     }
 
     /**
