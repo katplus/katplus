@@ -63,9 +63,16 @@ Flow flow = new ByteBufFlow(buf);
 Spare<User> spare = Spare.of(User.class);
 User user = spare.read(flow); // see: 3.1
 
+Chan chan = spare.write(user);
+ByteBuf buffer = ByteBufStream.of(chan);
+chan.close();
+// use buffer here
+buffer.release(); // finally, call #release
+
 try(Chan chan = spare.write(user)) {
-    // Use buffer before calling Chan#close
     ByteBuf buffer = ByteBufStream.of(chan);
+    // use buffer here
+    buffer.release(); // finally, call #release
 }
 
 AsciiString str = ...

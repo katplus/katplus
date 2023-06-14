@@ -25,6 +25,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledHeapByteBuf;
 
 import static plus.kat.stream.Toolkit.*;
+import static plus.kat.stream.Toolkit.Streams.*;
 
 /**
  * @author kraity
@@ -35,16 +36,23 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
     static final ByteBufAllocator
         ALLOC = ByteBufAllocator.DEFAULT;
 
+    final boolean recycle;
+
     public ByteBufStream(
-        byte[] initialArray
+        byte[] flow
     ) {
-        this(initialArray, initialArray.length);
+        this(flow, false);
     }
 
     public ByteBufStream(
-        byte[] initialArray, int maxCapacity
+        byte[] flow,
+        boolean recycle
     ) {
-        super(ALLOC, initialArray, maxCapacity);
+        super(
+            ALLOC,
+            flow, flow.length
+        );
+        this.recycle = recycle;
     }
 
     /**
@@ -68,9 +76,8 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
                 (Stream) chan
             );
         } else {
-            byte[] buffer = chan.toBinary();
             return new ByteBufStream(
-                buffer, buffer.length
+                chan.toBinary()
             );
         }
     }
@@ -86,14 +93,14 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
     ) {
         byte[] buffer = space.flow();
         if (buffer != null) {
-            return new ByteBufStream(buffer)
-                .writerIndex(
-                    space.size()
-                );
-        } else {
-            buffer = valueOf(space);
             return new ByteBufStream(
-                buffer, buffer.length
+                buffer, false
+            ).writerIndex(
+                space.size()
+            );
+        } else {
+            return new ByteBufStream(
+                valueOf(space), false
             );
         }
     }
@@ -114,17 +121,39 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
     public static ByteBuf of(
         @NotNull Stream stream
     ) {
-        byte[] buffer = valueOf(stream);
+        byte[] buffer = sourceOf(stream);
         if (buffer != null) {
-            return new ByteBufStream(buffer)
-                .writerIndex(
-                    stream.size()
-                );
-        } else {
-            buffer = stream.toBinary();
             return new ByteBufStream(
-                buffer, buffer.length
+                buffer, true
+            ).writerIndex(
+                stream.size()
+            );
+        } else {
+            return new ByteBufStream(
+                stream.toBinary(), false
             );
         }
+    }
+
+    /**
+     * Resumes the specified old array to the default bucket
+     *
+     * @param array the specified array that will be released
+     */
+    @Override
+    protected void freeArray(byte[] array) {
+        if (recycle) {
+            STREAMS.store(array);
+        }
+    }
+
+    /**
+     * Borrows a array of the capacity from the default bucket
+     *
+     * @param capacity the specified minimum length of buffer array
+     */
+    @Override
+    protected byte[] allocateArray(int capacity) {
+        return STREAMS.apply(capacity);
     }
 }

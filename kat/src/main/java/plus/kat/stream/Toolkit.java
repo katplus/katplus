@@ -131,6 +131,25 @@ public final class Toolkit {
     /**
      * Unsafe and may be deleted
      */
+    public static byte[] sourceOf(
+        @NotNull Stream stream
+    ) {
+        stream.isolate = true;
+        return stream.value;
+    }
+
+    /**
+     * Unsafe and may be deleted
+     */
+    public static boolean isIsolate(
+        @NotNull Stream stream
+    ) {
+        return stream.isolate;
+    }
+
+    /**
+     * Unsafe and may be deleted
+     */
     public static void writeTo(
         @NotNull Binary binary,
         @NotNull OutputStream stream

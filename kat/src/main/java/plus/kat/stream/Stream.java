@@ -32,7 +32,9 @@ public class Stream extends Binary implements Flux {
 
     protected int depth;
     protected long flags;
+
     protected Bucket bucket;
+    protected boolean isolate;
 
     /**
      * Constructs a default stream
@@ -42,7 +44,7 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Constructs a stream with the specified flags
+     * Constructs a stream with the specified arguments
      *
      * @param flags the specified flags of {@link Flux}
      */
@@ -55,7 +57,7 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Constructs a stream with the specified flags and bucket
+     * Constructs a stream with the specified arguments
      *
      * @param flags  the specified flags of {@link Flux}
      * @param bucket the specified bucket of {@link Flux}
@@ -1100,9 +1102,10 @@ public class Stream extends Binary implements Flux {
         byte[] it = value;
         if (it.length != 0) {
             size = 0;
-            Bucket bt = bucket;
-            if (bt != null) {
-                value = bt.store(it);
+            if (isolate) {
+                value = EMPTY_BYTES;
+            } else {
+                value = bucket.store(it);
             }
         }
     }
