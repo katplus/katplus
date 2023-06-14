@@ -15,6 +15,7 @@ import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.*;
+import static plus.kat.spring.http.MutableHttpMessageConverter.*;
 
 /**
  * @author kraity
@@ -67,8 +68,8 @@ public class MutableHttpMessageConverterTest {
 
         mediaTypes.put(
             Algo.KAT, new MediaType[]{
-                MediaTypes.TEXT_KAT,
-                MediaTypes.APPLICATION_KAT
+                TEXT_KAT,
+                APPLICATION_KAT
             }
         );
         mediaTypes.put(

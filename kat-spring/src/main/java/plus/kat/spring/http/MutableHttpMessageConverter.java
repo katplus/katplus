@@ -49,6 +49,10 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     protected final Algo algo;
     protected MediaType[] mediaTypes;
 
+    public static final MediaType
+        TEXT_KAT = new MediaType("text", "kat"),
+        APPLICATION_KAT = new MediaType("application", "kat");
+
     /**
      * @param algo the specified algo
      * @since 0.0.2
@@ -124,8 +128,8 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
         switch (algo.name()) {
             case "kat": {
                 mediaTypes = new MediaType[]{
-                    MediaTypes.TEXT_KAT,
-                    MediaTypes.APPLICATION_KAT
+                    TEXT_KAT,
+                    APPLICATION_KAT
                 };
                 break;
             }
@@ -144,7 +148,7 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
             }
             default: {
                 throw new HttpMessageNotWritableException(
-                    "At present, not found the media-types of " + algo
+                    "Not found the media-types of " + algo
                 );
             }
         }
@@ -255,12 +259,19 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     }
 
     /**
-     * @since 0.0.5
+     * @since 0.0.6
      */
-    public void setSupportedMediaTypes(
+    public void setMediaTypes(
         @NonNull MediaType[] types
     ) {
         mediaTypes = types.clone();
+    }
+
+    /**
+     * @since 0.0.6
+     */
+    public MediaType[] getMediaTypes() {
+        return mediaTypes.clone();
     }
 
     /**
@@ -270,11 +281,16 @@ public class MutableHttpMessageConverter extends AbstractGenericHttpMessageConve
     public void setSupportedMediaTypes(
         @NonNull List<MediaType> types
     ) {
-        mediaTypes = types.toArray(
-            new MediaType[types.size()]
-        );
+        int i = types.size();
+        mediaTypes = new MediaType[i];
+        while (--i != -1) {
+            mediaTypes[i] = types.get(i);
+        }
     }
 
+    /**
+     * @since 0.0.2
+     */
     @Override
     public List<MediaType> getSupportedMediaTypes() {
         return Arrays.asList(mediaTypes);

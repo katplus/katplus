@@ -37,12 +37,25 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
 
     final Bucket bucket;
 
+    /**
+     * Constructs a ByteBufStream for this array
+     *
+     * @param buf the specified buffer
+     * @throws NullPointerException If the buffer is null
+     */
     public ByteBufStream(
         byte[] buf
     ) {
         this(buf, null);
     }
 
+    /**
+     * Constructs a ByteBufStream for this array
+     *
+     * @param buf    the specified buffer
+     * @param bucket the specified bucket for release
+     * @throws NullPointerException If the buffer is null
+     */
     public ByteBufStream(
         byte[] buf,
         Bucket bucket
@@ -58,9 +71,16 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
      * Returns a {@link ByteBuf} of the chan
      *
      * <pre>{@code
+     *  Chan chan = ...
+     *  ByteBuf buffer = ByteBufStream.of(chan);
+     *  chan.close();
+     *  // use buffer here
+     *  buffer.release(); // finally, call #release
+     *
      *  try(Chan chan = ...) {
-     *      // Use buffer before calling Chan#close
-     *      ByteBuf buffer = ByteBufStream.of(chan);
+     *     ByteBuf buffer = ByteBufStream.of(chan);
+     *     // use buffer here
+     *     buffer.release(); // finally, call #release
      *  }
      * }</pre>
      *
@@ -83,6 +103,13 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
 
     /**
      * Returns a {@link ByteBuf} of the space
+     *
+     * <pre>{@code
+     *  Space space = ...
+     *  ByteBuf buffer = ByteBufStream.of(space);
+     *  // use buffer here
+     *  // finally, can not call buffer.release()
+     * }</pre>
      *
      * @param space the specified space for reading
      */
@@ -108,9 +135,16 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
      * Returns a {@link ByteBuf} of the stream
      *
      * <pre>{@code
+     *  Stream stream = ...
+     *  ByteBuf buffer = ByteBufStream.of(chan);
+     *  stream.close();
+     *  // use buffer here
+     *  buffer.release(); // finally, call #release
+     *
      *  try(Stream stream = ...) {
-     *      // Use buffer before calling Stream#close
-     *      ByteBuf buffer = ByteBufStream.of(stream);
+     *     ByteBuf buffer = ByteBufStream.of(stream);
+     *     // use buffer here
+     *     buffer.release(); // finally, call #release
      *  }
      * }</pre>
      *
@@ -147,7 +181,7 @@ public final class ByteBufStream extends UnpooledHeapByteBuf {
     }
 
     /**
-     * Borrows a array of the capacity from the default bucket
+     * Borrows an array of the capacity from the default bucket
      *
      * @param capacity the specified minimum length of buffer array
      */
