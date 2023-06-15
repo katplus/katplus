@@ -238,9 +238,14 @@ public final class Toolkit {
         }
 
         if (value instanceof Optional) {
-            Optional<?> o = (Optional<?>) value;
+            do {
+                value = ((Optional<?>)
+                    value).orElse(null);
+            } while (
+                value instanceof Optional
+            );
             return chan.set(
-                alias, null, o.orElse(null)
+                alias, null, value
             );
         }
 

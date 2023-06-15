@@ -22,6 +22,7 @@ import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 
 import static plus.kat.stream.Toolkit.*;
 
@@ -29,11 +30,13 @@ import static plus.kat.stream.Toolkit.*;
  * @author kraity
  * @since 0.0.2
  */
+@SuppressWarnings("unchecked")
 public class ByteBufferSpare extends BaseSpare<ByteBuffer> {
 
     public static final ByteBufferSpare
         INSTANCE = new ByteBufferSpare();
 
+    private int mode;
     private final byte[]
         table = RFC4648_ENCODE;
 
@@ -42,6 +45,16 @@ public class ByteBufferSpare extends BaseSpare<ByteBuffer> {
 
     public ByteBufferSpare() {
         super(ByteBuffer.class);
+    }
+
+    public ByteBufferSpare(
+        @NotNull Class<?> clazz
+    ) {
+        super(
+            (Class<ByteBuffer>) clazz
+        );
+        mode = MappedByteBuffer.class
+            .isAssignableFrom(clazz) ? 1 : 0;
     }
 
     @Override
@@ -60,9 +73,24 @@ public class ByteBufferSpare extends BaseSpare<ByteBuffer> {
     public ByteBuffer read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) {
-        return ByteBuffer.wrap(
-            base64.decode(value)
+    ) throws IOException {
+        switch (mode) {
+            case 0: {
+                return ByteBuffer.wrap(
+                    base64.decode(value)
+                );
+            }
+            case 1: {
+                byte[] flow =
+                    base64.decode(value);
+                ByteBuffer buffer = ByteBuffer
+                    .allocateDirect(flow.length);
+                return buffer.put(flow);
+            }
+        }
+
+        throw new IOException(
+            "Unsupported subtype: " + klass
         );
     }
 
@@ -73,23 +101,18 @@ public class ByteBufferSpare extends BaseSpare<ByteBuffer> {
     ) throws IOException {
         ByteBuffer buf =
             (ByteBuffer) value;
-        int size = buf.remaining();
-
-        if (size > 0) {
-            int t1 = size % 3;
-            int t2 = size / 3;
+        int e = buf.remaining();
+        if (e > 0) {
+            int t1 = e % 3;
+            int t2 = e / 3;
 
             int b1, b2, b3;
-            int c = t2 * 3;
-
             byte[] tab = table;
-            int i = buf.position();
 
-            while (i < c) {
-                b1 = buf.get(i++) & 0xFF;
-                b2 = buf.get(i++) & 0xFF;
-                b3 = buf.get(i++) & 0xFF;
-
+            for (int i = 0; i < t2; i++) {
+                b1 = buf.get() & 0xFF;
+                b2 = buf.get() & 0xFF;
+                b3 = buf.get() & 0xFF;
                 flux.emit(tab[b1 >>> 2]);
                 flux.emit(tab[((b1 & 0x3) << 4) | (b2 >>> 4)]);
                 flux.emit(tab[((b2 & 0xF) << 2) | (b3 >>> 6)]);
@@ -97,13 +120,13 @@ public class ByteBufferSpare extends BaseSpare<ByteBuffer> {
             }
 
             if (t1 != 0) {
-                b1 = buf.get(i++) & 0xFF;
+                b1 = buf.get() & 0xFF;
                 if (t1 == 1) {
                     flux.emit(tab[b1 >>> 2]);
                     flux.emit(tab[(b1 & 0x3) << 4]);
                     flux.emit((byte) '=');
                 } else {
-                    b2 = buf.get(i) & 0xFF;
+                    b2 = buf.get() & 0xFF;
                     flux.emit(tab[b1 >>> 2]);
                     flux.emit(tab[((b1 & 0x3) << 4) | (b2 >>> 4)]);
                     flux.emit(tab[(b2 & 0xF) << 2]);

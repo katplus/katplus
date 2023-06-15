@@ -964,7 +964,13 @@ public interface Supplier extends Context {
                         } else if (clazz == URL.class) {
                             spare = URLSpare.INSTANCE;
                         } else if (ByteBuffer.class.isAssignableFrom(clazz)) {
-                            spare = ByteBufferSpare.INSTANCE;
+                            if (MappedByteBuffer.class.isAssignableFrom(clazz)) {
+                                spare = new ByteBufferSpare(
+                                    MappedByteBuffer.class
+                                );
+                            } else {
+                                spare = ByteBufferSpare.INSTANCE;
+                            }
                         } else {
                             break edge;
                         }
