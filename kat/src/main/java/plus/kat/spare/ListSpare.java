@@ -151,10 +151,31 @@ public class ListSpare extends BaseSpare<List> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        for (Object elem : (Iterable<?>) value) {
-            chan.set(
-                null, elem
-            );
+        if (value instanceof RandomAccess) {
+            List<?> list = (List<?>) value;
+            int size = list.size();
+            //noinspection ForLoopReplaceableByForEach
+            for (int i = 0; i < size; i++) {
+                chan.set(
+                    null,
+                    list.get(i)
+                );
+            }
+        } else {
+            if (value instanceof Iterable) {
+                for (Object element : (Iterable<?>) value) {
+                    chan.set(
+                        null, element
+                    );
+                }
+            } else {
+                Iterator<?> iterator = (Iterator<?>) value;
+                while (iterator.hasNext()) {
+                    chan.set(
+                        null, iterator.next()
+                    );
+                }
+            }
         }
     }
 

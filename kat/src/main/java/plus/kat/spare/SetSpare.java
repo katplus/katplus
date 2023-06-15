@@ -144,9 +144,9 @@ public class SetSpare extends BaseSpare<Set> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        for (Object elem : (Iterable<?>) value) {
+        for (Object element : (Set<?>) value) {
             chan.set(
-                null, elem
+                null, element
             );
         }
     }

@@ -19,11 +19,14 @@ import plus.kat.actor.NotNull;
 import plus.kat.actor.Nullable;
 
 import plus.kat.*;
+import plus.kat.spare.*;
 
 import plus.kat.utils.Config;
 import plus.kat.utils.KatBuffer;
 
 import java.io.*;
+import java.nio.charset.*;
+import java.util.*;
 import java.lang.reflect.*;
 
 import static plus.kat.Algo.*;
@@ -158,6 +161,114 @@ public final class Toolkit {
             binary.value, 0, binary.size
         );
         stream.flush();
+    }
+
+    /**
+     * Unsafe and may be deleted
+     */
+    public static boolean set(
+        Chan chan, String alias, Object value
+    ) throws IOException {
+        if (value instanceof Entity) {
+            return chan.set(
+                alias, (Entity) value
+            );
+        }
+
+        if (value instanceof Iterable ||
+            value instanceof Iterator) {
+            return chan.set(
+                alias, ListSpare.INSTANCE, value
+            );
+        }
+
+        if (value instanceof Throwable) {
+            Throwable o = (Throwable) value;
+            return chan.set(
+                alias, StringSpare.INSTANCE, o.getMessage()
+            );
+        }
+
+        if (value instanceof CharSequence) {
+            return chan.set(
+                alias, StringSpare.INSTANCE, value.toString()
+            );
+        }
+
+        // Subclass of Date
+        // java.sql.Date
+        // java.sql.Time
+        // java.sql.Timestamp
+        if (value instanceof Date) {
+            return chan.set(
+                alias, DateSpare.INSTANCE, value
+            );
+        }
+
+        // Subclass of File
+        if (value instanceof File) {
+            return chan.set(
+                alias, FileSpare.INSTANCE, value
+            );
+        }
+
+        // Subclass of Number
+        if (value instanceof Number) {
+            return chan.set(
+                alias, NumberSpare.INSTANCE, value
+            );
+        }
+
+        // Subclass of Charset
+        if (value instanceof Charset) {
+            Charset o = (Charset) value;
+            return chan.set(
+                alias, StringSpare.INSTANCE, o.name()
+            );
+        }
+
+        // Subclass of TimeZone
+        // java.util.SimpleTimeZone
+        // sun.util.calendar.ZoneInfo
+        if (value instanceof TimeZone) {
+            TimeZone o = (TimeZone) value;
+            return chan.set(
+                alias, StringSpare.INSTANCE, o.getID()
+            );
+        }
+
+        if (value instanceof Optional) {
+            Optional<?> o = (Optional<?>) value;
+            return chan.set(
+                alias, null, o.orElse(null)
+            );
+        }
+
+        if (value instanceof OptionalInt) {
+            OptionalInt o = (OptionalInt) value;
+            return chan.set(
+                alias, IntSpare.INSTANCE, o.orElse(0)
+            );
+        }
+
+        if (value instanceof OptionalLong) {
+            OptionalLong o = (OptionalLong) value;
+            return chan.set(
+                alias, LongSpare.INSTANCE, o.orElse(0L)
+            );
+        }
+
+        if (value instanceof OptionalDouble) {
+            OptionalDouble o = (OptionalDouble) value;
+            return chan.set(
+                alias, DoubleSpare.INSTANCE, o.orElse(0D)
+            );
+        }
+
+        throw new IOException(
+            "No available coder for `"
+                + value.getClass() + "` was found"
+        );
     }
 
     /**

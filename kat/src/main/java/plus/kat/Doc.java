@@ -24,12 +24,12 @@ import plus.kat.stream.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.Map;
 import java.util.Set;
-import java.util.Optional;
+import java.util.List;
+import java.lang.reflect.Type;
 
 import static plus.kat.Plan.DEF;
 import static plus.kat.Supplier.Vendor.INS;
@@ -241,27 +241,15 @@ public class Doc extends Stream implements Chan {
 
             // solving the coder problem again
             if (coder == null) {
-                if (value instanceof Entity) {
-                    return set(
-                        alias, (Entity) value
-                    );
-                } else if (value instanceof Map) {
+                if (value instanceof Map) {
                     coder = MapSpare.INSTANCE;
                 } else if (value instanceof Set) {
                     coder = SetSpare.INSTANCE;
-                } else if (value instanceof Iterable) {
+                } else if (value instanceof List) {
                     coder = ListSpare.INSTANCE;
-                } else if (value instanceof Optional) {
-                    Optional<?> o = (Optional<?>) value;
-                    return set(
-                        alias, null, o.orElse(null)
-                    );
-                } else if (value instanceof Throwable) {
-                    coder = FaultCoder.INSTANCE;
                 } else {
-                    throw new IOException(
-                        "No available coder for `"
-                            + value.getClass() + "` was found"
+                    return Toolkit.set(
+                        this, alias, value
                     );
                 }
             }
