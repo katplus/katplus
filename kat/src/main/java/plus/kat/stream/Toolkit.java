@@ -557,9 +557,9 @@ public final class Toolkit {
 
         @Override
         public byte[] apply(
-            byte[] flow, int size, int length
+            byte[] flow, int size, int capacity
         ) {
-            int i = length / scale;
+            int i = capacity / scale;
             int v = mask & Thread
                 .currentThread().hashCode();
 

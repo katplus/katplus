@@ -21,24 +21,25 @@ package plus.kat.stream;
  */
 public interface Bucket {
     /**
-     * Resumes the specified old buffer to this
-     * bucket, and returns the old flow if unsuccessful
+     * Resumes the specified old flow to this bucket, returns
+     * the empty array if successful, otherwise this old flow
      *
-     * @param flow the specified array that will be shared
+     * @param flow the specified array will be released
+     * @return the empty array, otherwise this old flow
      */
     byte[] store(
         byte[] flow
     );
 
     /**
-     * Borrows a buffer of the specified minimum length and copies old
-     * flow of the specified size into the buffer, then reclaims the old flow
+     * Borrows a buffer of the minimum capacity and copies old flow
+     * of the specified size into this buffer, then resumes this old flow
      *
-     * @param flow   the specified array that will be released
-     * @param size   the specified size of stream buffer array
-     * @param length the specified minimum length of buffer array
+     * @param flow     the specified array will be released
+     * @param size     the specified size of the buffer array
+     * @param capacity the specified minimum capacity required
      */
     byte[] apply(
-        byte[] flow, int size, int length
+        byte[] flow, int size, int capacity
     );
 }
