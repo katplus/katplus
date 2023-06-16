@@ -122,6 +122,9 @@ public class KatTest {
     public void test_optional() {
         assertEquals("1", Kat.encode(Optional.of(1)));
         assertEquals("null", Kat.encode(Optional.empty()));
+        assertEquals("0", Kat.encode(OptionalInt.empty()));
+        assertEquals("0", Kat.encode(OptionalLong.empty()));
+        assertEquals("0.0", Kat.encode(OptionalDouble.empty()));
         assertEquals("\"kraity\"", Kat.encode(Optional.of("kraity")));
         assertEquals("{id=0,name=null}", Kat.encode(Optional.of(new User())));
     }

@@ -237,37 +237,34 @@ public final class Toolkit {
             );
         }
 
-        if (value instanceof Optional) {
-            do {
-                value = ((Optional<?>)
-                    value).orElse(null);
-            } while (
-                value instanceof Optional
-            );
-            return chan.set(
-                alias, null, value
-            );
-        }
-
-        if (value instanceof OptionalInt) {
-            OptionalInt o = (OptionalInt) value;
-            return chan.set(
-                alias, IntSpare.INSTANCE, o.orElse(0)
-            );
-        }
-
-        if (value instanceof OptionalLong) {
-            OptionalLong o = (OptionalLong) value;
-            return chan.set(
-                alias, LongSpare.INSTANCE, o.orElse(0L)
-            );
-        }
-
-        if (value instanceof OptionalDouble) {
-            OptionalDouble o = (OptionalDouble) value;
-            return chan.set(
-                alias, DoubleSpare.INSTANCE, o.orElse(0D)
-            );
+        switch (value.getClass().getName()) {
+            case "java.util.Optional": {
+                do {
+                    value = ((Optional<?>) value)
+                        .orElse(null);
+                } while (value instanceof Optional);
+                return chan.set(
+                    alias, null, value
+                );
+            }
+            case "java.util.OptionalInt": {
+                OptionalInt o = (OptionalInt) value;
+                return chan.set(
+                    alias, IntSpare.INSTANCE, o.orElse(0)
+                );
+            }
+            case "java.util.OptionalLong": {
+                OptionalLong o = (OptionalLong) value;
+                return chan.set(
+                    alias, LongSpare.INSTANCE, o.orElse(0L)
+                );
+            }
+            case "java.util.OptionalDouble": {
+                OptionalDouble o = (OptionalDouble) value;
+                return chan.set(
+                    alias, DoubleSpare.INSTANCE, o.orElse(0D)
+                );
+            }
         }
 
         throw new IOException(
