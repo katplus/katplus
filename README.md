@@ -1,5 +1,8 @@
 # Kat+
 
+[![Build](https://img.shields.io/github/actions/workflow/status/katplus/katplus/maven.yaml?label=Build&branch=main&logo=github&logoColor=white)](https://github.com/katplus/katplus/actions)
+[![License](https://img.shields.io/github/license/katplus/katplus?label=License&logo=apache&logoColor=white)](https://www.apache.org/licenses/LICENSE-2.0.html)
+
 Kat+ 一个轻量级的 **KAT** + **XML** + **JSON** 库
 
 - 兼容 **Kotlin**
@@ -10,6 +13,9 @@ Kat+ 一个轻量级的 **KAT** + **XML** + **JSON** 库
 # 1. 使用准备
 
 ## 1.1 添加依赖
+
+[![maven](https://img.shields.io/maven-central/v/plus.kat/kat?label=maven&logo=apache-maven&logoColor=white)](https://search.maven.org/artifact/plus.kat/kat)
+[![snapshot](https://img.shields.io/nexus/s/plus.kat/kat?label=snapshot&server=https%3A%2F%2Fs01.oss.sonatype.org)](https://s01.oss.sonatype.org/content/repositories/snapshots/plus/kat/)
 
 Maven:
 
@@ -800,4 +806,24 @@ class UserSpare implements Spare<User> {
         return new UserBuilder();
     }
 }
+```
+
+### License
+
+Released under the [Apache 2.0 license](LICENSE)
+
+```text
+Copyright 2022 Kat+ Team
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ```
