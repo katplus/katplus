@@ -31,48 +31,45 @@ import java.lang.reflect.Method;
 public class EnumSpare<T extends Enum<T>> extends BeanSpare<T> {
 
     private T[] enums;
+    private byte[] names;
 
     public EnumSpare(
         @Nilable String space,
         @NotNull Class<?> klass,
         @NotNull Context context
     ) {
-        this(
-            space, null, klass, context
-        );
-    }
-
-    public EnumSpare(
-        @Nullable String space,
-        @Nullable T[] enums,
-        @NotNull Class<?> klass,
-        @NotNull Context context
-    ) {
         super(
             space, (Class<T>) klass, context
         );
-        if (enums != null) {
-            this.enums = enums;
-        } else try {
+        try {
             Method method = klass
                 .getMethod("values");
             if (!method.isAccessible()) {
                 method.setAccessible(true);
             }
-            this.enums = (T[]) method.invoke(null);
-        } catch (Exception e) {
-            // Nothing
+            T[] beans = (T[]) method.invoke(
+                null, ArraySpare.EMPTY_ARRAY
+            );
+            int size = beans.length;
+            if (size == 0) {
+                return;
+            }
+            this.enums = beans;
+            this.names = new byte[size];
+            String name;
+            for (int i = 0; i < size; i++) {
+                name = beans[i].name();
+                names[i] = (byte) name.charAt(0);
+            }
+        } catch (ReflectiveOperationException e) {
+            // Ignore this exception
         }
     }
 
     @Override
     public T apply() {
         T[] e = enums;
-        if (e != null &&
-            e.length != 0) {
-            return e[0];
-        }
-        return null;
+        return e == null ? null : e[0];
     }
 
     @Override
@@ -82,13 +79,11 @@ public class EnumSpare<T extends Enum<T>> extends BeanSpare<T> {
         if (type == null ||
             type == klass) {
             T[] e = enums;
-            if (e != null &&
-                e.length != 0) {
+            if (e != null) {
                 return e[0];
+            } else {
+                return null;
             }
-            throw new IllegalStateException(
-                "Failed to apply " + type
-            );
         }
 
         throw new IllegalStateException(
@@ -100,20 +95,41 @@ public class EnumSpare<T extends Enum<T>> extends BeanSpare<T> {
     public T read(
         @NotNull Flag flag,
         @NotNull Value value
-    ) {
+    ) throws IOException {
         T[] e = enums;
         if (e != null && value.isAnything()) {
             if (flag.isFlag(Flag.INDEX_AS_ENUM)) {
                 if (value.isDigits()) {
                     int i = value.toInt();
-                    if (-1 < i && i < e.length) {
+                    if (i < e.length) {
                         return e[i];
+                    } else {
+                        return null;
                     }
                 }
             }
-            for (T em : e) {
-                if (value.equals(em.name())) {
-                    return em;
+
+            int m = value.size();
+            byte[] v = value.flow();
+
+            byte x = v[0];
+            byte[] ns = names;
+
+            int max = e.length;
+            for (int i = 0; i < max; i++) {
+                check:
+                if (x == ns[i]) {
+                    T t = e[i];
+                    String n = t.name();
+                    if (m == n.length()) {
+                        for (int j = 0; j < m; j++) {
+                            if (n.charAt(j) !=
+                                (char) (v[j] & 0xFF)) {
+                                break check;
+                            }
+                        }
+                        return t;
+                    }
                 }
             }
         }
@@ -125,19 +141,15 @@ public class EnumSpare<T extends Enum<T>> extends BeanSpare<T> {
         @NotNull Flux flux,
         @NotNull Object value
     ) throws IOException {
-        Enum<?> e = (Enum<?>) value;
         if (flux.isFlag(Flag.ENUM_AS_INDEX)) {
             flux.emit(
-                e.ordinal()
+                ((Enum<?>) value).ordinal()
             );
         } else {
-            flux.emit(e.name());
+            flux.emit(
+                ((Enum<?>) value).name()
+            );
         }
-    }
-
-    @Override
-    public String getSpace() {
-        return space;
     }
 
     @Override
