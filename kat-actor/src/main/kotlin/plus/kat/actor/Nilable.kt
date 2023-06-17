@@ -13,21 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.actor;
-
-import java.lang.annotation.*;
+package plus.kat.actor
 
 /**
  * @author kraity
  * @since 0.0.6
  */
-@Documented
-@Target({
-    ElementType.FIELD,
-    ElementType.METHOD,
-    ElementType.PARAMETER,
-    ElementType.LOCAL_VARIABLE
-})
-@Retention(RetentionPolicy.SOURCE)
-public @interface NotNull {
-}
+@MustBeDocumented
+@Target(
+    AnnotationTarget.LOCAL_VARIABLE,
+    AnnotationTarget.VALUE_PARAMETER
+)
+@Retention(AnnotationRetention.SOURCE)
+annotation class Nilable
