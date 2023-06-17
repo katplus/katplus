@@ -5,15 +5,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>plus.kat</groupId>
-        <artifactId>kat-parent</artifactId>
         <version>0.0.6-SNAPSHOT</version>
+        <artifactId>kat-parent</artifactId>
     </parent>
 
     <packaging>jar</packaging>
     <artifactId>kat</artifactId>
+
     <name>${project.artifactId}</name>
     <url>https://github.com/katplus/katplus</url>
-    <description>Kat+ a lightweight KAT + XML + JSON library</description>
+    <description>Kat+ is a lightweight KAT + XML + JSON library</description>
     <inceptionYear>2022</inceptionYear>
 
     <organization>
@@ -55,7 +56,6 @@
             <groupId>plus.kat</groupId>
             <artifactId>kat-actor</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

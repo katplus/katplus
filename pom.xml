@@ -3,14 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>kat-parent</artifactId>
     <groupId>plus.kat</groupId>
     <version>0.0.6-SNAPSHOT</version>
-
     <packaging>pom</packaging>
+    <artifactId>kat-parent</artifactId>
+
     <name>${project.artifactId}</name>
     <url>https://github.com/katplus/katplus</url>
-    <description>Kat+ a lightweight KAT + XML + JSON library</description>
+    <description>Kat+ is a lightweight KAT + XML + JSON library</description>
     <inceptionYear>2022</inceptionYear>
 
     <organization>
