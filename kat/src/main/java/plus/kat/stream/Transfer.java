@@ -123,14 +123,13 @@ public final class Transfer {
                             r = 2;
                             break;
                         }
+                        case 0x2E: {
+                            i = 1;
+                            break;
+                        }
                         default: {
                             i = 1;
                             r = 8;
-                            break;
-                        }
-                        case 0x2E: {
-                            i = 1;
-                            r = 10;
                             break;
                         }
                         case 0x58:
@@ -331,14 +330,13 @@ public final class Transfer {
                             r = 2;
                             break;
                         }
+                        case 0x2E: {
+                            i = 1;
+                            break;
+                        }
                         default: {
                             i = 1;
                             r = 8;
-                            break;
-                        }
-                        case 0x2E: {
-                            i = 1;
-                            r = 10;
                             break;
                         }
                         case 0x58:
@@ -743,14 +741,13 @@ public final class Transfer {
                             r = 2;
                             break;
                         }
+                        case 0x2E: {
+                            i = 1;
+                            break;
+                        }
                         default: {
                             i = 1;
                             r = 8;
-                            break;
-                        }
-                        case 0x2E: {
-                            i = 1;
-                            r = 10;
                             break;
                         }
                         case 0x58:
@@ -773,7 +770,6 @@ public final class Transfer {
             long n = 0;
             long u = m / r;
 
-            actor:
             while (i < l) {
                 w = v[i++];
                 if (w < 58) {
