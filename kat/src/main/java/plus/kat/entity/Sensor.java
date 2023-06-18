@@ -15,9 +15,7 @@
  */
 package plus.kat.entity;
 
-import plus.kat.actor.NotNull;
-import plus.kat.actor.Nullable;
-
+import plus.kat.actor.*;
 import plus.kat.spare.*;
 
 import java.lang.reflect.Type;
@@ -31,7 +29,7 @@ public interface Sensor {
      * Gets the value of this property
      *
      * @return the value of property
-     * @throws IllegalArgumentException If failed to call this method
+     * @throws IllegalStateException If failed to call this method
      */
     @Nullable
     Object apply(
@@ -41,8 +39,8 @@ public interface Sensor {
     /**
      * Sets the new value of this property
      *
-     * @return true if successful otherwise false
-     * @throws IllegalArgumentException If failed to call this method
+     * @return true on successful update
+     * @throws IllegalStateException If failed to call this method
      */
     boolean accept(
         @NotNull Object bean,

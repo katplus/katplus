@@ -21,6 +21,7 @@ import java.lang.reflect.*;
 
 import static plus.kat.spare.ArraySpare.*;
 import static plus.kat.spare.ReflectSpare.*;
+import static java.lang.reflect.Modifier.*;
 
 /**
  * @author kraity
@@ -48,24 +49,36 @@ public class RecordSpare<T> extends BeanSpare<T> {
         );
     }
 
+    @Override
+    public T apply() {
+        return apply(
+            EMPTY_ARRAY
+        );
+    }
+
     @NotNull
     public T apply(
         @Nullable Object[] data
     ) {
-        Constructor<T> maker = builder;
-        if (maker == null) {
+        if (data == null ||
+            data.length != width) {
             throw new IllegalStateException(
-                "Not supported"
+                "Parameter length mismatch"
             );
         }
 
-        try {
-            return maker.newInstance(
-                data != null ? data : EMPTY_ARRAY
-            );
-        } catch (Throwable e) {
+        Constructor<T> maker = builder;
+        if (maker != null) {
+            try {
+                return maker.newInstance(data);
+            } catch (Throwable e) {
+                throw new IllegalStateException(
+                    "Failed to call " + maker, e
+                );
+            }
+        } else {
             throw new IllegalStateException(
-                "Failed to apply", e
+                "Not found the builder of " + klass
             );
         }
     }
@@ -83,16 +96,14 @@ public class RecordSpare<T> extends BeanSpare<T> {
         @NotNull Field[] fields
     ) {
         for (Field field : fields) {
-            int mo = field.getModifiers();
-            if ((mo & Modifier.STATIC) != 0 ||
-                (mo & Modifier.TRANSIENT) != 0) {
+            int mask = field.getModifiers();
+            if ((mask & (STATIC | TRANSIENT)) != 0) {
                 continue;
             }
 
             Magic m1 = field.getAnnotation(Magic.class);
-            ParamMember arg
-                = new ParamMember(
-                width++, field, m1, context
+            ParamMember arg = new ParamMember(
+                width++, m1, field, context
             );
 
             String[] keys = null;
@@ -110,11 +121,12 @@ public class RecordSpare<T> extends BeanSpare<T> {
                     );
                 } else {
                     for (String key : (keys = ks)) {
-                        if (!addParameter(key, arg)) {
-                            throw new IllegalStateException(
-                                "Parameter for " + key + " has been setup"
-                            );
+                        if (addParameter(key, arg)) {
+                            continue;
                         }
+                        throw new IllegalStateException(
+                            "Parameter for " + key + " has been setup"
+                        );
                     }
                 }
             }

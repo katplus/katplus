@@ -34,7 +34,7 @@ public interface Subject<T> extends Spare<T> {
      * Returns a Non-Null {@link T},
      * otherwise throws an exception
      *
-     * @throws IllegalStateException If this can't build
+     * @throws IllegalStateException If failed to build
      */
     @NotNull
     default T apply() {
@@ -48,13 +48,14 @@ public interface Subject<T> extends Spare<T> {
      * otherwise throws an exception
      *
      * @param args the specified args of constructor
-     * @throws IllegalStateException If this can't build
+     * @throws IllegalStateException If failed to build
      */
     @NotNull
     default T apply(
         @Nullable Object[] args
     ) {
-        if (args == null) {
+        if (args == null ||
+            args.length == 0) {
             return apply();
         }
         throw new IllegalStateException(

@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author kraity
  */
-public class ProxyTest {
+public class ProxySpareTest {
 
     @Magus
     interface Mate {

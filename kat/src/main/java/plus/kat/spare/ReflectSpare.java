@@ -23,6 +23,7 @@ import java.lang.reflect.*;
 import java.lang.annotation.*;
 
 import static plus.kat.spare.ArraySpare.*;
+import static java.lang.reflect.Modifier.*;
 
 /**
  * @author kraity
@@ -36,9 +37,11 @@ public class ReflectSpare<T> extends BeanSpare<T> {
 
     private int extra;
     private boolean variable;
+
+    private Constructor<T> creator;
     private Constructor<T> builder;
 
-    static boolean TRANSIENT;
+    static boolean TRANSIENTLY;
 
     static {
         try {
@@ -47,7 +50,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             Class.forName(
                 "java.beans.Transient"
             );
-            TRANSIENT = true;
+            TRANSIENTLY = true;
         } catch (ClassNotFoundException e) {
             // Ignore this exception
         }
@@ -79,20 +82,20 @@ public class ReflectSpare<T> extends BeanSpare<T> {
 
     @NotNull
     public T apply() {
-        Constructor<T> maker = builder;
-        if (maker == null) {
+        Constructor<T> maker = creator;
+        if (maker != null) {
+            try {
+                return maker.newInstance(
+                    EMPTY_ARRAY
+                );
+            } catch (Throwable e) {
+                throw new IllegalStateException(
+                    "Failed to call " + maker, e
+                );
+            }
+        } else {
             throw new IllegalStateException(
-                "Not supported"
-            );
-        }
-
-        try {
-            return maker.newInstance(
-                EMPTY_ARRAY
-            );
-        } catch (Throwable e) {
-            throw new IllegalStateException(
-                "Failed to apply", e
+                "Not found the builder of " + klass
             );
         }
     }
@@ -101,16 +104,13 @@ public class ReflectSpare<T> extends BeanSpare<T> {
     public T apply(
         @Nullable Object[] data
     ) {
-        Constructor<T> maker = builder;
-        if (maker == null) {
-            throw new IllegalStateException(
-                "Not supported"
-            );
+        if (data == null ||
+            data.length == 0) {
+            return apply();
         }
 
-        if (data == null) {
-            data = EMPTY_ARRAY;
-        } else {
+        Constructor<T> maker = builder;
+        if (maker != null) {
             int i = 0;
             Class<?>[] as = args;
 
@@ -145,13 +145,17 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                     data[count - mask + n - 1] = flag;
                 }
             }
-        }
 
-        try {
-            return maker.newInstance(data);
-        } catch (Throwable e) {
+            try {
+                return maker.newInstance(data);
+            } catch (Throwable e) {
+                throw new IllegalStateException(
+                    "Failed to call " + maker, e
+                );
+            }
+        } else {
             throw new IllegalStateException(
-                "Failed to apply", e
+                "Not found the builder of " + klass
             );
         }
     }
@@ -181,18 +185,14 @@ public class ReflectSpare<T> extends BeanSpare<T> {
         @NotNull Field[] fields
     ) {
         for (Field field : fields) {
-            int mo = field.getModifiers();
-            if ((mo & Modifier.STATIC) != 0 ||
-                (mo & Modifier.TRANSIENT) != 0) {
+            int mask = field.getModifiers();
+            if ((mask & (STATIC | TRANSIENT)) != 0) {
                 continue;
             }
 
             Magic magic = field.getAnnotation(Magic.class);
-            if (magic == null) {
-                if ((mo & Modifier.PUBLIC) == 0 ||
-                    (mo & Modifier.TRANSIENT) != 0) {
-                    continue;
-                }
+            if (magic == null && (mask & PUBLIC) == 0) {
+                continue;
             }
 
             String name;
@@ -204,13 +204,14 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                 if (setProperty(name) == null) {
                     variable = true;
                     member = new FieldMember(
-                        magic, field, context
+                        null, field, context
                     );
-                    if (!addProperty(name, member)) {
-                        throw new IllegalStateException(
-                            "Property for " + name + " has been setup"
-                        );
+                    if (addProperty(name, member)) {
+                        continue;
                     }
+                    throw new IllegalStateException(
+                        "Property for " + name + " has been setup"
+                    );
                 }
                 continue;
             }
@@ -252,11 +253,12 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                     );
                 } else {
                     for (String alias : keys) {
-                        if (!addReader(alias, member)) {
-                            throw new IllegalStateException(
-                                "Reader for " + alias + " has been setup"
-                            );
+                        if (addReader(alias, member)) {
+                            continue;
                         }
+                        throw new IllegalStateException(
+                            "Reader for " + alias + " has been setup"
+                        );
                     }
                 }
             }
@@ -268,13 +270,12 @@ public class ReflectSpare<T> extends BeanSpare<T> {
         @NotNull Method[] methods
     ) {
         for (Method method : methods) {
-            int mo = method.getModifiers();
-            if ((mo & Modifier.STATIC) != 0 ||
-                (mo & Modifier.ABSTRACT) != 0) {
+            int mask = method.getModifiers();
+            if ((mask & (STATIC | ABSTRACT)) != 0) {
                 continue;
             }
 
-            if (TRANSIENT) {
+            if (TRANSIENTLY) {
                 Transient hidden = method
                     .getAnnotation(Transient.class);
                 if (hidden != null && hidden.value()) {
@@ -290,7 +291,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                 .getAnnotation(Magic.class);
 
             if (magic == null) {
-                if ((mo & Modifier.PUBLIC) == 0) {
+                if ((mask & PUBLIC) == 0) {
                     continue;
                 }
                 params = method.getParameterTypes();
@@ -338,11 +339,12 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                         );
 
                         for (String alias : keys) {
-                            if (!addReader(alias, member)) {
-                                throw new IllegalStateException(
-                                    "Reader for " + alias + " has been setup"
-                                );
+                            if (addReader(alias, member)) {
+                                continue;
                             }
+                            throw new IllegalStateException(
+                                "Reader for " + alias + " has been setup"
+                            );
                         }
                     }
                 }
@@ -442,21 +444,26 @@ public class ReflectSpare<T> extends BeanSpare<T> {
         for (int i = 1; i < constructors.length; i++) {
             buffer = constructors[i];
             bufferType = buffer.getParameterTypes();
-            if (latestType.length <=
-                bufferType.length) {
-                before = latest;
-                latest = buffer;
-                beforeType = latestType;
-                latestType = bufferType;
-            } else if (i == 1) {
-                before = buffer;
-                beforeType = bufferType;
-            } else {
-                if (beforeType.length <=
+            if (bufferType.length != 0) {
+                if (latestType.length <=
                     bufferType.length) {
+                    before = latest;
+                    latest = buffer;
+                    beforeType = latestType;
+                    latestType = bufferType;
+                } else if (i == 1 ||
+                    beforeType.length <=
+                        bufferType.length) {
                     before = buffer;
                     beforeType = bufferType;
                 }
+            } else {
+                before = buffer;
+                beforeType = bufferType;
+                if (!latest.isAccessible()) {
+                    latest.setAccessible(true);
+                }
+                builder = (Constructor<T>) latest;
             }
         }
 
@@ -465,9 +472,10 @@ public class ReflectSpare<T> extends BeanSpare<T> {
         }
 
         int size = latestType.length;
-        builder = (Constructor<T>) latest;
-
-        if (size != 0) {
+        if (size == 0) {
+            creator = (Constructor<T>) latest;
+        } else {
+            builder = (Constructor<T>) latest;
             if (before != null) {
                 int i = beforeType.length;
                 int j = i / 32 + 2;
@@ -487,7 +495,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             Class<?> declaringClass = klass.getDeclaringClass();
 
             if (declaringClass != null &&
-                (klass.getModifiers() & Modifier.STATIC) == 0) {
+                (klass.getModifiers() & STATIC) == 0) {
                 if (declaringClass == latestType[0]) {
                     i++;
                     self = declaringClass;
@@ -497,24 +505,27 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             for (; i < size; i++) {
                 int n = i + j;
                 ParamMember arg = new ParamMember(
-                    i, ts[i], latestType[i], context, as[n]
+                    i, ts[i], context, as[n]
                 );
 
                 Magic magic = arg.getAnnotation(Magic.class);
-                if (magic == null) {
-                    setParameter(
-                        "arg" + n, arg
-                    );
-                } else {
+                if (magic != null) {
                     String[] v = magic.value();
-                    for (String alias : v) {
-                        if (!addParameter(alias, arg)) {
+                    if (v.length != 0) {
+                        for (String alias : v) {
+                            if (addParameter(alias, arg)) {
+                                continue;
+                            }
                             throw new IllegalStateException(
                                 "Parameter for " + alias + " has been setup"
                             );
                         }
+                        continue;
                     }
                 }
+                setParameter(
+                    "arg" + n, arg
+                );
             }
         }
     }
@@ -527,14 +538,14 @@ public class ReflectSpare<T> extends BeanSpare<T> {
 
         private Annotation[] annotations;
 
-        public ParamMember(
-            int index,
-            Field field,
+        ParamMember(
+            int idx,
             Magic magic,
+            Field field,
             Context context
         ) {
+            index = idx;
             element = field;
-            this.index = index;
             Class<?> cls = field.getType();
             if (cls.isPrimitive()) {
                 type = cls;
@@ -544,15 +555,14 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             init(magic, context);
         }
 
-        public ParamMember(
+        ParamMember(
             int index,
             Type type,
-            Class<?> kind,
             Context context,
             Annotation[] annotations
         ) {
-            this.index = index;
             this.type = type;
+            this.index = index;
             this.annotations = annotations;
             Magic magic = getAnnotation(Magic.class);
             init(magic, context);
@@ -635,7 +645,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             try {
                 return field.get(bean);
             } catch (Throwable e) {
-                throw new IllegalArgumentException(
+                throw new IllegalStateException(
                     field + " call 'invoke' failed", e
                 );
             }
@@ -653,7 +663,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                     );
                     return true;
                 } catch (Throwable e) {
-                    throw new IllegalArgumentException(
+                    throw new IllegalStateException(
                         field + " call 'invoke' failed", e
                     );
                 }

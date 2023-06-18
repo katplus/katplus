@@ -25,6 +25,7 @@ import java.lang.reflect.*;
 
 import static plus.kat.stream.Toolkit.*;
 import static plus.kat.spare.ReflectSpare.*;
+import static java.lang.reflect.Modifier.*;
 
 /**
  * @author kraity
@@ -81,8 +82,8 @@ public class ProxySpare extends BeanSpare<Object> {
 
     @NotNull
     public Object apply() {
+        Constructor<?> maker = builder;
         try {
-            Constructor<?> maker = builder;
             if (maker == null) {
                 Class<?> clazz = klass;
                 if (Proxy.class.isAssignableFrom(clazz)) {
@@ -128,7 +129,7 @@ public class ProxySpare extends BeanSpare<Object> {
             );
         } catch (Exception e) {
             throw new IllegalStateException(
-                "Failed to build this " + klass, e
+                "Failed to call " + maker, e
             );
         }
     }
@@ -145,12 +146,12 @@ public class ProxySpare extends BeanSpare<Object> {
                 continue;
             }
 
-            int mo = method.getModifiers();
-            if ((mo & Modifier.STATIC) != 0) {
+            int mask = method.getModifiers();
+            if ((mask & STATIC) != 0) {
                 continue;
             }
 
-            if (TRANSIENT) {
+            if (TRANSIENTLY) {
                 Transient hidden = method
                     .getAnnotation(Transient.class);
                 if (hidden != null && hidden.value()) {
