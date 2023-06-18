@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.lang.reflect.Type;
 
+import static java.util.UUID.*;
 import static plus.kat.stream.Toolkit.*;
 
 /**
@@ -42,7 +43,7 @@ public class UUIDSpare extends BaseSpare<UUID> {
 
     @Override
     public UUID apply() {
-        return UUID.randomUUID();
+        return randomUUID();
     }
 
     @Override
@@ -51,7 +52,7 @@ public class UUIDSpare extends BaseSpare<UUID> {
     ) {
         if (type == null ||
             type == UUID.class) {
-            return UUID.randomUUID();
+            return randomUUID();
         }
 
         throw new IllegalStateException(

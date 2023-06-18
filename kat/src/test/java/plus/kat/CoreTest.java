@@ -23,8 +23,8 @@ public class CoreTest {
 
     @Test
     public void test0() {
-        final int M = 100000000;
-        final Random R = new Random();
+        final int max = 100000000;
+        final Random random = new Random();
 
         User[] group = new User[64];
         Thread[] threads = new Thread[group.length];
@@ -37,11 +37,11 @@ public class CoreTest {
         for (int i = 0; i < group.length; i++) {
             final int v = i;
             final String text =
-                "{id=" + v * M + ",name=kraity}";
+                "{id=" + v * max + ",name=kraity}";
             threads[v] = new Thread(() -> {
                 try {
                     Thread.sleep(
-                        R.nextInt(60)
+                        random.nextInt(32)
                     );
                     group[v] = spare.read(
                         Flow.of(text)
@@ -63,7 +63,7 @@ public class CoreTest {
             for (int i = 0; i < group.length; i++) {
                 User user = group[i];
                 assertNotNull(user);
-                assertEquals(i * M, user.id);
+                assertEquals(i * max, user.id);
             }
         } catch (InterruptedException e) {
             throw new IllegalStateException(e);

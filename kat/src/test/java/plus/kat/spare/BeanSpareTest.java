@@ -5,12 +5,14 @@ import org.junit.jupiter.api.Test;
 import plus.kat.*;
 import plus.kat.actor.*;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author kraity
  */
-public class OrderTest {
+public class BeanSpareTest {
 
     static class Post {
         public int id;
@@ -23,9 +25,18 @@ public class OrderTest {
     }
 
     @Test
-    public void test() {
+    public void test_child_and_parent1() throws IOException {
+        Spare<PostVO> spare =
+            Spare.of(PostVO.class);
+
+        assertInstanceOf(
+            BeanSpare.class, spare
+        );
+
         PostVO vo = new PostVO();
-        assertEquals("{id=0,title=null,created=0,modified=0}", Kat.encode(vo));
+        try (Chan chan = spare.write(vo)) {
+            assertEquals("{id=0,title=null,created=0,modified=0}", chan.toString());
+        }
     }
 
     static class Entity {
@@ -48,9 +59,18 @@ public class OrderTest {
     }
 
     @Test
-    public void test0() {
+    public void test_child_and_parent2() throws IOException {
+        Spare<UserVO0> spare =
+            Spare.of(UserVO0.class);
+
+        assertInstanceOf(
+            BeanSpare.class, spare
+        );
+
         UserVO0 vo = new UserVO0();
-        assertEquals("{id=0,name=null,nickname=null,token=null,created=0,modified=0}", Kat.encode(vo));
+        try (Chan chan = spare.write(vo)) {
+            assertEquals("{id=0,name=null,nickname=null,token=null,created=0,modified=0}", chan.toString());
+        }
     }
 
     static class UserVO extends User {
@@ -63,9 +83,18 @@ public class OrderTest {
     }
 
     @Test
-    public void test1() {
+    public void test_child_and_parent3() throws IOException {
+        Spare<UserVO> spare =
+            Spare.of(UserVO.class);
+
+        assertInstanceOf(
+            BeanSpare.class, spare
+        );
+
         UserVO vo = new UserVO();
-        assertEquals("{id=0,name=null,role=0,nickname=null,token=null,created=0,modified=0}", Kat.encode(vo));
+        try (Chan chan = spare.write(vo)) {
+            assertEquals("{id=0,name=null,role=0,nickname=null,token=null,created=0,modified=0}", chan.toString());
+        }
     }
 
     static class UserDO extends User {
@@ -104,8 +133,17 @@ public class OrderTest {
     }
 
     @Test
-    public void test2() {
+    public void test_child_and_parent4() throws IOException {
+        Spare<UserDTO> spare =
+            Spare.of(UserDTO.class);
+
+        assertInstanceOf(
+            BeanSpare.class, spare
+        );
+
         UserDTO dto = new UserDTO();
-        assertEquals("{uuid=0,iv=0,tag=0,salt=null,token=null,id=0,name=null,role=0,nickname=null,password=null,access=false,blocked=false,created=0,modified=0,destroy=false}", Kat.encode(dto));
+        try (Chan chan = spare.write(dto)) {
+            assertEquals("{uuid=0,iv=0,tag=0,salt=null,token=null,id=0,name=null,role=0,nickname=null,password=null,access=false,blocked=false,created=0,modified=0,destroy=false}", chan.toString());
+        }
     }
 }

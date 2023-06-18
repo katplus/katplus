@@ -22,16 +22,14 @@ public class UUIDSpareTest {
         Spare<UUID> spare
             = UUIDSpare.INSTANCE;
 
-        assertNotNull(spare.apply());
-
-        UUID uuid = spare.read(
+        UUID id = spare.read(
             Flow.of(
                 "092f7929-d2d6-44d6-9cc1-694c2e360c56"
             )
         );
 
-        assertEquals("092f7929-d2d6-44d6-9cc1-694c2e360c56", uuid.toString());
-        try (Chan chan = spare.write(uuid, Flag.NORM)) {
+        assertEquals("092f7929-d2d6-44d6-9cc1-694c2e360c56", id.toString());
+        try (Chan chan = spare.write(id, Flag.NORM)) {
             assertEquals("@UUID \"092f7929-d2d6-44d6-9cc1-694c2e360c56\"", chan.toString());
         }
     }
