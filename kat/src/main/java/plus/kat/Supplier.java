@@ -828,7 +828,7 @@ public interface Supplier extends Context {
                                             }
                                         }
 
-                                        Object[] args;
+                                        Object[] args = null;
                                         final int size = latestType.length;
 
                                         String[] names = magus.value();
@@ -836,9 +836,7 @@ public interface Supplier extends Context {
                                             space = (spaces = names)[0];
                                         }
 
-                                        if (size == 0) {
-                                            args = ArraySpare.EMPTY_ARRAY;
-                                        } else {
+                                        if (size != 0) {
                                             args = new Object[size];
                                             for (int i = 0; i < size; i++) {
                                                 Class<?> m = latestType[i];

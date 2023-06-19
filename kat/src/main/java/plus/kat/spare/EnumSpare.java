@@ -48,7 +48,7 @@ public class EnumSpare<T extends Enum<T>> extends BeanSpare<T> {
                 method.setAccessible(true);
             }
             T[] beans = (T[]) method.invoke(
-                null, ArraySpare.EMPTY_ARRAY
+                null, (Object[]) null
             );
             int size = beans.length;
             if (size == 0) {

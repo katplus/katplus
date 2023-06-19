@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.lang.reflect.*;
 
 import static plus.kat.stream.Toolkit.*;
-import static plus.kat.spare.ReflectSpare.*;
 import static java.lang.reflect.Modifier.*;
+import static plus.kat.spare.ReflectSpare.*;
 
 /**
  * @author kraity
@@ -171,7 +171,7 @@ public class ProxySpare extends BeanSpare<Object> {
                     name = keys[0];
                     Handle node = new Handle(
                         magic, name,
-                        method, params, context
+                        method, this, params
                     );
 
                     if (count == 0) {
@@ -256,7 +256,7 @@ public class ProxySpare extends BeanSpare<Object> {
 
             Handle node = new Handle(
                 magic, name,
-                method, params, context
+                method, this, params
             );
 
             addReader(name, node);
@@ -273,7 +273,7 @@ public class ProxySpare extends BeanSpare<Object> {
      * @author kraity
      * @since 0.0.6
      */
-    public static class Handle extends Member {
+    static final class Handle extends Visitor {
 
         final String alias;
         final Method method;
@@ -282,14 +282,14 @@ public class ProxySpare extends BeanSpare<Object> {
             Magic magic,
             String alias,
             Method method,
-            Class<?>[] params,
-            Context context
+            BeanSpare<?> spare,
+            Class<?>[] params
         ) {
+            super(
+                magic == null ?
+                    -1 : magic.index()
+            );
             element = method;
-            if (magic != null) {
-                index = magic.index();
-            }
-
             switch (params.length) {
                 case 0: {
                     Class<?> cls = method.getReturnType();
@@ -317,7 +317,14 @@ public class ProxySpare extends BeanSpare<Object> {
                 }
             }
 
-            init(magic, context);
+            if (magic != null) {
+                Class<?> agent = magic.agent();
+                if (agent != void.class) {
+                    setup(
+                        agent, spare
+                    );
+                }
+            }
 
             this.alias = alias;
             this.method = method;

@@ -17,12 +17,13 @@ package plus.kat.spare;
 
 import plus.kat.*;
 import plus.kat.actor.*;
+import plus.kat.entity.*;
 
 import java.beans.Transient;
 import java.lang.reflect.*;
 import java.lang.annotation.*;
 
-import static plus.kat.spare.ArraySpare.*;
+import static plus.kat.stream.Toolkit.*;
 import static java.lang.reflect.Modifier.*;
 
 /**
@@ -37,9 +38,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
 
     private int extra;
     private boolean variable;
-
-    private Constructor<T> creator;
-    private Constructor<T> builder;
+    private Constructor<T> creator, builder;
 
     static boolean TRANSIENTLY;
 
@@ -86,7 +85,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
         if (maker != null) {
             try {
                 return maker.newInstance(
-                    EMPTY_ARRAY
+                    (Object[]) null
                 );
             } catch (Throwable e) {
                 throw new IllegalStateException(
@@ -198,15 +197,15 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             String name;
             String[] keys;
 
-            Member member;
+            Widget widget;
             if (magic == null) {
                 name = field.getName();
                 if (setProperty(name) == null) {
                     variable = true;
-                    member = new FieldMember(
-                        null, field, context
+                    widget = new FieldVisitor(
+                        -1, null, field, this
                     );
-                    if (addProperty(name, member)) {
+                    if (addProperty(name, widget)) {
                         continue;
                     }
                     throw new IllegalStateException(
@@ -224,18 +223,19 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             }
 
             if (getProperty(name) == null) {
-                member = new FieldMember(
-                    magic, field, context
+                widget = new FieldVisitor(
+                    magic.index(),
+                    magic, field, this
                 );
 
                 if (keys.length <= 1) {
                     setWriter(
-                        name, member
+                        name, widget
                     );
                 } else {
                     for (String alias : keys) {
                         addWriter(
-                            alias, member
+                            alias, widget
                         );
                     }
                 }
@@ -243,17 +243,18 @@ public class ReflectSpare<T> extends BeanSpare<T> {
 
             if (setProperty(name) == null) {
                 variable = true;
-                member = new FieldMember(
-                    magic, field, context
+                widget = new FieldVisitor(
+                    magic.index(),
+                    magic, field, this
                 );
 
                 if (keys.length == 0) {
                     setReader(
-                        name, member
+                        name, widget
                     );
                 } else {
                     for (String alias : keys) {
-                        if (addReader(alias, member)) {
+                        if (addReader(alias, widget)) {
                             continue;
                         }
                         throw new IllegalStateException(
@@ -283,7 +284,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                 }
             }
 
-            Member member;
+            Widget widget;
             Class<?>[] params;
 
             int count;
@@ -312,18 +313,19 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                             continue;
                         }
 
-                        member = new MethodMember(
-                            magic, method, params, context
+                        widget = new MethodVisitor(
+                            magic.index(),
+                            magic, method, this, params
                         );
 
                         if (keys.length == 1) {
                             setWriter(
-                                name, member
+                                name, widget
                             );
                         } else {
                             for (String alias : keys) {
                                 addWriter(
-                                    alias, member
+                                    alias, widget
                                 );
                             }
                         }
@@ -334,12 +336,13 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                         }
 
                         variable = true;
-                        member = new MethodMember(
-                            magic, method, params, context
+                        widget = new MethodVisitor(
+                            magic.index(),
+                            magic, method, this, params
                         );
 
                         for (String alias : keys) {
-                            if (addReader(alias, member)) {
+                            if (addReader(alias, widget)) {
                                 continue;
                             }
                             throw new IllegalStateException(
@@ -417,16 +420,20 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                 if (setProperty(name) == null) {
                     variable = true;
                     setReader(
-                        name, new MethodMember(
-                            magic, method, params, context
+                        name, new MethodVisitor(
+                            magic == null ?
+                                -1 : magic.index(),
+                            magic, method, this, params
                         )
                     );
                 }
             } else {
                 if (getProperty(name) == null) {
                     setWriter(
-                        name, new MethodMember(
-                            magic, method, params, context
+                        name, new MethodVisitor(
+                            magic == null ?
+                                -1 : magic.index(),
+                            magic, method, this, params
                         )
                     );
                 }
@@ -441,6 +448,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             latest = constructors[0];
         Class<?>[] bufferType, beforeType = null,
             latestType = latest.getParameterTypes();
+
         for (int i = 1; i < constructors.length; i++) {
             buffer = constructors[i];
             bufferType = buffer.getParameterTypes();
@@ -504,8 +512,8 @@ public class ReflectSpare<T> extends BeanSpare<T> {
 
             for (; i < size; i++) {
                 int n = i + j;
-                ParamMember arg = new ParamMember(
-                    i, ts[i], context, as[n]
+                ParamVisitor arg = new ParamVisitor(
+                    i, ts[i], this, as[n]
                 );
 
                 Magic magic = arg.getAnnotation(Magic.class);
@@ -534,17 +542,114 @@ public class ReflectSpare<T> extends BeanSpare<T> {
      * @author kraity
      * @since 0.0.6
      */
-    static final class ParamMember extends Member {
+    static abstract class Visitor extends Widget {
+
+        protected AnnotatedElement element;
+
+        /**
+         * @param i the specified index
+         */
+        protected Visitor(int i) {
+            super(i);
+        }
+
+        /**
+         * Unsafe and may be deleted
+         */
+        protected void setup(
+            Class<?> agent,
+            BeanSpare<?> spare
+        ) {
+            if (Coder.class.isAssignableFrom(agent)) {
+                try {
+                    Constructor<?>[] cs = agent
+                        .getDeclaredConstructors();
+                    Constructor<?> buffer,
+                        latest = cs[0];
+                    Class<?>[] bufferType,
+                        latestType = latest.getParameterTypes();
+                    for (int i = 1; i < cs.length; i++) {
+                        buffer = cs[i];
+                        bufferType = buffer.getParameterTypes();
+                        if (latestType.length <=
+                            bufferType.length) {
+                            latest = buffer;
+                            latestType = bufferType;
+                        }
+                    }
+
+                    Object[] args = null;
+                    final int size = latestType.length;
+
+                    if (size != 0) {
+                        args = new Object[size];
+                        for (int i = 0; i < size; i++) {
+                            Class<?> m = latestType[i];
+                            if (m == Class.class) {
+                                args[i] = classOf(type);
+                            } else if (m == Type.class) {
+                                args[i] = type;
+                            } else if (m == Spare.class) {
+                                args[i] = spare;
+                            } else if (m == Subject.class) {
+                                args[i] = spare;
+                            } else if (m == Context.class) {
+                                args[i] = spare.context;
+                            } else if (m.isPrimitive()) {
+                                args[i] = Spare.of(m).apply();
+                            } else if (m.isAnnotation()) {
+                                args[i] = getAnnotation(
+                                    (Class<? extends Annotation>) m
+                                );
+                            }
+                        }
+                    }
+
+                    if (!latest.isAccessible()) {
+                        latest.setAccessible(true);
+                    }
+                    coder = (Coder<?>) latest.newInstance(args);
+                } catch (Exception e) {
+                    throw new IllegalStateException(
+                        "Failed to build the '"
+                            + this + "' coder: " + agent, e
+                    );
+                }
+            } else {
+                coder = spare.context.assign(agent);
+            }
+        }
+
+        /**
+         * Returns the annotation of the {@code class}
+         */
+        public <A extends Annotation> A getAnnotation(
+            @NotNull Class<A> clazz
+        ) {
+            AnnotatedElement elem = element;
+            if (elem != null) {
+                return elem.getAnnotation(clazz);
+            } else {
+                return clazz.getAnnotation(clazz);
+            }
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.6
+     */
+    static final class ParamVisitor extends Visitor {
 
         private Annotation[] annotations;
 
-        ParamMember(
-            int idx,
-            Magic magic,
+        ParamVisitor(
+            int index,
             Field field,
-            Context context
+            Magic magic,
+            BeanSpare<?> spare
         ) {
-            index = idx;
+            super(index);
             element = field;
             Class<?> cls = field.getType();
             if (cls.isPrimitive()) {
@@ -552,20 +657,34 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             } else {
                 type = field.getGenericType();
             }
-            init(magic, context);
+            if (magic != null) {
+                Class<?> agent = magic.agent();
+                if (agent != void.class) {
+                    setup(
+                        agent, spare
+                    );
+                }
+            }
         }
 
-        ParamMember(
+        ParamVisitor(
             int index,
             Type type,
-            Context context,
+            BeanSpare<?> spare,
             Annotation[] annotations
         ) {
+            super(index);
             this.type = type;
-            this.index = index;
             this.annotations = annotations;
             Magic magic = getAnnotation(Magic.class);
-            init(magic, context);
+            if (magic != null) {
+                Class<?> agent = magic.agent();
+                if (agent != void.class) {
+                    setup(
+                        agent, spare
+                    );
+                }
+            }
         }
 
         @Override
@@ -611,27 +730,34 @@ public class ReflectSpare<T> extends BeanSpare<T> {
      * @author kraity
      * @since 0.0.6
      */
-    static final class FieldMember extends Member {
+    static final class FieldVisitor extends Visitor {
 
         private final Field field;
 
-        public FieldMember(
+        public FieldVisitor(
+            int index,
             Magic magic,
             Field field,
-            Context context
+            BeanSpare<?> spare
         ) {
-            super();
+            super(index);
             element = field;
-            if (magic != null) {
-                index = magic.index();
-            }
             Class<?> cls = field.getType();
             if (cls.isPrimitive()) {
                 type = cls;
             } else {
                 type = field.getGenericType();
             }
-            init(magic, context);
+
+            if (magic != null) {
+                Class<?> agent = magic.agent();
+                if (agent != void.class) {
+                    setup(
+                        agent, spare
+                    );
+                }
+            }
+
             this.field = field;
             if (!field.isAccessible()) {
                 field.setAccessible(true);
@@ -676,20 +802,19 @@ public class ReflectSpare<T> extends BeanSpare<T> {
      * @author kraity
      * @since 0.0.6
      */
-    static final class MethodMember extends Member {
+    static final class MethodVisitor extends Visitor {
 
         private final Method method;
 
-        public MethodMember(
+        public MethodVisitor(
+            int index,
             Magic magic,
             Method method,
-            Class<?>[] params,
-            Context context
+            BeanSpare<?> spare,
+            Class<?>[] params
         ) {
+            super(index);
             element = method;
-            if (magic != null) {
-                index = magic.index();
-            }
             switch (params.length) {
                 case 0: {
                     Class<?> cls = method.getReturnType();
@@ -716,7 +841,16 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                     );
                 }
             }
-            init(magic, context);
+
+            if (magic != null) {
+                Class<?> agent = magic.agent();
+                if (agent != void.class) {
+                    setup(
+                        agent, spare
+                    );
+                }
+            }
+
             this.method = method;
             if (!method.isAccessible()) {
                 method.setAccessible(true);
@@ -729,7 +863,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
         ) {
             try {
                 return method.invoke(
-                    bean, EMPTY_ARRAY
+                    bean, (Object[]) null
                 );
             } catch (Throwable e) {
                 throw new IllegalStateException(

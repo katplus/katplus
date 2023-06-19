@@ -2,8 +2,8 @@ package plus.kat.spare;
 
 import org.junit.jupiter.api.Test;
 
+import plus.kat.Supplier;
 import plus.kat.actor.Magic;
-import plus.kat.actor.Magus;
 
 import plus.kat.Chan;
 import plus.kat.Flow;
@@ -18,8 +18,82 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class RecordSpareTest {
 
-    @Magus(agent = RecordSpare.class)
-    static class Art {
+    static <T> Spare<T> spare(
+        Class<T> clazz
+    ) {
+        return new RecordSpare<>(
+            null, clazz, Supplier.ins()
+        );
+    }
+
+    static class User {
+
+        private final int id;
+        private final String name;
+
+        public User() {
+            this.id = 0;
+            this.name = null;
+        }
+
+        public User(
+            int id
+        ) {
+            this.id = id;
+            this.name = null;
+        }
+
+        public User(
+            String name, int id
+        ) {
+            this.id = id;
+            this.name = name;
+        }
+
+        // suited
+        public User(
+            int id, String name
+        ) {
+            this.id = id;
+            this.name = '@' + name;
+        }
+
+        public User(
+            int id, String tag, String name
+        ) {
+            this.id = id;
+            this.name = tag + name;
+        }
+
+        public int id() {
+            return id;
+        }
+
+        public String name() {
+            return name;
+        }
+    }
+
+    @Test
+    public void test_args() throws IOException {
+        Spare<User> spare =
+            spare(User.class);
+
+        User user = spare.read(
+            Flow.of(
+                "{id=1,name=kraity}"
+            )
+        );
+
+        assertNotNull(user);
+        assertEquals(1, user.id);
+        assertEquals("@kraity", user.name);
+        try (Chan chan = spare.write(user)) {
+            assertEquals("{id=1,name=\"@kraity\"}", chan.toString());
+        }
+    }
+
+    static class Model {
 
         private final int id;
 
@@ -28,10 +102,8 @@ public class RecordSpareTest {
 
         private final String name;
 
-        public Art(
-            int id,
-            String tag,
-            String name
+        public Model(
+            int id, String tag, String name
         ) {
             this.id = id;
             this.tag = tag;
@@ -43,32 +115,31 @@ public class RecordSpareTest {
         }
 
         public String tag() {
-            return "tag->" + tag;
+            return '#' + tag;
         }
 
         @Magic("alias")
         public String name() {
-            return "name->" + name;
+            return '@' + name;
         }
     }
 
     @Test
-    public void test_base() throws IOException {
-        Spare<Art> spare =
-            Spare.of(Art.class);
-        assertInstanceOf(
-            RecordSpare.class, spare
+    public void test_magic() throws IOException {
+        Spare<Model> spare =
+            spare(Model.class);
+
+        Model model = spare.read(
+            Flow.of(
+                "{id=1,name=kraity,meta=kat.plus}"
+            )
         );
 
-        Art art = spare.read(
-            Flow.of("{id=1,name=kraity,meta=katplus}")
-        );
-
-        assertNotNull(art);
-        assertEquals(1, art.id);
-        assertEquals("kraity", art.name);
-        try (Chan chan = spare.write(art)) {
-            assertEquals("{id=1,meta=\"tag->katplus\",alias=\"name->kraity\"}", chan.toString());
+        assertNotNull(model);
+        assertEquals(1, model.id);
+        assertEquals("kraity", model.name);
+        try (Chan chan = spare.write(model)) {
+            assertEquals("{id=1,meta=\"#kat.plus\",alias=\"@kraity\"}", chan.toString());
         }
     }
 }

@@ -22,7 +22,6 @@ import plus.kat.entity.*;
 
 import java.io.*;
 import java.lang.reflect.*;
-import java.lang.annotation.*;
 
 import static plus.kat.spare.Parser.*;
 import static plus.kat.stream.Toolkit.*;
@@ -31,14 +30,13 @@ import static plus.kat.stream.Toolkit.*;
  * @author kraity
  * @since 0.0.4
  */
-@SuppressWarnings("unchecked")
 public abstract class BeanSpare<T> implements Subject<T> {
 
     protected int grade;
     protected String space;
 
-    protected Entry[] table;
-    protected Member head, tail;
+    protected Nodus[] table;
+    protected Widget head, tail;
 
     protected final Class<T> klass;
     protected final Context context;
@@ -155,150 +153,199 @@ public abstract class BeanSpare<T> implements Subject<T> {
         @NotNull Chan chan,
         @NotNull Object value
     ) throws IOException {
-        for (Member node = head; node != null; node = node.tail) {
+        for (Widget node = head; node != null; node = node.mate) {
             chan.set(
                 node.name, node.coder, node.apply(value)
             );
         }
     }
 
-    @Override
-    public Sensor setProperty(
-        @NotNull Object name
+    /**
+     * Sets the specified property
+     */
+    protected void setReader(
+        @NotNull String name,
+        @NotNull Widget node
     ) {
-        if (name != null) {
-            Entry[] tab = table;
-            if (tab == null) {
-                return null;
-            }
-
-            int hash = name.hashCode();
-            hash = hash ^ (hash >>> 16);
-
-            int m = tab.length - 1;
-            Entry n = tab[m & hash];
-
-            for (; n != null; n = n.next) {
-                if (n.hash == hash &&
-                    (name.equals(n.key) ||
-                        n.key.equals(name))) {
-                    return n.setter;
-                }
-            }
-
-            return null;
-        }
-        throw new IllegalStateException(
-            "Received property name is invalid"
-        );
-    }
-
-    public Sensor getProperty(
-        @NotNull Object name
-    ) {
-        if (name != null) {
-            Entry[] tab = table;
-            if (tab == null) {
-                return null;
-            }
-
-            int hash = name.hashCode();
-            hash = hash ^ (hash >>> 16);
-
-            int m = tab.length - 1;
-            Entry n = tab[m & hash];
-
-            for (; n != null; n = n.next) {
-                if (n.hash == hash &&
-                    (name.equals(n.key) ||
-                        n.key.equals(name))) {
-                    return n.getter;
-                }
-            }
-
-            return null;
-        }
-        throw new IllegalStateException(
-            "Received parameter name is invalid"
-        );
-    }
-
-    @Override
-    public Sensor setParameter(
-        @NotNull Object name
-    ) {
-        if (name != null) {
-            Entry[] tab = table;
-            if (tab == null) {
-                return null;
-            }
-
-            int hash = name.hashCode();
-            hash = hash ^ (hash >>> 16);
-
-            int m = tab.length - 1;
-            Entry n = tab[m & hash];
-
-            for (; n != null; n = n.next) {
-                if (n.hash == hash &&
-                    (name.equals(n.key) ||
-                        n.key.equals(name))) {
-                    return n.target;
-                }
-            }
-
-            return null;
-        }
-        throw new IllegalStateException(
-            "Received property name is invalid"
-        );
-    }
-
-    @Override
-    public Sensor getParameter(
-        @NotNull Object name
-    ) {
-        if (name != null) {
-            Entry[] tab = table;
-            if (tab == null) {
-                return null;
-            }
-
-            int hash = name.hashCode();
-            hash = hash ^ (hash >>> 16);
-
-            int m = tab.length - 1;
-            Entry n = tab[m & hash];
-
-            for (; n != null; n = n.next) {
-                if (n.hash == hash &&
-                    (name.equals(n.key) ||
-                        n.key.equals(name))) {
-                    return n.target;
-                }
-            }
-
-            return null;
-        }
-        throw new IllegalStateException(
-            "Received property name is invalid"
-        );
+        bundle(node, name).setter = node;
     }
 
     /**
-     * Returns the {@link Entry} being used
+     * Adds the specified property.
+     * Returns true if the node is settled
+     */
+    protected boolean addReader(
+        @NotNull String name,
+        @NotNull Widget node
+    ) {
+        Nodus e = bundle(node, name);
+        if (e.setter == null) {
+            e.setter = node;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Sets the specified attribute
+     */
+    protected void setWriter(
+        @NotNull String name,
+        @NotNull Widget node
+    ) {
+        Nodus e = bundle(
+            node, name
+        );
+        e.getter = node;
+        concat(name, node);
+    }
+
+    /**
+     * Adds the specified attribute.
+     * Returns true if the node is settled
+     */
+    protected boolean addWriter(
+        @NotNull String name,
+        @NotNull Widget node
+    ) {
+        Nodus e = bundle(node, name);
+        if (e.getter != null) {
+            return false;
+        } else {
+            e.getter = node;
+            return concat(name, node);
+        }
+    }
+
+    /**
+     * Sets the specified property
+     */
+    protected void setProperty(
+        @NotNull String name,
+        @NotNull Widget node
+    ) {
+        Nodus e = bundle(
+            node, name
+        );
+        e.setter = node;
+        e.getter = node;
+        concat(name, node);
+    }
+
+    /**
+     * Adds the specified property.
+     * Returns true if the node is settled
+     */
+    protected boolean addProperty(
+        @NotNull String name,
+        @NotNull Widget node
+    ) {
+        Nodus e = bundle(node, name);
+        if (e.setter != null ||
+            e.getter != null) {
+            return false;
+        } else {
+            e.setter = node;
+            e.getter = node;
+            return concat(name, node);
+        }
+    }
+
+    /**
+     * Sets the specified parameter
+     */
+    protected void setParameter(
+        @NotNull String name,
+        @NotNull Widget node
+    ) {
+        bundle(node, name).target = node;
+    }
+
+    /**
+     * Adds the specified parameter.
+     * Returns true if the node is settled
+     */
+    protected boolean addParameter(
+        @NotNull String name,
+        @NotNull Widget node
+    ) {
+        Nodus e = bundle(node, name);
+        if (e.target == null) {
+            e.target = node;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.6
+     */
+    public static class Nodus {
+        Object id;
+        Widget mate;
+
+        int hash;
+        Nodus next;
+
+        Sensor target;
+        Sensor setter, getter;
+    }
+
+    /**
+     * @author kraity
+     * @since 0.0.6
+     */
+    public abstract static class Widget
+        extends Nodus implements Sensor {
+
+        private int grade;
+        private String name;
+
+        protected Type type;
+        protected int index;
+        protected Coder<?> coder;
+
+        /**
+         * @param i the specified index
+         */
+        public Widget(int i) {
+            index = i;
+        }
+
+        /**
+         * Returns the type of {@link Sensor}
+         */
+        @Override
+        public Type getType() {
+            return type;
+        }
+
+        /**
+         * Returns the coder of {@link Sensor}
+         */
+        @Override
+        public Coder<?> getCoder() {
+            return coder;
+        }
+    }
+
+    /**
+     * Returns the {@link Nodus} being used
      *
      * @param node the specified bundle
      * @param name the specified key of bundle
      */
     @NotNull
-    private Entry bundle(
-        @NotNull Entry node,
+    private Nodus bundle(
+        @NotNull Nodus node,
         @NotNull Object name
     ) {
-        Entry[] tab = table;
+        Nodus[] tab = table;
         if (tab == null) {
-            tab = table = new Entry[4];
+            tab = table = new Nodus[4];
         }
 
         int hash = name.hashCode();
@@ -308,41 +355,41 @@ public abstract class BeanSpare<T> implements Subject<T> {
             int l = tab.length;
             int i = (l - 1) & hash;
 
-            Entry e = tab[i];
+            Nodus e = tab[i];
             if (e == null) {
-                if (node.key != null) {
-                    node = new Entry();
+                if (node.id != null) {
+                    node = new Nodus();
                 }
-                node.key = name;
+                node.id = name;
                 node.hash = hash;
                 return tab[i] = node;
             }
 
             for (int k = 0; ; k++) {
                 if (e.hash == hash &&
-                    (name.equals(e.key) ||
-                        e.key.equals(name))) {
+                    (name.equals(e.id) ||
+                        e.id.equals(name))) {
                     return e;
                 }
 
-                Entry next = e.next;
+                Nodus next = e.next;
                 if (next != null) {
                     e = next;
                 } else {
                     if (l <= k) break;
-                    if (node.key != null) {
-                        node = new Entry();
+                    if (node.id != null) {
+                        node = new Nodus();
                     }
-                    node.key = name;
+                    node.id = name;
                     node.hash = hash;
                     return e.next = node;
                 }
             }
 
             int s = l << 1;
-            Entry[] bucket = new Entry[s];
+            Nodus[] bucket = new Nodus[s];
 
-            Entry m, n;
+            Nodus m, n;
             int u = s - 1;
 
             for (int k = 0; k < l; k++) {
@@ -370,14 +417,14 @@ public abstract class BeanSpare<T> implements Subject<T> {
     }
 
     /**
-     * Returns true if the {@link Member} is settled
+     * Returns true if the {@link Widget} is settled
      *
      * @param name the specified key of bundle
      * @param node the specified bundle to be settled
      */
-    private boolean append(
+    private boolean concat(
         @NotNull String name,
-        @NotNull Member node
+        @NotNull Widget node
     ) {
         if (node.name == null) {
             node.name = name;
@@ -386,8 +433,8 @@ public abstract class BeanSpare<T> implements Subject<T> {
             return false;
         }
 
-        Member m = head;
-        Member n = null;
+        Widget m = head;
+        Widget n = null;
 
         int g = grade;
         int d = node.index;
@@ -402,21 +449,21 @@ public abstract class BeanSpare<T> implements Subject<T> {
             if (m.index < -1) {
                 head = node;
                 tail = node;
-                node.tail = m;
+                node.mate = m;
             } else {
                 n = tail;
                 tail = node;
                 if (n == null) {
                     do {
                         n = m;
-                        m = m.tail;
+                        m = m.mate;
                     } while (
                         m != null
                     );
                 } else {
-                    node.tail = n.tail;
+                    node.mate = n.mate;
                 }
-                n.tail = node;
+                n.mate = node;
             }
         } else {
             if (m == null) {
@@ -436,13 +483,13 @@ public abstract class BeanSpare<T> implements Subject<T> {
                         if (n == null) {
                             head = node;
                         } else {
-                            n.tail = node;
+                            n.mate = node;
                         }
-                        node.tail = m;
+                        node.mate = m;
                         return true;
                     }
                 } while (
-                    (m = (n = m).tail) != null
+                    (m = (n = m).mate) != null
                 );
             } else {
                 do {
@@ -452,265 +499,141 @@ public abstract class BeanSpare<T> implements Subject<T> {
                         if (n == null) {
                             head = node;
                         } else {
-                            n.tail = node;
+                            n.mate = node;
                         }
-                        node.tail = m;
+                        node.mate = m;
                         return true;
                     }
                 } while (
-                    (m = (n = m).tail) != null
+                    (m = (n = m).mate) != null
                 );
             }
-            n.tail = node;
+            n.mate = node;
         }
 
         return true;
     }
 
-    /**
-     * Sets the specified property
-     */
-    protected void setReader(
-        @NotNull String name,
-        @NotNull Member node
+    @Override
+    public Sensor setProperty(
+        @NotNull Object name
     ) {
-        bundle(node, name).setter = node;
-    }
+        if (name != null) {
+            Nodus[] tab = table;
+            if (tab == null) {
+                return null;
+            }
 
-    /**
-     * Adds the specified property.
-     * Returns true if the node is settled
-     */
-    protected boolean addReader(
-        @NotNull Object name,
-        @NotNull Member node
-    ) {
-        Entry e = bundle(node, name);
-        if (e.setter == null) {
-            e.setter = node;
-            return true;
-        } else {
-            return false;
+            int hash = name.hashCode();
+            hash = hash ^ (hash >>> 16);
+
+            int m = tab.length - 1;
+            Nodus n = tab[m & hash];
+
+            for (; n != null; n = n.next) {
+                if (n.hash == hash &&
+                    (name.equals(n.id) ||
+                        n.id.equals(name))) {
+                    return n.setter;
+                }
+            }
+
+            return null;
         }
-    }
-
-    /**
-     * Sets the specified attribute
-     */
-    protected void setWriter(
-        @NotNull String name,
-        @NotNull Member node
-    ) {
-        Entry e = bundle(
-            node, name
+        throw new IllegalStateException(
+            "Received property name is invalid"
         );
-        e.getter = node;
-        append(name, node);
     }
 
-    /**
-     * Adds the specified attribute.
-     * Returns true if the node is settled
-     */
-    protected boolean addWriter(
-        @NotNull String name,
-        @NotNull Member node
+    public Sensor getProperty(
+        @NotNull Object name
     ) {
-        Entry e = bundle(node, name);
-        if (e.getter != null) {
-            return false;
-        } else {
-            e.getter = node;
-            return append(name, node);
+        if (name != null) {
+            Nodus[] tab = table;
+            if (tab == null) {
+                return null;
+            }
+
+            int hash = name.hashCode();
+            hash = hash ^ (hash >>> 16);
+
+            int m = tab.length - 1;
+            Nodus n = tab[m & hash];
+
+            for (; n != null; n = n.next) {
+                if (n.hash == hash &&
+                    (name.equals(n.id) ||
+                        n.id.equals(name))) {
+                    return n.getter;
+                }
+            }
+
+            return null;
         }
-    }
-
-    /**
-     * Sets the specified property
-     */
-    protected void setProperty(
-        @NotNull String name,
-        @NotNull Member node
-    ) {
-        Entry e = bundle(
-            node, name
+        throw new IllegalStateException(
+            "Received parameter name is invalid"
         );
-        e.setter = node;
-        e.getter = node;
-        append(name, node);
     }
 
-    /**
-     * Adds the specified property.
-     * Returns true if the node is settled
-     */
-    protected boolean addProperty(
-        @NotNull String name,
-        @NotNull Member node
+    @Override
+    public Sensor setParameter(
+        @NotNull Object name
     ) {
-        Entry e = bundle(node, name);
-        if (e.setter != null ||
-            e.getter != null) {
-            return false;
-        } else {
-            e.setter = node;
-            e.getter = node;
-            return append(name, node);
-        }
-    }
-
-    /**
-     * Sets the specified parameter
-     */
-    protected void setParameter(
-        @NotNull String name,
-        @NotNull Member node
-    ) {
-        bundle(node, name).target = node;
-    }
-
-    /**
-     * Adds the specified parameter.
-     * Returns true if the node is settled
-     */
-    protected boolean addParameter(
-        @NotNull String name,
-        @NotNull Member node
-    ) {
-        Entry e = bundle(node, name);
-        if (e.target == null) {
-            e.target = node;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.6
-     */
-    public static class Entry {
-        private int hash;
-        private Object key;
-
-        private Entry next;
-        private Sensor setter, getter, target;
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.6
-     */
-    public abstract static class Member
-        extends Entry implements Sensor {
-
-        private int grade;
-        private String name;
-        private Member tail;
-
-        protected Type type;
-        protected int index = -1;
-
-        protected Coder<?> coder;
-        protected AnnotatedElement element;
-
-        protected void init(
-            Magic magic,
-            Context context
-        ) {
-            Class<?> agent;
-            if (magic == null || (agent =
-                magic.agent()) == void.class) {
-                return;
+        if (name != null) {
+            Nodus[] tab = table;
+            if (tab == null) {
+                return null;
             }
 
-            if (!Coder.class.isAssignableFrom(agent)) {
-                coder = context.assign(agent);
-            } else try {
-                Constructor<?>[] cs = agent
-                    .getDeclaredConstructors();
-                Constructor<?> buffer,
-                    latest = cs[0];
-                Class<?>[] bufferType,
-                    latestType = latest.getParameterTypes();
-                for (int i = 1; i < cs.length; i++) {
-                    buffer = cs[i];
-                    bufferType = buffer.getParameterTypes();
-                    if (latestType.length <=
-                        bufferType.length) {
-                        latest = buffer;
-                        latestType = bufferType;
-                    }
-                }
+            int hash = name.hashCode();
+            hash = hash ^ (hash >>> 16);
 
-                Object[] args;
-                final int size = latestType.length;
+            int m = tab.length - 1;
+            Nodus n = tab[m & hash];
 
-                if (size == 0) {
-                    args = ArraySpare.EMPTY_ARRAY;
-                } else {
-                    args = new Object[size];
-                    for (int i = 0; i < size; i++) {
-                        Class<?> m = latestType[i];
-                        if (m == Class.class) {
-                            args[i] = type;
-                        } else if (m == Type.class) {
-                            args[i] = type;
-                        } else if (m == Magic.class) {
-                            args[i] = magic;
-                        } else if (m == Context.class) {
-                            args[i] = context;
-                        } else if (m.isPrimitive()) {
-                            args[i] = Spare.of(m).apply();
-                        } else if (m.isAnnotation()) {
-                            args[i] = getAnnotation(
-                                (Class<? extends Annotation>) m
-                            );
-                        }
-                    }
+            for (; n != null; n = n.next) {
+                if (n.hash == hash &&
+                    (name.equals(n.id) ||
+                        n.id.equals(name))) {
+                    return n.target;
                 }
-
-                if (!latest.isAccessible()) {
-                    latest.setAccessible(true);
-                }
-                coder = (Coder<?>) latest.newInstance(args);
-            } catch (Exception e) {
-                throw new IllegalStateException(
-                    "Failed to build the '"
-                        + this + "' coder: " + agent, e
-                );
             }
-        }
 
-        /**
-         * Returns the type of member
-         */
-        @Override
-        public Type getType() {
-            return type;
+            return null;
         }
+        throw new IllegalStateException(
+            "Received property name is invalid"
+        );
+    }
 
-        /**
-         * Returns the coder of member
-         */
-        @Override
-        public Coder<?> getCoder() {
-            return coder;
-        }
-
-        /**
-         * Returns the annotation of the {@code class}
-         */
-        public <A extends Annotation> A getAnnotation(
-            @NotNull Class<A> clazz
-        ) {
-            AnnotatedElement elem = element;
-            if (elem != null) {
-                return elem.getAnnotation(clazz);
-            } else {
-                return clazz.getAnnotation(clazz);
+    @Override
+    public Sensor getParameter(
+        @NotNull Object name
+    ) {
+        if (name != null) {
+            Nodus[] tab = table;
+            if (tab == null) {
+                return null;
             }
+
+            int hash = name.hashCode();
+            hash = hash ^ (hash >>> 16);
+
+            int m = tab.length - 1;
+            Nodus n = tab[m & hash];
+
+            for (; n != null; n = n.next) {
+                if (n.hash == hash &&
+                    (name.equals(n.id) ||
+                        n.id.equals(name))) {
+                    return n.target;
+                }
+            }
+
+            return null;
         }
+        throw new IllegalStateException(
+            "Received property name is invalid"
+        );
     }
 }

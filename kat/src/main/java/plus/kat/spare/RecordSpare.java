@@ -19,9 +19,8 @@ import plus.kat.actor.*;
 
 import java.lang.reflect.*;
 
-import static plus.kat.spare.ArraySpare.*;
-import static plus.kat.spare.ReflectSpare.*;
 import static java.lang.reflect.Modifier.*;
+import static plus.kat.spare.ReflectSpare.*;
 
 /**
  * @author kraity
@@ -31,7 +30,7 @@ import static java.lang.reflect.Modifier.*;
 public class RecordSpare<T> extends BeanSpare<T> {
 
     private int width;
-    private Constructor<T> builder;
+    private Constructor<T> creator, builder;
 
     public RecordSpare(
         @Nilable String space,
@@ -51,9 +50,22 @@ public class RecordSpare<T> extends BeanSpare<T> {
 
     @Override
     public T apply() {
-        return apply(
-            EMPTY_ARRAY
-        );
+        Constructor<T> maker = creator;
+        if (maker != null) {
+            try {
+                return maker.newInstance(
+                    (Object[]) null
+                );
+            } catch (Throwable e) {
+                throw new IllegalStateException(
+                    "Failed to call " + maker, e
+                );
+            }
+        } else {
+            throw new IllegalStateException(
+                "Not found the builder of " + klass
+            );
+        }
     }
 
     @NotNull
@@ -61,10 +73,8 @@ public class RecordSpare<T> extends BeanSpare<T> {
         @Nullable Object[] data
     ) {
         if (data == null ||
-            data.length != width) {
-            throw new IllegalStateException(
-                "Parameter length mismatch"
-            );
+            data.length == 0) {
+            return apply();
         }
 
         Constructor<T> maker = builder;
@@ -101,27 +111,27 @@ public class RecordSpare<T> extends BeanSpare<T> {
                 continue;
             }
 
-            Magic m1 = field.getAnnotation(Magic.class);
-            ParamMember arg = new ParamMember(
-                width++, m1, field, context
+            Magic magic1 = field.getAnnotation(Magic.class);
+            ParamVisitor param = new ParamVisitor(
+                width++, field, magic1, this
             );
 
             String[] keys = null;
             String name = field.getName();
 
-            if (m1 == null) {
+            if (magic1 == null) {
                 setParameter(
-                    name, arg
+                    name, param
                 );
             } else {
-                String[] ks = m1.value();
+                String[] ks = magic1.value();
                 if (ks.length == 0) {
                     setParameter(
-                        name, arg
+                        name, param
                     );
                 } else {
                     for (String key : (keys = ks)) {
-                        if (addParameter(key, arg)) {
+                        if (addParameter(key, param)) {
                             continue;
                         }
                         throw new IllegalStateException(
@@ -147,36 +157,39 @@ public class RecordSpare<T> extends BeanSpare<T> {
                 continue;
             }
 
-            Magic m2 = method.getAnnotation(Magic.class);
-            Member member;
-            if (m2 == null) {
-                member = new MethodMember(
-                    m1, method, params, context
+            Magic magic2 = method.getAnnotation(Magic.class);
+            Widget widget;
+            if (magic2 == null) {
+                widget = new MethodVisitor(
+                    magic1 == null ?
+                        -1 : magic1.index(),
+                    magic1, method, this, params
                 );
                 if (keys == null) {
                     setWriter(
-                        name, member
+                        name, widget
                     );
                 } else {
                     for (String key : keys) {
                         setWriter(
-                            key, member
+                            key, widget
                         );
                     }
                 }
             } else {
-                member = new MethodMember(
-                    m2, method, params, context
+                widget = new MethodVisitor(
+                    magic2.index(),
+                    magic2, method, this, params
                 );
-                keys = m2.value();
+                keys = magic2.value();
                 if (keys.length == 0) {
                     setWriter(
-                        name, member
+                        name, widget
                     );
                 } else {
                     for (String key : keys) {
                         setWriter(
-                            key, member
+                            key, widget
                         );
                     }
                 }
@@ -187,28 +200,51 @@ public class RecordSpare<T> extends BeanSpare<T> {
     protected void onConstructors(
         @NotNull Constructor<?>[] cs
     ) {
-        Constructor<?> buffer,
-            latest = cs[0];
-        Class<?>[] bufferType,
-            latestType = latest.getParameterTypes();
-        for (int i = 1; i < cs.length; i++) {
-            buffer = cs[i];
+        Constructor<?>
+            latest = null;
+        Class<?>[] bufferType;
+        stage:
+        for (Constructor<?> buffer : cs) {
             bufferType = buffer.getParameterTypes();
-            if (latestType.length <=
-                bufferType.length) {
+            if (bufferType.length == 0) {
+                if (!buffer.isAccessible()) {
+                    buffer.setAccessible(true);
+                }
+                creator = (Constructor<T>) buffer;
+                if (width == 0) {
+                    builder = (Constructor<T>) buffer;
+                    return;
+                } else {
+                    continue;
+                }
+            }
+            if (bufferType.length == width) {
+                if (latest == null) {
+                    latest = buffer;
+                    continue;
+                }
+                for (Nodus n : table) {
+                    for (; n != null; n = n.next) {
+                        if (n instanceof ReflectSpare.ParamVisitor) {
+                            Widget m = (Widget) n;
+                            if (m.type != bufferType[m.index]) {
+                                continue stage;
+                            }
+                        }
+                    }
+                }
                 latest = buffer;
-                latestType = bufferType;
             }
         }
 
-        if (width == latestType.length) {
-            builder = (Constructor<T>) latest;
+        if (latest != null) {
             if (!latest.isAccessible()) {
                 latest.setAccessible(true);
             }
+            builder = (Constructor<T>) latest;
         } else {
             throw new IllegalArgumentException(
-                "The number of actual and formal arguments differ"
+                "No accurate constructor was found"
             );
         }
     }

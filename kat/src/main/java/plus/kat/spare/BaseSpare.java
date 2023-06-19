@@ -15,10 +15,8 @@
  */
 package plus.kat.spare;
 
-import plus.kat.actor.NotNull;
-import plus.kat.actor.Nullable;
-
 import plus.kat.*;
+import plus.kat.actor.*;
 
 import java.lang.reflect.Type;
 
