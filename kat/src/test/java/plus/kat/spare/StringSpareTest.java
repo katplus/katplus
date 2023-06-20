@@ -18,7 +18,9 @@ public class StringSpareTest {
         Spare<String> spare = StringSpare.INSTANCE;
 
         String sb = spare.read(
-            Flow.of("\"@L©µŁƎʪ˩Σ『陆之岇』🧬🏷⛰️🌏\"")
+            Flow.of(
+                "\"@L©µŁƎʪ˩Σ『陆之岇』🧬🏷⛰️🌏\""
+            )
         );
         assertNotNull(sb);
         try (Chan chan = spare.write(sb, Flag.NORM)) {
@@ -31,7 +33,9 @@ public class StringSpareTest {
         Spare<StringBuffer> spare = StringBufferSpare.INSTANCE;
 
         StringBuffer sb = spare.read(
-            Flow.of("\"@L©µŁƎʪ˩Σ『陆之岇』🧬🏷⛰️🌏\"")
+            Flow.of(
+                "\"@L©µŁƎʪ˩Σ『陆之岇』🧬🏷⛰️🌏\""
+            )
         );
         assertNotNull(sb);
         try (Chan chan = spare.write(sb, Flag.NORM)) {
@@ -44,7 +48,9 @@ public class StringSpareTest {
         Spare<StringBuilder> spare = StringBuilderSpare.INSTANCE;
 
         StringBuilder sb = spare.read(
-            Flow.of("\"@L©µŁƎʪ˩Σ『陆之岇』🧬🏷⛰️🌏\"")
+            Flow.of(
+                "\"@L©µŁƎʪ˩Σ『陆之岇』🧬🏷⛰️🌏\""
+            )
         );
         assertNotNull(sb);
         try (Chan chan = spare.write(sb, Flag.NORM)) {

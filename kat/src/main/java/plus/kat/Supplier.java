@@ -1080,6 +1080,12 @@ public interface Supplier extends Context {
                                         return ListSpare.INSTANCE;
                                     }
                                     break edge;
+                                } else if (clazz == TimeZone.class) {
+                                    if (name == null ||
+                                        name.isBlank()) {
+                                        return TimeZoneSpare.INSTANCE;
+                                    }
+                                    break edge;
                                 } else if (clazz == Dictionary.class) {
                                     if (name == null ||
                                         name.isBlank()) {
