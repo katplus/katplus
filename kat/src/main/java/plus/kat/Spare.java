@@ -455,16 +455,17 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Returns the {@link Spare} of the {@code type} from the default context
+     * Search for the spare of the specified type from the default {@link Context}
      *
      * <pre>{@code
      *  Type type = ...
      *  Spare<User> spare = Spare.of(type);
      * }</pre>
      *
-     * @param type the specified type for lookup
+     * @param type the specified actual type
      * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code type} is null
+     * @throws NullPointerException  If the specified type is null
+     * @throws IllegalStateException If the specified type is disabled or otherwise
      * @since 0.0.6
      */
     @Nullable
@@ -475,16 +476,17 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Returns the {@link Spare} of the {@code type} from the default context
+     * Search for the spare of the specified type from the default {@link Context}
      *
      * <pre>{@code
      *  Class<User> type = User.class;
      *  Spare<User> spare = Spare.of(type);
      * }</pre>
      *
-     * @param type the specified type for lookup
+     * @param type the specified actual type
      * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code type} is null
+     * @throws NullPointerException  If the specified type is null
+     * @throws IllegalStateException If the specified type is disabled or otherwise
      * @since 0.0.6
      */
     @Nullable
@@ -495,7 +497,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Returns the {@link Spare} of the {@code type} from the default context
+     * Search for the spare of the specified type from the default {@link Context}
      *
      * <pre>{@code
      *  Type type = ...
@@ -506,7 +508,8 @@ public interface Spare<T> extends Coder<T> {
      * @param type the specified parent type
      * @param name the specified actual name
      * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code params} is null
+     * @throws NullPointerException  If the specified type or name is null
+     * @throws IllegalStateException If the specified type is disabled or otherwise
      * @since 0.0.6
      */
     @Nullable
@@ -518,7 +521,7 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Returns the {@link Spare} of the {@code type} from the default context
+     * Search for the spare of the specified type from the default {@link Context}
      *
      * <pre>{@code
      *  Space name = ...
@@ -529,7 +532,8 @@ public interface Spare<T> extends Coder<T> {
      * @param name the specified actual name
      * @param type the specified parent type
      * @return {@link Spare} or {@code null}
-     * @throws NullPointerException If the specified {@code params} is null
+     * @throws NullPointerException  If the specified type or name is null
+     * @throws IllegalStateException If the specified type is disabled or otherwise
      * @since 0.0.6
      */
     @Nullable
