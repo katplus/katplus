@@ -117,40 +117,35 @@ public class Stream extends Binary implements Flux {
 
     /**
      * Appends this byte to the current content
-     *
-     * @param bitty the specified byte value
-     * @throws IOException If an I/O error occurs
      */
     @Override
-    public void emit(
-        byte bitty
-    ) throws IOException {
+    public void emit(byte bin) {
         byte[] it = value;
         escape:
         {
-            switch (bitty) {
+            switch (bin) {
                 case 0x5C:
                 case 0x22: {
                     break;
                 }
                 case 0x08: {
-                    bitty = 'b';
+                    bin = 'b';
                     break;
                 }
                 case 0x09: {
-                    bitty = 't';
+                    bin = 't';
                     break;
                 }
                 case 0x0A: {
-                    bitty = 'n';
+                    bin = 'n';
                     break;
                 }
                 case 0x0C: {
-                    bitty = 'f';
+                    bin = 'f';
                     break;
                 }
                 case 0x0D: {
-                    bitty = 'r';
+                    bin = 'r';
                     break;
                 }
                 case 0x20:
@@ -288,8 +283,8 @@ public class Stream extends Binary implements Flux {
                     it[size++] = 'u';
                     it[size++] = '0';
                     it[size++] = '0';
-                    it[size++] = HEX_UPPER[(bitty >> 4) & 0x0F];
-                    it[size++] = HEX_UPPER[bitty & 0x0F];
+                    it[size++] = HEX_UPPER[(bin >> 4) & 0x0F];
+                    it[size++] = HEX_UPPER[bin & 0x0F];
                     return;
                 }
             }
@@ -300,29 +295,24 @@ public class Stream extends Binary implements Flux {
                     it, size, size + 2
                 );
             }
-            it[size++] = (byte) '\\';
+            it[size++] = '\\';
         }
 
         if (size != it.length) {
-            it[size++] = bitty;
+            it[size++] = bin;
         } else {
-            grow(size + 1)[size++] = bitty;
+            grow(size + 1)[size++] = bin;
         }
     }
 
     /**
      * Appends this char to the current content
-     *
-     * @param cutty the specified char value
-     * @throws IOException If an I/O error occurs
      */
     @Override
-    public void emit(
-        char cutty
-    ) throws IOException {
-        if (cutty < 0x80) {
+    public void emit(char val) {
+        if (val < 0x80) {
             emit(
-                (byte) cutty
+                (byte) val
             );
         } else {
             byte[] it = value;
@@ -337,13 +327,13 @@ public class Stream extends Binary implements Flux {
                 byte[] hex = HEX_UPPER;
                 it[size++] = '\\';
                 it[size++] = 'u';
-                it[size++] = hex[cutty >> 12 & 0x0F];
-                it[size++] = hex[cutty >> 8 & 0x0F];
-                it[size++] = hex[cutty >> 4 & 0x0F];
-                it[size++] = hex[cutty & 0x0F];
+                it[size++] = hex[val >> 12 & 0x0F];
+                it[size++] = hex[val >> 8 & 0x0F];
+                it[size++] = hex[val >> 4 & 0x0F];
+                it[size++] = hex[val & 0x0F];
             } else {
                 // U+0080 ~ U+07FF
-                if (cutty < 0x800) {
+                if (val < 0x800) {
                     int min = size + 2;
                     if (min > it.length) {
                         value = it
@@ -351,13 +341,13 @@ public class Stream extends Binary implements Flux {
                             it, size, min
                         );
                     }
-                    it[size++] = (byte) (cutty >> 6 | 0xC0);
-                    it[size++] = (byte) (cutty & 0x3F | 0x80);
+                    it[size++] = (byte) (val >> 6 | 0xC0);
+                    it[size++] = (byte) (val & 0x3F | 0x80);
                 }
 
                 // U+0800 ~ U+D7FF
                 // U+E000 ~ U+FFFF
-                else if (cutty < 0xD800 || 0xDFFF < cutty) {
+                else if (val < 0xD800 || 0xDFFF < val) {
                     int min = size + 3;
                     if (min > it.length) {
                         value = it
@@ -365,9 +355,9 @@ public class Stream extends Binary implements Flux {
                             it, size, min
                         );
                     }
-                    it[size++] = (byte) (cutty >> 12 | 0xE0);
-                    it[size++] = (byte) (cutty >> 6 & 0x3F | 0x80);
-                    it[size++] = (byte) (cutty & 0x3F | 0x80);
+                    it[size++] = (byte) (val >> 12 | 0xE0);
+                    it[size++] = (byte) (val >> 6 & 0x3F | 0x80);
+                    it[size++] = (byte) (val & 0x3F | 0x80);
                 }
 
                 // U+10000 ~ U+10FFFF
@@ -998,75 +988,6 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends this byte value to this {@link Stream}
-     */
-    public void join(
-        @NotNull byte in
-    ) {
-        byte[] it = value;
-        if (size != it.length) {
-            it[size++] = in;
-        } else {
-            grow(size + 1)[size++] = in;
-        }
-    }
-
-    /**
-     * Appends this char value to this {@link Stream}
-     */
-    public void join(
-        @NotNull char in
-    ) {
-        byte[] it = value;
-        // U+0000 ~ U+007F
-        if (in < 0x80) {
-            if (size != it.length) {
-                it[size++] = (byte) in;
-            } else {
-                grow(size + 1)[size++] = (byte) in;
-            }
-        }
-
-        // U+0080 ~ U+07FF
-        else if (in < 0x800) {
-            int min = size + 2;
-            if (min > it.length) {
-                value = it
-                    = bucket.apply(
-                    it, size, min
-                );
-            }
-            it[size++] = (byte) (in >> 6 | 0xC0);
-            it[size++] = (byte) (in & 0x3F | 0x80);
-        }
-
-        // U+0800 ~ U+D7FF
-        // U+E000 ~ U+FFFF
-        else if (in < 0xD800 || 0xDFFF < in) {
-            int min = size + 3;
-            if (min > it.length) {
-                value = it
-                    = bucket.apply(
-                    it, size, min
-                );
-            }
-            it[size++] = (byte) (in >> 12 | 0xE0);
-            it[size++] = (byte) (in >> 6 & 0x3F | 0x80);
-            it[size++] = (byte) (in & 0x3F | 0x80);
-        }
-
-        // U+10000 ~ U+10FFFF
-        else {
-            // crippled surrogate pair
-            if (size != it.length) {
-                it[size++] = '?';
-            } else {
-                grow(size + 1)[size++] = '?';
-            }
-        }
-    }
-
-    /**
      * Returns a copy of the
      * value of this {@link Stream}
      */
@@ -1107,6 +1028,20 @@ public class Stream extends Binary implements Flux {
             } else {
                 value = bucket.store(it);
             }
+        }
+    }
+
+    /**
+     * Appends this byte to this stream
+     *
+     * @param bin the specified byte value
+     */
+    protected void join(byte bin) {
+        byte[] it = value;
+        if (size != it.length) {
+            it[size++] = bin;
+        } else {
+            grow(size + 1)[size++] = bin;
         }
     }
 

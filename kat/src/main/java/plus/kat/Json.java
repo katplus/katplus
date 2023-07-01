@@ -119,7 +119,7 @@ public class Json extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Object value
     ) throws IOException {
         return set(
@@ -136,7 +136,7 @@ public class Json extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Entity value
     ) throws IOException {
         return set(
@@ -153,7 +153,7 @@ public class Json extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable String space,
         @Nullable Entity value
     ) throws IOException {
@@ -180,7 +180,16 @@ public class Json extends Stream implements Chan {
 
         if (alias != null) {
             join((byte) '"');
-            emit(alias);
+            if (alias instanceof String) {
+                emit((String) alias);
+            } else if (alias instanceof Binary) {
+                emit((Binary) alias);
+            } else {
+                throw new IOException(
+                    alias.getClass().getName() +
+                        " is currently not supported"
+                );
+            }
             join((byte) '"');
             join((byte) ':');
             if (dep != 0) {
@@ -237,7 +246,7 @@ public class Json extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Coder<?> coder,
         @Nullable Object value
     ) throws IOException {
@@ -292,7 +301,16 @@ public class Json extends Stream implements Chan {
 
         if (alias != null) {
             join((byte) '"');
-            emit(alias);
+            if (alias instanceof String) {
+                emit((String) alias);
+            } else if (alias instanceof Binary) {
+                emit((Binary) alias);
+            } else {
+                throw new IOException(
+                    alias.getClass().getName() +
+                        " is currently not supported"
+                );
+            }
             join((byte) '"');
             join((byte) ':');
             if (dep != 0) {

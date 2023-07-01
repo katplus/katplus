@@ -42,7 +42,7 @@ public interface Chan extends Flag, Closeable {
      * @throws IOException If an I/O error occurs
      */
     boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Object value
     ) throws IOException;
 
@@ -66,7 +66,7 @@ public interface Chan extends Flag, Closeable {
      * @throws IOException If an I/O error occurs
      */
     boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Entity value
     ) throws IOException;
 
@@ -86,7 +86,7 @@ public interface Chan extends Flag, Closeable {
      * @throws IOException If an I/O error occurs
      */
     boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable String space,
         @Nullable Entity value
     ) throws IOException;
@@ -108,7 +108,7 @@ public interface Chan extends Flag, Closeable {
      * @throws IOException If an I/O error occurs
      */
     boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Coder<?> coder,
         @Nullable Object value
     ) throws IOException;

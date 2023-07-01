@@ -120,7 +120,7 @@ public class Kat extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Object value
     ) throws IOException {
         return set(
@@ -137,7 +137,7 @@ public class Kat extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Entity value
     ) throws IOException {
         return set(
@@ -154,7 +154,7 @@ public class Kat extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable String space,
         @Nullable Entity value
     ) throws IOException {
@@ -180,7 +180,16 @@ public class Kat extends Stream implements Chan {
         }
 
         if (alias != null) {
-            join(alias);
+            if (alias instanceof String) {
+                write((String) alias, this);
+            } else if (alias instanceof Binary) {
+                write((Binary) alias, this);
+            } else {
+                throw new IOException(
+                    alias.getClass().getName() +
+                        " is currently not supported"
+                );
+            }
         }
 
         if (flags < 0 &&
@@ -190,7 +199,7 @@ public class Kat extends Stream implements Chan {
             } else {
                 join((byte) ':');
             }
-            join(space);
+            write(space, this);
             if (width != 0 ||
                 alias == null) {
                 join((byte) ' ');
@@ -255,7 +264,7 @@ public class Kat extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Coder<?> coder,
         @Nullable Object value
     ) throws IOException {
@@ -309,7 +318,16 @@ public class Kat extends Stream implements Chan {
         }
 
         if (alias != null) {
-            join(alias);
+            if (alias instanceof String) {
+                write((String) alias, this);
+            } else if (alias instanceof Binary) {
+                write((Binary) alias, this);
+            } else {
+                throw new IOException(
+                    alias.getClass().getName() +
+                        " is currently not supported"
+                );
+            }
         }
 
         if (flags < 0) {
@@ -320,9 +338,9 @@ public class Kat extends Stream implements Chan {
             }
             String name = coder.getSpace();
             if (name != null) {
-                join(name);
+                write(name, this);
             } else {
-                join(value.getClass().getName());
+                write(value.getClass().getName(), this);
             }
             if (alias == null &&
                 (width != 0 || coder.getScope() == null)) {
@@ -411,208 +429,6 @@ public class Kat extends Stream implements Chan {
     @Override
     public Context getContext() {
         return context;
-    }
-
-    /**
-     * Concatenates the string to the current content
-     *
-     * @param data the specified string to be appended
-     */
-    private void join(
-        @NotNull String data
-    ) throws IOException {
-        int l = data.length();
-        byte[] it = value;
-
-        for (int i = 0; i < l; i++) {
-            char cutty = data.charAt(i);
-            switch (cutty) {
-                case 0x22:
-                case 0x23:
-                case 0x3A:
-                case 0x40:
-                case 0x5B:
-                case 0x5D:
-                case 0x7B:
-                case 0x7D: {
-                    break;
-                }
-                case 0x08: {
-                    cutty = 'b';
-                    break;
-                }
-                case 0x09: {
-                    cutty = 't';
-                    break;
-                }
-                case 0x0A: {
-                    cutty = 'n';
-                    break;
-                }
-                case 0x0C: {
-                    cutty = 'f';
-                    break;
-                }
-                case 0x0D: {
-                    cutty = 'r';
-                    break;
-                }
-                case 0x20: {
-                    cutty = 's';
-                    break;
-                }
-                case 0x21:
-                case 0x24:
-                case 0x25:
-                case 0x26:
-                case 0x27:
-                case 0x28:
-                case 0x29:
-                case 0x2A:
-                case 0x2B:
-                case 0x2C:
-                case 0x2D:
-                case 0x2E:
-                case 0x2F:
-                case 0x30:
-                case 0x31:
-                case 0x32:
-                case 0x33:
-                case 0x34:
-                case 0x35:
-                case 0x36:
-                case 0x37:
-                case 0x38:
-                case 0x39:
-                case 0x3B:
-                case 0x3C:
-                case 0x3D:
-                case 0x3E:
-                case 0x3F:
-                case 0x41:
-                case 0x42:
-                case 0x43:
-                case 0x44:
-                case 0x45:
-                case 0x46:
-                case 0x47:
-                case 0x48:
-                case 0x49:
-                case 0x4A:
-                case 0x4B:
-                case 0x4C:
-                case 0x4D:
-                case 0x4E:
-                case 0x4F:
-                case 0x50:
-                case 0x51:
-                case 0x52:
-                case 0x53:
-                case 0x54:
-                case 0x55:
-                case 0x56:
-                case 0x57:
-                case 0x58:
-                case 0x59:
-                case 0x5A:
-                case 0x5C:
-                case 0x5E:
-                case 0x5F:
-                case 0x60:
-                case 0x61:
-                case 0x62:
-                case 0x63:
-                case 0x64:
-                case 0x65:
-                case 0x66:
-                case 0x67:
-                case 0x68:
-                case 0x69:
-                case 0x6A:
-                case 0x6B:
-                case 0x6C:
-                case 0x6D:
-                case 0x6E:
-                case 0x6F:
-                case 0x70:
-                case 0x71:
-                case 0x72:
-                case 0x73:
-                case 0x74:
-                case 0x75:
-                case 0x76:
-                case 0x77:
-                case 0x78:
-                case 0x79:
-                case 0x7A:
-                case 0x7C:
-                case 0x7E: {
-                    if (size == it.length) {
-                        it = grow(size + 1);
-                    }
-                    it[size++] = (byte) cutty;
-                    continue;
-                }
-                case 0x00:
-                case 0x01:
-                case 0x02:
-                case 0x03:
-                case 0x04:
-                case 0x05:
-                case 0x06:
-                case 0x07:
-                case 0x0B:
-                case 0x0E:
-                case 0x0F:
-                case 0x10:
-                case 0x11:
-                case 0x12:
-                case 0x13:
-                case 0x14:
-                case 0x15:
-                case 0x16:
-                case 0x17:
-                case 0x18:
-                case 0x19:
-                case 0x1A:
-                case 0x1B:
-                case 0x1C:
-                case 0x1D:
-                case 0x1E:
-                case 0x1F:
-                case 0x7F: {
-                    int min = size + 6;
-                    if (min > it.length) {
-                        value = it
-                            = bucket.apply(
-                            it, size, min
-                        );
-                    }
-                    it[size++] = '\\';
-                    it[size++] = 'u';
-                    it[size++] = '0';
-                    it[size++] = '0';
-                    it[size++] = HEX_UPPER[(cutty >> 4) & 0x0F];
-                    it[size++] = HEX_UPPER[cutty & 0x0F];
-                    continue;
-                }
-                default: {
-                    emit(cutty);
-                    it = value;
-                    continue;
-                }
-            }
-
-            int min = size + 2;
-            if (min > it.length) {
-                value = it
-                    = bucket.apply(
-                    it, size, min
-                );
-            }
-            it[size++] = (byte) '\\';
-            it[size++] = (byte) cutty;
-        }
     }
 
     /**

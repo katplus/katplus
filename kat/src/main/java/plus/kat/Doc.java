@@ -114,7 +114,7 @@ public class Doc extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Object value
     ) throws IOException {
         return set(
@@ -131,7 +131,7 @@ public class Doc extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Entity value
     ) throws IOException {
         return set(
@@ -148,15 +148,18 @@ public class Doc extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable String space,
         @Nullable Entity value
     ) throws IOException {
         if (alias == null) {
-            if (space == null) {
-                return false;
-            } else {
+            if (space != null) {
                 alias = space;
+            } else {
+                if (value == null) {
+                    return false;
+                }
+                alias = value.getClass().getName();
             }
         }
 
@@ -177,7 +180,16 @@ public class Doc extends Stream implements Chan {
         }
 
         join(LT);
-        emit(alias);
+        if (alias instanceof String) {
+            emit((String) alias);
+        } else if (alias instanceof Binary) {
+            emit((Binary) alias);
+        } else {
+            throw new IOException(
+                alias.getClass().getName() +
+                    " is currently not supported"
+            );
+        }
         join(GT);
 
         if (value != null) {
@@ -205,7 +217,11 @@ public class Doc extends Stream implements Chan {
 
         join(LT);
         join(SLASH);
-        emit(alias);
+        if (alias instanceof String) {
+            emit((String) alias);
+        } else {
+            emit((Binary) alias);
+        }
         join(GT);
         return true;
     }
@@ -219,7 +235,7 @@ public class Doc extends Stream implements Chan {
      */
     @Override
     public boolean set(
-        @Nullable String alias,
+        @Nullable Object alias,
         @Nullable Coder<?> coder,
         @Nullable Object value
     ) throws IOException {
@@ -278,7 +294,16 @@ public class Doc extends Stream implements Chan {
         }
 
         join(LT);
-        emit(alias);
+        if (alias instanceof String) {
+            emit((String) alias);
+        } else if (alias instanceof Binary) {
+            emit((Binary) alias);
+        } else {
+            throw new IOException(
+                alias.getClass().getName() +
+                    " is currently not supported"
+            );
+        }
         join(GT);
 
         if (scope == null) {
@@ -311,7 +336,11 @@ public class Doc extends Stream implements Chan {
 
         join(LT);
         join(SLASH);
-        emit(alias);
+        if (alias instanceof String) {
+            emit((String) alias);
+        } else {
+            emit((Binary) alias);
+        }
         join(GT);
         return true;
     }
@@ -334,14 +363,9 @@ public class Doc extends Stream implements Chan {
 
     /**
      * Appends this byte to the current content
-     *
-     * @param bin the specified byte value
-     * @throws IOException If an I/O error occurs
      */
     @Override
-    public void emit(
-        byte bin
-    ) throws IOException {
+    public void emit(byte bin) {
         switch (bin) {
             case '<': {
                 byte[] it = grow(
