@@ -214,21 +214,17 @@ public class DateSpare extends BaseSpare<Date> implements Spare<Date> {
             @NotNull Date date
         ) throws IOException {
             synchronized (this) {
-                StringBuffer buf = SB;
-                if (buf != null) {
-                    buf.setLength(0);
+                StringBuffer sb = SB;
+                if (sb != null) {
+                    sb.setLength(0);
                 } else {
-                    SB = buf = new StringBuffer();
+                    SB = sb = new StringBuffer();
                 }
-                super.format(
-                    date, SB, FP
+                flux.emit(
+                    super.format(
+                        date, sb, FP
+                    )
                 );
-                int size = buf.length();
-                for (int i = 0; i < size; i++) {
-                    flux.emit(
-                        buf.charAt(i)
-                    );
-                }
             }
         }
 

@@ -20,6 +20,7 @@ import plus.kat.actor.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.lang.reflect.*;
@@ -213,9 +214,10 @@ public class MapSpare extends BaseSpare<Map> {
     ) throws IOException {
         for (Map.Entry<?, ?> item : ((Map<?, ?>) value).entrySet()) {
             Object name = item.getKey();
-            if (name instanceof String) {
+            if (name instanceof String ||
+                name instanceof Binary) {
                 chan.set(
-                    (String) name, item.getValue()
+                    name, item.getValue()
                 );
             } else {
                 chan.set(

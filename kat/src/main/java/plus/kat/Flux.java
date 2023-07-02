@@ -27,17 +27,17 @@ import java.io.IOException;
  */
 public interface Flux extends Flag, Closeable {
     /**
-     * Appends this byte to the current content
+     * Concatenates the value to this flux
      *
-     * @param bin the specified byte value
+     * @param val the specified byte value
      * @throws IOException If an I/O error occurs
      */
     void emit(
-        byte bin
+        byte val
     ) throws IOException;
 
     /**
-     * Appends this char to the current content
+     * Concatenates the value to this flux
      *
      * @param val the specified char value
      * @throws IOException If an I/O error occurs
@@ -47,8 +47,7 @@ public interface Flux extends Flag, Closeable {
     ) throws IOException;
 
     /**
-     * Appends the literal representation
-     * of the int value to the current content
+     * Concatenates the number to this flux
      *
      * @param val the specified number value
      * @throws IOException If an I/O error occurs
@@ -58,8 +57,7 @@ public interface Flux extends Flag, Closeable {
     ) throws IOException;
 
     /**
-     * Appends the literal representation
-     * of the long value to the current content
+     * Concatenates the number to this flux
      *
      * @param val the specified number value
      * @throws IOException If an I/O error occurs
@@ -69,8 +67,7 @@ public interface Flux extends Flag, Closeable {
     ) throws IOException;
 
     /**
-     * Appends the literal representation
-     * of the short value to the current content
+     * Concatenates the number to this flux
      *
      * @param val the specified number value
      * @throws IOException If an I/O error occurs
@@ -80,8 +77,7 @@ public interface Flux extends Flag, Closeable {
     ) throws IOException;
 
     /**
-     * Appends the literal representation
-     * of the float value to the current content
+     * Concatenates the number to this flux
      *
      * @param val the specified number value
      * @throws IOException If an I/O error occurs
@@ -91,8 +87,7 @@ public interface Flux extends Flag, Closeable {
     ) throws IOException;
 
     /**
-     * Appends the literal representation
-     * of the double value to the current content
+     * Concatenates the number to this flux
      *
      * @param val the specified number value
      * @throws IOException If an I/O error occurs
@@ -102,8 +97,7 @@ public interface Flux extends Flag, Closeable {
     ) throws IOException;
 
     /**
-     * Appends the literal representation
-     * of the boolean value to the current content
+     * Concatenates the value to this flux
      *
      * @param val the specified boolean value
      * @throws IOException If an I/O error occurs
@@ -113,102 +107,152 @@ public interface Flux extends Flag, Closeable {
     ) throws IOException;
 
     /**
-     * Appends this byte array to the current content
+     * Concatenates the value to this flux
      *
-     * @param bin the specified source to be appended
+     * @param val the specified sequence value
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified array is null
+     * @throws NullPointerException If the sequence is null
      */
     void emit(
-        @NotNull byte[] bin
+        @NotNull byte[] val
     ) throws IOException;
 
     /**
-     * Appends this byte array where the
-     * specified offset and length to the current content
+     * Concatenates the value where the
+     * specified offset and length to this flux
      *
-     * @param bin    the specified source to be appended
-     * @param offset the specified start index for array
-     * @param length the specified length of bytes to concat
+     * @param val    the specified sequence value
+     * @param offset the specified begin index
+     * @param length the specified required length
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified array is null
+     * @throws NullPointerException If the sequence is null
      */
     void emit(
-        @NotNull byte[] bin, int offset, int length
+        @NotNull byte[] val, int offset, int length
     ) throws IOException;
 
     /**
-     * Appends this char array to the current content
+     * Concatenates the value to this flux
      *
-     * @param val the specified source to be appended
+     * @param val the specified sequence value
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified array is null
+     * @throws NullPointerException If the sequence is null
      */
     void emit(
         @NotNull char[] val
     ) throws IOException;
 
     /**
-     * Appends this char array where the
-     * specified offset and length to the current content
+     * Concatenates the value where the
+     * specified offset and length to this flux
      *
-     * @param val    the specified source to be appended
-     * @param offset the specified start index for array
-     * @param length the specified length of chars to concat
+     * @param val    the specified sequence value
+     * @param offset the specified begin index
+     * @param length the specified required length
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified array is null
+     * @throws NullPointerException If the sequence is null
      */
     void emit(
         @NotNull char[] val, int offset, int length
     ) throws IOException;
 
     /**
-     * Appends this binary to the current content
+     * Concatenates the value to this flux
      *
-     * @param bin the specified source to be appended
+     * @param val the specified sequence value
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified sequence is null
+     * @throws NullPointerException If the sequence is null
      */
     void emit(
-        @NotNull Binary bin
+        @NotNull Binary val
     ) throws IOException;
 
     /**
-     * Appends this binary where the
-     * specified offset and length to the current content
+     * Concatenates the value where the
+     * specified offset and length to this flux
      *
-     * @param bin    the specified source to be appended
-     * @param offset the specified start index for binary
-     * @param length the specified length of flow to concat
+     * @param val    the specified sequence value
+     * @param offset the specified begin index
+     * @param length the specified required length
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified sequence is null
+     * @throws NullPointerException If the sequence is null
      */
     void emit(
-        @NotNull Binary bin, int offset, int length
+        @NotNull Binary val, int offset, int length
     ) throws IOException;
 
     /**
-     * Appends this string to the current content
+     * Concatenates the value to this flux
      *
-     * @param val the specified sequence to be appended
+     * @param val the specified sequence value
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified sequence is null
+     * @throws NullPointerException If the sequence is null
      */
     void emit(
         @NotNull String val
     ) throws IOException;
 
     /**
-     * Appends this string where the
-     * specified offset and length to the current content
+     * Concatenates the value where the
+     * specified offset and length to this flux
      *
-     * @param val    the specified sequence to be appended
-     * @param offset the specified start index for sequence
-     * @param length the specified length of sequence to concat
+     * @param val    the specified sequence value
+     * @param offset the specified begin index
+     * @param length the specified required length
      * @throws IOException          If an I/O error occurs
-     * @throws NullPointerException If the specified sequence is null
+     * @throws NullPointerException If the sequence is null
      */
     void emit(
         @NotNull String val, int offset, int length
+    ) throws IOException;
+
+    /**
+     * Concatenates the value to this flux
+     *
+     * @param val the specified sequence value
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
+     */
+    void emit(
+        @NotNull ByteSequence val
+    ) throws IOException;
+
+    /**
+     * Concatenates the value where the
+     * specified offset and length to this flux
+     *
+     * @param val    the specified sequence value
+     * @param offset the specified begin index
+     * @param length the specified required length
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
+     */
+    void emit(
+        @NotNull ByteSequence val, int offset, int length
+    ) throws IOException;
+
+    /**
+     * Concatenates the value to this flux
+     *
+     * @param val the specified sequence value
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
+     */
+    void emit(
+        @NotNull CharSequence val
+    ) throws IOException;
+
+    /**
+     * Concatenates the value where the
+     * specified offset and length to this flux
+     *
+     * @param val    the specified sequence value
+     * @param offset the specified begin index
+     * @param length the specified required length
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
+     */
+    void emit(
+        @NotNull CharSequence val, int offset, int length
     ) throws IOException;
 }

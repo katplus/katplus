@@ -19,7 +19,7 @@ package plus.kat.stream;
  * @author kraity
  * @since 0.0.1
  */
-public abstract class Binary {
+public class Binary implements ByteSequence {
 
     protected int size;
     protected int hash;
@@ -90,6 +90,7 @@ public abstract class Binary {
     /**
      * Returns the size of this {@link Binary}
      */
+    @Override
     public int size() {
         return size;
     }
@@ -119,6 +120,7 @@ public abstract class Binary {
      *
      * @param i the specified index of element
      */
+    @Override
     public byte get(int i) {
         if (-1 < i && i < size) {
             return value[i];

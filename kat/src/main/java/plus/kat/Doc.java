@@ -365,8 +365,8 @@ public class Doc extends Stream implements Chan {
      * Appends this byte to the current content
      */
     @Override
-    public void emit(byte bin) {
-        switch (bin) {
+    public void emit(byte val) {
+        switch (val) {
             case '<': {
                 byte[] it = grow(
                     size + 4
@@ -401,9 +401,9 @@ public class Doc extends Stream implements Chan {
             default: {
                 byte[] it = value;
                 if (size != it.length) {
-                    it[size++] = bin;
+                    it[size++] = val;
                 } else {
-                    grow(size + 1)[size++] = bin;
+                    grow(size + 1)[size++] = val;
                 }
             }
         }

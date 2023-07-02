@@ -33,7 +33,10 @@ public class Stream extends Binary implements Flux {
     protected int depth;
     protected long flags;
 
+    protected char[] buffer;
     protected Bucket bucket;
+
+    protected boolean coding;
     protected boolean isolate;
 
     /**
@@ -68,8 +71,9 @@ public class Stream extends Binary implements Flux {
     ) {
         if (bucket != null) {
             this.flags = flags;
-            this.depth = (int) (flags & 1);
+            this.depth = (int) (flags & PRETTY);
             this.bucket = bucket;
+            this.coding = 0 != (flags & UNICODE);
         } else {
             throw new NullPointerException(
                 "Received storage bucket is null"
@@ -78,11 +82,13 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Returns the hashCode of this {@link Stream}
+     * Returns the hashCode
+     * of this {@link Stream}
      */
     @Override
     public int hashCode() {
-        int h = 0, l = size;
+        int h = 0,
+            l = size;
         if (l != 0) {
             int i = 0;
             byte[] v = value;
@@ -116,36 +122,41 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends this byte to the current content
+     * Concatenates the value to this flux
+     *
+     * @param val the specified byte value
+     * @throws IOException If an I/O error occurs
      */
     @Override
-    public void emit(byte bin) {
+    public void emit(
+        byte val
+    ) throws IOException {
         byte[] it = value;
         escape:
         {
-            switch (bin) {
+            switch (val) {
                 case 0x5C:
                 case 0x22: {
                     break;
                 }
                 case 0x08: {
-                    bin = 'b';
+                    val = 'b';
                     break;
                 }
                 case 0x09: {
-                    bin = 't';
+                    val = 't';
                     break;
                 }
                 case 0x0A: {
-                    bin = 'n';
+                    val = 'n';
                     break;
                 }
                 case 0x0C: {
-                    bin = 'f';
+                    val = 'f';
                     break;
                 }
                 case 0x0D: {
-                    bin = 'r';
+                    val = 'r';
                     break;
                 }
                 case 0x20:
@@ -283,8 +294,8 @@ public class Stream extends Binary implements Flux {
                     it[size++] = 'u';
                     it[size++] = '0';
                     it[size++] = '0';
-                    it[size++] = HEX_UPPER[(bin >> 4) & 0x0F];
-                    it[size++] = HEX_UPPER[bin & 0x0F];
+                    it[size++] = HEX_UPPER[(val >> 4) & 0x0F];
+                    it[size++] = HEX_UPPER[val & 0x0F];
                     return;
                 }
             }
@@ -299,24 +310,27 @@ public class Stream extends Binary implements Flux {
         }
 
         if (size != it.length) {
-            it[size++] = bin;
+            it[size++] = val;
         } else {
-            grow(size + 1)[size++] = bin;
+            grow(size + 1)[size++] = val;
         }
     }
 
     /**
-     * Appends this char to the current content
+     * Concatenates the value to this flux
+     *
+     * @param val the specified char value
+     * @throws IOException If an I/O error occurs
      */
     @Override
-    public void emit(char val) {
+    public void emit(
+        char val
+    ) throws IOException {
         if (val < 0x80) {
-            emit(
-                (byte) val
-            );
+            emit((byte) val);
         } else {
             byte[] it = value;
-            if ((flags & UNICODE) != 0) {
+            if (coding) {
                 int min = size + 6;
                 if (min > it.length) {
                     value = it
@@ -374,11 +388,15 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends the literal representation
-     * of the int value to the current content
+     * Concatenates the number to this flux
+     *
+     * @param val the specified number value
+     * @throws IOException If an I/O error occurs
      */
     @Override
-    public void emit(int val) {
+    public void emit(
+        int val
+    ) throws IOException {
         int iv;
         byte[] it = value;
         if (val < 0) {
@@ -456,11 +474,15 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends the literal representation
-     * of the long value to the current content
+     * Concatenates the number to this flux
+     *
+     * @param val the specified number value
+     * @throws IOException If an I/O error occurs
      */
     @Override
-    public void emit(long val) {
+    public void emit(
+        long val
+    ) throws IOException {
         int iv;
         byte[] it = value;
         if (val < 0) {
@@ -574,21 +596,28 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends the literal representation
-     * of the short value to the current content
+     * Concatenates the number to this flux
+     *
+     * @param val the specified number value
+     * @throws IOException If an I/O error occurs
      */
     @Override
-    public void emit(short val)
-        throws IOException {
+    public void emit(
+        short val
+    ) throws IOException {
         emit(val & 0xFFFF);
     }
 
     /**
-     * Appends the literal representation
-     * of the float value to the current content
+     * Concatenates the number to this flux
+     *
+     * @param val the specified number value
+     * @throws IOException If an I/O error occurs
      */
     @SuppressWarnings("deprecation")
-    public void emit(float val) {
+    public void emit(
+        float val
+    ) throws IOException {
         String data = Float.toString(val);
         int now = size,
             add = data.length(),
@@ -605,13 +634,15 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends the literal representation
-     * of the double value to the current content
+     * Concatenates the number to this flux
      *
-     * @param val the specified number to be appended
+     * @param val the specified number value
+     * @throws IOException If an I/O error occurs
      */
     @SuppressWarnings("deprecation")
-    public void emit(double val) {
+    public void emit(
+        double val
+    ) throws IOException {
         String data = Double.toString(val);
         int now = size,
             add = data.length(),
@@ -628,11 +659,15 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends the literal representation
-     * of the boolean value to the current content
+     * Concatenates the value to this flux
+     *
+     * @param val the specified boolean value
+     * @throws IOException If an I/O error occurs
      */
     @Override
-    public void emit(boolean val) {
+    public void emit(
+        boolean val
+    ) throws IOException {
         byte[] it = value;
         if (val) {
             int min = size + 4;
@@ -662,37 +697,51 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends this byte array to the current content
+     * Concatenates the value to this flux
+     *
+     * @param val the specified sequence value
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
      */
     @Override
     public void emit(
-        @NotNull byte[] bin
+        @NotNull byte[] val
     ) throws IOException {
-        for (byte b : bin) emit(b);
+        for (byte b : val) emit(b);
     }
 
     /**
-     * Appends this byte array where the
-     * specified offset and length to the current content
+     * Concatenates the value where the
+     * specified offset and length to this flux
+     *
+     * @param val the specified sequence value
+     * @param i   the specified begin index
+     * @param l   the specified required length
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
      */
     @Override
     public void emit(
-        @NotNull byte[] bin, int i, int l
+        @NotNull byte[] val, int i, int l
     ) throws IOException {
-        int k = i + l;
-        if (0 <= i && 0 <= l && k <= bin.length) {
-            while (i < k) {
-                emit(bin[i++]);
+        int m = i + l;
+        if (0 <= i && 0 <= l && m <= val.length) {
+            while (i < m) {
+                emit(val[i++]);
             }
         } else {
             throw new IOException(
-                "Out of bounds, i:" + i + " l:" + l + " length:" + bin.length
+                "Out of bounds, i:" + i + " l:" + l + " length:" + val.length
             );
         }
     }
 
     /**
-     * Appends this char array to the current content
+     * Concatenates the value to this flux
+     *
+     * @param val the specified sequence value
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
      */
     @Override
     public void emit(
@@ -702,17 +751,23 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends this char array where the
-     * specified offset and length to the current content
+     * Concatenates the value where the
+     * specified offset and length to this flux
+     *
+     * @param val the specified sequence value
+     * @param i   the specified begin index
+     * @param l   the specified required length
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
      */
     @Override
     public void emit(
         @NotNull char[] val, int i, int l
     ) throws IOException {
-        int k = i + l;
-        if (0 <= i && 0 <= l && k <= val.length) {
+        int m = i + l;
+        if (0 <= i && 0 <= l && m <= val.length) {
             if (l != 0) {
-                if ((flags & UNICODE) != 0) {
+                if (coding) {
                     byte[] hex = HEX_UPPER;
                     do {
                         char ch = val[i++];
@@ -734,7 +789,7 @@ public class Stream extends Binary implements Flux {
                             it[size++] = hex[ch >> 4 & 0x0F];
                             it[size++] = hex[ch & 0x0F];
                         }
-                    } while (i < k);
+                    } while (i < m);
                 } else {
                     do {
                         char c1 = val[i++];
@@ -781,9 +836,9 @@ public class Stream extends Binary implements Flux {
                                 continue;
                             }
 
-                            if (k == i) {
+                            if (i == m) {
                                 emit((byte) '?');
-                                break;
+                                return;
                             }
 
                             char c2 = val[i];
@@ -810,7 +865,7 @@ public class Stream extends Binary implements Flux {
                             it[size++] = (byte) (lo >> 6 | hi << 4 & 0x30 | 0x80);
                             it[size++] = (byte) (lo & 0x3F | 0x80);
                         }
-                    } while (i < k);
+                    } while (i < m);
                 }
             }
         } else {
@@ -821,16 +876,20 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends this binary to the current content
+     * Concatenates the value to this flux
+     *
+     * @param val the specified sequence value
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
      */
     @Override
     public void emit(
-        @NotNull Binary bin
+        @NotNull Binary val
     ) throws IOException {
-        int l = bin.size;
+        int l = val.size;
         if (l != 0) {
             int i = 0;
-            byte[] it = bin.value;
+            byte[] it = val.value;
             while (i < l) {
                 emit(it[i++]);
             }
@@ -838,48 +897,293 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends this binary where the
-     * specified offset and length to the current content
+     * Concatenates the value where the
+     * specified offset and length to this flux
+     *
+     * @param val the specified sequence value
+     * @param i   the specified begin index
+     * @param l   the specified required length
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
      */
     @Override
     public void emit(
-        @NotNull Binary bin, int i, int l
+        @NotNull Binary val, int i, int l
     ) throws IOException {
-        int k = i + l;
-        if (0 <= i && 0 <= l && k <= bin.size) {
-            byte[] it = bin.value;
-            while (i < k) {
+        int m = i + l;
+        if (0 <= i && 0 <= l && m <= val.size) {
+            byte[] it = val.value;
+            while (i < m) {
                 emit(it[i++]);
             }
         } else {
             throw new IOException(
-                "Out of bounds, i:" + i + " l:" + l + " length:" + bin.size
+                "Out of bounds, i:" + i + " l:" + l + " length:" + val.size
             );
         }
     }
 
     /**
-     * Appends this string to the current content
+     * Concatenates the value to this flux
+     *
+     * @param val the specified sequence value
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
      */
     @Override
     public void emit(
         @NotNull String val
     ) throws IOException {
-        emit(val, 0, val.length());
+        emit(
+            val, 0, val.length()
+        );
     }
 
     /**
-     * Appends this string where the
-     * specified offset and length to the current content
+     * Concatenates the value where the
+     * specified offset and length to this flux
+     *
+     * @param val the specified sequence value
+     * @param i   the specified begin index
+     * @param l   the specified required length
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
      */
     @Override
     public void emit(
         @NotNull String val, int i, int l
     ) throws IOException {
-        int k = i + l;
-        if (0 <= i && 0 <= l && k <= val.length()) {
+        int m = i + l;
+        if (0 <= i && 0 <= l && m <= val.length()) {
             if (l != 0) {
-                if ((flags & UNICODE) != 0) {
+                char[] tmp = buffer;
+                if (tmp == null) {
+                    if (l > 511) {
+                        buffer = tmp =
+                            new char[256];
+                    } else {
+                        buffer = tmp =
+                            new char[64];
+                    }
+                } else if (l > 511) {
+                    if (tmp.length < 256) {
+                        buffer = tmp =
+                            new char[256];
+                    }
+                }
+
+                int cap = tmp.length;
+                if (coding) {
+                    byte[] hex = HEX_UPPER;
+                    do {
+                        int n = m - i;
+                        if (n > cap) n = cap;
+                        val.getChars(
+                            i, i += n, tmp, 0
+                        );
+                        for (int j = 0; j < n; j++) {
+                            char ch = tmp[j];
+                            if (ch < 0x80) {
+                                emit((byte) ch);
+                            } else {
+                                byte[] it = value;
+                                int min = size + 6;
+                                if (min > it.length) {
+                                    value = it
+                                        = bucket.apply(
+                                        it, size, min
+                                    );
+                                }
+                                it[size++] = '\\';
+                                it[size++] = 'u';
+                                it[size++] = hex[ch >> 12 & 0x0F];
+                                it[size++] = hex[ch >> 8 & 0x0F];
+                                it[size++] = hex[ch >> 4 & 0x0F];
+                                it[size++] = hex[ch & 0x0F];
+                            }
+                        }
+                    } while (i < m);
+                } else {
+                    do {
+                        int n = m - i;
+                        if (n > cap) n = cap;
+                        val.getChars(
+                            i, i += n, tmp, 0
+                        );
+                        for (int j = 0; j < n; j++) {
+                            char c1 = tmp[j];
+
+                            // U+0000 ~ U+007F
+                            if (c1 < 0x80) {
+                                emit((byte) c1);
+                            }
+
+                            // U+0080 ~ U+07FF
+                            else if (c1 < 0x800) {
+                                byte[] it = value;
+                                int min = size + 2;
+                                if (min > it.length) {
+                                    value = it
+                                        = bucket.apply(
+                                        it, size, min
+                                    );
+                                }
+                                it[size++] = (byte) (c1 >> 6 | 0xC0);
+                                it[size++] = (byte) (c1 & 0x3F | 0x80);
+                            }
+
+                            // U+0800 ~ U+D7FF
+                            // U+E000 ~ U+FFFF
+                            else if (c1 < 0xD800 || 0xDFFF < c1) {
+                                byte[] it = value;
+                                int min = size + 3;
+                                if (min > it.length) {
+                                    value = it
+                                        = bucket.apply(
+                                        it, size, min
+                                    );
+                                }
+                                it[size++] = (byte) (c1 >> 12 | 0xE0);
+                                it[size++] = (byte) (c1 >> 6 & 0x3F | 0x80);
+                                it[size++] = (byte) (c1 & 0x3F | 0x80);
+                            }
+
+                            // U+10000 ~ U+10FFFF
+                            else {
+                                if (c1 > 0xDBFF) {
+                                    emit((byte) '?');
+                                    continue;
+                                }
+
+                                char c2;
+                                if (n != ++j) {
+                                    c2 = tmp[j];
+                                } else {
+                                    if (i != m) {
+                                        c2 = val.charAt(i++);
+                                    } else {
+                                        emit((byte) '?');
+                                        return;
+                                    }
+                                }
+
+                                if (c2 < 0xDC00 ||
+                                    c2 > 0xDFFF) {
+                                    emit((byte) '?');
+                                    continue;
+                                }
+
+                                int hi = c1 - 0xD7C0;
+                                int lo = c2 - 0xDC00;
+
+                                byte[] it = value;
+                                int min = size + 4;
+                                if (min > it.length) {
+                                    value = it
+                                        = bucket.apply(
+                                        it, size, min
+                                    );
+                                }
+                                it[size++] = (byte) (hi >> 8 | 0xF0);
+                                it[size++] = (byte) (hi >> 2 & 0x3F | 0x80);
+                                it[size++] = (byte) (lo >> 6 | hi << 4 & 0x30 | 0x80);
+                                it[size++] = (byte) (lo & 0x3F | 0x80);
+                            }
+                        }
+                    } while (i < m);
+                }
+            }
+        } else {
+            throw new IOException(
+                "Out of bounds, i:" + i + " l:" + l + " length:" + val.length()
+            );
+        }
+    }
+
+    /**
+     * Concatenates the value to this flux
+     *
+     * @param val the specified sequence value
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
+     */
+    @Override
+    public void emit(
+        @NotNull ByteSequence val
+    ) throws IOException {
+        int l = val.size();
+        if (l != 0) {
+            int i = 0;
+            while (i < l) {
+                emit(
+                    val.get(i++)
+                );
+            }
+        }
+    }
+
+    /**
+     * Concatenates the value where the
+     * specified offset and length to this flux
+     *
+     * @param val the specified sequence value
+     * @param i   the specified begin index
+     * @param l   the specified required length
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
+     */
+    @Override
+    public void emit(
+        @NotNull ByteSequence val, int i, int l
+    ) throws IOException {
+        int m = i + l;
+        if (0 <= i && 0 <= l && m <= val.size()) {
+            while (i < m) {
+                emit(
+                    val.get(i++)
+                );
+            }
+        } else {
+            throw new IOException(
+                "Out of bounds, i:" + i + " l:" + l + " length:" + val.size()
+            );
+        }
+    }
+
+    /**
+     * Concatenates the value to this flux
+     *
+     * @param val the specified sequence value
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
+     */
+    @Override
+    public void emit(
+        @NotNull CharSequence val
+    ) throws IOException {
+        emit(
+            val, 0, val.length()
+        );
+    }
+
+    /**
+     * Concatenates the value where the
+     * specified offset and length to this flux
+     *
+     * @param val the specified sequence value
+     * @param i   the specified begin index
+     * @param l   the specified required length
+     * @throws IOException          If an I/O error occurs
+     * @throws NullPointerException If the sequence is null
+     */
+    @Override
+    public void emit(
+        @NotNull CharSequence val, int i, int l
+    ) throws IOException {
+        int m = i + l;
+        if (0 <= i && 0 <= l && m <= val.length()) {
+            if (l != 0) {
+                if (coding) {
                     byte[] hex = HEX_UPPER;
                     do {
                         char ch = val.charAt(i++);
@@ -901,7 +1205,7 @@ public class Stream extends Binary implements Flux {
                             it[size++] = hex[ch >> 4 & 0x0F];
                             it[size++] = hex[ch & 0x0F];
                         }
-                    } while (i < k);
+                    } while (i < m);
                 } else {
                     do {
                         char c1 = val.charAt(i++);
@@ -948,9 +1252,9 @@ public class Stream extends Binary implements Flux {
                                 continue;
                             }
 
-                            if (k == i) {
+                            if (i == m) {
                                 emit((byte) '?');
-                                break;
+                                return;
                             }
 
                             char c2 = val.charAt(i);
@@ -977,7 +1281,7 @@ public class Stream extends Binary implements Flux {
                             it[size++] = (byte) (lo >> 6 | hi << 4 & 0x30 | 0x80);
                             it[size++] = (byte) (lo & 0x3F | 0x80);
                         }
-                    } while (i < k);
+                    } while (i < m);
                 }
             }
         } else {
@@ -988,8 +1292,8 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Returns a copy of the
-     * value of this {@link Stream}
+     * Returns a new serialized
+     * {@code byte[]} for this stream
      */
     public byte[] toBinary() {
         if (size != 0) {
@@ -1004,8 +1308,8 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Returns the value of this
-     * {@link Stream} as a {@link String}
+     * Returns a new serialized
+     * {@link String} for this stream
      */
     public String toString() {
         return size == 0 ? "" : (
@@ -1023,6 +1327,7 @@ public class Stream extends Binary implements Flux {
         byte[] it = value;
         if (it.length != 0) {
             size = 0;
+            buffer = null;
             if (isolate) {
                 value = EMPTY_BYTES;
             } else {
@@ -1032,23 +1337,23 @@ public class Stream extends Binary implements Flux {
     }
 
     /**
-     * Appends this byte to this stream
+     * Concatenates the value to this flux
      *
-     * @param bin the specified byte value
+     * @param val the specified byte value
      */
-    protected void join(byte bin) {
+    protected void join(byte val) {
         byte[] it = value;
         if (size != it.length) {
-            it[size++] = bin;
+            it[size++] = val;
         } else {
-            grow(size + 1)[size++] = bin;
+            grow(size + 1)[size++] = val;
         }
     }
 
     /**
-     * Requires that the length of {@link #value} be at least
-     * equal to the specified minimum length. If the current length is less
-     * than the argument, then a new array is allocated with greater capacity
+     * Requires that the length of {@link #value} be at least equal
+     * to the specified minimum length. If the current length is less
+     * than the argument, a new array with a larger capacity is allocated
      *
      * @param min the specified minimum length
      */

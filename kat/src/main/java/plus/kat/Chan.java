@@ -15,9 +15,7 @@
  */
 package plus.kat;
 
-import plus.kat.actor.NotNull;
-import plus.kat.actor.Nullable;
-
+import plus.kat.actor.*;
 import plus.kat.spare.*;
 
 import java.io.Closeable;
@@ -114,8 +112,8 @@ public interface Chan extends Flag, Closeable {
     ) throws IOException;
 
     /**
-     * Returns the {@link Flux} of this
-     * {@link Chan} as a serialized {@code byte[]}
+     * Returns a new serialized
+     * {@code byte[]} for this {@link Chan}
      *
      * <pre>{@code
      *  Chan chan = ...
@@ -126,8 +124,8 @@ public interface Chan extends Flag, Closeable {
     byte[] toBinary();
 
     /**
-     * Returns the {@link Flux} of this
-     * {@link Chan} as a serialized {@link String}
+     * Returns a new serialized
+     * {@link String} for this {@link Chan}
      *
      * <pre>{@code
      *  Chan chan = ...

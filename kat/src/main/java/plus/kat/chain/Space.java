@@ -74,12 +74,12 @@ public class Space extends Binary {
      * Concatenates the byte value to this space,
      * checking the remaining capacity before calling
      *
-     * @param w the byte value to be joined
+     * @param v the byte value to be joined
      * @throws IndexOutOfBoundsException If this space capacity is full
      */
-    public void join(byte w) {
+    public void join(byte v) {
         hash = 0;
-        value[size++] = w;
+        value[size++] = v;
     }
 
     /**
@@ -101,13 +101,13 @@ public class Space extends Binary {
      * Sets the value of the specified index for this binary
      *
      * @param i the specified index of element
-     * @param b the specified value of element
+     * @param v the specified value of element
      * @throws IndexOutOfBoundsException If the index is out of bounds
      */
-    public void set(int i, byte b) {
+    public void set(int i, byte v) {
         if ((-1 < i || (i += size) > -1) && i < size) {
             hash = 0;
-            value[i] = b;
+            value[i] = v;
         } else {
             throw new IndexOutOfBoundsException(
                 "Received index<" + i + "> is out of bounds"
