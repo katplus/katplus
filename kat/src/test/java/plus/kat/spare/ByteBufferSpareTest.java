@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author kraity
  */
-public class BufferSpareTest {
+public class ByteBufferSpareTest {
 
     @Test
     public void test_base_ByteBuffer() throws IOException {

@@ -358,12 +358,10 @@ public interface Supplier extends Context {
             minor.put("Char", CharSpare.INSTANCE);
             minor.put("Byte", ByteSpare.INSTANCE);
             minor.put("Short", ShortSpare.INSTANCE);
-            minor.put("Number", NumberSpare.INSTANCE);
             minor.put("Map", MapSpare.INSTANCE);
             minor.put("Set", SetSpare.INSTANCE);
             minor.put("List", ListSpare.INSTANCE);
             minor.put("Array", ArraySpare.INSTANCE);
-            minor.put("ByteArray", ByteArraySpare.INSTANCE);
 
             major.put(String.class, StringSpare.INSTANCE);
             major.put(int.class, IntSpare.INSTANCE);
@@ -377,6 +375,7 @@ public interface Supplier extends Context {
             major.put(double.class, DoubleSpare.INSTANCE);
             major.put(Double.class, DoubleSpare.INSTANCE);
             major.put(char.class, CharSpare.INSTANCE);
+            major.put(Character.class, CharSpare.INSTANCE);
             major.put(byte.class, ByteSpare.INSTANCE);
             major.put(Byte.class, ByteSpare.INSTANCE);
             major.put(short.class, ShortSpare.INSTANCE);
@@ -384,7 +383,6 @@ public interface Supplier extends Context {
             major.put(void.class, VoidSpare.INSTANCE);
             major.put(Void.class, VoidSpare.INSTANCE);
             major.put(Object[].class, ArraySpare.INSTANCE);
-            major.put(Character.class, CharSpare.INSTANCE);
 
             try (KatLoader<Provider> loader =
                      new KatLoader<>(Provider.class)) {

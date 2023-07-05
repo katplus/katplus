@@ -18,13 +18,10 @@ package plus.kat.spare;
 import plus.kat.*;
 import plus.kat.actor.*;
 import plus.kat.chain.*;
-import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
-
-import static plus.kat.stream.Toolkit.*;
 
 /**
  * @author kraity
@@ -37,11 +34,6 @@ public class ByteBufferSpare extends BaseSpare<ByteBuffer> {
         INSTANCE = new ByteBufferSpare();
 
     private int mode;
-    private final byte[]
-        table = RFC4648_ENCODE;
-
-    private final Base64
-        base64 = Base64.mime();
 
     public ByteBufferSpare() {
         super(ByteBuffer.class);
@@ -74,9 +66,7 @@ public class ByteBufferSpare extends BaseSpare<ByteBuffer> {
                             return ByteBuffer.wrap(flow);
                         }
                         case 1: {
-                            ByteBuffer buffer = ByteBuffer
-                                .allocateDirect(flow.length);
-                            return buffer.put(flow);
+                            return ByteBuffer.allocateDirect(flow.length).put(flow);
                         }
                     }
                 }
@@ -108,15 +98,12 @@ public class ByteBufferSpare extends BaseSpare<ByteBuffer> {
         switch (mode) {
             case 0: {
                 return ByteBuffer.wrap(
-                    base64.decode(value)
+                    ByteArraySpare.INSTANCE.read(flag, value)
                 );
             }
             case 1: {
-                byte[] flow =
-                    base64.decode(value);
-                ByteBuffer buffer = ByteBuffer
-                    .allocateDirect(flow.length);
-                return buffer.put(flow);
+                byte[] flow = ByteArraySpare.INSTANCE.read(flag, value);
+                return ByteBuffer.allocateDirect(flow.length).put(flow);
             }
         }
 
@@ -138,7 +125,7 @@ public class ByteBufferSpare extends BaseSpare<ByteBuffer> {
             int t2 = e / 3;
 
             int b1, b2, b3;
-            byte[] tab = table;
+            byte[] tab = ByteArraySpare.RFC4648_ENCODE;
 
             for (int i = 0; i < t2; i++) {
                 b1 = buf.get() & 0xFF;
