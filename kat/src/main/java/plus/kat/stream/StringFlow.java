@@ -78,7 +78,6 @@ public final class StringFlow extends TransferFlow {
         int size = right - i;
 
         if (size <= 0) {
-            index = 0;
             return limit = -1;
         }
 

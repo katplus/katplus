@@ -19,10 +19,8 @@ import plus.kat.actor.*;
 import plus.kat.stream.*;
 
 import java.io.*;
+import java.nio.*;
 import java.nio.charset.*;
-
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 
 /**
  * @author kraity
@@ -286,28 +284,6 @@ public abstract class Flow implements Flag {
     }
 
     /**
-     * Returns the {@link Flow} of the specified {@link ByteBuffer}
-     *
-     * @throws NullPointerException If the specified buffer is null
-     */
-    public static Flow of(
-        @NotNull ByteBuffer text
-    ) {
-        return new ByteBufferFlow(text);
-    }
-
-    /**
-     * Returns the {@link Flow} of the specified {@link CharBuffer}
-     *
-     * @throws NullPointerException If the specified buffer is null
-     */
-    public static Flow of(
-        @NotNull CharBuffer text
-    ) {
-        return new CharBufferFlow(text);
-    }
-
-    /**
      * Returns a {@link Flow} where
      * calling {@link Reader#close()} has no effect
      * <p>
@@ -346,6 +322,63 @@ public abstract class Flow implements Flag {
     }
 
     /**
+     * Returns the {@link Flow} of the specified {@link ByteBuffer}
+     *
+     * @throws NullPointerException If the specified buffer is null
+     */
+    public static Flow of(
+        @NotNull ByteBuffer text
+    ) {
+        if (text.hasArray()) {
+            int m = text.limit(),
+                n = text.position();
+            text.position(m);
+            return new ByteFlow(
+                text.array(), n +
+                text.arrayOffset(), m
+            );
+        }
+        return new ByteBufferFlow(text);
+    }
+
+    /**
+     * Returns the {@link Flow} of the specified {@link CharBuffer}
+     *
+     * @throws NullPointerException If the specified buffer is null
+     */
+    public static Flow of(
+        @NotNull CharBuffer text
+    ) {
+        if (text.hasArray()) {
+            int m = text.limit(),
+                n = text.position();
+            text.position(m);
+            return new CharFlow(
+                text.array(), n +
+                text.arrayOffset(), m
+            );
+        }
+        return new CharBufferFlow(text);
+    }
+
+    /**
+     * Returns the {@link Flow} of the specified {@link String}
+     *
+     * @throws NullPointerException If the specified buffer is null
+     */
+    public static Flow of(
+        @NotNull String text, Charset charset
+    ) {
+        if (charset != null) {
+            return new ByteFlow(
+                text.getBytes(charset)
+            );
+        } else {
+            return new StringFlow(text);
+        }
+    }
+
+    /**
      * Returns a {@link Flow} where
      * calling {@link InputStream#close()} has no effect
      * <p>
@@ -362,15 +395,15 @@ public abstract class Flow implements Flag {
      * @throws NullPointerException If the specified stream is null
      */
     public static Flow of(
-        @NotNull InputStream text, @Nullable Charset charset
+        @NotNull InputStream text, Charset charset
     ) {
-        check:
+        match:
         if (charset != null) {
             switch (charset.name()) {
                 case "UTF-8":
                 case "US-ASCII":
                 case "ISO-8859-1": {
-                    break check;
+                    break match;
                 }
             }
             return new ReaderFlow(

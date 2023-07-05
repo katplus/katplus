@@ -53,7 +53,6 @@ public final class CharBufferFlow extends TransferFlow {
 
         int size = m - n;
         if (size <= 0) {
-            index = 0;
             return limit = -1;
         }
 

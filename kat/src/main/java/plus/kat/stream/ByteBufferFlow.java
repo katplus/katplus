@@ -51,7 +51,6 @@ public final class ByteBufferFlow extends Flow {
         int m = in.limit(),
             n = in.position();
 
-        index = 0;
         int size = m - n;
         if (size <= 0) {
             return limit = -1;
@@ -75,6 +74,7 @@ public final class ByteBufferFlow extends Flow {
         in.get(
             buf, 0, size
         );
+        index = 0;
         return limit = size;
     }
 
