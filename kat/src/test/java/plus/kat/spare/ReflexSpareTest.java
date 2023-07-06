@@ -461,6 +461,35 @@ public class ReflexSpareTest {
         assertEquals("kat.plus", form.tag);
     }
 
+    static class Mage {
+        @Magic("id")
+        public int id;
+
+        @Magic("userName")
+        public String name;
+    }
+
+    @Test
+    public void test_snake_case_name() throws Exception {
+        Spare<Mage> spare =
+            spare(Mage.class);
+
+        String[] texts = {
+            "{id=1,user_name=kraity}",
+            "{Id=1,User_Name=kraity}",
+            "{ID=1,USER_NAME=kraity}",
+        };
+
+        for (String text : texts) {
+            Mage mage = spare.read(
+                Flow.of(text)
+            );
+            assertNotNull(mage, text);
+            assertEquals(1, mage.id, text);
+            assertEquals("kraity", mage.name, text);
+        }
+    }
+
     static class Hook {
         public void test(
             List<Integer> list,

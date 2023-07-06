@@ -129,7 +129,7 @@ public abstract class BeanSpare<T> implements Subject<T> {
      * Sets the specified property
      */
     protected void setReader(
-        @NotNull String name,
+        @NotNull Object name,
         @NotNull Widget node
     ) {
         bundle(node, name).setter = node;
@@ -140,7 +140,7 @@ public abstract class BeanSpare<T> implements Subject<T> {
      * Returns true if the node is settled
      */
     protected boolean addReader(
-        @NotNull String name,
+        @NotNull Object name,
         @NotNull Widget node
     ) {
         Nodus e = bundle(node, name);
@@ -156,7 +156,7 @@ public abstract class BeanSpare<T> implements Subject<T> {
      * Sets the specified attribute
      */
     protected void setWriter(
-        @NotNull String name,
+        @NotNull Object name,
         @NotNull Widget node
     ) {
         Nodus e = bundle(
@@ -171,7 +171,7 @@ public abstract class BeanSpare<T> implements Subject<T> {
      * Returns true if the node is settled
      */
     protected boolean addWriter(
-        @NotNull String name,
+        @NotNull Object name,
         @NotNull Widget node
     ) {
         Nodus e = bundle(node, name);
@@ -187,7 +187,7 @@ public abstract class BeanSpare<T> implements Subject<T> {
      * Sets the specified property
      */
     protected void setProperty(
-        @NotNull String name,
+        @NotNull Object name,
         @NotNull Widget node
     ) {
         Nodus e = bundle(
@@ -203,7 +203,7 @@ public abstract class BeanSpare<T> implements Subject<T> {
      * Returns true if the node is settled
      */
     protected boolean addProperty(
-        @NotNull String name,
+        @NotNull Object name,
         @NotNull Widget node
     ) {
         Nodus e = bundle(node, name);
@@ -221,7 +221,7 @@ public abstract class BeanSpare<T> implements Subject<T> {
      * Sets the specified parameter
      */
     protected void setParameter(
-        @NotNull String name,
+        @NotNull Object name,
         @NotNull Widget node
     ) {
         bundle(node, name).target = node;
@@ -232,7 +232,7 @@ public abstract class BeanSpare<T> implements Subject<T> {
      * Returns true if the node is settled
      */
     protected boolean addParameter(
-        @NotNull String name,
+        @NotNull Object name,
         @NotNull Widget node
     ) {
         Nodus e = bundle(node, name);
@@ -249,10 +249,7 @@ public abstract class BeanSpare<T> implements Subject<T> {
      * @since 0.0.6
      */
     public static class Nodus {
-        Object id;
-        Widget mate;
-
-        int hash;
+        long hash;
         Nodus next;
 
         Sensor target;
@@ -266,8 +263,9 @@ public abstract class BeanSpare<T> implements Subject<T> {
     public abstract static class Widget
         extends Nodus implements Sensor {
 
-        private int grade;
-        private String name;
+        Object name;
+        int grade;
+        Widget mate;
 
         protected Type type;
         protected int index;
@@ -313,27 +311,24 @@ public abstract class BeanSpare<T> implements Subject<T> {
             tab = table = new Nodus[4];
         }
 
-        int hash = name.hashCode();
-        hash = hash ^ (hash >>> 16);
-
+        long hash = hash1(name);
         while (true) {
             int l = tab.length;
-            int i = (l - 1) & hash;
+            int i = (int) (
+                hash & (l - 1)
+            );
 
             Nodus e = tab[i];
             if (e == null) {
-                if (node.id != null) {
+                if (node.hash != 0) {
                     node = new Nodus();
                 }
-                node.id = name;
                 node.hash = hash;
                 return tab[i] = node;
             }
 
             for (int k = 0; ; k++) {
-                if (e.hash == hash &&
-                    (name.equals(e.id) ||
-                        e.id.equals(name))) {
+                if (e.hash == hash) {
                     return e;
                 }
 
@@ -342,10 +337,9 @@ public abstract class BeanSpare<T> implements Subject<T> {
                     e = next;
                 } else {
                     if (l <= k) break;
-                    if (node.id != null) {
+                    if (node.hash != 0) {
                         node = new Nodus();
                     }
-                    node.id = name;
                     node.hash = hash;
                     return e.next = node;
                 }
@@ -362,7 +356,9 @@ public abstract class BeanSpare<T> implements Subject<T> {
                     tab[k] = null;
                     do {
                         n = e.next;
-                        i = u & e.hash;
+                        i = (int) (
+                            u & e.hash
+                        );
 
                         m = bucket[i];
                         if (m != null) {
@@ -388,7 +384,7 @@ public abstract class BeanSpare<T> implements Subject<T> {
      * @param node the specified bundle to be settled
      */
     private boolean concat(
-        @NotNull String name,
+        @NotNull Object name,
         @NotNull Widget node
     ) {
         if (node.name == null) {
@@ -483,122 +479,134 @@ public abstract class BeanSpare<T> implements Subject<T> {
     public Sensor setProperty(
         @NotNull Object name
     ) {
-        if (name != null) {
-            Nodus[] tab = table;
-            if (tab == null) {
-                return null;
+        Nodus n;
+        Nodus[] tab = table;
+
+        if (tab == null) {
+            return null;
+        }
+
+        int m = tab.length - 1;
+        long hash1 = hash1(name);
+
+        n = tab[(int) (m & hash1)];
+        for (; n != null; n = n.next) {
+            if (n.hash == hash1) {
+                return n.setter;
             }
+        }
 
-            int hash = name.hashCode();
-            hash = hash ^ (hash >>> 16);
-
-            int m = tab.length - 1;
-            Nodus n = tab[m & hash];
-
+        long hash2 = hash2(name);
+        if (hash1 != hash2) {
+            n = tab[(int) (m & hash2)];
             for (; n != null; n = n.next) {
-                if (n.hash == hash &&
-                    (name.equals(n.id) ||
-                        n.id.equals(name))) {
+                if (n.hash == hash2) {
                     return n.setter;
                 }
             }
-
-            return null;
         }
-        throw new IllegalStateException(
-            "Received property name is invalid"
-        );
+
+        return null;
     }
 
     public Sensor getProperty(
         @NotNull Object name
     ) {
-        if (name != null) {
-            Nodus[] tab = table;
-            if (tab == null) {
-                return null;
+        Nodus n;
+        Nodus[] tab = table;
+
+        if (tab == null) {
+            return null;
+        }
+
+        int m = tab.length - 1;
+        long hash1 = hash1(name);
+
+        n = tab[(int) (m & hash1)];
+        for (; n != null; n = n.next) {
+            if (n.hash == hash1) {
+                return n.getter;
             }
+        }
 
-            int hash = name.hashCode();
-            hash = hash ^ (hash >>> 16);
-
-            int m = tab.length - 1;
-            Nodus n = tab[m & hash];
-
+        long hash2 = hash2(name);
+        if (hash1 != hash2) {
+            n = tab[(int) (m & hash2)];
             for (; n != null; n = n.next) {
-                if (n.hash == hash &&
-                    (name.equals(n.id) ||
-                        n.id.equals(name))) {
+                if (n.hash == hash2) {
                     return n.getter;
                 }
             }
-
-            return null;
         }
-        throw new IllegalStateException(
-            "Received parameter name is invalid"
-        );
+
+        return null;
     }
 
     @Override
     public Sensor setParameter(
         @NotNull Object name
     ) {
-        if (name != null) {
-            Nodus[] tab = table;
-            if (tab == null) {
-                return null;
+        Nodus n;
+        Nodus[] tab = table;
+
+        if (tab == null) {
+            return null;
+        }
+
+        int m = tab.length - 1;
+        long hash1 = hash1(name);
+
+        n = tab[(int) (m & hash1)];
+        for (; n != null; n = n.next) {
+            if (n.hash == hash1) {
+                return n.target;
             }
+        }
 
-            int hash = name.hashCode();
-            hash = hash ^ (hash >>> 16);
-
-            int m = tab.length - 1;
-            Nodus n = tab[m & hash];
-
+        long hash2 = hash2(name);
+        if (hash1 != hash2) {
+            n = tab[(int) (m & hash2)];
             for (; n != null; n = n.next) {
-                if (n.hash == hash &&
-                    (name.equals(n.id) ||
-                        n.id.equals(name))) {
+                if (n.hash == hash2) {
                     return n.target;
                 }
             }
-
-            return null;
         }
-        throw new IllegalStateException(
-            "Received property name is invalid"
-        );
+
+        return null;
     }
 
     @Override
     public Sensor getParameter(
         @NotNull Object name
     ) {
-        if (name != null) {
-            Nodus[] tab = table;
-            if (tab == null) {
-                return null;
+        Nodus n;
+        Nodus[] tab = table;
+
+        if (tab == null) {
+            return null;
+        }
+
+        int m = tab.length - 1;
+        long hash1 = hash1(name);
+
+        n = tab[(int) (m & hash1)];
+        for (; n != null; n = n.next) {
+            if (n.hash == hash1) {
+                return n.target;
             }
+        }
 
-            int hash = name.hashCode();
-            hash = hash ^ (hash >>> 16);
-
-            int m = tab.length - 1;
-            Nodus n = tab[m & hash];
-
+        long hash2 = hash2(name);
+        if (hash1 != hash2) {
+            n = tab[(int) (m & hash2)];
             for (; n != null; n = n.next) {
-                if (n.hash == hash &&
-                    (name.equals(n.id) ||
-                        n.id.equals(name))) {
+                if (n.hash == hash2) {
                     return n.target;
                 }
             }
-
-            return null;
         }
-        throw new IllegalStateException(
-            "Received property name is invalid"
-        );
+
+        return null;
     }
 }

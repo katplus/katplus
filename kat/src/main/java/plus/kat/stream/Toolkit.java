@@ -120,6 +120,150 @@ public final class Toolkit {
     /**
      * Unsafe, may be deleted later
      */
+    public static long hash1(
+        @NotNull Object name
+    ) {
+        if (name instanceof Binary) {
+            Binary n = (Binary) name;
+            int l = n.size;
+            if (l == 0) {
+                return -1;
+            }
+
+            byte[] v = n.value;
+            return (long) l << 48 |
+                (v[0] & 0xFFL) << 32 | n.hashCode();
+        }
+
+        if (name instanceof String) {
+            String n = (String) name;
+            int l = n.length();
+            if (l == 0) {
+                return -1;
+            }
+
+            return (long) l << 48 |
+                (long) n.charAt(0) << 32 | n.hashCode();
+        }
+
+        if (name != null) {
+            return name.hashCode();
+        }
+
+        throw new IllegalStateException(
+            "Received name is invalid"
+        );
+    }
+
+    /**
+     * Unsafe, may be deleted later
+     */
+    public static long hash2(
+        @NotNull Object name
+    ) {
+        if (name instanceof Binary) {
+            Binary n = (Binary) name;
+            int l = n.size;
+            if (l == 0) {
+                return -1;
+            }
+
+            int i = 0;
+            int h = 0, m = l;
+
+            byte e = 0;
+            byte[] v = n.value;
+
+            while (i < m) {
+                byte w = v[i++];
+                if (w == '_') {
+                    if (i == m ||
+                        e == 0) {
+                        return -2;
+                    }
+                    w = v[i++];
+                    if (w == '_') {
+                        return -2;
+                    }
+                    if (w > 0x60 &&
+                        w < 0x7B) {
+                        w -= 32;
+                    }
+                    l--;
+                    h = 31 * h + w;
+                } else {
+                    if (w > 0x40 &&
+                        w < 0x5B) {
+                        w += 32;
+                    }
+                    if (e == 0) {
+                        h = e = w;
+                    } else {
+                        h = 31 * h + w;
+                    }
+                }
+            }
+
+            return (long) l << 48 |
+                (e & 0xFFL) << 32 | h;
+        }
+
+        if (name instanceof String) {
+            String n = (String) name;
+            int l = n.length();
+            if (l == 0) {
+                return -1;
+            }
+
+            int i = 0;
+            int h = 0, m = l;
+
+            char e = 0;
+            while (i < m) {
+                char w = n.charAt(i++);
+                if (w == '_') {
+                    if (i == m ||
+                        e == 0) {
+                        return -2;
+                    }
+                    w = n.charAt(i++);
+                    if (w == '_') {
+                        return -2;
+                    }
+                    if (w > 0x60 &&
+                        w < 0x7B) {
+                        w -= 32;
+                    }
+                    l--;
+                    h = 31 * h + w;
+                } else {
+                    if (w > 0x40 &&
+                        w < 0x5B) {
+                        w += 32;
+                    }
+                    if (e == 0) {
+                        h = e = w;
+                    } else {
+                        h = 31 * h + w;
+                    }
+                }
+            }
+
+            return (long) l << 48 | (long) e << 32 | h;
+        }
+
+        if (name != null) {
+            return name.hashCode();
+        }
+
+        throw new IllegalStateException(
+            "Received name is invalid"
+        );
+    }
+
+    /**
+     * Unsafe, may be deleted later
+     */
     public static void write(
         @NotNull Binary data,
         @NotNull Stream heap
