@@ -117,6 +117,9 @@ public final class Toolkit {
         stream.flush();
     }
 
+    static final long FNV_PRIME = 0x100000001B3L;
+    static final long FNV_BASIS = 0xCBF29CE484222325L;
+
     /**
      * Unsafe, may be deleted later
      */
@@ -125,33 +128,36 @@ public final class Toolkit {
     ) {
         if (name instanceof Binary) {
             Binary n = (Binary) name;
+
             int l = n.size;
-            if (l == 0) {
-                return -1;
-            }
+            long h = FNV_BASIS;
 
             byte[] v = n.value;
-            return (long) l << 48 |
-                (v[0] & 0xFFL) << 32 | n.hashCode();
+            for (int i = 0; i < l; i++) {
+                h = (v[i] ^ h) * FNV_PRIME;
+            }
+            return h;
         }
 
         if (name instanceof String) {
             String n = (String) name;
-            int l = n.length();
-            if (l == 0) {
-                return -1;
-            }
 
-            return (long) l << 48 |
-                (long) n.charAt(0) << 32 | n.hashCode();
+            int l = n.length();
+            long h = FNV_BASIS;
+
+            for (int i = 0; i < l; i++) {
+                h = (n.charAt(i) ^ h) * FNV_PRIME;
+            }
+            return h;
         }
 
-        if (name != null) {
-            return name.hashCode();
+        if (name instanceof Number) {
+            return ((Number) name).longValue();
         }
 
         throw new IllegalStateException(
-            "Received name is invalid"
+            "Received name(" + (name == null ?
+                "null" : name.getClass()) + ") is not supported"
         );
     }
 
@@ -163,101 +169,95 @@ public final class Toolkit {
     ) {
         if (name instanceof Binary) {
             Binary n = (Binary) name;
-            int l = n.size;
-            if (l == 0) {
-                return -1;
-            }
 
-            int i = 0;
-            int h = 0, m = l;
+            int i = 0,
+                l = n.size;
+            long h = FNV_BASIS;
 
-            byte e = 0;
             byte[] v = n.value;
+            boolean flag = true;
 
-            while (i < m) {
-                byte w = v[i++];
-                if (w == '_') {
-                    if (i == m ||
-                        e == 0) {
-                        return -2;
+            while (i < l) {
+                long w = v[i++];
+                if (w != '_') {
+                    if (w > 0x40 &&
+                        w < 0x5B) {
+                        if (flag) {
+                            w += 32;
+                        }
+                    } else {
+                        flag = false;
+                    }
+                } else {
+                    if (i == 1 ||
+                        i == l) {
+                        return 0;
                     }
                     w = v[i++];
                     if (w == '_') {
-                        return -2;
+                        return 0;
                     }
-                    if (w > 0x60 &&
-                        w < 0x7B) {
-                        w -= 32;
-                    }
-                    l--;
-                    h = 31 * h + w;
-                } else {
-                    if (w > 0x40 &&
-                        w < 0x5B) {
-                        w += 32;
-                    }
-                    if (e == 0) {
-                        h = e = w;
+                    if (w < 0x61 ||
+                        w > 0x7A) {
+                        flag = true;
                     } else {
-                        h = 31 * h + w;
+                        w -= 32;
+                        flag = false;
                     }
                 }
+                h = (w ^ h) * FNV_PRIME;
             }
-
-            return (long) l << 48 |
-                (e & 0xFFL) << 32 | h;
+            return h;
         }
 
         if (name instanceof String) {
             String n = (String) name;
-            int l = n.length();
-            if (l == 0) {
-                return -1;
-            }
 
-            int i = 0;
-            int h = 0, m = l;
+            int i = 0,
+                l = n.length();
+            long h = FNV_BASIS;
 
-            char e = 0;
-            while (i < m) {
-                char w = n.charAt(i++);
-                if (w == '_') {
-                    if (i == m ||
-                        e == 0) {
-                        return -2;
+            boolean flag = true;
+            while (i < l) {
+                long w = n.charAt(i++);
+                if (w != '_') {
+                    if (w > 0x40 &&
+                        w < 0x5B) {
+                        if (flag) {
+                            w += 32;
+                        }
+                    } else {
+                        flag = false;
+                    }
+                } else {
+                    if (i == 1 ||
+                        i == l) {
+                        return 0;
                     }
                     w = n.charAt(i++);
                     if (w == '_') {
-                        return -2;
+                        return 0;
                     }
-                    if (w > 0x60 &&
-                        w < 0x7B) {
-                        w -= 32;
-                    }
-                    l--;
-                    h = 31 * h + w;
-                } else {
-                    if (w > 0x40 &&
-                        w < 0x5B) {
-                        w += 32;
-                    }
-                    if (e == 0) {
-                        h = e = w;
+                    if (w < 0x61 ||
+                        w > 0x7A) {
+                        flag = true;
                     } else {
-                        h = 31 * h + w;
+                        w -= 32;
+                        flag = false;
                     }
                 }
+                h = (w ^ h) * FNV_PRIME;
             }
-
-            return (long) l << 48 | (long) e << 32 | h;
+            return h;
         }
 
-        if (name != null) {
-            return name.hashCode();
+        if (name instanceof Number) {
+            return ((Number) name).longValue();
         }
 
         throw new IllegalStateException(
-            "Received name is invalid"
+            "Received name(" + (name == null ?
+                "null" : name.getClass()) + ") is not supported"
         );
     }
 
