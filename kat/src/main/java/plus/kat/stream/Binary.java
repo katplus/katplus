@@ -50,17 +50,17 @@ public class Binary implements ByteSequence {
     /**
      * Constructs a binary with the flow
      *
-     * @param flow the specified buffer stream
+     * @param flow the specified value of binary
      * @throws NullPointerException If the specified flow is null
      */
     public Binary(
         byte[] flow
     ) {
         if (flow != null) {
-            value = flow;
+            size = (value = flow).length;
         } else {
             throw new NullPointerException(
-                "Received buffer stream is null"
+                "Received byte array is null"
             );
         }
     }
@@ -68,8 +68,8 @@ public class Binary implements ByteSequence {
     /**
      * Constructs a binary with the flow and size
      *
-     * @param flow the specified buffer stream
      * @param size the specified size of binary
+     * @param flow the specified value of binary
      * @throws NullPointerException      If the specified flow is null
      * @throws IndexOutOfBoundsException If the specified size is out of range
      */

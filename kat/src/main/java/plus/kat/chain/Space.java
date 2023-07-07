@@ -26,6 +26,13 @@ import static java.nio.charset.StandardCharsets.*;
  */
 public class Space extends Binary {
     /**
+     * Constructs an empty space
+     */
+    public Space() {
+        super();
+    }
+
+    /**
      * Constructs a space with the size
      *
      * @param size the specified capacity
@@ -39,7 +46,7 @@ public class Space extends Binary {
     /**
      * Constructs a space with the flow
      *
-     * @param flow the specified buffer stream
+     * @param flow the specified value of binary
      */
     public Space(
         byte[] flow
@@ -50,8 +57,8 @@ public class Space extends Binary {
     /**
      * Constructs a space with the flow and size
      *
-     * @param flow the specified buffer stream
-     * @param size the specified size of stream
+     * @param size the specified size of binary
+     * @param flow the specified value of binary
      */
     public Space(
         int size,

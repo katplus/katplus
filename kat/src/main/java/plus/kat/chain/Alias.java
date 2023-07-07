@@ -21,6 +21,13 @@ package plus.kat.chain;
  */
 public class Alias extends Value {
     /**
+     * Constructs an empty alias
+     */
+    public Alias() {
+        super();
+    }
+
+    /**
      * Constructs an alias with the size
      *
      * @param size the specified capacity
@@ -34,7 +41,7 @@ public class Alias extends Value {
     /**
      * Constructs an alias with the flow
      *
-     * @param flow the specified buffer stream
+     * @param flow the specified value of binary
      */
     public Alias(
         byte[] flow
@@ -45,8 +52,8 @@ public class Alias extends Value {
     /**
      * Constructs an alias with the flow and size
      *
-     * @param flow the specified buffer stream
-     * @param size the specified size of stream
+     * @param size the specified size of binary
+     * @param flow the specified value of binary
      */
     public Alias(
         int size,

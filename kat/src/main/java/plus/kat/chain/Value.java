@@ -21,6 +21,13 @@ package plus.kat.chain;
  */
 public class Value extends Space {
     /**
+     * Constructs an empty value
+     */
+    public Value() {
+        super();
+    }
+
+    /**
      * Constructs a value with the size
      *
      * @param size the specified capacity
@@ -34,7 +41,7 @@ public class Value extends Space {
     /**
      * Constructs a value with the flow
      *
-     * @param flow the specified buffer stream
+     * @param flow the specified value of binary
      */
     public Value(
         byte[] flow
@@ -45,8 +52,8 @@ public class Value extends Space {
     /**
      * Constructs a value with the flow and size
      *
-     * @param flow the specified buffer stream
-     * @param size the specified size of stream
+     * @param size the specified size of binary
+     * @param flow the specified value of binary
      */
     public Value(
         int size,
