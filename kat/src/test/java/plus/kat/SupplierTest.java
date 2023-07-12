@@ -32,48 +32,41 @@ public class SupplierTest {
     }
 
     @Test
-    public void test_embed() {
-        Vendor context = Vendor.INS;
-        Space space = space("plus.kat.supplier.User");
-        Spare<?> spare = context.assign(User.class);
-
-        assertSame(spare, context.assign(User.class));
-        assertSame(spare, context.minor.get(space));
-        assertSame(spare, context.revoke(User.class, null));
-
-        assertNull(context.minor.get(space));
-        assertNull(context.major.get(User.class));
-
-        Spare<?> spare1 = context.assign(User.class);
-        assertNotSame(spare, spare1);
-
-        assertNull(context.revoke(User.class, spare));
-        assertNotNull(context.minor.get(space));
-
-        assertSame(spare1, context.revoke(User.class, spare1));
-        assertNull(context.minor.get(space));
-    }
-
-    @Test
-    public void test_agent() {
+    public void test_life() {
         Vendor vendor = new Vendor();
         vendor.onCreate();
-        assertEquals(
-            vendor.major.size(),
-            Vendor.INS.major.size()
-        );
-        assertEquals(
-            vendor.minor.size(),
-            Vendor.INS.minor.size()
+        assertNotNull(
+            vendor.assign(User.class)
         );
         vendor.onDestroy();
         assertTrue(vendor.major.isEmpty());
         assertTrue(vendor.minor.isEmpty());
+    }
 
-        // rejects the default vendor
-        Vendor.INS.onDestroy();
-        assertFalse(Vendor.INS.major.isEmpty());
-        assertFalse(Vendor.INS.minor.isEmpty());
+    @Test
+    public void test_embed() {
+        Vendor context = Vendor.INS;
+        Space space = space("plus.kat.supplier.User");
+
+        Class<?> clazz = User.class;
+        Spare<?> spare = context.assign(clazz);
+
+        assertSame(spare, context.assign(clazz));
+        assertSame(clazz, context.minor.get(space));
+        assertSame(spare, context.revoke(clazz, null));
+
+        assertNull(context.minor.get(space));
+        assertNull(context.major.get(clazz));
+
+        Spare<?> coder = context.assign(clazz);
+        assertNotSame(spare, coder);
+        assertNotNull(context.minor.get(space));
+
+        assertNull(context.revoke(clazz, spare));
+        assertSame(clazz, context.minor.get(space));
+
+        assertSame(coder, context.revoke(clazz, coder));
+        assertSame(clazz, context.minor.get(space));
     }
 
     @Test
@@ -389,7 +382,10 @@ public class SupplierTest {
         }
     }
 
-    @Magus("plus.kat.supplier.User")
+    @Magus({
+        "plus.kat.vendor.User",
+        "plus.kat.supplier.User"
+    })
     static class User {
         @Magic("id")
         private int id;
@@ -483,9 +479,40 @@ public class SupplierTest {
         assertThrows(RuntimeException.class, () -> context.assign(BlogDTO.class));
     }
 
+    static class Prototype {
+        public Object map;
+        public Object list;
+        public Object digit;
+        public Object string;
+    }
+
+    @Test
+    public void test_read_without_type() throws IOException {
+        Vendor context = Vendor.INS;
+        Spare<Prototype> spare =
+            context.assign(Prototype.class);
+
+        String[] texts = {
+            "{map={},list=[],digit=1,string=\"kraity\"}",
+            "{map:Map={},list:List=[],digit:Int=1,string:String=\"kraity\"}"
+        };
+
+        for (String text : texts) {
+            Prototype proto = spare.read(
+                Flow.of(text)
+            );
+
+            assertNotNull(proto, text);
+            assertInstanceOf(Map.class, proto.map, text);
+            assertInstanceOf(List.class, proto.list, text);
+            assertInstanceOf(Number.class, proto.digit, text);
+            assertInstanceOf(String.class, proto.string, text);
+        }
+    }
+
     @Test
     public void test_apply_class0() {
-        Supplier context = Supplier.ins();
+        Vendor context = Vendor.INS;
 
         User user = context.apply(User.class);
         assertSame(User.class, user.getClass());

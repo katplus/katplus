@@ -336,53 +336,29 @@ public interface Supplier extends Context {
     @SuppressWarnings("unchecked")
     class Vendor implements Supplier, Provider {
 
-        static Vendor INS;
-        static Provider[] PRO;
+        static final Vendor INS;
+        static final Provider[] PRO;
 
         static {
-            Vendor.INS = new Vendor();
-            ConcurrentHashMap<Object, Spare<?>>
-                minor = INS.minor, major = INS.major;
-
-            minor.put("", ObjectSpare.INSTANCE);
-            minor.put("{", MapSpare.INSTANCE);
-            minor.put("[", ListSpare.INSTANCE);
-            minor.put("\"", StringSpare.INSTANCE);
-            minor.put("Any", ObjectSpare.INSTANCE);
-            minor.put("String", StringSpare.INSTANCE);
-            minor.put("Int", IntSpare.INSTANCE);
-            minor.put("Long", LongSpare.INSTANCE);
-            minor.put("Boolean", BooleanSpare.INSTANCE);
-            minor.put("Float", FloatSpare.INSTANCE);
-            minor.put("Double", DoubleSpare.INSTANCE);
-            minor.put("Char", CharSpare.INSTANCE);
-            minor.put("Byte", ByteSpare.INSTANCE);
-            minor.put("Short", ShortSpare.INSTANCE);
-            minor.put("Map", MapSpare.INSTANCE);
-            minor.put("Set", SetSpare.INSTANCE);
-            minor.put("List", ListSpare.INSTANCE);
-            minor.put("Array", ArraySpare.INSTANCE);
-
-            major.put(String.class, StringSpare.INSTANCE);
-            major.put(int.class, IntSpare.INSTANCE);
-            major.put(Integer.class, IntSpare.INSTANCE);
-            major.put(long.class, LongSpare.INSTANCE);
-            major.put(Long.class, LongSpare.INSTANCE);
-            major.put(boolean.class, BooleanSpare.INSTANCE);
-            major.put(Boolean.class, BooleanSpare.INSTANCE);
-            major.put(float.class, FloatSpare.INSTANCE);
-            major.put(Float.class, FloatSpare.INSTANCE);
-            major.put(double.class, DoubleSpare.INSTANCE);
-            major.put(Double.class, DoubleSpare.INSTANCE);
-            major.put(char.class, CharSpare.INSTANCE);
-            major.put(Character.class, CharSpare.INSTANCE);
-            major.put(byte.class, ByteSpare.INSTANCE);
-            major.put(Byte.class, ByteSpare.INSTANCE);
-            major.put(short.class, ShortSpare.INSTANCE);
-            major.put(Short.class, ShortSpare.INSTANCE);
-            major.put(void.class, VoidSpare.INSTANCE);
-            major.put(Void.class, VoidSpare.INSTANCE);
-            major.put(Object[].class, ArraySpare.INSTANCE);
+            Vendor ins = INS = new Vendor();
+            ins.minor.put("", Object.class);
+            ins.minor.put("[", ArrayList.class);
+            ins.minor.put("{", LinkedHashMap.class);
+            ins.minor.put("\"", String.class);
+            ins.minor.put("Any", Object.class);
+            ins.minor.put("String", String.class);
+            ins.minor.put("Int", Integer.class);
+            ins.minor.put("Long", Long.class);
+            ins.minor.put("Boolean", Boolean.class);
+            ins.minor.put("Float", Float.class);
+            ins.minor.put("Double", Double.class);
+            ins.minor.put("Byte", Byte.class);
+            ins.minor.put("Char", Character.class);
+            ins.minor.put("Short", Short.class);
+            ins.minor.put("Map", LinkedHashMap.class);
+            ins.minor.put("Set", HashSet.class);
+            ins.minor.put("List", ArrayList.class);
+            ins.minor.put("Array", Object[].class);
 
             try (KatLoader<Provider> loader =
                      new KatLoader<>(Provider.class)) {
@@ -406,7 +382,7 @@ public interface Supplier extends Context {
                     for (int i = 0; i < m; i++) {
                         Provider p = RS[i];
                         try {
-                            if (p.alive(INS)) {
+                            if (p.alive(ins)) {
                                 RS[n++] = p;
                             }
                         } catch (Exception e) {
@@ -416,7 +392,7 @@ public interface Supplier extends Context {
                         }
                     }
 
-                    RS[n++] = INS;
+                    RS[n++] = ins;
                     if (n != size) {
                         Provider[] rs = new Provider[n];
                         System.arraycopy(
@@ -431,7 +407,7 @@ public interface Supplier extends Context {
                     }
                     PRO = RS;
                 } else {
-                    PRO = new Provider[]{INS};
+                    PRO = new Provider[]{ins};
                 }
             } catch (Exception e) {
                 throw new Error(
@@ -441,10 +417,16 @@ public interface Supplier extends Context {
         }
 
         /**
-         * Internal mapping table
+         * Internal mapping class table
          */
         protected final ConcurrentHashMap
-            <Object, Spare<?>> minor, major;
+            <Object, Class<?>> minor;
+
+        /**
+         * Internal mapping spare table
+         */
+        protected final ConcurrentHashMap
+            <Object, Spare<?>> major;
 
         /**
          * Constructs a supplier with default config
@@ -473,16 +455,8 @@ public interface Supplier extends Context {
             major = new ConcurrentHashMap<>(capacity);
         }
 
-        /**
-         * Load this {@link Vendor}'s spares
-         */
         public void onCreate() {
-            if (major.isEmpty()) {
-                major.putAll(INS.major);
-            }
-            if (minor.isEmpty()) {
-                minor.putAll(INS.minor);
-            }
+            // Nothing
         }
 
         @Override
@@ -504,7 +478,9 @@ public interface Supplier extends Context {
             @NotNull Type type,
             @NotNull Spare<?> spare
         ) {
-            return major.put(type, spare);
+            return major.put(
+                type, spare
+            );
         }
 
         @Override
@@ -514,26 +490,22 @@ public interface Supplier extends Context {
         ) {
             if (spare == null) {
                 spare = major.remove(type);
-                if (spare != null) {
-                    String name =
-                        spare.getSpace();
-                    if (name != null) {
-                        minor.remove(
-                            name, spare
-                        );
-                    }
-                }
             } else {
                 if (major.remove(type, spare)) {
-                    String name =
-                        spare.getSpace();
-                    if (name != null) {
+                    return spare;
+                }
+                return null;
+            }
+
+            if (type instanceof Class) {
+                Magus magus = ((Class<?>) type)
+                    .getAnnotation(Magus.class);
+                if (magus != null) {
+                    for (String name : magus.value()) {
                         minor.remove(
-                            name, spare
+                            name, type
                         );
                     }
-                } else {
-                    return null;
                 }
             }
 
@@ -610,6 +582,8 @@ public interface Supplier extends Context {
             @NotNull Context context
         ) {
             Class<?> clazz;
+            Spare<?> spare;
+
             if (type instanceof Class) {
                 clazz = (Class<?>) type;
             } else {
@@ -617,7 +591,7 @@ public interface Supplier extends Context {
                     if (type instanceof ParameterizedType) {
                         type = ((ParameterizedType) type).getRawType();
                         if (type instanceof Class) {
-                            Spare<?> spare = major.get(type);
+                            spare = major.get(type);
                             if (spare == null) {
                                 clazz = (Class<?>) type;
                                 break;
@@ -635,7 +609,7 @@ public interface Supplier extends Context {
                     if (type instanceof WildcardType) {
                         type = ((WildcardType) type).getUpperBounds()[0];
                         if (type instanceof Class) {
-                            Spare<?> spare = major.get(type);
+                            spare = major.get(type);
                             if (spare == null) {
                                 clazz = (Class<?>) type;
                                 break;
@@ -685,32 +659,6 @@ public interface Supplier extends Context {
                             if (clazz == String.class) {
                                 return assign(String[].class);
                             }
-                            if (clazz.isPrimitive()) {
-                                if (clazz == int.class) {
-                                    return assign(int[].class);
-                                }
-                                if (clazz == byte.class) {
-                                    return assign(byte[].class);
-                                }
-                                if (clazz == char.class) {
-                                    return assign(char[].class);
-                                }
-                                if (clazz == long.class) {
-                                    return assign(long[].class);
-                                }
-                                if (clazz == float.class) {
-                                    return assign(float[].class);
-                                }
-                                if (clazz == double.class) {
-                                    return assign(double[].class);
-                                }
-                                if (clazz == short.class) {
-                                    return assign(short[].class);
-                                }
-                                if (clazz == boolean.class) {
-                                    return assign(boolean[].class);
-                                }
-                            }
                         }
 
                         return assign(
@@ -723,22 +671,23 @@ public interface Supplier extends Context {
             }
 
             if (name != null) {
-                Spare<?> spare = minor.get(name);
-                if (spare != null &&
-                    clazz.isAssignableFrom(spare.getType())) {
-                    return spare;
+                Class<?> alias = minor.get(name);
+                if (alias != null &&
+                    alias != clazz &&
+                    clazz.isAssignableFrom(alias)) {
+                    return assign(alias);
                 }
             }
 
-            final String alias = clazz.getName();
-            edge:
+            span:
             {
-                loop:
+                base:
                 {
+                    String alias = clazz.getName();
                     switch (alias.charAt(0)) {
                         case 'j': {
                             if (alias.startsWith("java.")) {
-                                break loop;
+                                break base;
                             }
                             if (alias.startsWith("jdk.") ||
                                 alias.startsWith("javax.")) {
@@ -768,7 +717,6 @@ public interface Supplier extends Context {
                             break;
                         }
                         case '[': {
-                            Spare<?> spare;
                             if (clazz == Object[].class) {
                                 spare = ArraySpare.INSTANCE;
                             } else if (clazz == byte[].class) {
@@ -776,17 +724,38 @@ public interface Supplier extends Context {
                             } else {
                                 spare = new ArraySpare(clazz, this);
                             }
-                            major.put(
-                                clazz, spare
-                            );
+                            major.put(clazz, spare);
                             return spare;
                         }
+                    }
+
+                    if (clazz.isPrimitive()) {
+                        if (clazz == int.class) {
+                            spare = IntSpare.INSTANCE;
+                        } else if (clazz == long.class) {
+                            spare = LongSpare.INSTANCE;
+                        } else if (clazz == byte.class) {
+                            spare = ByteSpare.INSTANCE;
+                        } else if (clazz == char.class) {
+                            spare = CharSpare.INSTANCE;
+                        } else if (clazz == short.class) {
+                            spare = ShortSpare.INSTANCE;
+                        } else if (clazz == float.class) {
+                            spare = FloatSpare.INSTANCE;
+                        } else if (clazz == double.class) {
+                            spare = DoubleSpare.INSTANCE;
+                        } else if (clazz == boolean.class) {
+                            spare = BooleanSpare.INSTANCE;
+                        } else {
+                            spare = VoidSpare.INSTANCE;
+                        }
+                        major.put(clazz, spare);
+                        return spare;
                     }
 
                     String space = alias;
                     String[] spaces = null;
 
-                    Spare<?> coder;
                     stage:
                     {
                         Magus magus = clazz.getAnnotation(Magus.class);
@@ -797,7 +766,7 @@ public interface Supplier extends Context {
                                 Entity.class.isAssignableFrom(clazz) ||
                                 Throwable.class.isAssignableFrom(clazz)) {
                                 if (name != null) {
-                                    break edge;
+                                    break span;
                                 } else {
                                     return null;
                                 }
@@ -812,10 +781,10 @@ public interface Supplier extends Context {
                             if (agent != void.class) {
                                 // check to see if it's a proxy class
                                 if (clazz.isAssignableFrom(agent)) {
-                                    Spare<?> spare = assign(agent);
+                                    spare = assign(agent);
                                     if (spare == null) {
                                         if (name != null) {
-                                            break edge;
+                                            break span;
                                         } else {
                                             return null;
                                         }
@@ -830,7 +799,7 @@ public interface Supplier extends Context {
                                 // check to see if it's a spare class
                                 if (Spare.class.isAssignableFrom(agent)) {
                                     // double-checking
-                                    Spare<?> spare = major.get(clazz);
+                                    spare = major.get(clazz);
 
                                     if (spare != null) {
                                         return spare;
@@ -886,7 +855,7 @@ public interface Supplier extends Context {
                                             }
                                         }
 
-                                        coder = ((Spare<?>) ctor.newInstance(args));
+                                        spare = ((Spare<?>) ctor.newInstance(args));
                                         break stage;
                                     } catch (Exception e) {
                                         throw new IllegalStateException(
@@ -904,14 +873,14 @@ public interface Supplier extends Context {
                         }
 
                         // double-checking
-                        Spare<?> spare = major.get(clazz);
+                        spare = major.get(clazz);
 
                         if (spare != null) {
                             return spare;
                         }
 
                         if (clazz.isInterface()) {
-                            coder = new ProxySpare(
+                            spare = new ProxySpare(
                                 space, clazz, this
                             );
                             break stage;
@@ -920,7 +889,7 @@ public interface Supplier extends Context {
                         // exclude abstract class
                         if ((clazz.getModifiers() & 0x400) != 0) {
                             if (name != null) {
-                                break edge;
+                                break span;
                             } else {
                                 return null;
                             }
@@ -928,59 +897,55 @@ public interface Supplier extends Context {
 
                         switch (clazz.getSuperclass().getName()) {
                             case "java.lang.Enum": {
-                                coder = new EnumSpare<>(
+                                spare = new EnumSpare<>(
                                     space, clazz, this
                                 );
                                 break;
                             }
                             case "java.lang.Record": {
-                                coder = new RecordSpare<>(
+                                spare = new RecordSpare<>(
                                     space, clazz, this
                                 );
                                 break;
                             }
                             case "java.lang.reflect.Proxy": {
-                                coder = new ProxySpare(
+                                spare = new ProxySpare(
                                     space, clazz, this
                                 );
                                 break;
                             }
                             default: {
-                                coder = new ReflectSpare<>(
+                                spare = new ReflectSpare<>(
                                     space, clazz, this
                                 );
                             }
                         }
                     }
 
-                    major.put(clazz, coder);
+                    major.put(clazz, spare);
                     if (spaces != null) {
                         for (String ns : spaces) {
-                            Spare<?> sp = minor.putIfAbsent(ns, coder);
-                            if (sp == null) {
-                                continue;
-                            }
-                            if (sp.getType() == coder.getType()) {
+                            Class<?> cs = minor.putIfAbsent(ns, clazz);
+                            if (cs == null || cs == clazz) {
                                 continue;
                             }
                             throw new IllegalStateException(
-                                "The spare of `" + ns + "` already exists. Actual: "
-                                    + sp.getType() + ", Expected: " + coder.getType()
+                                "Mixed class of `" + ns + "` already exists."
+                                    + " Actual: " + cs + ", Expected: " + clazz
                             );
                         }
                     }
-                    return coder;
+                    return spare;
                 }
 
-                // lookup the appropriate spare
-                Spare<?> spare;
+                String alias = clazz.getName();
                 switch (alias.charAt(5)) {
                     // java.io
                     case 'i': {
                         if (clazz == File.class) {
                             spare = FileSpare.INSTANCE;
                         } else {
-                            break edge;
+                            break span;
                         }
                         major.put(clazz, spare);
                         return spare;
@@ -1001,7 +966,7 @@ public interface Supplier extends Context {
                                 spare = ByteBufferSpare.INSTANCE;
                             }
                         } else {
-                            break edge;
+                            break span;
                         }
                         major.put(clazz, spare);
                         return spare;
@@ -1013,7 +978,7 @@ public interface Supplier extends Context {
                         } else if (clazz == BigDecimal.class) {
                             spare = BigDecimalSpare.INSTANCE;
                         } else {
-                            break edge;
+                            break span;
                         }
                         major.put(clazz, spare);
                         return spare;
@@ -1021,29 +986,47 @@ public interface Supplier extends Context {
                     // java.lang
                     case 'l': {
                         if (clazz == Object.class) {
-                            // return it directly
                             return ObjectSpare.INSTANCE;
-                        }
-                        if (clazz == Class.class) {
+                        } else if (clazz == String.class) {
+                            spare = StringSpare.INSTANCE;
+                        } else if (clazz == Integer.class) {
+                            spare = IntSpare.INSTANCE;
+                        } else if (clazz == Long.class) {
+                            spare = LongSpare.INSTANCE;
+                        } else if (clazz == Void.class) {
+                            spare = VoidSpare.INSTANCE;
+                        } else if (clazz == Byte.class) {
+                            spare = ByteSpare.INSTANCE;
+                        } else if (clazz == Short.class) {
+                            spare = ShortSpare.INSTANCE;
+                        } else if (clazz == Float.class) {
+                            spare = FloatSpare.INSTANCE;
+                        } else if (clazz == Double.class) {
+                            spare = DoubleSpare.INSTANCE;
+                        } else if (clazz == Boolean.class) {
+                            spare = BooleanSpare.INSTANCE;
+                        } else if (clazz == Character.class) {
+                            spare = CharSpare.INSTANCE;
+                        } else if (clazz == Class.class) {
                             spare = ClassSpare.INSTANCE;
                         } else if (clazz == Number.class) {
                             if (name == null ||
                                 name.isBlank()) {
                                 return NumberSpare.INSTANCE;
                             }
-                            break edge;
+                            break span;
                         } else if (clazz == Iterable.class) {
                             if (name == null ||
                                 name.isBlank()) {
                                 return ListSpare.INSTANCE;
                             }
-                            break edge;
+                            break span;
                         } else if (clazz == CharSequence.class) {
                             if (name == null ||
                                 name.isBlank()) {
                                 return StringSpare.INSTANCE;
                             }
-                            break edge;
+                            break span;
                         } else if (clazz == StringBuffer.class) {
                             spare = StringBufferSpare.INSTANCE;
                         } else if (clazz == StringBuilder.class) {
@@ -1066,7 +1049,7 @@ public interface Supplier extends Context {
                                 } else if (List.class.isAssignableFrom(clazz)) {
                                     spare = new ListSpare(clazz);
                                 } else {
-                                    break edge;
+                                    break span;
                                 }
                                 major.put(clazz, spare);
                                 return spare;
@@ -1080,7 +1063,7 @@ public interface Supplier extends Context {
                                 } else if (clazz == AtomicBoolean.class) {
                                     spare = AtomicBooleanSpare.INSTANCE;
                                 } else {
-                                    break edge;
+                                    break span;
                                 }
                                 major.put(clazz, spare);
                                 return spare;
@@ -1102,32 +1085,32 @@ public interface Supplier extends Context {
                                         name.isBlank()) {
                                         return assign(LinkedList.class);
                                     }
-                                    break edge;
+                                    break span;
                                 } else if (clazz == Deque.class) {
                                     if (name == null ||
                                         name.isBlank()) {
                                         return assign(LinkedList.class);
                                     }
-                                    break edge;
+                                    break span;
                                 } else if (clazz == Collection.class) {
                                     if (name == null ||
                                         name.isBlank()) {
                                         return ListSpare.INSTANCE;
                                     }
-                                    break edge;
+                                    break span;
                                 } else if (clazz == Dictionary.class) {
                                     if (name == null ||
                                         name.isBlank()) {
                                         return assign(Hashtable.class);
                                     }
-                                    break edge;
+                                    break span;
                                 } else if (Map.class.isAssignableFrom(clazz)) {
                                     if (clazz == Map.class) {
                                         if (name == null ||
                                             name.isBlank()) {
                                             return MapSpare.INSTANCE;
                                         }
-                                        break edge;
+                                        break span;
                                     } else {
                                         if (clazz == LinkedHashMap.class) {
                                             spare = MapSpare.INSTANCE;
@@ -1141,7 +1124,7 @@ public interface Supplier extends Context {
                                             name.isBlank()) {
                                             return SetSpare.INSTANCE;
                                         }
-                                        break edge;
+                                        break span;
                                     } else {
                                         if (clazz == HashSet.class) {
                                             spare = SetSpare.INSTANCE;
@@ -1155,7 +1138,7 @@ public interface Supplier extends Context {
                                             name.isBlank()) {
                                             return ListSpare.INSTANCE;
                                         }
-                                        break edge;
+                                        break span;
                                     } else {
                                         if (clazz == ArrayList.class) {
                                             spare = ListSpare.INSTANCE;
@@ -1205,24 +1188,24 @@ public interface Supplier extends Context {
                     }
                 }
 
-                String space = name.toString();
+                String ns = name.toString();
                 try {
                     child = Class.forName(
-                        space, false, cl
+                        ns, false, cl
                     );
                 } catch (LinkageError |
                          ClassNotFoundException e) {
                     throw new IllegalStateException(
                         "Not found subclass " +
-                            space + " of " + alias, e
+                            ns + " of " + clazz, e
                     );
                 }
 
                 if (clazz.isAssignableFrom(child)) {
-                    Spare<?> spare = major.get(child);
+                    spare = major.get(child);
                     if (spare != null) {
                         minor.putIfAbsent(
-                            space.intern(), spare
+                            ns.intern(), child
                         );
                         return spare;
                     }
@@ -1236,7 +1219,7 @@ public interface Supplier extends Context {
 
                             if (spare != null) {
                                 minor.putIfAbsent(
-                                    space.intern(), spare
+                                    ns.intern(), child
                                 );
                                 return spare;
                             }
@@ -1246,22 +1229,16 @@ public interface Supplier extends Context {
                 }
 
                 throw new IllegalStateException(
-                    "Received " + space +
-                        " is not a subclass of " + alias
+                    "Received " + ns + " is not a subclass of " + clazz
                 );
             }
 
             return null;
         }
 
-        /**
-         * Clear this {@link Vendor}'s spares
-         */
         public void onDestroy() {
-            if (this != INS) {
-                minor.clear();
-                major.clear();
-            }
+            minor.clear();
+            major.clear();
         }
 
         @Override
