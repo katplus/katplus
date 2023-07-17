@@ -23,6 +23,8 @@ public class Binary implements ByteSequence {
 
     protected int size;
     protected int hash;
+
+    protected byte state;
     protected byte[] value;
 
     /**

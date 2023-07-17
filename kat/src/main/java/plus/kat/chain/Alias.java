@@ -65,7 +65,7 @@ public class Alias extends Value {
     /**
      * Sets the specified length of this {@link Alias}
      *
-     * @param i the specified length
+     * @param i the specified size
      * @return this {@link Alias} itself
      * @throws IndexOutOfBoundsException If index is out of bounds
      */
@@ -73,10 +73,12 @@ public class Alias extends Value {
         if (i == 0) {
             size = 0;
             hash = 0;
+            state = 0;
         } else {
             if (0 < i && i <= value.length) {
                 size = i;
                 hash = 0;
+                state = 0;
             } else {
                 throw new IndexOutOfBoundsException(
                     "Index<" + i + "> is out of bounds"
@@ -89,19 +91,21 @@ public class Alias extends Value {
     /**
      * Sets the specified length of this {@link Value}
      *
-     * @param i the specified length
-     * @param v the specified default value
+     * @param i the specified size
+     * @param v the specified border
      * @return this {@link Value} itself
      * @throws IndexOutOfBoundsException If index is out of bounds
      */
-    public Value slip(int i, byte v) {
+    public Alias slip(int i, byte v) {
         if (i == 0) {
-            size = 1;
-            hash = value[0] = v;
+            size = 0;
+            hash = 0;
+            state = v;
         } else {
             if (0 < i && i <= value.length) {
                 size = i;
                 hash = 0;
+                state = v;
             } else {
                 throw new IndexOutOfBoundsException(
                     "Index<" + i + "> is out of bounds"

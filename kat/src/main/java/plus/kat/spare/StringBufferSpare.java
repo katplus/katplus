@@ -21,6 +21,8 @@ import plus.kat.chain.*;
 
 import java.io.IOException;
 
+import static plus.kat.stream.Toolkit.*;
+
 /**
  * @author kraity
  * @since 0.0.3
@@ -84,9 +86,11 @@ public class StringBufferSpare extends BaseSpare<StringBuffer> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return new StringBuffer(
-            value.toString()
-        );
+        String text = string(value);
+        if (text == null) {
+            return null;
+        }
+        return new StringBuffer(text);
     }
 
     @Override

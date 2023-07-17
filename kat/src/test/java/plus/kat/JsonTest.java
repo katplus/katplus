@@ -80,6 +80,15 @@ public class JsonTest {
         Spare<Meta> spare =
             Spare.of(Meta.class);
 
+        Meta meta = spare.parse(
+            Flow.of(
+                "{\"user\":{\"name\":null}}"
+            )
+        );
+        assertNotNull(meta);
+        assertNotNull(meta.user);
+        assertNull(meta.user.name);
+
         Meta meta0 = spare.parse(
             Flow.of(
                 "{\"user\":{\"id\":1,\"name\":\"kraity\"}}"

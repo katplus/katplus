@@ -197,9 +197,7 @@ public class Sodar implements Solver {
                                     n.onEach(
                                         a.slip(x),
                                         s.slip(0, w),
-                                        v.slip(
-                                            text(t, val)
-                                        )
+                                        v.slip(text(t, val), w)
                                     );
                                     x = 0;
                                     i = 0x81;

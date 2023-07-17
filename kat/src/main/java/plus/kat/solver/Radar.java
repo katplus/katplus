@@ -265,9 +265,7 @@ public class Radar implements Solver {
                                     n.onEach(
                                         a.slip(x),
                                         s.slip(y, w),
-                                        v.slip(
-                                            text(t, val)
-                                        )
+                                        v.slip(text(t, val), w)
                                     );
                                     i = 0x81;
                                     x = y = 0;

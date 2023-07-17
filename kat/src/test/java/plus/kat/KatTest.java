@@ -316,6 +316,16 @@ public class KatTest {
         Spare<Model> spare =
             Spare.of(Model.class);
 
+        Model model = spare.read(
+            Flow.of(
+                "{user={name=null}}"
+            )
+        );
+
+        assertNotNull(model);
+        assertNotNull(model.user);
+        assertNull(model.user.name);
+
         Model model1 = spare.read(
             Flow.of(
                 "{user={id=1,name=kraity}}"

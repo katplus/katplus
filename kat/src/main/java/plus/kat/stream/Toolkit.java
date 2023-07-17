@@ -30,6 +30,7 @@ import java.util.*;
 import java.lang.reflect.*;
 
 import static plus.kat.Algo.*;
+import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author kraity
@@ -115,6 +116,30 @@ public final class Toolkit {
             binary.value, 0, binary.size
         );
         stream.flush();
+    }
+
+    /**
+     * Unsafe, may be deleted later
+     */
+    public static String string(
+        @NotNull Binary bin
+    ) {
+        int l = bin.size;
+        if (l == 0) {
+            return "";
+        }
+
+        byte[] v = bin.value;
+        if (l == 4 && bin.state == 0) {
+            if (v[0] == 'n' &&
+                v[1] == 'u' &&
+                v[2] == 'l' &&
+                v[3] == 'l') {
+                return null;
+            }
+        }
+
+        return new String(v, 0, l, UTF_8);
     }
 
     static final long FNV_PRIME = 0x100000001B3L;

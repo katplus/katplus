@@ -125,7 +125,7 @@ public class Space extends Binary {
     /**
      * Sets the specified length of this {@link Space}
      *
-     * @param i the specified length
+     * @param i the specified size
      * @return this {@link Space} itself
      * @throws IndexOutOfBoundsException If index is out of bounds
      */
@@ -149,8 +149,8 @@ public class Space extends Binary {
     /**
      * Sets the specified length of this {@link Space}
      *
-     * @param i the specified length
-     * @param v the specified default value
+     * @param i the specified size
+     * @param v the specified border
      * @return this {@link Space} itself
      * @throws IndexOutOfBoundsException If index is out of bounds
      */
@@ -311,6 +311,7 @@ public class Space extends Binary {
     public void clear() {
         size = 0;
         hash = 0;
+        state = 0;
     }
 
     /**

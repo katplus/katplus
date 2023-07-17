@@ -22,6 +22,8 @@ import plus.kat.chain.*;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import static plus.kat.stream.Toolkit.*;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -134,7 +136,7 @@ public class StringSpare extends BaseSpare<String> {
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        return value.toString();
+        return string(value);
     }
 
     @Override
