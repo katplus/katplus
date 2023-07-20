@@ -32,7 +32,6 @@ import java.util.List;
 import java.lang.reflect.Type;
 
 import static plus.kat.Plan.*;
-import static plus.kat.stream.Toolkit.*;
 import static plus.kat.Supplier.Vendor.*;
 
 /**
@@ -180,16 +179,25 @@ public class Kat extends Stream implements Chan {
         }
 
         if (alias != null) {
+            state = 1;
             if (alias instanceof String) {
-                write((String) alias, this);
+                emit((String) alias);
             } else if (alias instanceof Binary) {
-                write((Binary) alias, this);
+                emit((Binary) alias);
             } else {
-                throw new IOException(
-                    alias.getClass().getName() +
-                        " is currently not supported"
+                Spare<?> spare = context.assign(
+                    alias.getClass()
                 );
+                if (spare != null) {
+                    spare.write((Flux) this, alias);
+                } else {
+                    throw new IOException(
+                        "No spare of " + alias
+                            .getClass() + " was found"
+                    );
+                }
             }
+            state = 0;
         }
 
         if (flags < 0 &&
@@ -199,7 +207,9 @@ public class Kat extends Stream implements Chan {
             } else {
                 join((byte) ':');
             }
-            write(space, this);
+            state = 1;
+            emit(space);
+            state = 0;
             if (width != 0 ||
                 alias == null) {
                 join((byte) ' ');
@@ -318,16 +328,25 @@ public class Kat extends Stream implements Chan {
         }
 
         if (alias != null) {
+            state = 1;
             if (alias instanceof String) {
-                write((String) alias, this);
+                emit((String) alias);
             } else if (alias instanceof Binary) {
-                write((Binary) alias, this);
+                emit((Binary) alias);
             } else {
-                throw new IOException(
-                    alias.getClass().getName() +
-                        " is currently not supported"
+                Spare<?> spare = context.assign(
+                    alias.getClass()
                 );
+                if (spare != null) {
+                    spare.write((Flux) this, alias);
+                } else {
+                    throw new IOException(
+                        "No spare of " + alias
+                            .getClass() + " was found"
+                    );
+                }
             }
+            state = 0;
         }
 
         if (flags < 0) {
@@ -337,11 +356,13 @@ public class Kat extends Stream implements Chan {
                 join((byte) ':');
             }
             String name = coder.getSpace();
+            state = 1;
             if (name != null) {
-                write(name, this);
+                emit(name);
             } else {
-                write(value.getClass().getName(), this);
+                emit(value.getClass().getName());
             }
+            state = 0;
             if (alias == null &&
                 (width != 0 || coder.getScope() == null)) {
                 join((byte) ' ');
@@ -360,9 +381,11 @@ public class Kat extends Stream implements Chan {
 
         Border border = coder.getBorder(this);
         if (border == null) {
+            state = 1;
             coder.write(
                 (Flux) this, value
             );
+            state = 0;
             return true;
         }
 

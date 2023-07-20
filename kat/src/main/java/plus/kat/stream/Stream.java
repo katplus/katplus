@@ -159,9 +159,15 @@ public class Stream extends Binary implements Flux {
                     val = 'r';
                     break;
                 }
-                case 0x20:
+                case 0x20: {
+                    if (state == 1) {
+                        val = 's';
+                        break;
+                    } else {
+                        break escape;
+                    }
+                }
                 case 0x21:
-                case 0x23:
                 case 0x24:
                 case 0x25:
                 case 0x26:
@@ -170,7 +176,6 @@ public class Stream extends Binary implements Flux {
                 case 0x29:
                 case 0x2A:
                 case 0x2B:
-                case 0x2C:
                 case 0x2D:
                 case 0x2E:
                 case 0x2F:
@@ -184,13 +189,10 @@ public class Stream extends Binary implements Flux {
                 case 0x37:
                 case 0x38:
                 case 0x39:
-                case 0x3A:
                 case 0x3B:
                 case 0x3C:
-                case 0x3D:
                 case 0x3E:
                 case 0x3F:
-                case 0x40:
                 case 0x41:
                 case 0x42:
                 case 0x43:
@@ -217,8 +219,6 @@ public class Stream extends Binary implements Flux {
                 case 0x58:
                 case 0x59:
                 case 0x5A:
-                case 0x5B:
-                case 0x5D:
                 case 0x5E:
                 case 0x5F:
                 case 0x60:
@@ -248,12 +248,25 @@ public class Stream extends Binary implements Flux {
                 case 0x78:
                 case 0x79:
                 case 0x7A:
-                case 0x7B:
                 case 0x7C:
-                case 0x7D:
                 case 0x7E:
                 default: {
                     break escape;
+                }
+                case 0x23:
+                case 0x2C:
+                case 0x3A:
+                case 0x3D:
+                case 0x40:
+                case 0x5B:
+                case 0x5D:
+                case 0x7B:
+                case 0x7D: {
+                    if (state == 1) {
+                        break;
+                    } else {
+                        break escape;
+                    }
                 }
                 case 0x00:
                 case 0x01:
@@ -432,7 +445,7 @@ public class Stream extends Binary implements Flux {
             size = iv;
             do {
                 it[--iv] = (byte) (
-                    0x3A + (val % 10)
+                    0x30 - (val % 10)
                 );
             } while ((val /= 10) != 0);
         } else {
@@ -536,7 +549,7 @@ public class Stream extends Binary implements Flux {
             size = iv;
             do {
                 it[--iv] = (byte) (
-                    0x3AL + (val % 10L)
+                    0x30L - (val % 10L)
                 );
             } while ((val /= 10L) != 0L);
         } else {

@@ -185,10 +185,17 @@ public class Json extends Stream implements Chan {
             } else if (alias instanceof Binary) {
                 emit((Binary) alias);
             } else {
-                throw new IOException(
-                    alias.getClass().getName() +
-                        " is currently not supported"
+                Spare<?> spare = context.assign(
+                    alias.getClass()
                 );
+                if (spare != null) {
+                    spare.write((Flux) this, alias);
+                } else {
+                    throw new IOException(
+                        "No spare of " + alias
+                            .getClass() + " was found"
+                    );
+                }
             }
             join((byte) '"');
             join((byte) ':');
@@ -306,10 +313,17 @@ public class Json extends Stream implements Chan {
             } else if (alias instanceof Binary) {
                 emit((Binary) alias);
             } else {
-                throw new IOException(
-                    alias.getClass().getName() +
-                        " is currently not supported"
+                Spare<?> spare = context.assign(
+                    alias.getClass()
                 );
+                if (spare != null) {
+                    spare.write((Flux) this, alias);
+                } else {
+                    throw new IOException(
+                        "No spare of " + alias
+                            .getClass() + " was found"
+                    );
+                }
             }
             join((byte) '"');
             join((byte) ':');

@@ -180,16 +180,25 @@ public class Doc extends Stream implements Chan {
         }
 
         join(LT);
+        int mark1 = size;
         if (alias instanceof String) {
             emit((String) alias);
         } else if (alias instanceof Binary) {
             emit((Binary) alias);
         } else {
-            throw new IOException(
-                alias.getClass().getName() +
-                    " is currently not supported"
+            Spare<?> spare = context.assign(
+                alias.getClass()
             );
+            if (spare != null) {
+                spare.write((Flux) this, alias);
+            } else {
+                throw new IOException(
+                    "No spare of " + alias
+                        .getClass() + " was found"
+                );
+            }
         }
+        int mark2 = size - mark1;
         join(GT);
 
         if (value != null) {
@@ -217,11 +226,13 @@ public class Doc extends Stream implements Chan {
 
         join(LT);
         join(SLASH);
-        if (alias instanceof String) {
-            emit((String) alias);
-        } else {
-            emit((Binary) alias);
-        }
+        byte[] it = grow(
+            size + mark2
+        );
+        System.arraycopy(
+            it, mark1, it, size, mark2
+        );
+        size += mark2;
         join(GT);
         return true;
     }
@@ -294,16 +305,25 @@ public class Doc extends Stream implements Chan {
         }
 
         join(LT);
+        int mark1 = size;
         if (alias instanceof String) {
             emit((String) alias);
         } else if (alias instanceof Binary) {
             emit((Binary) alias);
         } else {
-            throw new IOException(
-                alias.getClass().getName() +
-                    " is currently not supported"
+            Spare<?> spare = context.assign(
+                alias.getClass()
             );
+            if (spare != null) {
+                spare.write((Flux) this, alias);
+            } else {
+                throw new IOException(
+                    "No spare of " + alias
+                        .getClass() + " was found"
+                );
+            }
         }
+        int mark2 = size - mark1;
         join(GT);
 
         if (scope == null) {
@@ -336,11 +356,13 @@ public class Doc extends Stream implements Chan {
 
         join(LT);
         join(SLASH);
-        if (alias instanceof String) {
-            emit((String) alias);
-        } else {
-            emit((Binary) alias);
-        }
+        byte[] it = grow(
+            size + mark2
+        );
+        System.arraycopy(
+            it, mark1, it, size, mark2
+        );
+        size += mark2;
         join(GT);
         return true;
     }

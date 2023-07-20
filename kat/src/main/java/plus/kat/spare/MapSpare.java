@@ -214,16 +214,9 @@ public class MapSpare extends BaseSpare<Map> {
     ) throws IOException {
         for (Map.Entry<?, ?> item : ((Map<?, ?>) value).entrySet()) {
             Object name = item.getKey();
-            if (name instanceof String ||
-                name instanceof Binary) {
-                chan.set(
-                    name, item.getValue()
-                );
-            } else {
-                chan.set(
-                    name == null ? "null" : name.toString(), item.getValue()
-                );
-            }
+            chan.set(
+                name == null ? "null" : name, item.getValue()
+            );
         }
     }
 
