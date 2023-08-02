@@ -20,7 +20,6 @@ import plus.kat.actor.Nullable;
 
 import plus.kat.*;
 import plus.kat.chain.*;
-import plus.kat.stream.*;
 
 import java.io.IOException;
 import java.lang.reflect.*;
@@ -30,7 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 
-import static plus.kat.spare.Parser.*;
 import static plus.kat.stream.Toolkit.*;
 
 /**
@@ -38,7 +36,7 @@ import static plus.kat.stream.Toolkit.*;
  * @since 0.0.1
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class MapSpare extends BaseSpare<Map> {
+public class MapSpare extends BeanSpare<Map> {
 
     public static final MapSpare
         INSTANCE = new MapSpare(Map.class);
@@ -162,49 +160,10 @@ public class MapSpare extends BaseSpare<Map> {
     }
 
     @Override
-    public Boolean getScope() {
-        return Boolean.TRUE;
-    }
-
-    @Override
-    public Border getBorder(
-        @NotNull Flag flag
-    ) {
-        return Border.BRACE;
-    }
-
-    @Override
     public Factory getFactory(
         @Nullable Type type
     ) {
         return new Builder0(type, this);
-    }
-
-    @Override
-    public Map read(
-        @NotNull Flag flag,
-        @NotNull Value data
-    ) throws IOException {
-        if (data.isNothing()) {
-            return null;
-        }
-
-        if (flag.isFlag(Flag.VALUE_AS_BEAN)) {
-            Algo algo = algoOf(data);
-            if (algo == null) {
-                return null;
-            }
-            try (Parser op = with(this)) {
-                return op.solve(
-                    algo, Flow.of(data)
-                );
-            }
-        }
-
-        throw new IOException(
-            "Failed to parse the value to `" + klass
-                + "` unless `Flag.VALUE_AS_BEAN` is enabled"
-        );
     }
 
     @Override

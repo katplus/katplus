@@ -19,22 +19,18 @@ import plus.kat.actor.NotNull;
 import plus.kat.actor.Nullable;
 
 import plus.kat.*;
-import plus.kat.chain.*;
 
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import static plus.kat.spare.Parser.*;
-import static plus.kat.stream.Toolkit.*;
-
 /**
  * @author kraity
  * @since 0.0.1
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class SetSpare extends BaseSpare<Set> {
+public class SetSpare extends BeanSpare<Set> {
 
     public static final SetSpare
         INSTANCE = new SetSpare(Set.class);
@@ -147,33 +143,6 @@ public class SetSpare extends BaseSpare<Set> {
         @Nullable Type type
     ) {
         return new ListSpare.Builder0(type, this);
-    }
-
-    @Override
-    public Set read(
-        @NotNull Flag flag,
-        @NotNull Value data
-    ) throws IOException {
-        if (data.isNothing()) {
-            return null;
-        }
-
-        if (flag.isFlag(Flag.VALUE_AS_BEAN)) {
-            Algo algo = algoOf(data);
-            if (algo == null) {
-                return null;
-            }
-            try (Parser op = with(this)) {
-                return op.solve(
-                    algo, Flow.of(data)
-                );
-            }
-        }
-
-        throw new IOException(
-            "Failed to parse the value to `" + klass
-                + "` unless `Flag.VALUE_AS_BEAN` is enabled"
-        );
     }
 
     @Override

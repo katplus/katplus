@@ -33,39 +33,14 @@ import static java.lang.reflect.Modifier.*;
  * @since 0.0.2
  */
 @SuppressWarnings("unchecked")
-public class ReflectSpare<T> extends BeanSpare<T> {
+public class ReflectSpare<T> extends SimpleSpare<T> {
 
-    private Class<?> self;
+    private Class<?> owner;
     private Class<?>[] types;
 
     private int extra;
     private boolean variable;
     private Constructor<T> loader, builder;
-
-    static boolean RUN_IN_KOTLIN;
-    static boolean HAS_TRANSIENT;
-
-    static {
-        try {
-            // Generally no
-            // @Transient in Android
-            Class.forName(
-                "java.beans.Transient"
-            );
-            HAS_TRANSIENT = true;
-        } catch (ClassNotFoundException e) {
-            // Ignore this exception
-        }
-
-        // Check the runtime language
-        for (Annotation a : Pure.class.getAnnotations()) {
-            Class<?> c = a.annotationType();
-            if ("kotlin.Metadata".equals(c.getName())) {
-                RUN_IN_KOTLIN = true;
-                break;
-            }
-        }
-    }
 
     public ReflectSpare(
         @Nilable String space,
@@ -179,111 +154,102 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             return new Builder0<>(type, this);
         }
 
-        Class<?> cls = self;
-        if (cls == null && !variable) {
+        Class<?> own = owner;
+        if (own == null && !variable) {
             return new Builder1<>(
                 type, new Object[as.length], this
             );
         }
 
         return new Builder2<>(
-            type, cls, new Object[as.length], this
+            type, own, new Object[as.length], this
         );
     }
 
-    protected void onFields(
+    private void onFields(
         @NotNull Field[] fields
     ) {
+        Magic magic;
+        Caller caller;
+
         for (Field field : fields) {
             int mask = field.getModifiers();
             if ((mask & (STATIC | TRANSIENT)) != 0) {
                 continue;
             }
 
-            Magic magic = field.getAnnotation(Magic.class);
+            magic = field.getAnnotation(Magic.class);
             if (magic == null && (mask & PUBLIC) == 0) {
                 continue;
             }
 
             String name;
-            String[] keys;
+            String[] more = null;
 
-            Widget widget;
+            int size = 0;
             if (magic == null) {
                 name = field.getName();
-                if (setProperty(name) == null) {
-                    variable = true;
-                    widget = new FieldWidget(
-                        -1, null, field, this
+                caller = new FieldCaller(
+                    -1, null, field, context
+                );
+            } else {
+                more = magic.value();
+                size = more.length;
+                if (size != 0) {
+                    name = more[0];
+                } else {
+                    name = field.getName();
+                }
+                caller = new FieldCaller(
+                    magic.index(), magic, field, context
+                );
+            }
+
+            Node node = node(
+                hash1(name), caller
+            );
+            if (node.setter == null && node.getter == null) {
+                variable = true;
+                node.setter = caller;
+                show(name, caller);
+                node.getter = caller;
+                for (int i = 1; i < size; i++) {
+                    node = node(
+                        hash1(more[i]), caller
                     );
-                    if (addProperty(name, widget)) {
+                    if (node.setter == null) {
+                        node.setter = caller;
                         continue;
                     }
                     throw new IllegalStateException(
-                        "Property for " + name + " has been setup"
+                        "Failed to set the reader<" + more[i] + "> of `"
+                            + klass.getName() + "` because it already exists"
                     );
                 }
-                continue;
-            }
-
-            keys = magic.value();
-            if (keys.length != 0) {
-                name = keys[0];
             } else {
-                name = field.getName();
-            }
-
-            if (getProperty(name) == null) {
-                widget = new FieldWidget(
-                    magic.index(),
-                    magic, field, this
+                throw new IllegalStateException(
+                    "Failed to set the property<" + name + "> of `" +
+                        klass.getName() + "` because it already exists"
                 );
-
-                if (keys.length <= 1) {
-                    setWriter(
-                        name, widget
-                    );
-                } else {
-                    for (String alias : keys) {
-                        addWriter(
-                            alias, widget
-                        );
-                    }
-                }
-            }
-
-            if (setProperty(name) == null) {
-                variable = true;
-                widget = new FieldWidget(
-                    magic.index(),
-                    magic, field, this
-                );
-
-                if (keys.length == 0) {
-                    setReader(
-                        name, widget
-                    );
-                } else {
-                    for (String alias : keys) {
-                        if (addReader(alias, widget)) {
-                            continue;
-                        }
-                        throw new IllegalStateException(
-                            "Reader for " + alias + " has been setup"
-                        );
-                    }
-                }
             }
         }
     }
 
     @SuppressWarnings("deprecation")
-    protected void onMethods(
+    private void onMethods(
         @NotNull Method[] methods
     ) {
+        Magic magic;
+        Caller caller;
+
         for (Method method : methods) {
             int mask = method.getModifiers();
             if ((mask & (STATIC | ABSTRACT)) != 0) {
+                continue;
+            }
+
+            magic = method.getAnnotation(Magic.class);
+            if (magic == null && (mask & PUBLIC) == 0) {
                 continue;
             }
 
@@ -295,164 +261,179 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                 }
             }
 
-            Widget widget;
-            Class<?>[] params;
+            int flag;
+            Class<?>[] args = method.getParameterTypes();
+            if ((flag = args.length) > 1) {
+                continue;
+            }
 
-            int count;
-            Magic magic = method
-                .getAnnotation(Magic.class);
+            int size = 0;
+            int index = -1;
+
+            String name;
+            long hash = 0;
+            String[] more = null;
 
             if (magic == null) {
-                if ((mask & PUBLIC) == 0) {
-                    continue;
-                }
-                params = method.getParameterTypes();
-                if ((count = params.length) > 1) {
-                    continue;
-                }
+                name = method.getName();
             } else {
-                params = method.getParameterTypes();
-                if ((count = params.length) > 1) {
+                more = magic.value();
+                size = more.length;
+                index = magic.index();
+                if (size != 0) {
+                    name = more[0];
+                    hash = hash1(name);
+                } else {
+                    name = method.getName();
+                }
+            }
+
+            int i = 1,
+                m = 0;
+            char c1 = 0;
+
+            if (size == 0) {
+                m = name.length();
+                c1 = name.charAt(0);
+
+                // set
+                if (c1 == 's') {
+                    if (flag == 0 || m < 4 ||
+                        name.charAt(i++) != 'e' ||
+                        name.charAt(i++) != 't') {
+                        continue;
+                    }
+                }
+
+                // get
+                else if (c1 == 'g') {
+                    if (flag != 0 || m < 4 ||
+                        name.charAt(i++) != 'e' ||
+                        name.charAt(i++) != 't') {
+                        continue;
+                    }
+                }
+
+                // is
+                else if (c1 == 'i') {
+                    if (flag != 0 || m < 3 ||
+                        name.charAt(i++) != 's') {
+                        continue;
+                    }
+                    Class<?> cls = method.getReturnType();
+                    if (cls != boolean.class &&
+                        cls != Boolean.class) {
+                        continue;
+                    }
+                } else {
                     continue;
                 }
 
-                String[] keys = magic.value();
-                if (keys.length != 0) {
-                    String name = keys[0];
-                    if (count == 0) {
-                        if (getProperty(name) != null) {
+                c1 = name.charAt(i++);
+                if (c1 < 'A' || 'Z' < c1) {
+                    continue;
+                }
+
+                if (i == m) {
+                    c1 += 0x20;
+                } else {
+                    char c2 = name.charAt(i);
+                    if (c2 < 'A' || 'Z' < c2) {
+                        c1 += 0x20;
+                    }
+                }
+
+                hash = (c1 ^ FNV_BASIS) * FNV_PRIME;
+                for (int j = i; j < m; j++) {
+                    hash = (name.charAt(j) ^ hash) * FNV_PRIME;
+                }
+            }
+
+            Node[] tab = table;
+            if (tab != null) {
+                Node node = tab[(int)
+                    (hash & tab.length - 1)];
+
+                while (node != null
+                    && hash != node.hash) {
+                    node = node.next;
+                }
+                if (node != null) {
+                    if (flag == 0) {
+                        if (node.getter != null) {
                             continue;
                         }
-
-                        widget = new MethodWidget(
-                            magic.index(),
-                            magic, method, this, params
-                        );
-
-                        if (keys.length == 1) {
-                            setWriter(
-                                name, widget
-                            );
-                        } else {
-                            for (String alias : keys) {
-                                addWriter(
-                                    alias, widget
-                                );
-                            }
-                        }
-                        continue;
                     } else {
-                        if (setProperty(name) != null) {
+                        if (node.setter != null) {
                             continue;
-                        }
-
-                        variable = true;
-                        widget = new MethodWidget(
-                            magic.index(),
-                            magic, method, this, params
-                        );
-
-                        for (String alias : keys) {
-                            if (addReader(alias, widget)) {
-                                continue;
-                            }
-                            throw new IllegalStateException(
-                                "Reader for " + alias + " has been setup"
-                            );
                         }
                     }
                 }
             }
 
-            String name = method.getName();
-            int i = 1, len = name.length();
-
-            // set
-            char ch = name.charAt(0);
-            if (ch == 's') {
-                if (count == 0 || len < 4 ||
-                    name.charAt(i++) != 'e' ||
-                    name.charAt(i++) != 't') {
-                    continue;
+            if (size == 0) {
+                if (i == m) {
+                    name = String.valueOf(c1);
+                } else {
+                    byte[] it = new byte[m - i + 1];
+                    it[0] = (byte) c1;
+                    name.getBytes(
+                        i, m, it, 1
+                    );
+                    name = new String(
+                        it, 0, 0, it.length
+                    );
                 }
+                name = name.intern();
             }
 
-            // get
-            else if (ch == 'g') {
-                if (count != 0 || len < 4 ||
-                    name.charAt(i++) != 'e' ||
-                    name.charAt(i++) != 't') {
-                    continue;
-                }
-            }
-
-            // is
-            else if (ch == 'i') {
-                if (count != 0 || len < 3 ||
-                    name.charAt(i++) != 's') {
-                    continue;
-                }
-                Class<?> cls = method.getReturnType();
-                if (cls != boolean.class &&
-                    cls != Boolean.class) {
-                    continue;
-                }
-            } else {
-                continue;
-            }
-
-            char c1 = name.charAt(i++);
-            if (c1 < 'A' || 'Z' < c1) {
-                continue;
-            }
-
-            if (i == len) {
-                name = String.valueOf(
-                    (char) (c1 + 0x20)
+            if (flag == 1) {
+                caller = new MethodCaller(
+                    index, magic,
+                    method, context, args[0]
                 );
-            } else {
-                char c2 = name.charAt(i);
-                if (c2 < 'A' || 'Z' < c2) {
-                    c1 += 0x20;
-                }
-
-                byte[] it = new byte[len - i + 1];
-                it[0] = (byte) c1;
-                name.getBytes(
-                    i, len, it, 1
-                );
-                name = new String(
-                    it, 0, 0, it.length
-                );
-            }
-
-            name = name.intern();
-            if (count != 0) {
-                if (setProperty(name) == null) {
-                    variable = true;
-                    setReader(
-                        name, new MethodWidget(
-                            magic == null ?
-                                -1 : magic.index(),
-                            magic, method, this, params
-                        )
+                variable = true;
+                node(hash, caller).setter = caller;
+                for (i = 1; i < size; i++) {
+                    Node node = node(
+                        hash1(more[i]), caller
+                    );
+                    if (node.setter == null) {
+                        node.setter = caller;
+                        continue;
+                    }
+                    throw new IllegalStateException(
+                        "Failed to set the reader<" + more[i] + "> of `"
+                            + klass.getName() + "` because it already exists"
                     );
                 }
             } else {
-                if (getProperty(name) == null) {
-                    setWriter(
-                        name, new MethodWidget(
-                            magic == null ?
-                                -1 : magic.index(),
-                            magic, method, this, params
-                        )
+                caller = new MethodCaller(
+                    index, magic,
+                    method, context, null
+                );
+                show(name, caller);
+                node(hash, caller).getter = caller;
+                for (i = 1; i < size; i++) {
+                    Node node = node(
+                        hash1(more[i]), caller
+                    );
+                    if (node.getter == null) {
+                        node.getter = caller;
+                        continue;
+                    }
+                    throw new IllegalStateException(
+                        "Failed to set the writer<" + more[i] + "> of `"
+                            + klass.getName() + "` because it already exists"
                     );
                 }
             }
         }
     }
 
-    protected void onConstructors(
+    static int FLAG_PARAM_NAME;
+
+    private void onConstructors(
         @NotNull Constructor<?>[] constructors
     ) {
         Class<?>[] bt = null, lt = null;
@@ -468,7 +449,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                 }
 
                 if (lt.length <= ct.length) {
-                    if (RUN_IN_KOTLIN) {
+                    if (IN_KOTLIN) {
                         bt = lt;
                         before = latest;
                     }
@@ -477,7 +458,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                     continue;
                 }
 
-                if (RUN_IN_KOTLIN && bt != null) {
+                if (IN_KOTLIN && bt != null) {
                     if (bt.length <= ct.length) {
                         bt = ct;
                         before = current;
@@ -501,8 +482,8 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             );
         }
 
-        int size = lt.length;
-        if (size != 0) {
+        int max = lt.length;
+        if (max != 0) {
             if (!latest.isAccessible()) {
                 latest.setAccessible(true);
             }
@@ -514,15 +495,15 @@ public class ReflectSpare<T> extends BeanSpare<T> {
                 int i = bt.length;
                 int j = i / 32 + 2;
                 check:
-                if (i + j == size) {
-                    int e = size - 1;
+                if (i + j == max) {
+                    int e = max - 1;
                     for (int x = i; x < e; x++) {
                         if (lt[x] != int.class) {
                             break check;
                         }
                     }
                     if (lt[e] == DefaultConstructorMarker.class) {
-                        size = i;
+                        max = i;
                         extra = j;
                         latest = before;
                     }
@@ -532,40 +513,101 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             Type[] ts = latest.getGenericParameterTypes();
             Annotation[][] as = latest.getParameterAnnotations();
 
-            int i = 0, j = as.length - size;
+            int pos = 0, off = as.length - max;
             Class<?> declaringClass = klass.getDeclaringClass();
 
             if (declaringClass != null &&
                 (klass.getModifiers() & STATIC) == 0) {
                 if (declaringClass == lt[0]) {
-                    i++;
-                    self = declaringClass;
+                    pos++;
+                    owner = declaringClass;
                 }
             }
 
-            for (; i < size; i++) {
-                int n = i + j;
-                ParamWidget arg = new ParamWidget(
-                    i, ts[i], this, as[n]
+            Magic magic;
+            Parameter[] parameters = null;
+
+            for (int fpn = FLAG_PARAM_NAME; pos < max; pos++) {
+                int idx = pos + off;
+                ParamCaller caller = new ParamCaller(
+                    pos, ts[pos], context, as[idx]
                 );
 
-                Magic magic = arg.getAnnotation(Magic.class);
+                magic = caller.getAnnotation(Magic.class);
                 if (magic != null) {
-                    String[] v = magic.value();
-                    if (v.length != 0) {
-                        for (String alias : v) {
-                            if (addParameter(alias, arg)) {
+                    String[] more = magic.value();
+                    if (more.length != 0) {
+                        for (String alias : more) {
+                            Node node = node(
+                                hash1(alias), caller
+                            );
+                            if (node.arguer == null) {
+                                node.arguer = caller;
                                 continue;
                             }
                             throw new IllegalStateException(
-                                "Parameter for " + alias + " has been setup"
+                                "Failed to set the parameter<" + alias + "> of `"
+                                    + klass.getName() + "` because it already exists"
                             );
                         }
                         continue;
                     }
                 }
-                setParameter(
-                    "arg" + n, arg
+
+                if (fpn != -1) lookup:{
+                    if (parameters == null) {
+                        try {
+                            parameters = latest.getParameters();
+                        } catch (NoSuchMethodError e) {
+                            // Android API < 26
+                            FLAG_PARAM_NAME = fpn = -1;
+                            break lookup;
+                        }
+                    }
+                    Parameter parameter = parameters[pos];
+                    if (fpn == 0) {
+                        if (parameter.isNamePresent()) {
+                            fpn = 1;
+                        } else {
+                            fpn = -1;
+                            break lookup;
+                        }
+                    }
+                    String alias = parameter.getName();
+                    Node node = node(
+                        hash1(alias), caller
+                    );
+                    if (node.arguer == null) {
+                        node.arguer = caller;
+                        continue;
+                    }
+                    throw new IllegalStateException(
+                        "Failed to set the parameter<" + alias + "> of `"
+                            + klass.getName() + "` because it already exists"
+                    );
+                }
+
+                long m = 1;
+                long h = 0xE756C6190570D6E7L;
+
+                do {
+                    m = m << 4 | idx % 10;
+                } while ((idx /= 10) != 0);
+
+                do {
+                    h = ((m & 0xF) + 0x30 ^ h) * FNV_PRIME;
+                } while (
+                    (m >>>= 4) != 1
+                );
+
+                Node node = node(h, caller);
+                if (node.arguer == null) {
+                    node.arguer = caller;
+                    continue;
+                }
+                throw new IllegalStateException(
+                    "Failed to set the parameter<" + h + "> of `"
+                        + klass.getName() + "` because it already exists"
                 );
             }
         }
@@ -575,164 +617,31 @@ public class ReflectSpare<T> extends BeanSpare<T> {
      * @author kraity
      * @since 0.0.6
      */
-    static abstract class Visitor extends Widget {
-
-        protected AnnotatedElement element;
-
-        /**
-         * @param i the specified index
-         */
-        protected Visitor(int i) {
-            super(i);
-        }
-
-        /**
-         * Unsafe, may be deleted later
-         */
-        protected void setup(
-            Class<?> agent,
-            BeanSpare<?> spare
-        ) {
-            if (Coder.class.isAssignableFrom(agent)) {
-                Class<?>[] cs = null;
-                Constructor<?> ctor = null;
-
-                int mx = -1;
-                for (Constructor<?> cto : agent
-                    .getDeclaredConstructors()) {
-                    Class<?>[] cls =
-                        cto.getParameterTypes();
-
-                    int i = 0,
-                        j = cls.length;
-                    while (true) {
-                        if (i == j) {
-                            if (mx < j) {
-                                mx = j;
-                                cs = cls;
-                                ctor = cto;
-                            }
-                        } else {
-                            Class<?> m = cls[i++];
-                            if (m == Type.class ||
-                                m == Class.class ||
-                                m == String.class ||
-                                m == Context.class ||
-                                m.isAnnotation()) {
-                                continue;
-                            }
-                        }
-                        break;
-                    }
-                }
-
-                if (ctor == null) {
-                    throw new IllegalStateException(
-                        "No valid constructor found"
-                    );
-                }
-
-                try {
-                    if (!ctor.isAccessible()) {
-                        ctor.setAccessible(true);
-                    }
-
-                    Object[] args = null;
-                    if (mx != 0) {
-                        args = new Object[mx];
-                        for (int i = 0; i < mx; i++) {
-                            Class<?> m = cs[i];
-                            if (m == Class.class) {
-                                args[i] = classOf(type);
-                            } else if (m == Type.class) {
-                                args[i] = type;
-                            } else if (m == Context.class) {
-                                args[i] = spare.context;
-                            } else if (m.isAnnotation()) {
-                                args[i] = getAnnotation(
-                                    (Class<? extends Annotation>) m
-                                );
-                            }
-                        }
-                    }
-
-                    coder = (Coder<?>) ctor.newInstance(args);
-                } catch (Exception e) {
-                    throw new IllegalStateException(
-                        "Failed to build the " +
-                            type + "'s agent coder: " + agent, e
-                    );
-                }
-            } else {
-                coder = spare.context.assign(agent);
-            }
-        }
-
-        /**
-         * Returns the annotation of the {@code class}
-         */
-        public <A extends Annotation> A getAnnotation(
-            @NotNull Class<A> clazz
-        ) {
-            AnnotatedElement elem = element;
-            if (elem != null) {
-                return elem.getAnnotation(clazz);
-            } else {
-                return clazz.getAnnotation(clazz);
-            }
-        }
-    }
-
-    /**
-     * @author kraity
-     * @since 0.0.6
-     */
-    static final class ParamWidget extends Visitor {
+    static final class ParamCaller extends Caller {
 
         private Annotation[] annotations;
 
-        ParamWidget(
-            int index,
-            Field field,
-            Magic magic,
-            BeanSpare<?> spare
+        ParamCaller(
+            int index, Magic magic,
+            Field field, Context context
         ) {
             super(index);
             element = field;
-            Class<?> cls = field.getType();
-            if (cls.isPrimitive()) {
-                type = cls;
-            } else {
-                type = field.getGenericType();
-            }
-            if (magic != null) {
-                Class<?> agent = magic.agent();
-                if (agent != void.class) {
-                    setup(
-                        agent, spare
-                    );
-                }
-            }
+            prepare(
+                type = field.getGenericType(), magic, context
+            );
         }
 
-        ParamWidget(
-            int index,
-            Type type,
-            BeanSpare<?> spare,
-            Annotation[] annotations
+        ParamCaller(
+            int index, Type type,
+            Context context, Annotation[] annotations
         ) {
             super(index);
             this.type = type;
             this.annotations = annotations;
-            Magic magic = getAnnotation(Magic.class);
-            if (magic != null) {
-                Class<?> agent = magic.agent();
-                if (agent != void.class) {
-                    setup(
-                        agent, spare
-                    );
-                }
-            }
+            prepare(
+                type, getAnnotation(Magic.class), context
+            );
         }
 
         @Override
@@ -778,33 +687,20 @@ public class ReflectSpare<T> extends BeanSpare<T> {
      * @author kraity
      * @since 0.0.6
      */
-    static final class FieldWidget extends Visitor {
+    static final class FieldCaller extends Caller {
 
         private final Field field;
 
-        public FieldWidget(
-            int index,
-            Magic magic,
-            Field field,
-            BeanSpare<?> spare
+        public FieldCaller(
+            int index, Magic magic,
+            Field field, Context context
         ) {
             super(index);
-            element = field;
-            Class<?> cls = field.getType();
-            if (cls.isPrimitive()) {
-                type = cls;
-            } else {
-                type = field.getGenericType();
-            }
 
-            if (magic != null) {
-                Class<?> agent = magic.agent();
-                if (agent != void.class) {
-                    setup(
-                        agent, spare
-                    );
-                }
-            }
+            element = field;
+            prepare(
+                type = field.getGenericType(), magic, context
+            );
 
             this.field = field;
             if (!field.isAccessible()) {
@@ -830,6 +726,7 @@ public class ReflectSpare<T> extends BeanSpare<T> {
             @NotNull Object bean,
             @Nullable Object value
         ) {
+            // Not operate when value is null
             if (value != null) {
                 try {
                     field.set(
@@ -850,54 +747,29 @@ public class ReflectSpare<T> extends BeanSpare<T> {
      * @author kraity
      * @since 0.0.6
      */
-    static final class MethodWidget extends Visitor {
+    static final class MethodCaller extends Caller {
 
         private final Method method;
 
-        public MethodWidget(
-            int index,
-            Magic magic,
-            Method method,
-            BeanSpare<?> spare,
-            Class<?>[] params
+        public MethodCaller(
+            int index, Magic magic,
+            Method method, Context context, Class<?> target
         ) {
             super(index);
-            element = method;
-            switch (params.length) {
-                case 0: {
-                    Class<?> cls = method.getReturnType();
-                    if (cls.isPrimitive()) {
-                        type = cls;
-                    } else {
-                        type = method.getGenericReturnType();
-                    }
-                    break;
-                }
-                case 1: {
-                    Class<?> cls = params[0];
-                    if (cls.isPrimitive()) {
-                        type = cls;
-                    } else {
-                        type = method.getGenericParameterTypes()[0];
-                    }
-                    break;
-                }
-                default: {
-                    throw new NullPointerException(
-                        "The argument length of `" +
-                            method.getName() + "` is greater than '1'"
-                    );
+            if (target == null) {
+                type = method.getGenericReturnType();
+            } else {
+                if (target.isPrimitive()) {
+                    type = target;
+                } else {
+                    type = method.getGenericParameterTypes()[0];
                 }
             }
 
-            if (magic != null) {
-                Class<?> agent = magic.agent();
-                if (agent != void.class) {
-                    setup(
-                        agent, spare
-                    );
-                }
-            }
+            element = method;
+            prepare(
+                type, magic, context
+            );
 
             this.method = method;
             if (!method.isAccessible()) {

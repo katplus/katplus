@@ -20,7 +20,6 @@ import plus.kat.actor.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.lang.reflect.Method;
 
 /**
@@ -28,10 +27,11 @@ import java.lang.reflect.Method;
  * @since 0.0.1
  */
 @SuppressWarnings("unchecked")
-public class EnumSpare<T extends Enum<T>> extends BeanSpare<T> {
+public class EnumSpare<T extends Enum<T>> extends BaseSpare<T> {
 
-    private T[] enums;
     private byte[] names;
+    private T[] enums;
+    private final String space;
 
     public EnumSpare(
         @Nilable String space,
@@ -39,8 +39,9 @@ public class EnumSpare<T extends Enum<T>> extends BeanSpare<T> {
         @NotNull Context context
     ) {
         super(
-            space, (Class<T>) klass, context
+            (Class<T>) klass, context
         );
+        this.space = space;
         try {
             Method method = klass
                 .getMethod("values");
@@ -111,8 +112,8 @@ public class EnumSpare<T extends Enum<T>> extends BeanSpare<T> {
     }
 
     @Override
-    public Boolean getScope() {
-        return null;
+    public String getSpace() {
+        return space;
     }
 
     @Override
@@ -123,13 +124,6 @@ public class EnumSpare<T extends Enum<T>> extends BeanSpare<T> {
             return null;
         }
         return Border.QUOTE;
-    }
-
-    @Override
-    public Factory getFactory(
-        @Nullable Type type
-    ) {
-        return null;
     }
 
     @Override

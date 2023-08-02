@@ -461,6 +461,47 @@ public class ReflexSpareTest {
         assertEquals("kat.plus", form.tag);
     }
 
+    static class Temp {
+        public int userId;
+        public int user_id;
+        private String nickname;
+        private String nickName;
+
+        public String getNickname() {
+            return nickname;
+        }
+
+        public void setNickname(String nickname) {
+            this.nickname = nickname;
+        }
+
+        public String getNickName() {
+            return nickName;
+        }
+
+        public void setNickName(String nickname) {
+            this.nickName = nickname;
+        }
+    }
+
+    @Test
+    public void test_multi_name() throws Exception {
+        Spare<Temp> spare =
+            spare(Temp.class);
+
+        Temp temp = spare.read(
+            Flow.of(
+                "{userId=1,user_id=2,nickname=kat,nick_name=kraity}"
+            )
+        );
+
+        assertNotNull(temp);
+        assertEquals(1, temp.userId);
+        assertEquals(2, temp.user_id);
+        assertEquals("kat", temp.nickname);
+        assertEquals("kraity", temp.nickName);
+    }
+
     static class Mage {
         @Magic("id")
         public int id;

@@ -24,7 +24,6 @@ import plus.kat.chain.*;
 import java.io.*;
 import java.lang.reflect.*;
 
-import static plus.kat.spare.Parser.*;
 import static plus.kat.stream.Toolkit.*;
 
 /**
@@ -32,7 +31,7 @@ import static plus.kat.stream.Toolkit.*;
  * @since 0.0.1
  */
 @SuppressWarnings("unchecked")
-public class ArraySpare extends BaseSpare<Object> {
+public class ArraySpare extends BeanSpare<Object> {
 
     public static final ArraySpare
         INSTANCE = new ArraySpare(
@@ -91,33 +90,6 @@ public class ArraySpare extends BaseSpare<Object> {
         @NotNull Flag flag
     ) {
         return Border.BRACKET;
-    }
-
-    @Override
-    public Object read(
-        @NotNull Flag flag,
-        @NotNull Value data
-    ) throws IOException {
-        if (data.isNothing()) {
-            return null;
-        }
-
-        if (flag.isFlag(Flag.VALUE_AS_BEAN)) {
-            Algo algo = algoOf(data);
-            if (algo == null) {
-                return null;
-            }
-            try (Parser op = with(this)) {
-                return op.solve(
-                    algo, Flow.of(data)
-                );
-            }
-        }
-
-        throw new IOException(
-            "Failed to parse the value to `" + klass
-                + "` unless `Flag.VALUE_AS_BEAN` is enabled"
-        );
     }
 
     @Override

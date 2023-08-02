@@ -23,15 +23,15 @@ import java.lang.reflect.*;
 
 import java.beans.Transient;
 
+import static plus.kat.stream.Toolkit.*;
 import static java.lang.reflect.Modifier.*;
-import static plus.kat.spare.ReflectSpare.*;
 
 /**
  * @author kraity
  * @since 0.0.3
  */
 @SuppressWarnings("unchecked")
-public class ProxySpare extends BeanSpare<Object> {
+public class ProxySpare extends SimpleSpare<Object> {
 
     private Constructor<?> builder;
 
@@ -107,19 +107,20 @@ public class ProxySpare extends BeanSpare<Object> {
     }
 
     @SuppressWarnings("deprecation")
-    protected void onMethods(
+    private void onMethods(
         @NotNull Method[] methods
     ) {
+        Magic magic;
+        Handle handle;
+
         for (Method method : methods) {
-            Class<?>[] params =
-                method.getParameterTypes();
-            int count;
-            if ((count = params.length) > 1) {
+            int mask = method.getModifiers();
+            if ((mask & STATIC) != 0) {
                 continue;
             }
 
-            int mask = method.getModifiers();
-            if ((mask & STATIC) != 0) {
+            magic = method.getAnnotation(Magic.class);
+            if (magic == null && (mask & PUBLIC) == 0) {
                 continue;
             }
 
@@ -131,29 +132,45 @@ public class ProxySpare extends BeanSpare<Object> {
                 }
             }
 
-            Magic magic = method
-                .getAnnotation(Magic.class);
+            int flag;
+            Class<?>[] args = method.getParameterTypes();
+            if ((flag = args.length) > 1) {
+                continue;
+            }
 
             String name;
             String alias = method.getName();
 
             if (magic != null) {
-                String[] keys = magic.value();
-                if (keys.length != 0) {
-                    name = keys[0];
-                    Handle node = new Handle(
+                String[] more = magic.value();
+                if (more.length != 0) {
+                    name = more[0];
+                    handle = new Handle(
                         magic, name,
-                        method, this, params
+                        method, context, args
                     );
 
-                    if (count == 0) {
-                        addReader(name, node);
-                        addWriter(name, node);
+                    if (flag == 0) {
+                        Node node = node(
+                            hash1(name), handle
+                        );
+                        if (node.setter == null) {
+                            node.setter = handle;
+                        }
+                        if (node.getter == null) {
+                            node.getter = handle;
+                            show(name, handle);
+                        }
                         getter.put(alias, name);
                     } else {
                         setter.put(alias, name);
-                        for (String key : keys) {
-                            addReader(key, node);
+                        for (String key : more) {
+                            Node node = node(
+                                hash1(key), handle
+                            );
+                            if (node.setter == null) {
+                                node.setter = handle;
+                            }
                         }
                     }
                     continue;
@@ -168,7 +185,7 @@ public class ProxySpare extends BeanSpare<Object> {
                 // set
                 char ch = name.charAt(0);
                 if (ch == 's') {
-                    if (count == 0 || len < 4 ||
+                    if (flag == 0 || len < 4 ||
                         name.charAt(i++) != 'e' ||
                         name.charAt(i++) != 't') {
                         break stage;
@@ -177,7 +194,7 @@ public class ProxySpare extends BeanSpare<Object> {
 
                 // get
                 else if (ch == 'g') {
-                    if (count != 0 || len < 4 ||
+                    if (flag != 0 || len < 4 ||
                         name.charAt(i++) != 'e' ||
                         name.charAt(i++) != 't') {
                         break stage;
@@ -186,7 +203,7 @@ public class ProxySpare extends BeanSpare<Object> {
 
                 // is
                 else if (ch == 'i') {
-                    if (count != 0 || len < 3 ||
+                    if (flag != 0 || len < 3 ||
                         name.charAt(i++) != 's') {
                         break stage;
                     }
@@ -226,14 +243,22 @@ public class ProxySpare extends BeanSpare<Object> {
                 name = name.intern();
             }
 
-            Handle node = new Handle(
+            handle = new Handle(
                 magic, name,
-                method, this, params
+                method, context, args
             );
 
-            addReader(name, node);
-            if (count == 0) {
-                addWriter(name, node);
+            Node node = node(
+                hash1(name), handle
+            );
+            if (node.setter == null) {
+                node.setter = handle;
+            }
+            if (flag == 0) {
+                if (node.getter == null) {
+                    node.getter = handle;
+                    show(name, handle);
+                }
                 getter.put(alias, name);
             } else {
                 setter.put(alias, name);
@@ -245,7 +270,7 @@ public class ProxySpare extends BeanSpare<Object> {
      * @author kraity
      * @since 0.0.6
      */
-    static final class Handle extends Visitor {
+    static final class Handle extends Caller {
 
         final String alias;
         final Method method;
@@ -254,7 +279,7 @@ public class ProxySpare extends BeanSpare<Object> {
             Magic magic,
             String alias,
             Method method,
-            BeanSpare<?> spare,
+            Context context,
             Class<?>[] params
         ) {
             super(
@@ -264,12 +289,7 @@ public class ProxySpare extends BeanSpare<Object> {
             element = method;
             switch (params.length) {
                 case 0: {
-                    Class<?> cls = method.getReturnType();
-                    if (cls.isPrimitive()) {
-                        type = cls;
-                    } else {
-                        type = method.getGenericReturnType();
-                    }
+                    type = method.getGenericReturnType();
                     break;
                 }
                 case 1: {
@@ -289,14 +309,9 @@ public class ProxySpare extends BeanSpare<Object> {
                 }
             }
 
-            if (magic != null) {
-                Class<?> agent = magic.agent();
-                if (agent != void.class) {
-                    setup(
-                        agent, spare
-                    );
-                }
-            }
+            prepare(
+                type, magic, context
+            );
 
             this.alias = alias;
             this.method = method;

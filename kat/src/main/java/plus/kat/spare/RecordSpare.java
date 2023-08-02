@@ -18,8 +18,10 @@ package plus.kat.spare;
 import plus.kat.actor.*;
 
 import java.lang.reflect.*;
+import java.beans.Transient;
 
 import static java.lang.reflect.Modifier.*;
+import static plus.kat.stream.Toolkit.*;
 import static plus.kat.spare.ReflectSpare.*;
 
 /**
@@ -27,7 +29,7 @@ import static plus.kat.spare.ReflectSpare.*;
  * @since 0.0.2
  */
 @SuppressWarnings("unchecked")
-public class RecordSpare<T> extends BeanSpare<T> {
+public class RecordSpare<T> extends SimpleSpare<T> {
 
     private int width;
     private Constructor<T> loader, builder;
@@ -101,40 +103,44 @@ public class RecordSpare<T> extends BeanSpare<T> {
         );
     }
 
-    protected void onFields(
+    private void onFields(
         @NotNull Field[] fields
     ) {
+        Magic magic;
+        Caller caller;
+
         for (Field field : fields) {
             int mask = field.getModifiers();
             if ((mask & (STATIC | TRANSIENT)) != 0) {
                 continue;
             }
 
-            Magic magic1 = field.getAnnotation(Magic.class);
-            ParamWidget param = new ParamWidget(
-                width++, field, magic1, this
+            magic = field.getAnnotation(Magic.class);
+            ParamCaller param = new ParamCaller(
+                width++, magic, field, context
             );
 
-            String[] keys = null;
+            String[] more = null;
             String name = field.getName();
 
-            if (magic1 == null) {
-                setParameter(
-                    name, param
-                );
+            if (magic == null) {
+                node(hash1(name), param).arguer = param;
             } else {
-                String[] ks = magic1.value();
-                if (ks.length == 0) {
-                    setParameter(
-                        name, param
-                    );
+                more = magic.value();
+                if (more.length == 0) {
+                    node(hash1(name), param).arguer = param;
                 } else {
-                    for (String key : (keys = ks)) {
-                        if (addParameter(key, param)) {
+                    for (String alias : more) {
+                        Node node = node(
+                            hash1(alias), param
+                        );
+                        if (node.arguer == null) {
+                            node.arguer = param;
                             continue;
                         }
                         throw new IllegalStateException(
-                            "Parameter for " + key + " has been setup"
+                            "Failed to set the property<" + alias + "> of `" +
+                                klass.getName() + "` because it already exists"
                         );
                     }
                 }
@@ -143,60 +149,51 @@ public class RecordSpare<T> extends BeanSpare<T> {
             Method method;
             try {
                 method = klass.getMethod(
-                    field.getName()
+                    name, (Class<?>[]) null
                 );
             } catch (NoSuchMethodException e) {
                 throw new IllegalArgumentException(
-                    "Can't find the `" + field.getName() + "` method", e
+                    "Can't find the `" + name + "` method", e
                 );
             }
 
-            Class<?>[] params = method.getParameterTypes();
-            if (params.length > 1) {
-                continue;
+            if (HAS_TRANSIENT) {
+                Transient hidden = method
+                    .getAnnotation(Transient.class);
+                if (hidden != null && hidden.value()) {
+                    continue;
+                }
             }
 
             Magic magic2 = method.getAnnotation(Magic.class);
-            Widget widget;
             if (magic2 == null) {
-                widget = new MethodWidget(
-                    magic1 == null ?
-                        -1 : magic1.index(),
-                    magic1, method, this, params
+                caller = new MethodCaller(
+                    magic == null ?
+                        -1 : magic.index(),
+                    magic, method, context, null
                 );
-                if (keys == null) {
-                    setWriter(
-                        name, widget
-                    );
-                } else {
-                    for (String key : keys) {
-                        setWriter(
-                            key, widget
-                        );
-                    }
-                }
             } else {
-                widget = new MethodWidget(
+                more = magic2.value();
+                caller = new MethodCaller(
                     magic2.index(),
-                    magic2, method, this, params
+                    magic2, method, context, null
                 );
-                keys = magic2.value();
-                if (keys.length == 0) {
-                    setWriter(
-                        name, widget
-                    );
-                } else {
-                    for (String key : keys) {
-                        setWriter(
-                            key, widget
-                        );
-                    }
+            }
+
+            if (more == null ||
+                more.length == 0) {
+                show(name, caller);
+                node(hash1(name), caller).getter = caller;
+            } else {
+                for (String alias : more) {
+                    show(alias, caller);
+                    node(hash1(alias), caller).getter = caller;
                 }
             }
         }
     }
 
-    protected void onConstructors(
+    private void onConstructors(
         @NotNull Constructor<?>[] constructors
     ) {
         Constructor<?> latest = null;
@@ -220,11 +217,11 @@ public class RecordSpare<T> extends BeanSpare<T> {
                     latest = ctor;
                     continue;
                 }
-                for (Nodus n : table) {
+                for (Node n : table) {
                     for (; n != null; n = n.next) {
-                        if (n instanceof ParamWidget) {
-                            Widget m = (Widget) n;
-                            if (m.type != ct[m.index]) {
+                        if (n instanceof ParamCaller) {
+                            Caller c = (Caller) n;
+                            if (c.type != ct[c.index]) {
                                 continue stage;
                             }
                         }

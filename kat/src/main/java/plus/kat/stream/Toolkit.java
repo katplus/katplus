@@ -142,8 +142,8 @@ public final class Toolkit {
         return new String(v, 0, l, UTF_8);
     }
 
-    static final long FNV_PRIME = 0x100000001B3L;
-    static final long FNV_BASIS = 0xCBF29CE484222325L;
+    public static final long FNV_PRIME = 0x100000001B3L;
+    public static final long FNV_BASIS = 0xCBF29CE484222325L;
 
     /**
      * Unsafe, may be deleted later
@@ -174,10 +174,6 @@ public final class Toolkit {
                 h = (n.charAt(i) ^ h) * FNV_PRIME;
             }
             return h;
-        }
-
-        if (name instanceof Number) {
-            return ((Number) name).longValue();
         }
 
         throw new IllegalStateException(
@@ -274,10 +270,6 @@ public final class Toolkit {
                 h = (w ^ h) * FNV_PRIME;
             }
             return h;
-        }
-
-        if (name instanceof Number) {
-            return ((Number) name).longValue();
         }
 
         throw new IllegalStateException(
