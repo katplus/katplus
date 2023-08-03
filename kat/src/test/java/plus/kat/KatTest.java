@@ -105,6 +105,53 @@ public class KatTest {
     }
 
     @Test
+    public void test_encode2() throws IOException {
+        List<Object> list = new ArrayList<>();
+        Map<Object, Object> data = new HashMap<>();
+
+        data.put("a", 6);
+        data.put("b", null);
+        data.put("c", list);
+        list.add(null);
+        list.add(0);
+        list.add("d");
+        list.add(1L);
+        list.add("e");
+        list.add((Entity) chan -> {
+            chan.set(1, 2F);
+            chan.set("a", "b");
+            chan.set(null, null);
+            chan.set(null, (String) null, null);
+            chan.set("name", null);
+            chan.set("alias", (String) null, null);
+        });
+
+        try (Chan chan = Kat.encode(data, NORM | PRETTY)) {
+            assertEquals(
+                "@Map {\n" +
+                    "  a:Int = 6,\n" +
+                    "  b:Any = null,\n" +
+                    "  c:List = [\n" +
+                    "    @Any null,\n" +
+                    "    @Int 0,\n" +
+                    "    @String \"d\",\n" +
+                    "    @Long 1,\n" +
+                    "    @String \"e\",\n" +
+                    "    @Map {\n" +
+                    "      1:Float = 2.0,\n" +
+                    "      a:String = \"b\",\n" +
+                    "      @Any null,\n" +
+                    "      @Any null,\n" +
+                    "      name:Any = null,\n" +
+                    "      alias:Any = null\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}", chan.toString()
+            );
+        }
+    }
+
+    @Test
     public void test_unicode() throws IOException {
         Map<Object, Object> data = new HashMap<>();
         data.put("别\u0000\u0001\u0009\u0020\u0006\u0007名", "陆之岇");
@@ -206,9 +253,9 @@ public class KatTest {
                 Flow.of(cipher)
             )
         );
-        try (Chan kat = spare.write(plain)) {
+        try (Chan chan = spare.write(plain)) {
             assertEquals(
-                cipher, kat.toString()
+                cipher, chan.toString()
             );
         }
     }
@@ -226,9 +273,9 @@ public class KatTest {
                 )
             )
         );
-        try (Chan kat = spare.write(plain, NORM)) {
+        try (Chan chan = spare.write(plain, NORM)) {
             assertEquals(
-                "@Int 123456789", kat.toString()
+                "@Int 123456789", chan.toString()
             );
         }
     }
@@ -246,9 +293,9 @@ public class KatTest {
                 )
             )
         );
-        try (Chan kat = spare.write(plain, NORM)) {
+        try (Chan chan = spare.write(plain, NORM)) {
             assertEquals(
-                "@Long 123456789", kat.toString()
+                "@Long 123456789", chan.toString()
             );
         }
     }
@@ -268,6 +315,21 @@ public class KatTest {
         try (Chan kat = spare.write(user)) {
             assertEquals(
                 text, kat.toString()
+            );
+        }
+
+        try (Chan chan = spare.write(user, NORM)) {
+            assertEquals(
+                "@plus.kat.KatTest$User{id:Int=1,name:String=\"kraity\"}", chan.toString()
+            );
+        }
+
+        user.id = 0;
+        user.name = null;
+
+        try (Chan chan = spare.write(user, NORM | PRETTY)) {
+            assertEquals(
+                "@plus.kat.KatTest$User {\n  id:Int = 0,\n  name:Any = null\n}", chan.toString()
             );
         }
     }

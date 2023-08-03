@@ -200,18 +200,25 @@ public class Kat extends Stream implements Chan {
             state = 0;
         }
 
-        if (flags < 0 &&
-            space != null) {
+        if (flags < 0) {
             if (alias == null) {
                 join((byte) '@');
             } else {
                 join((byte) ':');
             }
             state = 1;
-            emit(space);
+            if (value == null) {
+                emit("Any");
+            } else {
+                if (space == null) {
+                    emit("Map");
+                } else {
+                    emit(space);
+                }
+            }
             state = 0;
-            if (width != 0 ||
-                alias == null) {
+            if (alias == null &&
+                (width != 0 || value == null)) {
                 join((byte) ' ');
             }
         }
