@@ -31,8 +31,8 @@ import java.lang.reflect.*;
  */
 public interface Subject<T> extends Spare<T> {
     /**
-     * Apply for a nonnull bean,
-     * otherwise throws an error
+     * Returns a new object based on no arguments,
+     * otherwise an exception will be thrown directly
      *
      * @throws IllegalStateException If failed to build
      */
@@ -44,8 +44,8 @@ public interface Subject<T> extends Spare<T> {
     }
 
     /**
-     * Apply for a nonnull bean,
-     * otherwise throws an error
+     * Returns a new object based on the arguments,
+     * otherwise an exception will be thrown directly
      *
      * @param args the specified args of constructor
      * @throws IllegalStateException If failed to build

@@ -202,7 +202,8 @@ public interface Supplier extends Context {
     }
 
     /**
-     * Apply for a nonnull bean, otherwise will throw error
+     * Returns an object based on no arguments,
+     * otherwise an exception will be thrown directly
      *
      * @param type the specified type for lookup
      * @return {@link T}, it's not null
@@ -234,7 +235,8 @@ public interface Supplier extends Context {
     }
 
     /**
-     * Apply for a nonnull bean with the args, otherwise will throw error
+     * Returns an object based on the arguments,
+     * otherwise an exception will be thrown directly
      *
      * @param type the specified type for lookup
      * @param args the specified args of constructor

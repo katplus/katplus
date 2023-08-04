@@ -89,8 +89,8 @@ public interface Spare<T> extends Coder<T> {
     );
 
     /**
-     * Apply for a normal instance,
-     * otherwise return null if default
+     * Returns an object based on no arguments,
+     * otherwise return null or throw an error directly
      *
      * @return {@link T} or {@code null}
      * @throws IllegalStateException If a build error occurs
@@ -102,8 +102,8 @@ public interface Spare<T> extends Coder<T> {
     }
 
     /**
-     * Apply for a normal instance with the
-     * args, otherwise return null if default
+     * Returns an object based on the arguments,
+     * otherwise return null or throw an error directly
      *
      * @param args the specified args of constructor
      * @return {@link T} or {@code null}
