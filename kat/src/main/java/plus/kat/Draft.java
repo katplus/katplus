@@ -395,93 +395,106 @@ public abstract class Draft<T> {
          */
         public static int word(
             Flow t,
-            int z,
+            int n,
             byte[] val
         ) throws IOException {
-            int c = 0;
-            for (int k = 0; k != 4; k++) {
-                int b = t.next();
-                if (b > 0x2F) {
-                    if (b < 0x3A) {
-                        c = c << 4 | (b - 0x30);
+            int z, w = 0;
+            for (z = 0; z != 4; z++) {
+                int u = t.next();
+                if (u > 0x2F) {
+                    if (u < 0x3A) {
+                        w = w << 4 | (u - 0x30);
                         continue;
                     }
-                    if (b > 0x60 && b < 0x67) {
-                        c = c << 4 | (b - 0x57);
+                    if (u > 0x60 && u < 0x67) {
+                        w = w << 4 | (u - 0x57);
                         continue;
                     }
-                    if (b > 0x40 && b < 0x47) {
-                        c = c << 4 | (b - 0x37);
+                    if (u > 0x40 && u < 0x47) {
+                        w = w << 4 | (u - 0x37);
                         continue;
                     }
                 }
                 throw new IOException(
-                    "Non-hexadecimal number: " + b
+                    "Non-hexadecimal number: " + u
                 );
             }
 
-            if (c < 0x800) {
-                if (c < 0x80) {
-                    val[z++] = (byte) c;
+            if (w < 0x800) {
+                if (w < 0x80) {
+                    val[n++] = (byte) w;
                 } else {
-                    val[z++] = (byte) (c >> 6 | 0xC0);
-                    val[z++] = (byte) (c & 0x3F | 0x80);
+                    val[n++] = (byte) (
+                        w >> 6 | 0xC0
+                    );
+                    val[n++] = (byte) (
+                        w & 0x3F | 0x80
+                    );
                 }
-            } else if (c < 0xD800 || 0xDFFF < c) {
-                val[z++] = (byte) (c >> 12 | 0xE0);
-                val[z++] = (byte) (c >> 6 & 0x3F | 0x80);
-                val[z++] = (byte) (c & 0x3F | 0x80);
+            } else if (w < 0xD800 || 0xDFFF < w) {
+                val[n++] = (byte) (
+                    w >> 12 | 0xE0
+                );
+                val[n++] = (byte) (
+                    w >> 6 & 0x3F | 0x80
+                );
+                val[n++] = (byte) (w & 0x3F | 0x80);
             } else {
-                if (c > 0xDBFF) {
+                if (w > 0xDBFF) {
                     throw new IOException(
                         "Illegal agent pair: "
-                            + Integer.toHexString(c)
+                            + Integer.toHexString(w)
                     );
                 }
 
-                byte ec = t.next();
-                byte em = t.next();
-                if (ec != 0x5C || em != 0x75) {
+                if (t.next() != 0x5C ||
+                    t.next() != 0x75) {
                     throw new IOException(
-                        "Illegal escape char: "
-                            + (char) ec + (char) em
+                        "Illegal escape char"
                     );
                 }
 
-                int g = 0;
-                for (int k = 0; k != 4; k++) {
-                    int b = t.next();
-                    if (b > 0x2F) {
-                        if (b < 0x3A) {
-                            g = g << 4 | (b - 0x30);
+                int m = 0;
+                for (z = 0; z != 4; z++) {
+                    int u = t.next();
+                    if (u > 0x2F) {
+                        if (u < 0x3A) {
+                            m = m << 4 | (u - 0x30);
                             continue;
                         }
-                        if (b > 0x60 && b < 0x67) {
-                            g = g << 4 | (b - 0x57);
+                        if (u > 0x60 && u < 0x67) {
+                            m = m << 4 | (u - 0x57);
                             continue;
                         }
-                        if (b > 0x40 && b < 0x47) {
-                            g = g << 4 | (b - 0x37);
+                        if (u > 0x40 && u < 0x47) {
+                            m = m << 4 | (u - 0x37);
                             continue;
                         }
                     }
                     throw new IOException(
-                        "Non-hexadecimal number: " + b
+                        "Non-hexadecimal number: " + u
                     );
                 }
 
-                if (0xDBFF < g && g < 0xE000) {
-                    val[z++] = (byte) ((c += 0x40) >> 8 & 0x07 | 0xF0);
-                    val[z++] = (byte) (c >> 2 & 0x3F | 0x80);
-                    val[z++] = (byte) (c << 4 & 0x30 | g >> 6 & 0x0F | 0x80);
-                    val[z++] = (byte) (g & 0x3F | 0x80);
+                if (0xDBFF < m && m < 0xE000) {
+                    val[n++] = (byte) (
+                        (w += 0x40) >> 8 & 0x07 | 0xF0
+                    );
+                    val[n++] = (byte) (
+                        w >> 2 & 0x3F | 0x80
+                    );
+                    val[n++] = (byte) (
+                        w << 4 & 0x30 |
+                            m >> 6 & 0x0F | 0x80
+                    );
+                    val[n++] = (byte) (m & 0x3F | 0x80);
                 } else {
                     throw new IOException(
-                        "Illegal agent pair: " + Integer.toHexString(g)
+                        "Illegal agent pair: " + Integer.toHexString(m)
                     );
                 }
             }
-            return z;
+            return n;
         }
 
         /**
@@ -491,202 +504,254 @@ public abstract class Draft<T> {
             Flow t,
             byte[] val
         ) throws IOException {
-            int x = 0;
+            int n = 0;
             while (true) {
                 int i = t.index;
                 int l = t.limit;
 
+                int z, e = i;
                 byte[] v = t.value;
+
+                check:
                 while (i < l) {
-                    byte w = v[i++];
-                    switch (w) {
+                    switch (v[i++]) {
                         case 0x22: {
+                            if ((z = i - e - 1) > 0) {
+                                System.arraycopy(
+                                    v, e, val, n, z
+                                );
+                                n += z;
+                            }
                             t.index = i;
-                            return x;
+                            return n;
                         }
                         case 0x5C: {
-                            if (i == l) {
-                                if (t.load() > 0) {
-                                    i = t.index;
-                                    l = t.limit;
-                                    v = t.value;
-                                } else {
-                                    throw new IOException(
-                                        "No more readable bytes"
-                                    );
-                                }
+                            if ((z = i - e - 1) > 0) {
+                                System.arraycopy(
+                                    v, e, val, n, z
+                                );
+                                n += z;
                             }
-                            switch (w = v[i++]) {
-                                case 's': {
-                                    val[x++] = ' ';
-                                    continue;
-                                }
-                                case 'b': {
-                                    val[x++] = '\b';
-                                    continue;
-                                }
-                                case 'f': {
-                                    val[x++] = '\f';
-                                    continue;
-                                }
-                                case 't': {
-                                    val[x++] = '\t';
-                                    continue;
-                                }
-                                case 'r': {
-                                    val[x++] = '\r';
-                                    continue;
-                                }
-                                case 'n': {
-                                    val[x++] = '\n';
-                                    continue;
-                                }
-                                case 'u': {
-                                    int c = 0;
-                                    for (int n = 0; n != 4; n++) {
-                                        if (i == l) {
-                                            if (t.load() > 0) {
-                                                i = t.index;
-                                                l = t.limit;
-                                                v = t.value;
-                                            } else {
-                                                throw new IOException(
-                                                    "No more readable bytes"
-                                                );
-                                            }
-                                        }
-                                        int m = v[i++];
-                                        if (m > 0x2F) {
-                                            if (m < 0x3A) {
-                                                c = c << 4 | (m - 0x30);
-                                                continue;
-                                            }
-                                            if (m > 0x60 && m < 0x67) {
-                                                c = c << 4 | (m - 0x57);
-                                                continue;
-                                            }
-                                            if (m > 0x40 && m < 0x47) {
-                                                c = c << 4 | (m - 0x37);
-                                                continue;
-                                            }
-                                        }
-                                        throw new IOException(
-                                            "Non-hexadecimal number: " + m
-                                        );
-                                    }
-
-                                    if (c < 0x800) {
-                                        if (c < 0x80) {
-                                            val[x++] = (byte) c;
-                                        } else {
-                                            val[x++] = (byte) (
-                                                c >> 6 | 0xC0
-                                            );
-                                            val[x++] = (byte) (
-                                                c & 0x3F | 0x80
-                                            );
-                                        }
-                                        continue;
-                                    }
-
-                                    if (c < 0xD800 || 0xDFFF < c) {
-                                        val[x++] = (byte) (
-                                            c >> 12 | 0xE0
-                                        );
-                                        val[x++] = (byte) (
-                                            c >> 6 & 0x3F | 0x80
-                                        );
-                                        val[x++] = (byte) (c & 0x3F | 0x80);
-                                        continue;
-                                    }
-
-                                    if (c > 0xDBFF) {
-                                        throw new IOException(
-                                            "Illegal agent pair: "
-                                                + Integer.toHexString(c)
-                                        );
-                                    }
-
-                                    int d = 0;
-                                    for (int n = 0; n != 6; n++) {
-                                        if (i == l) {
-                                            if (t.load() > 0) {
-                                                i = t.index;
-                                                l = t.limit;
-                                                v = t.value;
-                                            } else {
-                                                throw new IOException(
-                                                    "No more readable bytes"
-                                                );
-                                            }
-                                        }
-                                        switch (n) {
-                                            case 0: {
-                                                if (v[i++] == 0x5C) {
-                                                    continue;
-                                                } else {
-                                                    throw new IOException(
-                                                        "Illegal escape char"
-                                                    );
-                                                }
-                                            }
-                                            case 1: {
-                                                if (v[i++] == 0x75) {
-                                                    continue;
-                                                } else {
-                                                    throw new IOException(
-                                                        "Illegal escape char"
-                                                    );
-                                                }
-                                            }
-                                            default: {
-                                                int m = v[i++];
-                                                if (m > 0x2F) {
-                                                    if (m < 0x3A) {
-                                                        d = d << 4 | (m - 0x30);
-                                                        continue;
-                                                    }
-                                                    if (m > 0x60 && m < 0x67) {
-                                                        d = d << 4 | (m - 0x57);
-                                                        continue;
-                                                    }
-                                                    if (m > 0x40 && m < 0x47) {
-                                                        d = d << 4 | (m - 0x37);
-                                                        continue;
-                                                    }
-                                                }
-                                                throw new IOException(
-                                                    "Non-hexadecimal number: " + m
-                                                );
-                                            }
-                                        }
-                                    }
-
-                                    if (0xDBFF < d && d < 0xE000) {
-                                        val[x++] = (byte) (
-                                            (c += 0x40) >> 8 & 0x07 | 0xF0
-                                        );
-                                        val[x++] = (byte) (
-                                            c >> 2 & 0x3F | 0x80
-                                        );
-                                        val[x++] = (byte) (
-                                            c << 4 & 0x30 |
-                                                d >> 6 & 0x0F | 0x80
-                                        );
-                                        val[x++] = (byte) (d & 0x3F | 0x80);
-                                        continue;
+                            while (true) {
+                                if (i == l) {
+                                    if (t.load() > 0) {
+                                        i = t.index;
+                                        l = t.limit;
+                                        v = t.value;
                                     } else {
                                         throw new IOException(
-                                            "Illegal agent pair: " + Integer.toHexString(d)
+                                            "No more readable bytes"
                                         );
+                                    }
+                                }
+
+                                byte a;
+                                switch (a = v[i++]) {
+                                    case 's': {
+                                        val[n++] = ' ';
+                                        break;
+                                    }
+                                    case 'b': {
+                                        val[n++] = '\b';
+                                        break;
+                                    }
+                                    case 'f': {
+                                        val[n++] = '\f';
+                                        break;
+                                    }
+                                    case 't': {
+                                        val[n++] = '\t';
+                                        break;
+                                    }
+                                    case 'r': {
+                                        val[n++] = '\r';
+                                        break;
+                                    }
+                                    case 'n': {
+                                        val[n++] = '\n';
+                                        break;
+                                    }
+                                    case 'u': {
+                                        int w = 0;
+                                        for (z = 0; z != 4; z++) {
+                                            if (i == l) {
+                                                if (t.load() > 0) {
+                                                    i = t.index;
+                                                    l = t.limit;
+                                                    v = t.value;
+                                                } else {
+                                                    throw new IOException(
+                                                        "No more readable bytes"
+                                                    );
+                                                }
+                                            }
+                                            int u = v[i++];
+                                            if (u > 0x2F) {
+                                                if (u < 0x3A) {
+                                                    w = w << 4 | (u - 0x30);
+                                                    continue;
+                                                }
+                                                if (u > 0x60 && u < 0x67) {
+                                                    w = w << 4 | (u - 0x57);
+                                                    continue;
+                                                }
+                                                if (u > 0x40 && u < 0x47) {
+                                                    w = w << 4 | (u - 0x37);
+                                                    continue;
+                                                }
+                                            }
+                                            throw new IOException(
+                                                "Non-hexadecimal number: " + u
+                                            );
+                                        }
+
+                                        if (w < 0x800) {
+                                            if (w < 0x80) {
+                                                val[n++] = (byte) w;
+                                            } else {
+                                                val[n++] = (byte) (
+                                                    w >> 6 | 0xC0
+                                                );
+                                                val[n++] = (byte) (
+                                                    w & 0x3F | 0x80
+                                                );
+                                            }
+                                            break;
+                                        }
+
+                                        if (w < 0xD800 || 0xDFFF < w) {
+                                            val[n++] = (byte) (
+                                                w >> 12 | 0xE0
+                                            );
+                                            val[n++] = (byte) (
+                                                w >> 6 & 0x3F | 0x80
+                                            );
+                                            val[n++] = (byte) (w & 0x3F | 0x80);
+                                            break;
+                                        }
+
+                                        if (w > 0xDBFF) {
+                                            throw new IOException(
+                                                "Illegal agent pair: "
+                                                    + Integer.toHexString(w)
+                                            );
+                                        }
+
+                                        int m = 0;
+                                        for (z = 0; z != 6; z++) {
+                                            if (i == l) {
+                                                if (t.load() > 0) {
+                                                    i = t.index;
+                                                    l = t.limit;
+                                                    v = t.value;
+                                                } else {
+                                                    throw new IOException(
+                                                        "No more readable bytes"
+                                                    );
+                                                }
+                                            }
+                                            switch (z) {
+                                                case 0: {
+                                                    if (v[i++] == 0x5C) {
+                                                        break;
+                                                    } else {
+                                                        throw new IOException(
+                                                            "Illegal escape char"
+                                                        );
+                                                    }
+                                                }
+                                                case 1: {
+                                                    if (v[i++] == 0x75) {
+                                                        break;
+                                                    } else {
+                                                        throw new IOException(
+                                                            "Illegal escape char"
+                                                        );
+                                                    }
+                                                }
+                                                default: {
+                                                    int u = v[i++];
+                                                    if (u > 0x2F) {
+                                                        if (u < 0x3A) {
+                                                            m = m << 4 | (u - 0x30);
+                                                            continue;
+                                                        }
+                                                        if (u > 0x60 && u < 0x67) {
+                                                            m = m << 4 | (u - 0x57);
+                                                            continue;
+                                                        }
+                                                        if (u > 0x40 && u < 0x47) {
+                                                            m = m << 4 | (u - 0x37);
+                                                            continue;
+                                                        }
+                                                    }
+                                                    throw new IOException(
+                                                        "Non-hexadecimal number: " + u
+                                                    );
+                                                }
+                                            }
+                                        }
+
+                                        if (0xDBFF < m && m < 0xE000) {
+                                            val[n++] = (byte) (
+                                                (w += 0x40) >> 8 & 0x07 | 0xF0
+                                            );
+                                            val[n++] = (byte) (
+                                                w >> 2 & 0x3F | 0x80
+                                            );
+                                            val[n++] = (byte) (
+                                                w << 4 & 0x30 |
+                                                    m >> 6 & 0x0F | 0x80
+                                            );
+                                            val[n++] = (byte) (m & 0x3F | 0x80);
+                                            break;
+                                        } else {
+                                            throw new IOException(
+                                                "Illegal agent pair: " + Integer.toHexString(m)
+                                            );
+                                        }
+                                    }
+                                    default: {
+                                        val[n++] = a;
+                                    }
+                                }
+
+                                if (i == l) {
+                                    if (t.load() > 0) {
+                                        i = t.index;
+                                        l = t.limit;
+                                        v = t.value;
+                                    } else {
+                                        throw new IOException(
+                                            "No more readable bytes, please " +
+                                                "check whether this nodus is damaged"
+                                        );
+                                    }
+                                }
+
+                                switch (v[i++]) {
+                                    case 0x22: {
+                                        t.index = i;
+                                        return n;
+                                    }
+                                    case 0x5C: {
+                                        continue;
+                                    }
+                                    default: {
+                                        e = i - 1;
+                                        continue check;
                                     }
                                 }
                             }
                         }
-                        default: {
-                            val[x++] = w;
-                        }
                     }
+                }
+
+                if ((z = i - e) > 0) {
+                    System.arraycopy(
+                        v, e, val, n, z
+                    );
+                    n += z;
                 }
 
                 if (t.load() <= 0) {
