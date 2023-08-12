@@ -28,12 +28,10 @@ import java.lang.reflect.Type;
  * @author kraity
  * @since 0.0.2
  */
-public interface Provider extends Comparable<Provider> {
+public interface Provider {
     /**
-     * Check to see if this used as the hot
-     * load source for the specified context
-     *
-     * @return true if as the hot load source
+     * Check whether this is used as a hot load
+     * source for the specified {@link Context}
      */
     default boolean alive(
         @NotNull Context o
@@ -42,24 +40,10 @@ public interface Provider extends Comparable<Provider> {
     }
 
     /**
-     * Returns the priority of this provider
+     * Returns the priority of this {@link Provider}
      */
     default int grade() {
         return 0;
-    }
-
-    /**
-     * Returns the result of their comparison
-     *
-     * @see Provider#grade()
-     */
-    @Override
-    default int compareTo(
-        @NotNull Provider o
-    ) {
-        return Integer.compare(
-            grade(), o.grade()
-        );
     }
 
     /**

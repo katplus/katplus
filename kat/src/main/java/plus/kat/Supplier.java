@@ -372,39 +372,54 @@ public interface Supplier extends Context {
                 );
 
                 if (loader.hasNext()) {
-                    final int size = loader.size() + 1;
-                    Provider[] RS = new Provider[size];
+                    final int s = loader.size() + 1;
+                    Provider[] RS = new Provider[s];
 
                     int m = 0;
                     while (loader.hasNext()) {
                         RS[m++] = loader.next();
                     }
 
-                    int n = 0;
-                    for (int i = 0; i < m; i++) {
-                        Provider p = RS[i];
-                        try {
-                            if (p.alive(ins)) {
-                                RS[n++] = p;
+                    int i = 0, n = 0;
+                    Provider v = null;
+
+                    try {
+                        while (i < m) {
+                            v = RS[i++];
+                            if (v.alive(ins)) {
+                                RS[n++] = v;
                             }
-                        } catch (Exception e) {
-                            throw new Error(
-                                "Failed to activate " + p, e
-                            );
                         }
+                    } catch (Exception e) {
+                        throw new Error(
+                            "Failed to activate " + v, e
+                        );
                     }
 
                     RS[n++] = ins;
-                    if (n != size) {
+                    if (n < s) {
                         Provider[] rs = new Provider[n];
                         System.arraycopy(
                             RS, 0, RS = rs, 0, n
                         );
                     }
 
-                    if (n != 1) {
-                        Arrays.sort(
-                            RS, Collections.reverseOrder()
+                    if (n > 1) {
+                        i = 0;
+                        m = n - 1;
+                        do {
+                            n = 0;
+                            v = null;
+                            while (n < m - i) {
+                                if (RS[n].grade() <
+                                    RS[++n].grade()) {
+                                    v = RS[n];
+                                    RS[n] = RS[n - 1];
+                                    RS[n - 1] = v;
+                                }
+                            }
+                        } while (
+                            v != null && ++i < m
                         );
                     }
                     PRO = RS;
@@ -459,15 +474,6 @@ public interface Supplier extends Context {
 
         public void onCreate() {
             // Nothing
-        }
-
-        @Override
-        public boolean alive(
-            @NotNull Context o
-        ) {
-            throw new IllegalStateException(
-                "Vendor is a private provider"
-            );
         }
 
         @Override
@@ -605,7 +611,17 @@ public interface Supplier extends Context {
                     }
 
                     if (type instanceof TypeVariable) {
-                        return ObjectSpare.INSTANCE;
+                        type = ((TypeVariable<?>) type).getBounds()[0];
+                        if (type instanceof Class) {
+                            spare = major.get(type);
+                            if (spare == null) {
+                                clazz = (Class<?>) type;
+                                break;
+                            } else {
+                                return spare;
+                            }
+                        }
+                        continue;
                     }
 
                     if (type instanceof WildcardType) {
@@ -636,8 +652,8 @@ public interface Supplier extends Context {
                             }
 
                             if (type instanceof TypeVariable) {
-                                clazz = Object.class;
-                                break;
+                                type = ((TypeVariable<?>) type).getBounds()[0];
+                                continue;
                             }
 
                             if (type instanceof WildcardType) {
