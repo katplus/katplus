@@ -18,16 +18,13 @@ package plus.kat.spare;
 import plus.kat.*;
 import plus.kat.actor.*;
 import plus.kat.chain.*;
-import plus.kat.utils.*;
 
 import java.io.*;
-import java.text.*;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 
-import static java.util.Locale.getDefault;
-import static java.util.Locale.Category.FORMAT;
+import static java.util.Locale.*;
+import static java.util.Calendar.*;
+import static plus.kat.spare.TimeZoneSpare.*;
 
 /**
  * @author kraity
@@ -38,34 +35,28 @@ public class DateSpare extends BaseSpare<Date> implements Spare<Date> {
     public static final DateSpare
         INSTANCE = new DateSpare();
 
-    static {
-        INSTANCE.style.format(null);
-    }
-
-    private final SimpleDateStyle style;
+    static final ThreadLocal<Calendar>
+        CALENDAR = new ThreadLocal<Calendar>() {
+        @Override
+        protected Calendar initialValue() {
+            return new GregorianCalendar(US);
+        }
+    };
 
     public DateSpare() {
         super(Date.class);
-        style = new SimpleDateStyle(
-            Config.get(
-                "kat.date.format",
-                "yyyy-MM-dd HH:mm:ss"
-            )
-        );
-    }
-
-    public DateSpare(
-        @NotNull String format,
-        @NotNull String zone,
-        @NotNull String locale
-    ) {
-        super(Date.class);
-        style = new SimpleDateStyle(format, zone, locale);
     }
 
     @Override
     public Date apply() {
         return new Date();
+    }
+
+    @NotNull
+    public Date apply(
+        @NotNull long msec
+    ) {
+        return new Date(msec);
     }
 
     @Override
@@ -79,12 +70,12 @@ public class DateSpare extends BaseSpare<Date> implements Spare<Date> {
             case 1: {
                 Object arg = args[0];
                 if (arg instanceof Long) {
-                    return new Date(
+                    return apply(
                         (Long) arg
                     );
                 }
                 if (arg instanceof Integer) {
-                    return new Date(
+                    return apply(
                         (Integer) arg
                     );
                 }
@@ -114,22 +105,271 @@ public class DateSpare extends BaseSpare<Date> implements Spare<Date> {
     @Override
     public Date read(
         @NotNull Flag flag,
-        @NotNull Value value
+        @NotNull Value data
     ) throws IOException {
-        if (value.isNothing()) {
+        if (data.isNothing()) {
             return null;
         }
 
         if (flag.isFlag(Flag.DIGIT_AS_DATE)) {
-            if (value.isDigits()) {
+            if (data.isDigits()) {
                 return new Date(
-                    value.toLong()
+                    data.toLong()
                 );
             }
         }
 
-        return style.read(
-            value.toString()
+        scope:
+        {
+            int l = data.size();
+            if (l < 10 || l > 29) {
+                break scope;
+            }
+
+            byte w;
+            byte[] v = data.flow();
+
+            switch (w = v[4]) {
+                default: {
+                    break scope;
+                }
+                case '.':
+                case '-':
+                case '/': {
+                    if (w == v[7]) {
+                        break;
+                    } else {
+                        break scope;
+                    }
+                }
+            }
+
+            int y = 0, m = 1, d;
+            int i = 0, e = 4, n = 0;
+
+            check:
+            while (true) {
+                int a = v[i++] - 0x30;
+                if (-1 < a && a < 10) {
+                    n = a + n * 10;
+                } else {
+                    throw new IOException(
+                        "Invalid date: " + data
+                    );
+                }
+
+                if (i == e) {
+                    switch (i) {
+                        case 4: {
+                            y = n;
+                            n = 0;
+                            i = 5;
+                            e = 7;
+                            break;
+                        }
+                        case 7: {
+                            m = n;
+                            n = 0;
+                            i = 8;
+                            e = 10;
+                            break;
+                        }
+                        case 10: {
+                            d = n;
+                            n = 0;
+                            e = 13;
+                            break check;
+                        }
+                    }
+                }
+            }
+
+            Calendar calendar;
+            if (i == l) {
+                calendar = CALENDAR.get();
+                calendar.clear();
+                calendar.setLenient(false);
+                calendar.setTimeZone(DEF);
+                calendar.set(YEAR, y);
+                calendar.set(MONTH, m - 1);
+                calendar.set(DAY_OF_MONTH, d);
+                return apply(
+                    calendar.getTimeInMillis()
+                );
+            }
+
+            switch (v[i++]) {
+                case ' ':
+                case 'T': {
+                    if (l > 15 &&
+                        v[13] == ':') {
+                        break;
+                    }
+                }
+                default: {
+                    break scope;
+                }
+            }
+
+            int h = 0, s = 0;
+            int min = 0, mil = 0;
+
+            check:
+            while (true) {
+                int a = v[i++] - 0x30;
+                if (-1 < a && a < 10) {
+                    n = a + n * 10;
+                } else {
+                    throw new IOException(
+                        "Invalid date: " + data
+                    );
+                }
+
+                if (i == e) {
+                    switch (i) {
+                        case 13: {
+                            h = n;
+                            n = 0;
+                            i = 14;
+                            e = 16;
+                            break;
+                        }
+                        case 16: {
+                            min = n;
+                            if (i == l ||
+                                v[i] != ':') {
+                                break check;
+                            } else {
+                                if (l > 18) {
+                                    n = 0;
+                                    i = 17;
+                                    e = 19;
+                                    break;
+                                } else {
+                                    break scope;
+                                }
+                            }
+                        }
+                        case 19: {
+                            s = n;
+                            if (i == l ||
+                                v[i] != '.') {
+                                break check;
+                            } else {
+                                if (l > 22) {
+                                    n = 0;
+                                    i = 20;
+                                    e = 23;
+                                    break;
+                                } else {
+                                    break scope;
+                                }
+                            }
+                        }
+                        case 23: {
+                            mil = n;
+                            break check;
+                        }
+                    }
+                }
+            }
+
+            TimeZone zone;
+            if (i == l) {
+                zone = DEF;
+                // truncate up to 3 leap seconds
+                if (s > 59 && s < 63) {
+                    s = 59;
+                }
+            } else {
+                switch (w = v[i++]) {
+                    default: {
+                        break scope;
+                    }
+                    case 'Z': {
+                        if (i == l) {
+                            zone = UTC;
+                            break;
+                        } else {
+                            break scope;
+                        }
+                    }
+                    case '+':
+                    case '-': {
+                        switch (l - i) {
+                            default: {
+                                break scope;
+                            }
+                            case 4: {
+                                break;
+                            }
+                            case 5: {
+                                if (v[i + 2] == ':') {
+                                    break;
+                                } else {
+                                    break scope;
+                                }
+                            }
+                        }
+
+                        char c3 = (char) v[l - 1];
+                        char c2 = (char) v[l - 2];
+
+                        int m0 = c2 - '0';
+                        int m1 = c3 - '0';
+                        if (m0 < 0 || m0 > 5 ||
+                            m1 < 0 || m1 > 9) {
+                            break scope;
+                        }
+
+                        char c0 = (char) v[i];
+                        char c1 = (char) v[i + 1];
+
+                        int h0 = c0 - '0';
+                        int h1 = c1 - '0';
+                        if (h0 < 0 || h0 > 3 ||
+                            h1 < 0 || h1 > 9 ||
+                            (h0 = h0 * 10 + h1) > 23) {
+                            break scope;
+                        }
+
+                        if (h0 == 0 &&
+                            m0 == 0 &&
+                            m1 == 0) {
+                            zone = UTC;
+                        } else {
+                            zone = TimeZone.getTimeZone(
+                                new String(
+                                    new char[]{
+                                        'G', 'M', 'T',
+                                        (char) w,
+                                        c0, c1, ':', c2, c3
+                                    }
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+
+            calendar = CALENDAR.get();
+            calendar.clear();
+            calendar.setLenient(false);
+            calendar.setTimeZone(zone);
+            calendar.set(YEAR, y);
+            calendar.set(MONTH, m - 1);
+            calendar.set(DAY_OF_MONTH, d);
+            calendar.set(HOUR_OF_DAY, h);
+            calendar.set(MINUTE, min);
+            calendar.set(SECOND, s);
+            calendar.set(MILLISECOND, mil);
+            return apply(
+                calendar.getTimeInMillis()
+            );
+        }
+
+        throw new IOException(
+            "Failed to parse date [" + data + ']'
         );
     }
 
@@ -144,101 +384,49 @@ public class DateSpare extends BaseSpare<Date> implements Spare<Date> {
                 date.getTime()
             );
         } else {
-            style.write(
-                flux, date
-            );
-        }
-    }
+            Calendar calendar = CALENDAR.get();
+            calendar.clear();
+            calendar.setLenient(false);
+            calendar.setTimeZone(DEF);
 
-    /**
-     * @author kraity
-     * @since 0.0.6
-     */
-    private static class SimpleDateStyle extends SimpleDateFormat {
+            calendar.setTime(date);
+            int num = calendar.get(YEAR);
 
-        static FieldPosition FP;
-        private StringBuffer SB;
-        private ParsePosition PP;
+            flux.emit((byte) (num / 1000 + 0x30));
+            flux.emit((byte) (num / 100 % 10 + 0x30));
+            flux.emit((byte) (num / 10 % 10 + 0x30));
+            flux.emit((byte) (num % 10 + 0x30));
 
-        public SimpleDateStyle(
-            @NotNull String format
-        ) {
-            super(
-                format, getDefault(FORMAT)
-            );
-        }
+            flux.emit((byte) '-');
+            num = calendar.get(MONTH) + 1;
+            flux.emit((byte) (num / 10 + 0x30));
+            flux.emit((byte) (num % 10 + 0x30));
 
-        public SimpleDateStyle(
-            @NotNull String format,
-            @NotNull String zone,
-            @NotNull String locale
-        ) {
-            super(format, locale.isEmpty() ?
-                getDefault(FORMAT) : new Locale(locale)
-            );
-            if (!zone.isEmpty()) {
-                setTimeZone(
-                    TimeZone.getTimeZone(zone)
-                );
-            }
-        }
+            flux.emit((byte) '-');
+            num = calendar.get(DAY_OF_MONTH);
+            flux.emit((byte) (num / 10 + 0x30));
+            flux.emit((byte) (num % 10 + 0x30));
 
-        public Date read(
-            @NotNull String text
-        ) throws IOException {
-            int errorIndex;
-            synchronized (this) {
-                ParsePosition pos = PP;
-                if (pos != null) {
-                    pos.setIndex(0);
-                } else {
-                    PP = pos = new ParsePosition(0);
-                }
+            flux.emit((byte) ' ');
+            num = calendar.get(HOUR_OF_DAY);
+            flux.emit((byte) (num / 10 + 0x30));
+            flux.emit((byte) (num % 10 + 0x30));
 
-                Date date = super.parse(text, pos);
-                if (date != null) {
-                    return date;
-                } else {
-                    errorIndex = pos.getErrorIndex();
-                }
-            }
+            flux.emit((byte) ':');
+            num = calendar.get(MINUTE);
+            flux.emit((byte) (num / 10 + 0x30));
+            flux.emit((byte) (num % 10 + 0x30));
 
-            throw new IOException(
-                "Failed to parse this date: `" +
-                    text + "`, error index is " + errorIndex
-            );
-        }
+            flux.emit((byte) ':');
+            num = calendar.get(SECOND);
+            flux.emit((byte) (num / 10 + 0x30));
+            flux.emit((byte) (num % 10 + 0x30));
 
-        public void write(
-            @NotNull Flux flux,
-            @NotNull Date date
-        ) throws IOException {
-            synchronized (this) {
-                StringBuffer sb = SB;
-                if (sb != null) {
-                    sb.setLength(0);
-                } else {
-                    SB = sb = new StringBuffer();
-                }
-                flux.emit(
-                    super.format(
-                        date, sb, FP
-                    )
-                );
-            }
-        }
-
-        public StringBuffer format(
-            Date date, StringBuffer buffer, FieldPosition position
-        ) {
-            if (FP == null) {
-                FP = position;
-                return SB = buffer;
-            } else {
-                return super.format(
-                    date, buffer, position
-                );
-            }
+            flux.emit((byte) '.');
+            num = calendar.get(MILLISECOND);
+            flux.emit((byte) (num / 100 + 0x30));
+            flux.emit((byte) (num / 10 % 10 + 0x30));
+            flux.emit((byte) (num % 10 + 0x30));
         }
     }
 }
