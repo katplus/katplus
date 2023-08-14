@@ -36,9 +36,6 @@ public class TimeZoneSpare extends BaseSpare<TimeZone> {
     static final TimeZone DEF =
         TimeZone.getDefault();
 
-    static final TimeZone UTC =
-        TimeZone.getTimeZone("UTC");
-
     static {
         INSTANCE.context.active(
             DEF.getClass(), INSTANCE

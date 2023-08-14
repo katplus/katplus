@@ -80,6 +80,15 @@ public final class Toolkit {
     /**
      * Unsafe, may be deleted later
      */
+    public static byte stateOf(
+        @NotNull Binary binary
+    ) {
+        return binary.state;
+    }
+
+    /**
+     * Unsafe, may be deleted later
+     */
     public static byte[] valueOf(
         @NotNull Binary binary
     ) {
