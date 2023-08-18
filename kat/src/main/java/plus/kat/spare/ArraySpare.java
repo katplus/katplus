@@ -38,40 +38,37 @@ public class ArraySpare extends BeanSpare<Object> {
         Object[].class, Supplier.ins()
     );
 
-    public static final Object[]
-        EMPTY_ARRAY = new Object[0];
-
-    protected Object EMPTY;
+    protected Object empty;
     protected final Class<?> elem;
 
     public ArraySpare(
-        @NotNull Class<?> clazz,
+        @NotNull Class<?> klass,
         @NotNull Context context
     ) {
-        super((Class<Object>) clazz, context);
-        if ((elem = clazz.getComponentType()) == null) {
+        super(
+            (Class<Object>) klass, context
+        );
+        if ((elem = klass.getComponentType()) == null) {
             throw new IllegalStateException(
-                "Specified `" + clazz + "` is not an array type"
+                "Specified `" + klass + "` is not an array type"
             );
         }
     }
 
     @Override
     public Object apply() {
-        Object array = EMPTY;
+        Object array = empty;
         if (array != null) {
             return array;
         }
 
         Class<?> e = elem;
-        if (e == Object.class) {
-            return EMPTY = EMPTY_ARRAY;
-        } else if (e == byte[].class) {
-            return EMPTY = EMPTY_BYTES;
+        if (e == byte[].class) {
+            return empty = EMPTY_BYTES;
         } else if (e == char[].class) {
-            return EMPTY = EMPTY_CHARS;
+            return empty = EMPTY_CHARS;
         } else {
-            return EMPTY = Array.newInstance(e, 0);
+            return empty = Array.newInstance(e, 0);
         }
     }
 
@@ -175,8 +172,7 @@ public class ArraySpare extends BeanSpare<Object> {
 
         @Override
         public void onOpen() throws IOException {
-            spare = context.assign(elem);
-            if (spare != null) {
+            if ((spare = context.assign(elem)) != null) {
                 size = 0;
                 mark = 1;
                 bean = Array.newInstance(

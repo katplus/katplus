@@ -29,8 +29,7 @@ import static plus.kat.stream.Transfer.*;
  */
 public class LongSpare extends BaseSpare<Long> {
 
-    public static final Long
-        ZERO_LONG = 0L;
+    static final Long ZERO = 0L;
 
     public static final LongSpare
         INSTANCE = new LongSpare();
@@ -41,28 +40,7 @@ public class LongSpare extends BaseSpare<Long> {
 
     @Override
     public Long apply() {
-        return ZERO_LONG;
-    }
-
-    @Override
-    public Long apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return ZERO_LONG;
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Long) {
-                    return (Long) arg;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
+        return ZERO;
     }
 
     @Override

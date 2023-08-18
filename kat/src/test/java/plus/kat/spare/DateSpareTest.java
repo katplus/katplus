@@ -29,7 +29,7 @@ public class DateSpareTest {
         }
 
         Date date2 = spare.read(
-            Flow.of("\"1641871353003\"").with(Flag.DIGIT_AS_DATE)
+            Flow.of("\"1641871353003\"").with(Flag.DIGIT_AS_TIME)
         );
 
         assertNotNull(date2);

@@ -17,11 +17,10 @@ package plus.kat.spare;
 
 import plus.kat.*;
 import plus.kat.actor.*;
-
 import plus.kat.chain.*;
-import plus.kat.entity.*;
 
 import java.io.*;
+import java.lang.reflect.Type;
 
 import static plus.kat.spare.Parser.*;
 import static plus.kat.stream.Toolkit.*;
@@ -30,7 +29,7 @@ import static plus.kat.stream.Toolkit.*;
  * @author kraity
  * @since 0.0.6
  */
-public abstract class BeanSpare<T> implements Subject<T> {
+public abstract class BeanSpare<T> implements Spare<T> {
 
     protected final Class<T> klass;
     protected final Context context;
@@ -60,6 +59,25 @@ public abstract class BeanSpare<T> implements Subject<T> {
     @Override
     public String getSpace() {
         return klass.getName();
+    }
+
+    @Override
+    public Boolean getScope() {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public Border getBorder(
+        @NotNull Flag flag
+    ) {
+        return Border.BRACE;
+    }
+
+    @Override
+    public Factory getFactory(
+        @Nullable Type type
+    ) {
+        return null;
     }
 
     @Override

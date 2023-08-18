@@ -175,31 +175,6 @@ public class KatTest {
     }
 
     @Test
-    public void test_optional() throws IOException {
-        try (Chan chan = Kat.encode(Optional.of(1))) {
-            assertEquals("1", chan.toString());
-        }
-        try (Chan chan = Kat.encode(Optional.empty())) {
-            assertEquals("null", chan.toString());
-        }
-        try (Chan chan = Kat.encode(OptionalInt.empty())) {
-            assertEquals("0", chan.toString());
-        }
-        try (Chan chan = Kat.encode(OptionalLong.empty())) {
-            assertEquals("0", chan.toString());
-        }
-        try (Chan chan = Kat.encode(OptionalDouble.empty())) {
-            assertEquals("0.0", chan.toString());
-        }
-        try (Chan chan = Kat.encode(Optional.of("kraity"))) {
-            assertEquals("\"kraity\"", chan.toString());
-        }
-        try (Chan chan = Kat.encode(Optional.of(new User()))) {
-            assertEquals("{id=0,name=null}", chan.toString());
-        }
-    }
-
-    @Test
     public void test_decode1() throws IOException {
         Map<Object, Object> user = Kat.decode(
             Map.class, Flow.of(

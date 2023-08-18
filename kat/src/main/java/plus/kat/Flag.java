@@ -62,7 +62,7 @@ public interface Flag {
     /**
      * Uses this feature in serialization
      */
-    long DATE_AS_DIGIT = 0x20;
+    long TIME_AS_DIGIT = 0x20;
 
     /**
      * Uses this feature in deserialization
@@ -72,7 +72,7 @@ public interface Flag {
     /**
      * Uses this feature in deserialization
      */
-    long DIGIT_AS_DATE = 0x20;
+    long DIGIT_AS_TIME = 0x20;
 
     /**
      * Uses this feature in deserialization

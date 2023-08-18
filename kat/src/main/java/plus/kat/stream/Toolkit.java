@@ -108,6 +108,24 @@ public final class Toolkit {
     /**
      * Unsafe, may be deleted later
      */
+    public static boolean isNull(
+        @NotNull Binary bin
+    ) {
+        if (bin.size == 4 &&
+            bin.state == 0) {
+            byte[] v = bin.value;
+            return v[0] == 'n'
+                && v[1] == 'u'
+                && v[2] == 'l'
+                && v[3] == 'l';
+        }
+
+        return false;
+    }
+
+    /**
+     * Unsafe, may be deleted later
+     */
     public static boolean isIsolate(
         @NotNull Stream stream
     ) {
@@ -125,6 +143,23 @@ public final class Toolkit {
             binary.value, 0, binary.size
         );
         stream.flush();
+    }
+
+    /**
+     * Unsafe, may be deleted later
+     */
+    @SuppressWarnings("deprecation")
+    public static String latin(
+        @NotNull Binary bin
+    ) {
+        int l = bin.size;
+        if (l == 0) {
+            return "";
+        }
+
+        return new String(
+            bin.value, 0, 0, l
+        );
     }
 
     /**
@@ -306,16 +341,9 @@ public final class Toolkit {
             );
         }
 
-        if (value instanceof Throwable) {
-            Throwable o = (Throwable) value;
-            return chan.set(
-                alias, StringSpare.INSTANCE, o.getMessage()
-            );
-        }
-
         if (value instanceof CharSequence) {
             return chan.set(
-                alias, StringSpare.INSTANCE, value.toString()
+                alias, StringifySpare.INSTANCE, value
             );
         }
 
@@ -360,34 +388,17 @@ public final class Toolkit {
             );
         }
 
-        switch (value.getClass().getName()) {
-            case "java.util.Optional": {
-                do {
-                    value = ((Optional<?>) value)
-                        .orElse(null);
-                } while (value instanceof Optional);
-                return chan.set(
-                    alias, null, value
-                );
-            }
-            case "java.util.OptionalInt": {
-                OptionalInt o = (OptionalInt) value;
-                return chan.set(
-                    alias, IntSpare.INSTANCE, o.orElse(0)
-                );
-            }
-            case "java.util.OptionalLong": {
-                OptionalLong o = (OptionalLong) value;
-                return chan.set(
-                    alias, LongSpare.INSTANCE, o.orElse(0L)
-                );
-            }
-            case "java.util.OptionalDouble": {
-                OptionalDouble o = (OptionalDouble) value;
-                return chan.set(
-                    alias, DoubleSpare.INSTANCE, o.orElse(0D)
-                );
-            }
+        if (value instanceof Calendar) {
+            return chan.set(
+                alias, CalendarSpare.INSTANCE, value
+            );
+        }
+
+        if (value instanceof Throwable) {
+            Throwable o = (Throwable) value;
+            return chan.set(
+                alias, StringSpare.INSTANCE, o.getMessage()
+            );
         }
 
         throw new IOException(

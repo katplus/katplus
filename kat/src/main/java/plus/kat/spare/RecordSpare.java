@@ -197,10 +197,10 @@ public class RecordSpare<T> extends SimpleSpare<T> {
         @NotNull Constructor<?>[] constructors
     ) {
         Constructor<?> latest = null;
-        stage:
+        check:
         for (Constructor<?> ctor : constructors) {
-            Class<?>[] ct = ctor.getParameterTypes();
-            if (ct.length == 0) {
+            Type[] cs = ctor.getParameterTypes();
+            if (cs.length == 0) {
                 if (!ctor.isAccessible()) {
                     ctor.setAccessible(true);
                 }
@@ -212,17 +212,18 @@ public class RecordSpare<T> extends SimpleSpare<T> {
                     continue;
                 }
             }
-            if (ct.length == width) {
+            if (cs.length == width) {
                 if (latest == null) {
                     latest = ctor;
                     continue;
                 }
+                cs = ctor.getGenericParameterTypes();
                 for (Node n : table) {
                     for (; n != null; n = n.next) {
                         if (n instanceof ParamCaller) {
                             Caller c = (Caller) n;
-                            if (c.type != ct[c.index]) {
-                                continue stage;
+                            if (!c.type.equals(cs[c.index])) {
+                                continue check;
                             }
                         }
                     }

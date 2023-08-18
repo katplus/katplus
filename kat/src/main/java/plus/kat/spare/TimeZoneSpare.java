@@ -23,6 +23,7 @@ import java.util.TimeZone;
 import java.io.IOException;
 
 import static java.util.TimeZone.*;
+import static plus.kat.stream.Toolkit.*;
 
 /**
  * @author kraity
@@ -52,29 +53,6 @@ public class TimeZoneSpare extends BaseSpare<TimeZone> {
     }
 
     @Override
-    public TimeZone apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return getDefault();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof String) {
-                    return getTimeZone(
-                        (String) arg
-                    );
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public String getSpace() {
         return "TimeZone";
     }
@@ -95,7 +73,7 @@ public class TimeZoneSpare extends BaseSpare<TimeZone> {
             return null;
         } else {
             return getTimeZone(
-                value.toString()
+                latin(value)
             );
         }
     }

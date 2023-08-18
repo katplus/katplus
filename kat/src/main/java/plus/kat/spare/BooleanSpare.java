@@ -43,27 +43,6 @@ public class BooleanSpare extends BaseSpare<Boolean> {
     }
 
     @Override
-    public Boolean apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return FALSE;
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Boolean) {
-                    return (Boolean) arg;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public String getSpace() {
         return "Boolean";
     }

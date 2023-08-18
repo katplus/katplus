@@ -15,10 +15,9 @@
  */
 package plus.kat.entity;
 
-import plus.kat.actor.NotNull;
-import plus.kat.actor.Nullable;
-
 import plus.kat.*;
+import plus.kat.actor.*;
+
 import plus.kat.chain.*;
 import plus.kat.spare.*;
 
@@ -39,7 +38,7 @@ public interface Subject<T> extends Spare<T> {
     @NotNull
     default T apply() {
         throw new IllegalStateException(
-            "No matching constructor found"
+            "No corresponding constructor"
         );
     }
 
@@ -59,7 +58,7 @@ public interface Subject<T> extends Spare<T> {
         }
 
         throw new IllegalStateException(
-            "No matching constructor found"
+            "No corresponding constructor"
         );
     }
 
@@ -444,7 +443,8 @@ public interface Subject<T> extends Spare<T> {
          * Prepare before parsing
          */
         @Override
-        public void onOpen() {
+        public void onOpen()
+            throws IOException {
             // Nothing
         }
 
@@ -595,11 +595,10 @@ public interface Subject<T> extends Spare<T> {
      * @author kraity
      * @since 0.0.6
      */
-    class Builder2<T> extends Builder0<T> {
+    class Builder2<T> extends Builder1<T> {
 
         protected Cache cache;
-        protected Class<?> own;
-        protected Object[] args;
+        protected Class<?> owner;
         protected boolean delay;
 
         public Builder2(
@@ -608,15 +607,11 @@ public interface Subject<T> extends Spare<T> {
             Object[] args,
             Subject<T> spare
         ) {
-            super(type, spare);
-            if (args != null) {
-                this.own = own;
-                this.args = args;
-            } else {
-                throw new NullPointerException(
-                    "Received args-array is null"
-                );
-            }
+            super(
+                type,
+                args, spare
+            );
+            this.owner = own;
         }
 
         /**
@@ -626,8 +621,8 @@ public interface Subject<T> extends Spare<T> {
          */
         @Override
         public void onOpen() throws IOException {
-            Class<?> o = own;
-            if (o != null) {
+            Class<?> own = owner;
+            if (own != null) {
                 Factory holder = holder();
                 if (holder instanceof Builder) {
                     Object bean = ((Builder<?>) holder).build();
@@ -636,11 +631,11 @@ public interface Subject<T> extends Spare<T> {
                             "The parent result is is null"
                         );
                     } else {
-                        if (o.isInstance(bean)) {
+                        if (own.isInstance(bean)) {
                             args[0] = bean;
                         } else {
                             throw new IOException(
-                                "The parent result is not " + o
+                                "The parent result is not " + own
                             );
                         }
                     }

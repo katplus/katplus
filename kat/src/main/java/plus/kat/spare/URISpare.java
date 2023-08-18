@@ -37,33 +37,6 @@ public class URISpare extends BaseSpare<URI> {
     }
 
     @Override
-    public URI apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return apply();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof String) {
-                    try {
-                        return new URI(
-                            (String) arg
-                        );
-                    } catch (URISyntaxException e) {
-                        throw new IllegalStateException(e);
-                    }
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public String getSpace() {
         return "URI";
     }
@@ -83,12 +56,14 @@ public class URISpare extends BaseSpare<URI> {
         if (value.isNothing()) {
             return null;
         }
+
+        String data = value.toString();
         try {
-            return new URI(
-                value.toString()
-            );
+            return new URI(data);
         } catch (URISyntaxException e) {
-            throw new IOException(e);
+            throw new IOException(
+                data + " is not a valid URI", e
+            );
         }
     }
 

@@ -33,36 +33,43 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public class SetSpare extends BeanSpare<Set> {
 
     public static final SetSpare
-        INSTANCE = new SetSpare(Set.class);
+        INSTANCE = new SetSpare(
+        Set.class, Supplier.ins()
+    );
 
-    final int mode;
+    final int type;
 
     public SetSpare(
-        @NotNull Class<?> klass
+        @NotNull Class<?> klass,
+        @NotNull Context context
     ) {
         super(
-            (Class<Set>) klass
+            (Class<Set>) klass, context
         );
         if (klass == Set.class ||
             klass == HashSet.class ||
             klass == AbstractSet.class) {
-            mode = 1;
+            type = 1;
         } else if (klass == TreeSet.class ||
             klass == SortedSet.class ||
             klass == NavigableSet.class) {
-            mode = 2;
+            type = 2;
         } else if (klass == LinkedHashSet.class) {
-            mode = 3;
+            type = 3;
         } else if (klass == ConcurrentSkipListSet.class) {
-            mode = 4;
+            type = 4;
+        } else if (Set.class.isAssignableFrom(klass)) {
+            type = -1;
         } else {
-            mode = -1;
+            throw new IllegalStateException(
+                "Received unsupported: " + klass.getName()
+            );
         }
     }
 
     @Override
     public Set apply() {
-        switch (mode) {
+        switch (type) {
             case 1: {
                 return new HashSet<>();
             }
@@ -91,33 +98,6 @@ public class SetSpare extends BeanSpare<Set> {
 
         throw new IllegalStateException(
             "Failed to build " + klass
-        );
-    }
-
-    @Override
-    public Set apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return apply();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Collection) {
-                    Set set = apply();
-                    if (set != null) {
-                        set.addAll(
-                            (Collection) arg
-                        );
-                    }
-                    return set;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
         );
     }
 

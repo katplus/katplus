@@ -27,8 +27,7 @@ import java.io.IOException;
  */
 public class CharSpare extends BaseSpare<Character> {
 
-    public static final Character
-        ZERO_CHAR = '\0';
+    static final Character ZERO = '\0';
 
     public static final CharSpare
         INSTANCE = new CharSpare();
@@ -39,33 +38,19 @@ public class CharSpare extends BaseSpare<Character> {
 
     @Override
     public Character apply() {
-        return ZERO_CHAR;
-    }
-
-    @Override
-    public Character apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return ZERO_CHAR;
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Character) {
-                    return (Character) arg;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
+        return ZERO;
     }
 
     @Override
     public String getSpace() {
         return "Char";
+    }
+
+    @Override
+    public Border getBorder(
+        @NotNull Flag flag
+    ) {
+        return Border.QUOTE;
     }
 
     @Override

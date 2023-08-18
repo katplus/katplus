@@ -29,8 +29,7 @@ import static plus.kat.stream.Transfer.*;
  */
 public class FloatSpare extends BaseSpare<Float> {
 
-    public static final Float
-        ZERO_FLOAT = 0F;
+    static final Float ZERO = 0F;
 
     public static final FloatSpare
         INSTANCE = new FloatSpare();
@@ -41,28 +40,7 @@ public class FloatSpare extends BaseSpare<Float> {
 
     @Override
     public Float apply() {
-        return ZERO_FLOAT;
-    }
-
-    @Override
-    public Float apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return ZERO_FLOAT;
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Float) {
-                    return (Float) arg;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
+        return ZERO;
     }
 
     @Override

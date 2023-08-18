@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 
 import static java.math.BigDecimal.*;
+import static plus.kat.stream.Toolkit.*;
 
 /**
  * @author kraity
@@ -48,34 +49,6 @@ public class BigDecimalSpare extends BaseSpare<BigDecimal> {
     }
 
     @Override
-    public BigDecimal apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return ZERO;
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof String) {
-                    return new BigDecimal(
-                        (String) arg
-                    );
-                }
-                if (arg instanceof Number) {
-                    return new BigDecimal(
-                        arg.toString()
-                    );
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public BigDecimal read(
         @NotNull Flag flag,
         @NotNull Value value
@@ -91,7 +64,7 @@ public class BigDecimalSpare extends BaseSpare<BigDecimal> {
             );
         } else {
             return new BigDecimal(
-                value.toString()
+                latin(value)
             );
         }
     }

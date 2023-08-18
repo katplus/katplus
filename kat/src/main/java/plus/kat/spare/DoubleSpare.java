@@ -29,8 +29,7 @@ import static plus.kat.stream.Transfer.*;
  */
 public class DoubleSpare extends BaseSpare<Double> {
 
-    public static final Double
-        ZERO_DOUBLE = 0D;
+    static final Double ZERO = 0D;
 
     public static final DoubleSpare
         INSTANCE = new DoubleSpare();
@@ -41,28 +40,7 @@ public class DoubleSpare extends BaseSpare<Double> {
 
     @Override
     public Double apply() {
-        return ZERO_DOUBLE;
-    }
-
-    @Override
-    public Double apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return ZERO_DOUBLE;
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Double) {
-                    return (Double) arg;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
+        return ZERO;
     }
 
     @Override

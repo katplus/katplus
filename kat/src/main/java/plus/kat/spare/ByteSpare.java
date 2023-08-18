@@ -27,8 +27,7 @@ import java.io.IOException;
  */
 public class ByteSpare extends BaseSpare<Byte> {
 
-    public static final Byte
-        ZERO_BYTE = 0;
+    static final Byte ZERO = 0;
 
     public static final ByteSpare
         INSTANCE = new ByteSpare();
@@ -39,28 +38,7 @@ public class ByteSpare extends BaseSpare<Byte> {
 
     @Override
     public Byte apply() {
-        return ZERO_BYTE;
-    }
-
-    @Override
-    public Byte apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return ZERO_BYTE;
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Byte) {
-                    return (Byte) arg;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
+        return ZERO;
     }
 
     @Override

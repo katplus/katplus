@@ -39,48 +39,55 @@ import static plus.kat.stream.Toolkit.*;
 public class MapSpare extends BeanSpare<Map> {
 
     public static final MapSpare
-        INSTANCE = new MapSpare(Map.class);
+        INSTANCE = new MapSpare(
+        Map.class, Supplier.ins()
+    );
 
-    final int mode;
+    final int type;
 
     public MapSpare(
-        @NotNull Class<?> klass
+        @NotNull Class<?> klass,
+        @NotNull Context context
     ) {
         super(
-            (Class<Map>) klass
+            (Class<Map>) klass, context
         );
         if (klass == Map.class ||
             klass == LinkedHashMap.class) {
-            mode = 6;
+            type = 6;
         } else if (klass == HashMap.class ||
             klass == AbstractMap.class) {
-            mode = 1;
+            type = 1;
         } else if (klass == TreeMap.class ||
             klass == SortedMap.class ||
             klass == NavigableMap.class) {
-            mode = 2;
+            type = 2;
         } else if (klass == Hashtable.class) {
-            mode = 3;
+            type = 3;
         } else if (klass == Properties.class) {
-            mode = 4;
+            type = 4;
         } else if (klass == WeakHashMap.class) {
-            mode = 5;
+            type = 5;
         } else if (klass == IdentityHashMap.class) {
-            mode = 7;
+            type = 7;
         } else if (klass == ConcurrentMap.class ||
             klass == ConcurrentHashMap.class) {
-            mode = 8;
+            type = 8;
         } else if (klass == ConcurrentSkipListMap.class ||
             klass == ConcurrentNavigableMap.class) {
-            mode = 9;
+            type = 9;
+        } else if (Map.class.isAssignableFrom(klass)) {
+            type = -1;
         } else {
-            mode = -1;
+            throw new IllegalStateException(
+                "Received unsupported: " + klass.getName()
+            );
         }
     }
 
     @Override
     public Map apply() {
-        switch (mode) {
+        switch (type) {
             case 1: {
                 return new HashMap();
             }
@@ -124,33 +131,6 @@ public class MapSpare extends BeanSpare<Map> {
 
         throw new IllegalStateException(
             "Failed to build " + klass
-        );
-    }
-
-    @Override
-    public Map apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return apply();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Map) {
-                    Map map = apply();
-                    if (map != null) {
-                        map.putAll(
-                            (Map) arg
-                        );
-                    }
-                    return map;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
         );
     }
 

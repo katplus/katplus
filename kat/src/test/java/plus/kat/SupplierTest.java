@@ -511,39 +511,7 @@ public class SupplierTest {
     }
 
     @Test
-    public void test_apply_class0() {
-        Vendor context = Vendor.INS;
-
-        User user = context.apply(User.class);
-        assertSame(User.class, user.getClass());
-
-        UserVO vo = context.apply(UserVO.class);
-        assertSame(UserVO.class, vo.getClass());
-
-        assertEquals(1, (Object) context.apply(int.class, 1));
-        assertEquals(2, (Object) context.apply(Integer.class, 2));
-
-        assertEquals(1L, (Object) context.apply(long.class, 1L));
-        assertEquals(2L, (Object) context.apply(Long.class, 2L));
-
-        assertEquals(1F, (Object) context.apply(float.class, 1F));
-        assertEquals(2F, (Object) context.apply(Float.class, 2F));
-
-        assertEquals(1D, (Object) context.apply(double.class, 1D));
-        assertEquals(2D, (Object) context.apply(Double.class, 2D));
-
-        assertEquals(true, context.apply(boolean.class, true));
-        assertEquals(false, context.apply(Boolean.class, false));
-
-        assertEquals('\0', (Object) context.apply(char.class, '\0'));
-        assertEquals('\1', (Object) context.apply(Character.class, '\1'));
-
-        assertEquals((byte) 1, (Object) context.apply(byte.class, (byte) 1));
-        assertEquals((byte) 2, (Object) context.apply(Byte.class, (byte) 2));
-    }
-
-    @Test
-    public void test_apply_class1() {
+    public void test_apply_subject() {
         Supplier context = Supplier.ins();
         Map<String, Object> map = context.apply(Map.class);
         assertTrue(map.isEmpty());

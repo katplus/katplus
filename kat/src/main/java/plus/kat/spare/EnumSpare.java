@@ -74,44 +74,6 @@ public class EnumSpare<T extends Enum<T>> extends BaseSpare<T> {
     }
 
     @Override
-    public T apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return apply();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof String) {
-                    T[] e = enums;
-                    if (e != null) {
-                        for (T t : e) {
-                            if (t.name().equals(arg)) {
-                                return t;
-                            }
-                        }
-                    }
-                    return null;
-                }
-
-                if (arg instanceof Integer) {
-                    T[] e = enums;
-                    if (e == null) {
-                        return null;
-                    }
-                    int i = (int) arg;
-                    return -1 < i && i < e.length ? e[i] : null;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public String getSpace() {
         return space;
     }

@@ -17,45 +17,43 @@ package plus.kat.spare;
 
 import plus.kat.*;
 import plus.kat.actor.*;
-import plus.kat.chain.*;
 
+import java.util.Calendar;
 import java.io.IOException;
 
-import static plus.kat.stream.Transfer.*;
+import static java.util.Calendar.*;
 
 /**
  * @author kraity
- * @since 0.0.1
+ * @since 0.0.6
  */
-public class IntSpare extends BaseSpare<Integer> {
+public class CalendarSpare extends TimeSpare<Calendar> {
 
-    static final Integer ZERO = 0;
+    public static final CalendarSpare
+        INSTANCE = new CalendarSpare();
 
-    public static final IntSpare
-        INSTANCE = new IntSpare();
-
-    public IntSpare() {
-        super(Integer.class);
+    public CalendarSpare() {
+        super(Calendar.class);
     }
 
     @Override
-    public Integer apply() {
-        return ZERO;
+    public Calendar apply() {
+        return getInstance();
+    }
+
+    @Nullable
+    public Calendar apply(
+        @NotNull long time
+    ) {
+        Calendar calendar
+            = getInstance();
+        calendar.setTimeInMillis(time);
+        return calendar;
     }
 
     @Override
     public String getSpace() {
-        return "Int";
-    }
-
-    @Override
-    public Integer read(
-        @NotNull Flag flag,
-        @NotNull Value value
-    ) {
-        return toInteger(
-            value, null
-        );
+        return "Calendar";
     }
 
     @Override
@@ -63,8 +61,15 @@ public class IntSpare extends BaseSpare<Integer> {
         @NotNull Flux flux,
         @NotNull Object value
     ) throws IOException {
-        flux.emit(
-            (Integer) value
-        );
+        Calendar calendar = (Calendar) value;
+        if (flux.isFlag(Flag.TIME_AS_DIGIT)) {
+            flux.emit(
+                calendar.getTimeInMillis()
+            );
+        } else {
+            serialize(
+                flux, calendar
+            );
+        }
     }
 }

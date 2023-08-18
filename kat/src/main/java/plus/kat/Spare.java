@@ -120,7 +120,7 @@ public interface Spare<T> extends Coder<T> {
         }
 
         throw new IllegalStateException(
-            "No matching constructor found"
+            "Non-subject is not supported"
         );
     }
 

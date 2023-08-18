@@ -37,33 +37,6 @@ public class URLSpare extends BaseSpare<URL> {
     }
 
     @Override
-    public URL apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return apply();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof String) {
-                    try {
-                        return new URL(
-                            (String) arg
-                        );
-                    } catch (MalformedURLException e) {
-                        throw new IllegalStateException(e);
-                    }
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public String getSpace() {
         return "URL";
     }
@@ -83,12 +56,14 @@ public class URLSpare extends BaseSpare<URL> {
         if (value.isNothing()) {
             return null;
         }
+
+        String data = value.toString();
         try {
-            return new URL(
-                value.toString()
-            );
+            return new URL(data);
         } catch (MalformedURLException e) {
-            throw new IOException(e);
+            throw new IOException(
+                data + " is not a valid URL", e
+            );
         }
     }
 

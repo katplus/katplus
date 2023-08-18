@@ -27,8 +27,7 @@ import java.io.IOException;
  */
 public class ShortSpare extends BaseSpare<Short> {
 
-    public static final Short
-        ZERO_SHORT = 0;
+    static final Short ZERO = 0;
 
     public static final ShortSpare
         INSTANCE = new ShortSpare();
@@ -39,28 +38,7 @@ public class ShortSpare extends BaseSpare<Short> {
 
     @Override
     public Short apply() {
-        return ZERO_SHORT;
-    }
-
-    @Override
-    public Short apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return ZERO_SHORT;
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Short) {
-                    return (Short) arg;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
+        return ZERO;
     }
 
     @Override

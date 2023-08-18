@@ -35,24 +35,6 @@ public class VoidSpare extends BaseSpare<Void> {
     }
 
     @Override
-    public Void apply() {
-        return null;
-    }
-
-    @Override
-    public Void apply(
-        @NotNull Object... args
-    ) {
-        if (args.length == 0) {
-            return null;
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public String getSpace() {
         return "Any";
     }

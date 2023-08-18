@@ -36,41 +36,48 @@ import static plus.kat.stream.Toolkit.*;
 public class ListSpare extends BeanSpare<List> {
 
     public static final ListSpare
-        INSTANCE = new ListSpare(List.class);
+        INSTANCE = new ListSpare(
+        List.class, Supplier.ins()
+    );
 
-    final int mode;
+    final int type;
 
     public ListSpare(
-        @NotNull Class<?> klass
+        @NotNull Class<?> klass,
+        @NotNull Context context
     ) {
         super(
-            (Class<List>) klass
+            (Class<List>) klass, context
         );
         if (klass == List.class ||
             klass == ArrayList.class ||
             klass == Collection.class) {
-            mode = 3;
+            type = 3;
         } else if (klass == Queue.class ||
             klass == Deque.class ||
             klass == LinkedList.class) {
-            mode = 4;
+            type = 4;
         } else if (klass == Stack.class) {
-            mode = 1;
+            type = 1;
         } else if (klass == Vector.class) {
-            mode = 2;
+            type = 2;
         } else if (klass == AbstractList.class ||
             klass == AbstractCollection.class) {
-            mode = 3;
+            type = 3;
         } else if (klass == CopyOnWriteArrayList.class) {
-            mode = 5;
+            type = 5;
+        } else if (List.class.isAssignableFrom(klass)) {
+            type = -1;
         } else {
-            mode = -1;
+            throw new IllegalStateException(
+                "Received unsupported: " + klass.getName()
+            );
         }
     }
 
     @Override
     public List apply() {
-        switch (mode) {
+        switch (type) {
             case 1: {
                 return new Stack();
             }
@@ -102,33 +109,6 @@ public class ListSpare extends BeanSpare<List> {
 
         throw new IllegalStateException(
             "Failed to build " + klass
-        );
-    }
-
-    @Override
-    public List apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return apply();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Collection) {
-                    List list = apply();
-                    if (list != null) {
-                        list.addAll(
-                            (Collection) arg
-                        );
-                    }
-                    return list;
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
         );
     }
 

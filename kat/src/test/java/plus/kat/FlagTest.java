@@ -27,7 +27,7 @@ public class FlagTest {
             );
         }
 
-        try (Chan chan = Json.encode(time, Flag.DATE_AS_DIGIT)) {
+        try (Chan chan = Json.encode(time, Flag.TIME_AS_DIGIT)) {
             assertEquals(
                 "{\"date\":1641871353003}", chan.toString()
             );

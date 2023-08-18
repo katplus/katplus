@@ -44,45 +44,6 @@ public class UUIDSpare extends BaseSpare<UUID> {
     }
 
     @Override
-    public UUID apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return randomUUID();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof String) {
-                    return fromString(
-                        (String) arg
-                    );
-                }
-                if (arg instanceof byte[]) {
-                    return nameUUIDFromBytes(
-                        (byte[]) arg
-                    );
-                }
-                break;
-            }
-            case 2: {
-                Object arg0 = args[0];
-                Object arg1 = args[1];
-                if (arg0 instanceof Long &&
-                    arg1 instanceof Long) {
-                    return new UUID(
-                        (long) arg0, (long) arg1
-                    );
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public String getSpace() {
         return "UUID";
     }

@@ -25,48 +25,53 @@ import static plus.kat.stream.Toolkit.*;
 
 /**
  * @author kraity
- * @since 0.0.3
+ * @since 0.0.6
  */
-public class StringBuilderSpare extends BaseSpare<StringBuilder> {
+@SuppressWarnings("unchecked")
+public class StringifySpare extends BaseSpare<Object> {
 
-    public static final StringBuilderSpare
-        INSTANCE = new StringBuilderSpare();
+    public static final StringifySpare
+        INSTANCE = new StringifySpare();
 
-    public StringBuilderSpare() {
-        super(StringBuilder.class);
+    final int type;
+
+    public StringifySpare() {
+        this(
+            CharSequence.class
+        );
     }
 
-    @Override
-    public StringBuilder apply() {
-        return new StringBuilder();
-    }
-
-    @Override
-    public StringBuilder apply(
-        @NotNull Object... args
+    public StringifySpare(
+        @NotNull Class<?> klass
     ) {
-        switch (args.length) {
-            case 0: {
+        super(
+            (Class<Object>) klass
+        );
+        if (klass == String.class ||
+            klass == CharSequence.class) {
+            type = 0;
+        } else if (klass == StringBuffer.class) {
+            type = 1;
+        } else if (klass == StringBuilder.class) {
+            type = 2;
+        } else {
+            throw new IllegalStateException(
+                "Received unsupported: " + klass.getName()
+            );
+        }
+    }
+
+    @Override
+    public Object apply() {
+        switch (type) {
+            case 1: {
+                return new StringBuffer();
+            }
+            case 2: {
                 return new StringBuilder();
             }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof String) {
-                    return new StringBuilder(
-                        (String) arg
-                    );
-                }
-                if (arg instanceof CharSequence) {
-                    return new StringBuilder(
-                        (CharSequence) arg
-                    );
-                }
-            }
         }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
+        return null;
     }
 
     @Override
@@ -82,15 +87,22 @@ public class StringBuilderSpare extends BaseSpare<StringBuilder> {
     }
 
     @Override
-    public StringBuilder read(
+    public Object read(
         @NotNull Flag flag,
         @NotNull Value value
     ) {
         String text = string(value);
-        if (text == null) {
-            return null;
+        if (text != null) {
+            switch (type) {
+                case 1: {
+                    return new StringBuffer(text);
+                }
+                case 2: {
+                    return new StringBuilder(text);
+                }
+            }
         }
-        return new StringBuilder(text);
+        return text;
     }
 
     @Override

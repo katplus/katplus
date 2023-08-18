@@ -77,60 +77,64 @@ public class ByteArraySpare extends BaseSpare<byte[]> {
         @NotNull Flag flag,
         @NotNull Value value
     ) throws IOException {
-        int l = value.size();
-        if (l < 2) {
-            throw new IOException(
-                "It should be at least 2 bytes"
-            );
+        if (isNull(value)) {
+            return null;
         }
 
-        int m = 0, e, n = l;
+        int l = value.size();
+        if (l == 0) {
+            return EMPTY_BYTES;
+        }
+
+        int i = 0;
         byte[] v = value.flow();
 
-        if (n > 76) {
-            e = 76;
-            check:
-            while (e < n) {
-                switch (v[e]) {
-                    case '\n': {
-                        if (m == 2) {
-                            break;
-                        } else {
-                            m = 1;
-                            l--;
-                            e += 77;
-                            continue;
+        check:
+        if (l != 1) {
+            int x = 0, e;
+            int m = 0, n = l;
+
+            if (n > 76) {
+                e = 76;
+                scope:
+                while (e < n) {
+                    switch (v[e]) {
+                        case '\n': {
+                            if (m == 2) {
+                                break;
+                            } else {
+                                m = 1;
+                                l--;
+                                e += 77;
+                                continue;
+                            }
+                        }
+                        case '\r': {
+                            if (n == ++e ||
+                                m == 1 ||
+                                v[e] != '\n') {
+                                break;
+                            } else {
+                                l -= 2;
+                                m = 2;
+                                e += 77;
+                                continue;
+                            }
+                        }
+                        default: {
+                            if (m == 0) {
+                                break scope;
+                            }
                         }
                     }
-                    case '\r': {
-                        if (n == ++e ||
-                            m == 1 ||
-                            v[e] != '\n') {
-                            break;
-                        } else {
-                            l -= 2;
-                            m = 2;
-                            e += 77;
-                            continue;
-                        }
-                    }
-                    default: {
-                        if (m == 0) {
-                            break check;
-                        }
-                    }
+
+                    throw new IOException(
+                        "Missing symbol at index: " +
+                            e + ", base64(" + value + ")"
+                    );
                 }
-
-                throw new IOException(
-                    "Missing symbol at index: " +
-                        e + ", base64(" + value + ")"
-                );
             }
-        }
 
-        int i = 0, x = 0;
-        stage:
-        {
             int s = ((l + 3) / 4) * 3;
             if (v[n - 1] == '=') {
                 s -= v[n - 2] == '=' ? 2 : 1;
@@ -151,22 +155,22 @@ public class ByteArraySpare extends BaseSpare<byte[]> {
             while (t < a) {
                 v1 = tab[v[i++] & 0xFF];
                 if (v1 == -1) {
-                    break stage;
+                    break check;
                 }
 
                 v2 = tab[v[i++] & 0xFF];
                 if (v2 == -1) {
-                    break stage;
+                    break check;
                 }
 
                 v3 = tab[v[i++] & 0xFF];
                 if (v3 == -1) {
-                    break stage;
+                    break check;
                 }
 
                 v4 = tab[v[i++] & 0xFF];
                 if (v4 == -1) {
-                    break stage;
+                    break check;
                 }
 
                 it[x++] = (byte) (
@@ -188,12 +192,12 @@ public class ByteArraySpare extends BaseSpare<byte[]> {
             if ((t = s - x) > 0) {
                 v1 = tab[v[i++] & 0xFF];
                 if (v1 == -1) {
-                    break stage;
+                    break check;
                 }
 
                 v2 = tab[v[i++] & 0xFF];
                 if (v2 == -1) {
-                    break stage;
+                    break check;
                 }
 
                 it[x] = (byte) (
@@ -202,7 +206,7 @@ public class ByteArraySpare extends BaseSpare<byte[]> {
                 if (t == 2) {
                     v3 = tab[v[i] & 0xFF];
                     if (v3 == -1) {
-                        break stage;
+                        break check;
                     }
                     it[x + 1] = (byte) (
                         ((v2 & 0xF) << 4) | (v3 >> 2)
@@ -215,8 +219,7 @@ public class ByteArraySpare extends BaseSpare<byte[]> {
 
         throw new IOException(
             "Decoding base64(" + value
-                + ") failed at index: " + --i
-                + ", specifically: " + (char) v[i]
+                + ") failed at position: " + i
         );
     }
 

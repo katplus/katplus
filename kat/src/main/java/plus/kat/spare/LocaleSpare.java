@@ -44,54 +44,6 @@ public class LocaleSpare extends BaseSpare<Locale> {
     }
 
     @Override
-    public Locale apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return getDefault();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof String) {
-                    return new Locale(
-                        (String) arg
-                    );
-                }
-                break;
-            }
-            case 2: {
-                Object arg0 = args[0];
-                Object arg1 = args[1];
-                if (arg0 instanceof String &&
-                    arg1 instanceof String) {
-                    return new Locale(
-                        (String) arg0, (String) arg1
-                    );
-                }
-                break;
-            }
-            case 3: {
-                Object arg0 = args[0];
-                Object arg1 = args[1];
-                Object arg2 = args[2];
-                if (arg0 instanceof String &&
-                    arg1 instanceof String &&
-                    arg2 instanceof String) {
-                    return new Locale(
-                        (String) arg0,
-                        (String) arg1, (String) arg2
-                    );
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public String getSpace() {
         return "Locale";
     }

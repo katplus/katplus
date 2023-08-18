@@ -20,7 +20,6 @@ import plus.kat.actor.*;
 import plus.kat.chain.*;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import static plus.kat.stream.Toolkit.*;
 
@@ -35,88 +34,6 @@ public class StringSpare extends BaseSpare<String> {
 
     public StringSpare() {
         super(String.class);
-    }
-
-    @Override
-    public String apply() {
-        return null;
-    }
-
-    @Override
-    public String apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return apply();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof byte[]) {
-                    return new String(
-                        (byte[]) arg
-                    );
-                }
-                if (arg instanceof char[]) {
-                    return new String(
-                        (char[]) arg
-                    );
-                }
-                if (arg instanceof String) {
-                    return (String) arg;
-                }
-                if (arg instanceof StringBuffer) {
-                    return new String(
-                        (StringBuffer) arg
-                    );
-                }
-                if (arg instanceof StringBuilder) {
-                    return new String(
-                        (StringBuilder) arg
-                    );
-                }
-                break;
-            }
-            case 2: {
-                Object arg0 = args[0];
-                if (arg0 instanceof byte[]) {
-                    Object arg1 = args[1];
-                    if (arg1 instanceof String) {
-                        arg1 = Charset.forName(
-                            (String) arg1
-                        );
-                    }
-                    if (arg1 instanceof Charset) {
-                        return new String(
-                            (byte[]) arg0, (Charset) arg1
-                        );
-                    }
-                }
-                break;
-            }
-            case 3: {
-                Object arg1 = args[1];
-                Object arg2 = args[2];
-                if (arg1 instanceof Integer &&
-                    arg2 instanceof Integer) {
-                    Object arg0 = args[0];
-                    if (arg0 instanceof byte[]) {
-                        return new String(
-                            (byte[]) arg0, (int) arg1, (int) arg2
-                        );
-                    }
-                    if (arg0 instanceof char[]) {
-                        return new String(
-                            (char[]) arg0, (int) arg1, (int) arg2
-                        );
-                    }
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
     }
 
     @Override

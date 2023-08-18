@@ -27,10 +27,8 @@ import java.io.*;
 import java.math.*;
 import java.lang.reflect.*;
 import java.net.*;
-import java.nio.*;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
 
 import static plus.kat.Algo.*;
 import static plus.kat.spare.Parser.*;
@@ -739,6 +737,8 @@ public interface Supplier extends Context {
                                 spare = ArraySpare.INSTANCE;
                             } else if (clazz == byte[].class) {
                                 spare = ByteArraySpare.INSTANCE;
+                            } else if (clazz == char[].class) {
+                                spare = CharArraySpare.INSTANCE;
                             } else {
                                 spare = new ArraySpare(clazz, this);
                             }
@@ -968,21 +968,12 @@ public interface Supplier extends Context {
                         major.put(clazz, spare);
                         return spare;
                     }
-                    // java.nio
                     // java.net
                     case 'n': {
                         if (clazz == URI.class) {
                             spare = URISpare.INSTANCE;
                         } else if (clazz == URL.class) {
                             spare = URLSpare.INSTANCE;
-                        } else if (ByteBuffer.class.isAssignableFrom(clazz)) {
-                            if (MappedByteBuffer.class.isAssignableFrom(clazz)) {
-                                spare = new ByteBufferSpare(
-                                    MappedByteBuffer.class
-                                );
-                            } else {
-                                spare = ByteBufferSpare.INSTANCE;
-                            }
                         } else {
                             break span;
                         }
@@ -1042,13 +1033,13 @@ public interface Supplier extends Context {
                         } else if (clazz == CharSequence.class) {
                             if (name == null ||
                                 name.isBlank()) {
-                                return StringSpare.INSTANCE;
+                                return StringifySpare.INSTANCE;
                             }
                             break span;
                         } else if (clazz == StringBuffer.class) {
-                            spare = StringBufferSpare.INSTANCE;
+                            spare = new StringifySpare(clazz);
                         } else if (clazz == StringBuilder.class) {
-                            spare = StringBuilderSpare.INSTANCE;
+                            spare = new StringifySpare(clazz);
                         } else {
                             return null;
                         }
@@ -1061,25 +1052,11 @@ public interface Supplier extends Context {
                             // java.util.concurrent.
                             case 20: {
                                 if (Map.class.isAssignableFrom(clazz)) {
-                                    spare = new MapSpare(clazz);
+                                    spare = new MapSpare(clazz, this);
                                 } else if (Set.class.isAssignableFrom(clazz)) {
-                                    spare = new SetSpare(clazz);
+                                    spare = new SetSpare(clazz, this);
                                 } else if (List.class.isAssignableFrom(clazz)) {
-                                    spare = new ListSpare(clazz);
-                                } else {
-                                    break span;
-                                }
-                                major.put(clazz, spare);
-                                return spare;
-                            }
-                            // java.util.concurrent.atomic.
-                            case 27: {
-                                if (clazz == AtomicLong.class) {
-                                    spare = AtomicLongSpare.INSTANCE;
-                                } else if (clazz == AtomicInteger.class) {
-                                    spare = AtomicIntegerSpare.INSTANCE;
-                                } else if (clazz == AtomicBoolean.class) {
-                                    spare = AtomicBooleanSpare.INSTANCE;
+                                    spare = new ListSpare(clazz, this);
                                 } else {
                                     break span;
                                 }
@@ -1098,6 +1075,9 @@ public interface Supplier extends Context {
                                     spare = LocaleSpare.INSTANCE;
                                 } else if (clazz == TimeZone.class) {
                                     spare = TimeZoneSpare.INSTANCE;
+                                } else if (clazz == Calendar.class
+                                    || clazz == GregorianCalendar.class) {
+                                    spare = CalendarSpare.INSTANCE;
                                 } else if (clazz == Queue.class) {
                                     if (name == null ||
                                         name.isBlank()) {
@@ -1133,7 +1113,7 @@ public interface Supplier extends Context {
                                         if (clazz == LinkedHashMap.class) {
                                             spare = MapSpare.INSTANCE;
                                         } else {
-                                            spare = new MapSpare(clazz);
+                                            spare = new MapSpare(clazz, this);
                                         }
                                     }
                                 } else if (Set.class.isAssignableFrom(clazz)) {
@@ -1147,7 +1127,7 @@ public interface Supplier extends Context {
                                         if (clazz == HashSet.class) {
                                             spare = SetSpare.INSTANCE;
                                         } else {
-                                            spare = new SetSpare(clazz);
+                                            spare = new SetSpare(clazz, this);
                                         }
                                     }
                                 } else if (List.class.isAssignableFrom(clazz)) {
@@ -1161,7 +1141,7 @@ public interface Supplier extends Context {
                                         if (clazz == ArrayList.class) {
                                             spare = ListSpare.INSTANCE;
                                         } else {
-                                            spare = new ListSpare(clazz);
+                                            spare = new ListSpare(clazz, this);
                                         }
                                     }
                                 } else {

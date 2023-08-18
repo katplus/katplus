@@ -21,7 +21,6 @@ import plus.kat.chain.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 
 /**
  * @author kraity
@@ -34,45 +33,6 @@ public class FileSpare extends BaseSpare<File> {
 
     public FileSpare() {
         super(File.class);
-    }
-
-    @Override
-    public File apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return apply();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof URI) {
-                    return new File(
-                        (URI) arg
-                    );
-                }
-                if (arg instanceof String) {
-                    return new File(
-                        (String) arg
-                    );
-                }
-                break;
-            }
-            case 2: {
-                Object arg0 = args[0];
-                Object arg1 = args[1];
-                if (arg0 instanceof String &&
-                    arg1 instanceof String) {
-                    return new File(
-                        (String) arg0, (String) arg1
-                    );
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
     }
 
     @Override

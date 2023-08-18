@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 import static java.math.BigInteger.*;
+import static plus.kat.stream.Toolkit.*;
 
 /**
  * @author kraity
@@ -48,39 +49,6 @@ public class BigIntegerSpare extends BaseSpare<BigInteger> {
     }
 
     @Override
-    public BigInteger apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return ZERO;
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof Long) {
-                    return valueOf(
-                        (Long) arg
-                    );
-                }
-                if (arg instanceof String) {
-                    return new BigInteger(
-                        (String) arg
-                    );
-                }
-                if (arg instanceof Integer) {
-                    return valueOf(
-                        (Integer) arg
-                    );
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public BigInteger read(
         @NotNull Flag flag,
         @NotNull Value value
@@ -96,7 +64,7 @@ public class BigIntegerSpare extends BaseSpare<BigInteger> {
             );
         } else {
             return new BigInteger(
-                value.toString()
+                latin(value)
             );
         }
     }

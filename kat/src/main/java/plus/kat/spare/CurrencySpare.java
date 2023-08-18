@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Currency;
 
 import static java.util.Currency.*;
+import static plus.kat.stream.Toolkit.*;
 
 /**
  * @author kraity
@@ -46,34 +47,6 @@ public class CurrencySpare extends BaseSpare<Currency> {
     }
 
     @Override
-    public Currency apply(
-        @NotNull Object... args
-    ) {
-        switch (args.length) {
-            case 0: {
-                return apply();
-            }
-            case 1: {
-                Object arg = args[0];
-                if (arg instanceof String) {
-                    return getInstance(
-                        (String) arg
-                    );
-                }
-                if (arg instanceof Locale) {
-                    return getInstance(
-                        (Locale) arg
-                    );
-                }
-            }
-        }
-
-        throw new IllegalStateException(
-            "No matching constructor found"
-        );
-    }
-
-    @Override
     public String getSpace() {
         return "Currency";
     }
@@ -90,14 +63,14 @@ public class CurrencySpare extends BaseSpare<Currency> {
         @NotNull Flag flag,
         @NotNull Value value
     ) throws IOException {
-        if (value.size() == 3) {
-            return getInstance(
-                value.toString()
-            );
-        }
-
         if (value.isNothing()) {
             return null;
+        }
+
+        if (value.size() == 3) {
+            return getInstance(
+                latin(value)
+            );
         }
 
         throw new IOException(

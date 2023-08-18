@@ -30,7 +30,7 @@ import static plus.kat.stream.Toolkit.*;
  * @since 0.0.6
  */
 @SuppressWarnings("unchecked")
-public abstract class SimpleSpare<T> extends BeanSpare<T> {
+public abstract class SimpleSpare<T> extends BeanSpare<T> implements Subject<T> {
 
     int grade;
     String space;
@@ -77,6 +77,13 @@ public abstract class SimpleSpare<T> extends BeanSpare<T> {
     @Override
     public String getSpace() {
         return space;
+    }
+
+    @Override
+    public Factory getFactory(
+        @Nullable Type type
+    ) {
+        return new Builder0<>(type, this);
     }
 
     @Override

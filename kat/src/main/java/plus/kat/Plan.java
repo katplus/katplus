@@ -124,7 +124,7 @@ public class Plan {
      * <pre>{@code
      *  Plan plan = ...
      *  plan.write(
-     *    Flag.ENUM_AS_INDEX | Flag.DATE_AS_DIGIT, false
+     *    Flag.ENUM_AS_INDEX | Flag.TIME_AS_DIGIT, false
      *  );
      * }</pre>
      *
