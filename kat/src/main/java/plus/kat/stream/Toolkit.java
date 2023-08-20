@@ -126,6 +126,34 @@ public final class Toolkit {
     /**
      * Unsafe, may be deleted later
      */
+    public static byte[] copyOf(
+        @NotNull Binary bin
+    ) {
+        int l = bin.size;
+        if (l == 0) {
+            return EMPTY_BYTES;
+        }
+
+        byte[] v = bin.value;
+        if (l == 4 && bin.state == 0) {
+            if (v[0] == 'n' &&
+                v[1] == 'u' &&
+                v[2] == 'l' &&
+                v[3] == 'l') {
+                return null;
+            }
+        }
+
+        byte[] buffer = new byte[l];
+        System.arraycopy(
+            v, 0, buffer, 0, l
+        );
+        return buffer;
+    }
+
+    /**
+     * Unsafe, may be deleted later
+     */
     public static boolean isIsolate(
         @NotNull Stream stream
     ) {
@@ -160,6 +188,34 @@ public final class Toolkit {
         return new String(
             bin.value, 0, 0, l
         );
+    }
+
+    /**
+     * Unsafe, may be deleted later
+     */
+    public static Binary binary(
+        @NotNull Binary bin
+    ) {
+        int l = bin.size;
+        if (l == 0) {
+            return new Binary();
+        }
+
+        byte[] v = bin.value;
+        if (l == 4 && bin.state == 0) {
+            if (v[0] == 'n' &&
+                v[1] == 'u' &&
+                v[2] == 'l' &&
+                v[3] == 'l') {
+                return null;
+            }
+        }
+
+        byte[] buffer = new byte[l];
+        System.arraycopy(
+            v, 0, buffer, 0, l
+        );
+        return new Binary(buffer, l);
     }
 
     /**
@@ -344,6 +400,12 @@ public final class Toolkit {
         if (value instanceof CharSequence) {
             return chan.set(
                 alias, StringifySpare.INSTANCE, value
+            );
+        }
+
+        if (value instanceof ByteSequence) {
+            return chan.set(
+                alias, BinaryifySpare.INSTANCE, value
             );
         }
 

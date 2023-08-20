@@ -780,7 +780,6 @@ public interface Supplier extends Context {
                         if (magus == null) {
                             if (clazz.isInterface() ||
                                 Coder.class.isAssignableFrom(clazz) ||
-                                Binary.class.isAssignableFrom(clazz) ||
                                 Entity.class.isAssignableFrom(clazz) ||
                                 Throwable.class.isAssignableFrom(clazz)) {
                                 if (name != null) {
@@ -788,6 +787,28 @@ public interface Supplier extends Context {
                                 } else {
                                     return null;
                                 }
+                            }
+                            if (ByteSequence.class.isAssignableFrom(clazz)) {
+                                if (clazz == Binary.class) {
+                                    spare = BinarySpare.INSTANCE;
+                                } else if (clazz == ByteSequence.class) {
+                                    if (name == null ||
+                                        name.isBlank()) {
+                                        return BinaryifySpare.INSTANCE;
+                                    }
+                                    break span;
+                                } else if (clazz == Alias.class ||
+                                    clazz == Space.class || clazz == Value.class) {
+                                    spare = new BinaryifySpare(clazz);
+                                } else {
+                                    if (name != null) {
+                                        break span;
+                                    } else {
+                                        return null;
+                                    }
+                                }
+                                major.put(clazz, spare);
+                                return spare;
                             }
                         } else {
                             Class<?> agent = magus.agent();

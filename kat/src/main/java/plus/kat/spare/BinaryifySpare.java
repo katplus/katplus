@@ -18,6 +18,7 @@ package plus.kat.spare;
 import plus.kat.*;
 import plus.kat.actor.*;
 import plus.kat.chain.*;
+import plus.kat.stream.*;
 
 import java.io.IOException;
 
@@ -28,32 +29,34 @@ import static plus.kat.stream.Toolkit.*;
  * @since 0.0.6
  */
 @SuppressWarnings("unchecked")
-public class StringifySpare extends BaseSpare<Object> {
+public class BinaryifySpare extends BaseSpare<Object> {
 
-    public static final StringifySpare
-        INSTANCE = new StringifySpare();
+    public static final BinaryifySpare
+        INSTANCE = new BinaryifySpare();
 
     final int type;
 
-    public StringifySpare() {
+    public BinaryifySpare() {
         this(
-            CharSequence.class
+            ByteSequence.class
         );
     }
 
-    public StringifySpare(
+    public BinaryifySpare(
         @NotNull Class<?> klass
     ) {
         super(
             (Class<Object>) klass
         );
-        if (klass == String.class ||
-            klass == CharSequence.class) {
+        if (klass == Binary.class ||
+            klass == ByteSequence.class) {
             type = 0;
-        } else if (klass == StringBuffer.class) {
+        } else if (klass == Alias.class) {
             type = 1;
-        } else if (klass == StringBuilder.class) {
+        } else if (klass == Space.class) {
             type = 2;
+        } else if (klass == Value.class) {
+            type = 3;
         } else {
             throw new IllegalStateException(
                 "Received unsupported: " + klass.getName()
@@ -63,20 +66,12 @@ public class StringifySpare extends BaseSpare<Object> {
 
     @Override
     public Object apply() {
-        switch (type) {
-            case 1: {
-                return new StringBuffer();
-            }
-            case 2: {
-                return new StringBuilder();
-            }
-        }
         return null;
     }
 
     @Override
     public String getSpace() {
-        return "String";
+        return "Binary";
     }
 
     @Override
@@ -87,22 +82,26 @@ public class StringifySpare extends BaseSpare<Object> {
     }
 
     @Override
-    public Object read(
+    public Binary read(
         @NotNull Flag flag,
         @NotNull Value value
     ) {
-        String text = string(value);
-        if (text != null) {
-            switch (type) {
-                case 1: {
-                    return new StringBuffer(text);
-                }
-                case 2: {
-                    return new StringBuilder(text);
-                }
+        byte[] flow = copyOf(value);
+        if (flow == null) {
+            return null;
+        }
+        switch (type) {
+            case 1: {
+                return new Alias(flow);
+            }
+            case 2: {
+                return new Space(flow);
+            }
+            case 3: {
+                return new Value(flow);
             }
         }
-        return text;
+        return new Binary(flow);
     }
 
     @Override
@@ -110,13 +109,13 @@ public class StringifySpare extends BaseSpare<Object> {
         @NotNull Flux flux,
         @NotNull Object value
     ) throws IOException {
-        if (value instanceof String) {
+        if (value instanceof Binary) {
             flux.emit(
-                (String) value
+                (Binary) value
             );
         } else {
             flux.emit(
-                (CharSequence) value
+                (ByteSequence) value
             );
         }
     }
