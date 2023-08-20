@@ -26,10 +26,24 @@ public interface ByteSequence {
     int size();
 
     /**
+     * Returns the hashCode of this sequence
+     */
+    @Override
+    int hashCode();
+
+    /**
      * Returns the index value of this sequence
      *
      * @param i the specified index of element
-     * @throws IndexOutOfBoundsException If the index is out of bounds
      */
     byte get(int i);
+
+    /**
+     * Compares the object with this sequence
+     * to determine if their contents are the same
+     *
+     * @param o the specified object to be compared
+     */
+    @Override
+    boolean equals(Object o);
 }
