@@ -21,10 +21,8 @@ import plus.kat.actor.Nullable;
 import plus.kat.*;
 import plus.kat.spare.*;
 
-import plus.kat.utils.Config;
-import plus.kat.utils.KatBuffer;
-
 import java.io.*;
+import java.net.*;
 import java.nio.charset.*;
 import java.util.*;
 import java.lang.reflect.*;
@@ -37,6 +35,33 @@ import static java.nio.charset.StandardCharsets.*;
  * @since 0.0.6
  */
 public final class Toolkit {
+
+    static final Properties
+        properties = new Properties();
+
+    static {
+        try {
+            ClassLoader cl = Thread
+                .currentThread()
+                .getContextClassLoader();
+
+            if (cl == null) {
+                cl = ClassLoader
+                    .getSystemClassLoader();
+            }
+
+            URL url = cl.getResource(
+                "katplus.properties"
+            );
+            if (url != null) {
+                try (InputStream in = url.openStream()) {
+                    properties.load(in);
+                }
+            }
+        } catch (Throwable e) {
+            // Ignore this exception
+        }
+    }
 
     private Toolkit() {
         throw new IllegalStateException();
@@ -76,6 +101,34 @@ public final class Toolkit {
         'O', 'P', 'Q', 'R', 'S', 'T',
         'U', 'V', 'W', 'X', 'Y', 'Z'
     };
+
+    /**
+     * Returns the attribute indicated by the specified key
+     *
+     * @param key the specified key value
+     * @param def the specified default value
+     */
+    public static int getProperty(
+        @NotNull String key, int def
+    ) {
+        String data = (String)
+            properties.get(key);
+        return data == null || data.isEmpty() ?
+            def : Integer.parseInt(data);
+    }
+
+    /**
+     * Returns the attribute indicated by the specified key
+     *
+     * @param key the specified key value
+     * @param def the specified default value
+     */
+    public static String getProperty(
+        @NotNull String key, String def
+    ) {
+        String data = (String) properties.get(key);
+        return data == null || data.isEmpty() ? def : data;
+    }
 
     /**
      * Unsafe, may be deleted later
@@ -688,7 +741,7 @@ public final class Toolkit {
             STREAMS = new Streams();
 
         private Streams() {
-            int l = Config.get(
+            int l = getProperty(
                 "kat.stream.length", 8192
             );
             if ((l & (valve = l - 1)) == 0) {
@@ -699,7 +752,7 @@ public final class Toolkit {
                 );
             }
 
-            int g = Config.get(
+            int g = getProperty(
                 "kat.stream.group", 8
             );
             if ((g & (mask = g - 1)) == 0) {

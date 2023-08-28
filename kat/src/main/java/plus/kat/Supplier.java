@@ -20,9 +20,6 @@ import plus.kat.chain.*;
 import plus.kat.spare.*;
 import plus.kat.stream.*;
 
-import plus.kat.utils.Config;
-import plus.kat.utils.KatLoader;
-
 import java.io.*;
 import java.math.*;
 import java.lang.reflect.*;
@@ -32,6 +29,7 @@ import java.util.concurrent.*;
 
 import static plus.kat.Algo.*;
 import static plus.kat.spare.Parser.*;
+import static plus.kat.stream.Toolkit.*;
 
 /**
  * @author kraity
@@ -363,7 +361,7 @@ public interface Supplier extends Context {
             try (KatLoader<Provider> loader =
                      new KatLoader<>(Provider.class)) {
                 loader.load(
-                    Config.get(
+                    getProperty(
                         "kat.spare.provider",
                         "plus.kat.spare.Provider"
                     )
@@ -448,10 +446,10 @@ public interface Supplier extends Context {
          */
         public Vendor() {
             this(
-                Config.get(
+                getProperty(
                     "kat.supplier.buffer", 64
                 ),
-                Config.get(
+                getProperty(
                     "kat.supplier.capacity", 64
                 )
             );

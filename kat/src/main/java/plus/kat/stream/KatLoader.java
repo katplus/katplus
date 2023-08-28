@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package plus.kat.utils;
+package plus.kat.stream;
 
 import java.io.*;
 import java.net.*;

@@ -22,9 +22,7 @@ import plus.kat.actor.Nullable;
 import plus.kat.*;
 import plus.kat.chain.*;
 import plus.kat.solver.*;
-
-import plus.kat.utils.Config;
-import plus.kat.utils.KatBuffer;
+import plus.kat.stream.*;
 
 import java.io.*;
 import java.lang.reflect.*;
@@ -538,7 +536,7 @@ public class Parser extends Factory implements Closeable {
     private static final KatBuffer<Parser>[] TABLE;
 
     static {
-        int g = Config.get(
+        int g = getProperty(
             "kat.parser.group", 16
         );
         if ((g & (MASK = g - 1)) == 0) {
