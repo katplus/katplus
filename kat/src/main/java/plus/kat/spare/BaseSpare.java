@@ -72,7 +72,10 @@ public abstract class BaseSpare<T> implements Spare<T> {
     public Factory getFactory(
         @Nullable Type type
     ) {
-        return null;
+        throw new IllegalStateException(
+            "Failed to parse the entity to `" + klass
+                + "` because parsing structure is not supported"
+        );
     }
 
     @Override

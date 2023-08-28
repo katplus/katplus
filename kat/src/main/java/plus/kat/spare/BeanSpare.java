@@ -74,13 +74,6 @@ public abstract class BeanSpare<T> implements Spare<T> {
     }
 
     @Override
-    public Factory getFactory(
-        @Nullable Type type
-    ) {
-        return null;
-    }
-
-    @Override
     public Class<T> getType() {
         return klass;
     }
@@ -112,7 +105,7 @@ public abstract class BeanSpare<T> implements Spare<T> {
         }
 
         throw new IOException(
-            "Failed to parse the value to `" + klass
+            "Failed to parse the object to `" + klass
                 + "` unless `Flag.VALUE_AS_BEAN` is enabled"
         );
     }

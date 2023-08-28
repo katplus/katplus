@@ -72,6 +72,7 @@ public interface Spare<T> extends Coder<T> {
      * Returns the {@link Border} of {@link T}
      *
      * @param flag the specified {@link Flag}
+     * @throws IllegalStateException If not supported
      */
     @Nullable
     Border getBorder(
@@ -82,6 +83,7 @@ public interface Spare<T> extends Coder<T> {
      * Returns the {@link Factory} of {@link T}
      *
      * @param type the specified actual {@link Type}
+     * @throws IllegalStateException If not supported
      */
     @Nullable
     Factory getFactory(
