@@ -24,6 +24,7 @@ import plus.kat.spare.*;
 import java.io.IOException;
 
 import static plus.kat.Draft.Unsafe.*;
+import static plus.kat.stream.Toolkit.*;
 
 /**
  * @author kraity
@@ -566,9 +567,15 @@ public class Podar implements Solver {
     @NotNull
     public static Podar apply() {
         return new Podar(
-            new Alias(512),
-            new Space(32),
-            new Value(8192)
+            new Alias(
+                ALIAS_CAPACITY
+            ),
+            new Space(
+                SPACE_CAPACITY
+            ),
+            new Value(
+                VALUE_CAPACITY
+            )
         );
     }
 }

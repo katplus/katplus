@@ -103,6 +103,29 @@ public final class Toolkit {
     };
 
     /**
+     * property etc.
+     */
+    public static final int ALIAS_CAPACITY =
+        getProperty("katplus.alias.capacity", 512);
+    public static final int SPACE_CAPACITY =
+        getProperty("katplus.space.capacity", 256);
+    public static final int VALUE_CAPACITY =
+        getProperty("katplus.value.capacity", 8192);
+
+    public static final int PARSER_GROUP =
+        getProperty("katplus.parser.group", 16);
+
+    public static final int STREAM_GROUP =
+        getProperty("katplus.stream.group", 8);
+    public static final int STREAM_CAPACITY =
+        getProperty("katplus.stream.capacity", 8192);
+
+    public static final int SUPPLIER_BUFFER =
+        getProperty("katplus.supplier.buffer", 64);
+    public static final int SUPPLIER_CAPACITY =
+        getProperty("katplus.supplier.capacity", 64);
+
+    /**
      * Returns the attribute indicated by the specified key
      *
      * @param key the specified key value
@@ -741,9 +764,7 @@ public final class Toolkit {
             STREAMS = new Streams();
 
         private Streams() {
-            int l = getProperty(
-                "kat.stream.length", 8192
-            );
+            int l = STREAM_CAPACITY;
             if ((l & (valve = l - 1)) == 0) {
                 scale = l;
             } else {
@@ -752,9 +773,7 @@ public final class Toolkit {
                 );
             }
 
-            int g = getProperty(
-                "kat.stream.group", 8
-            );
+            int g = STREAM_GROUP;
             if ((g & (mask = g - 1)) == 0) {
                 table = new KatBuffer[g];
                 do {

@@ -361,10 +361,7 @@ public interface Supplier extends Context {
             try (KatLoader<Provider> loader =
                      new KatLoader<>(Provider.class)) {
                 loader.load(
-                    getProperty(
-                        "kat.spare.provider",
-                        "plus.kat.spare.Provider"
-                    )
+                    Provider.class.getName()
                 );
 
                 if (loader.hasNext()) {
@@ -446,12 +443,7 @@ public interface Supplier extends Context {
          */
         public Vendor() {
             this(
-                getProperty(
-                    "kat.supplier.buffer", 64
-                ),
-                getProperty(
-                    "kat.supplier.capacity", 64
-                )
+                SUPPLIER_BUFFER, SUPPLIER_CAPACITY
             );
         }
 

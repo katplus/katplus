@@ -24,6 +24,7 @@ import plus.kat.spare.*;
 import java.io.IOException;
 
 import static plus.kat.Draft.Unsafe.*;
+import static plus.kat.stream.Toolkit.*;
 
 /**
  * @author kraity
@@ -624,9 +625,15 @@ public class Radar implements Solver {
     @NotNull
     public static Radar apply() {
         return new Radar(
-            new Alias(512),
-            new Space(256),
-            new Value(8192)
+            new Alias(
+                ALIAS_CAPACITY
+            ),
+            new Space(
+                SPACE_CAPACITY
+            ),
+            new Value(
+                VALUE_CAPACITY
+            )
         );
     }
 }

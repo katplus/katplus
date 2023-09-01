@@ -67,9 +67,15 @@ public class Parser extends Factory implements Closeable {
      */
     public Parser() {
         this(
-            new Alias(512),
-            new Space(256),
-            new Value(8192)
+            new Alias(
+                ALIAS_CAPACITY
+            ),
+            new Space(
+                SPACE_CAPACITY
+            ),
+            new Value(
+                VALUE_CAPACITY
+            )
         );
     }
 
@@ -536,9 +542,7 @@ public class Parser extends Factory implements Closeable {
     private static final KatBuffer<Parser>[] TABLE;
 
     static {
-        int g = getProperty(
-            "kat.parser.group", 16
-        );
+        int g = PARSER_GROUP;
         if ((g & (MASK = g - 1)) == 0) {
             TABLE = new KatBuffer[g];
             do {
