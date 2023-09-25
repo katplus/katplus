@@ -77,6 +77,17 @@ public class Json extends Stream implements Chan {
     }
 
     /**
+     * Constructs a json with the specified context and default plan
+     *
+     * @param context the specified context
+     */
+    public Json(
+        @NotNull Context context
+    ) {
+        this(DEF, context);
+    }
+
+    /**
      * Constructs a json with the plan and specified context
      *
      * @param plan    the specified plan

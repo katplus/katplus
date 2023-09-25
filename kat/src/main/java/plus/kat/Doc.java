@@ -73,6 +73,17 @@ public class Doc extends Stream implements Chan {
     }
 
     /**
+     * Constructs a xml with the specified context and default plan
+     *
+     * @param context the specified context
+     */
+    public Doc(
+        @NotNull Context context
+    ) {
+        this(DEF, context);
+    }
+
+    /**
      * Constructs a xml with the plan and specified context
      *
      * @param plan    the specified plan

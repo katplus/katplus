@@ -30,11 +30,11 @@ import static java.nio.charset.StandardCharsets.*;
  */
 public class Stream extends Binary implements Flux {
 
-    protected int depth;
     protected long flags;
-
-    protected char[] buffer;
     protected Bucket bucket;
+
+    protected int depth;
+    protected char[] chunk;
 
     protected boolean coding;
     protected boolean isolate;
@@ -969,18 +969,18 @@ public class Stream extends Binary implements Flux {
         int m = i + l;
         if (0 <= i && 0 <= l && m <= val.length()) {
             if (l != 0) {
-                char[] tmp = buffer;
+                char[] tmp = chunk;
                 if (tmp == null) {
                     if (l > 511) {
-                        buffer = tmp =
+                        chunk = tmp =
                             new char[256];
                     } else {
-                        buffer = tmp =
+                        chunk = tmp =
                             new char[64];
                     }
                 } else if (l > 511) {
                     if (tmp.length < 256) {
-                        buffer = tmp =
+                        chunk = tmp =
                             new char[256];
                     }
                 }
@@ -1340,7 +1340,7 @@ public class Stream extends Binary implements Flux {
         byte[] it = value;
         if (it.length != 0) {
             size = 0;
-            buffer = null;
+            chunk = null;
             if (isolate) {
                 value = EMPTY_BYTES;
             } else {
