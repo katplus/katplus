@@ -95,7 +95,7 @@ public interface Subject<T> extends Spare<T> {
      * of the specified property {@code name}
      *
      * @param name the property name
-     * @throws IllegalStateException If the name is invalid
+     * @throws IllegalArgumentException Wrong
      */
     @Nullable
     default Sensor setProperty(
@@ -105,8 +105,8 @@ public interface Subject<T> extends Spare<T> {
             return null;
         }
 
-        throw new IllegalStateException(
-            "Received property name is invalid"
+        throw new IllegalArgumentException(
+            "Received property name is illegal"
         );
     }
 
@@ -115,7 +115,7 @@ public interface Subject<T> extends Spare<T> {
      * of the specified property {@code name}
      *
      * @param name the property name
-     * @throws IllegalStateException If the name is invalid
+     * @throws IllegalArgumentException Wrong
      */
     @Nullable
     default Sensor getProperty(
@@ -125,8 +125,8 @@ public interface Subject<T> extends Spare<T> {
             return null;
         }
 
-        throw new IllegalStateException(
-            "Received property name is invalid"
+        throw new IllegalArgumentException(
+            "Received property name is illegal"
         );
     }
 
@@ -135,7 +135,7 @@ public interface Subject<T> extends Spare<T> {
      * of the specified parameter {@code name}
      *
      * @param name the parameter name
-     * @throws IllegalStateException If the name is invalid
+     * @throws IllegalArgumentException Wrong
      */
     @Nullable
     default Sensor setParameter(
@@ -145,8 +145,8 @@ public interface Subject<T> extends Spare<T> {
             return null;
         }
 
-        throw new IllegalStateException(
-            "Received parameter name is invalid"
+        throw new IllegalArgumentException(
+            "Received parameter name is illegal"
         );
     }
 
@@ -155,7 +155,7 @@ public interface Subject<T> extends Spare<T> {
      * of the specified parameter {@code name}
      *
      * @param name the parameter name
-     * @throws IllegalStateException If the name is invalid
+     * @throws IllegalArgumentException Wrong
      */
     @Nullable
     default Sensor getParameter(
@@ -165,8 +165,8 @@ public interface Subject<T> extends Spare<T> {
             return null;
         }
 
-        throw new IllegalStateException(
-            "Received parameter name is invalid"
+        throw new IllegalArgumentException(
+            "Received parameter name is illegal"
         );
     }
 
@@ -222,22 +222,10 @@ public interface Subject<T> extends Spare<T> {
                 subject.setProperty(alias);
 
             if (sensor != null) {
-                Type type = sensor.getType();
+                Type type = getModel(
+                    sensor.getType()
+                );
                 Coder<?> coder = sensor.getCoder();
-
-                while (true) {
-                    if (type instanceof Class ||
-                        type instanceof GenericArrayType ||
-                        type instanceof ParameterizedType) {
-                        break;
-                    } else {
-                        if (type == (type = solve(type))) {
-                            throw new IllegalStateException(
-                                "Failed to handle " + type
-                            );
-                        }
-                    }
-                }
 
                 if (coder == null) {
                     coder = context.assign(
@@ -281,21 +269,9 @@ public interface Subject<T> extends Spare<T> {
                     sensor.getCoder();
 
                 if (coder == null) {
-                    Type type = sensor.getType();
-                    while (true) {
-                        if (type instanceof Class ||
-                            type instanceof GenericArrayType ||
-                            type instanceof ParameterizedType) {
-                            break;
-                        } else {
-                            if (type == (type = solve(type))) {
-                                throw new IllegalStateException(
-                                    "Failed to handle " + type
-                                );
-                            }
-                        }
-                    }
-
+                    Type type = getModel(
+                        sensor.getType()
+                    );
                     coder = context.assign(
                         type, space
                     );
@@ -328,26 +304,37 @@ public interface Subject<T> extends Spare<T> {
         }
 
         /**
-         * Resolves the unknown type with this helper,
-         * substituting type variables as far as possible
+         * Use this builder to resolve unknown mold type
+         * and replace type variables as much as possible
+         *
+         * @param mold the specified mold type
+         * @throws IllegalArgumentException If the mold is illegal
          */
         @Override
-        public Type solve(Type type) {
-            if (type instanceof WildcardType) {
-                return solve(
-                    ((WildcardType) type).getUpperBounds()[0]
+        public Type getModel(
+            @NotNull Type mold
+        ) {
+            if (mold instanceof Class ||
+                mold instanceof GenericArrayType ||
+                mold instanceof ParameterizedType) {
+                return mold;
+            }
+
+            if (mold instanceof WildcardType) {
+                return getModel(
+                    ((WildcardType) mold).getUpperBounds()[0]
                 );
             }
 
-            if (type instanceof TypeVariable) {
-                Type actor = this.type;
+            if (mold instanceof TypeVariable) {
+                Type actor = type;
                 Class<?> clazz = subject.getType();
 
                 if (clazz != null) {
                     // If GenericDeclaration is method,
                     // then a ClassCastException is thrown
                     Class<?> entry = (Class<?>) (
-                        (TypeVariable<?>) type).getGenericDeclaration();
+                        (TypeVariable<?>) mold).getGenericDeclaration();
 
                     Search:
                     for (Class<?> cls; ; clazz = cls) {
@@ -377,14 +364,14 @@ public interface Subject<T> extends Spare<T> {
                                 }
                             }
                         }
-                        return holder.solve(type);
+                        return super.getModel(mold);
                     }
 
                     if (actor instanceof ParameterizedType) {
                         Object[] items = entry.getTypeParameters();
                         for (int i = 0; i < items.length; i++) {
-                            if (type == items[i]) {
-                                return solve(
+                            if (mold == items[i]) {
+                                return getModel(
                                     ((ParameterizedType) actor).getActualTypeArguments()[i]
                                 );
                             }
@@ -392,10 +379,10 @@ public interface Subject<T> extends Spare<T> {
                     }
                 }
                 throw new IllegalStateException(
-                    "Failed to resolve " + type + " from " + actor
+                    "Failed to resolve " + mold + " from " + actor
                 );
             }
-            return type;
+            return super.getModel(mold);
         }
 
         /**
@@ -462,22 +449,10 @@ public interface Subject<T> extends Spare<T> {
                 subject.setParameter(alias);
 
             if (sensor != null) {
-                Type type = sensor.getType();
+                Type type = getModel(
+                    sensor.getType()
+                );
                 Coder<?> coder = sensor.getCoder();
-
-                while (true) {
-                    if (type instanceof Class ||
-                        type instanceof GenericArrayType ||
-                        type instanceof ParameterizedType) {
-                        break;
-                    } else {
-                        if (type == (type = solve(type))) {
-                            throw new IllegalStateException(
-                                "Failed to handle " + type
-                            );
-                        }
-                    }
-                }
 
                 if (coder == null) {
                     coder = context.assign(
@@ -521,21 +496,9 @@ public interface Subject<T> extends Spare<T> {
                     sensor.getCoder();
 
                 if (coder == null) {
-                    Type type = sensor.getType();
-                    while (true) {
-                        if (type instanceof Class ||
-                            type instanceof GenericArrayType ||
-                            type instanceof ParameterizedType) {
-                            break;
-                        } else {
-                            if (type == (type = solve(type))) {
-                                throw new IllegalStateException(
-                                    "Failed to handle " + type
-                                );
-                            }
-                        }
-                    }
-
+                    Type type = getModel(
+                        sensor.getType()
+                    );
                     coder = context.assign(
                         type, space
                     );
@@ -623,7 +586,7 @@ public interface Subject<T> extends Spare<T> {
         public void onOpen() throws IOException {
             Class<?> own = owner;
             if (own != null) {
-                Factory holder = holder();
+                Factory holder = getParent();
                 if (holder instanceof Builder) {
                     Object bean = ((Builder<?>) holder).build();
                     if (bean == null) {
@@ -672,22 +635,10 @@ public interface Subject<T> extends Spare<T> {
                     }
                 }
 
-                Type type = sensor.getType();
+                Type type = getModel(
+                    sensor.getType()
+                );
                 Coder<?> coder = sensor.getCoder();
-
-                while (true) {
-                    if (type instanceof Class ||
-                        type instanceof GenericArrayType ||
-                        type instanceof ParameterizedType) {
-                        break;
-                    } else {
-                        if (type == (type = solve(type))) {
-                            throw new IllegalStateException(
-                                "Failed to handle " + type
-                            );
-                        }
-                    }
-                }
 
                 if (coder == null) {
                     coder = context.assign(
@@ -742,21 +693,9 @@ public interface Subject<T> extends Spare<T> {
                     sensor.getCoder();
 
                 if (coder == null) {
-                    Type type = sensor.getType();
-                    while (true) {
-                        if (type instanceof Class ||
-                            type instanceof GenericArrayType ||
-                            type instanceof ParameterizedType) {
-                            break;
-                        } else {
-                            if (type == (type = solve(type))) {
-                                throw new IllegalStateException(
-                                    "Failed to handle " + type
-                                );
-                            }
-                        }
-                    }
-
+                    Type type = getModel(
+                        sensor.getType()
+                    );
                     coder = context.assign(
                         type, space
                     );

@@ -53,7 +53,7 @@ public class Parser extends Factory implements Closeable {
      * state etc.
      */
     protected Flow flow;
-    protected Object result;
+    protected Object target;
 
     /**
      * solver etc.
@@ -156,15 +156,15 @@ public class Parser extends Factory implements Closeable {
     /**
      * Resolves the {@link Flow} by using specified {@link Solver}
      *
-     * @param flow the specified flow to be resolved
+     * @param stream the specified flow to be resolved
      * @throws IOException If an I/O error or parsing error occurs
      */
     @Nullable
     public <T> T solve(
-        @NotNull Flow flow,
-        @NotNull Solver edge
+        @NotNull Flow stream,
+        @NotNull Solver solver
     ) throws IOException {
-        if (flow == null) {
+        if (stream == null) {
             throw new IOException(
                 "Received flow is null"
             );
@@ -177,28 +177,28 @@ public class Parser extends Factory implements Closeable {
         }
 
         try {
-            this.flow = flow;
+            flow = stream;
             if (context == null) {
                 context = spare.getContext();
             }
 
-            if (flow.also()) {
-                edge.solve(
-                    flow, this
+            if (stream.also()) {
+                solver.solve(
+                    stream, this
                 );
-                Object bean = result;
-                if (bean != null) {
-                    result = null;
-                    return (T) bean;
+                Object data = target;
+                if (data != null) {
+                    target = null;
+                    return (T) data;
                 }
             }
         } catch (Exception alas) {
             throw new IOException(
-                "Failed to solve " + flow, alas
+                "Failed to solve " + stream, alas
             );
         } finally {
-            edge.clear();
-            flow.close();
+            solver.clear();
+            stream.close();
         }
 
         return null;
@@ -268,7 +268,7 @@ public class Parser extends Factory implements Closeable {
     public void onEach(
         @Nullable Object value
     ) throws IOException {
-        result = value;
+        target = value;
     }
 
     /**
@@ -327,7 +327,7 @@ public class Parser extends Factory implements Closeable {
     ) throws IOException {
         Spare<?> coder = spare;
         if (coder != null) {
-            result = coder.read(
+            target = coder.read(
                 flow, value
             );
         } else {
@@ -352,7 +352,7 @@ public class Parser extends Factory implements Closeable {
         if (parent != null) {
             if (state) {
                 parent.onEach(
-                    result
+                    target
                 );
             }
             holder = null;
@@ -362,26 +362,37 @@ public class Parser extends Factory implements Closeable {
     }
 
     /**
-     * Resolves the unknown type with this helper,
-     * substituting type variables as far as possible
+     * Use this parser to resolve unknown mold type
+     * and replace type variables as much as possible
+     *
+     * @param mold the specified mold type
+     * @throws IllegalArgumentException If the mold is illegal
      */
     @Override
-    public Type solve(Type type) {
-        if (type instanceof WildcardType) {
-            return solve(
-                ((WildcardType) type).getUpperBounds()[0]
+    public Type getModel(
+        @NotNull Type mold
+    ) {
+        if (mold instanceof Class ||
+            mold instanceof GenericArrayType ||
+            mold instanceof ParameterizedType) {
+            return mold;
+        }
+
+        if (mold instanceof WildcardType) {
+            return getModel(
+                ((WildcardType) mold).getUpperBounds()[0]
             );
         }
 
-        if (type instanceof TypeVariable) {
-            Type actor = this.type;
+        if (mold instanceof TypeVariable) {
+            Type actor = type;
             Class<?> clazz = classOf(actor);
 
             if (clazz != null) {
                 // If GenericDeclaration is method,
                 // then a ClassCastException is thrown
                 Class<?> entry = (Class<?>) (
-                    (TypeVariable<?>) type).getGenericDeclaration();
+                    (TypeVariable<?>) mold).getGenericDeclaration();
 
                 Search:
                 for (Class<?> cls; ; clazz = cls) {
@@ -411,16 +422,20 @@ public class Parser extends Factory implements Closeable {
                             }
                         }
                     }
+
+                    if (holder != null) {
+                        return holder.getModel(mold);
+                    }
                     throw new IllegalStateException(
-                        "Failed to resolve " + type + " from " + actor
+                        "Failed to resolve " + mold + " from " + actor
                     );
                 }
 
                 if (actor instanceof ParameterizedType) {
                     Object[] items = entry.getTypeParameters();
                     for (int i = 0; i < items.length; i++) {
-                        if (type == items[i]) {
-                            return solve(
+                        if (mold == items[i]) {
+                            return getModel(
                                 ((ParameterizedType) actor).getActualTypeArguments()[i]
                             );
                         }
@@ -428,10 +443,17 @@ public class Parser extends Factory implements Closeable {
                 }
             }
             throw new IllegalStateException(
-                "Failed to resolve " + type + " from " + actor
+                "Failed to resolve " + mold + " from " + actor
             );
         }
-        return type;
+
+        if (mold != null) {
+            return holder == null ?
+                mold : holder.getModel(mold);
+        }
+        throw new IllegalArgumentException(
+            "Received unknown mold type is illegal"
+        );
     }
 
     /**

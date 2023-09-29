@@ -33,8 +33,9 @@ public abstract class Builder<T> extends Factory implements Flag {
      * Starts a child of this spider and returns the child
      *
      * @return the child spider, may be null
-     * @throws IOException           If a read error occurs
-     * @throws IllegalStateException If a fatal error occurs
+     * @throws IOException              If a read error occurs
+     * @throws IllegalStateException    If a fatal error occurs
+     * @throws IllegalArgumentException If a params error occurs
      */
     @Nullable
     public Spider onOpen(
@@ -52,20 +53,11 @@ public abstract class Builder<T> extends Factory implements Flag {
      * Can be called multiple times, and when implementing
      * this method, the return {@link T} must be the same each time
      *
-     * @throws IllegalStateException If a fatal error occurs
+     * @throws IllegalStateException    If a fatal error occurs
+     * @throws IllegalArgumentException If a params error occurs
      */
     @Nullable
     public abstract T build();
-
-    /**
-     * Resolves the unknown type with this builder,
-     * substituting type variables as far as possible
-     */
-    public Type solve(
-        @NotNull Type type
-    ) {
-        return holder.solve(type);
-    }
 
     /**
      * Check if this factory uses the feature
@@ -76,6 +68,30 @@ public abstract class Builder<T> extends Factory implements Flag {
         @NotNull long flag
     ) {
         return holder.isFlag(flag);
+    }
+
+    /**
+     * Use this builder to resolve unknown mold type
+     * and replace type variables as much as possible
+     *
+     * @param mold the specified mold type
+     * @throws IllegalArgumentException If the mold is illegal
+     */
+    @Override
+    public Type getModel(
+        @NotNull Type mold
+    ) {
+        return holder.getModel(mold);
+    }
+
+    /**
+     * Get the parent of this {@link Builder}
+     *
+     * @return Returns the parent of this builder, otherwise null
+     */
+    @Nullable
+    public Factory getParent() {
+        return holder; // parent factory
     }
 
     /**

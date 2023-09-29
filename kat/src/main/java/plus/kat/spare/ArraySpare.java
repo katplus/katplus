@@ -95,14 +95,13 @@ public class ArraySpare extends BeanSpare<Object> {
         @NotNull Object value
     ) throws IOException {
         if (value instanceof Object[]) {
-            for (Object val : (Object[]) value) {
+            for (Object elem : (Object[]) value) {
                 chan.set(
-                    null, val
+                    null, elem
                 );
             }
         } else {
-            int size = Array.getLength(value);
-            for (int i = 0; i < size; i++) {
+            for (int i = 0, m = Array.getLength(value); i < m; i++) {
                 chan.set(
                     null, Array.get(value, i)
                 );
@@ -137,16 +136,14 @@ public class ArraySpare extends BeanSpare<Object> {
         }
 
         if (type instanceof GenericArrayType) {
-            GenericArrayType g = (GenericArrayType) type;
             return new Builder1(
-                g.getGenericComponentType(), elem
+                ((GenericArrayType) type).getGenericComponentType()
             );
         }
 
         if (type instanceof ParameterizedType) {
-            ParameterizedType p = (ParameterizedType) type;
             return new Builder2(
-                p.getActualTypeArguments()
+                ((ParameterizedType) type).getActualTypeArguments()
             );
         }
 
@@ -164,23 +161,15 @@ public class ArraySpare extends BeanSpare<Object> {
         protected Class<?> elem;
         protected Spare<?> spare;
 
-        public Builder0(
-            Class<?> elem
-        ) {
-            this.elem = elem;
+        public Builder0(Class<?> mold) {
+            elem = mold;
         }
 
         @Override
         public void onOpen() throws IOException {
-            if ((spare = context.assign(elem)) != null) {
-                size = 0;
-                mark = 1;
-                bean = Array.newInstance(
-                    elem, length = 1
-                );
-            } else {
+            if ((spare = context.assign(elem)) == null) {
                 throw new IOException(
-                    "Can't lookup the Spare of '" + elem + "'"
+                    "Not found the spare of " + elem
                 );
             }
         }
@@ -191,11 +180,12 @@ public class ArraySpare extends BeanSpare<Object> {
             @NotNull Space space,
             @NotNull Value value
         ) throws IOException {
+            Object data = spare.read(this, value);
             if (length == size) {
                 enlarge();
             }
             Array.set(
-                bean, size++, spare.read(this, value)
+                bean, size++, data
             );
         }
 
@@ -203,6 +193,15 @@ public class ArraySpare extends BeanSpare<Object> {
          * capacity expansion
          */
         protected void enlarge() {
+            Object data = bean;
+            if (data == null) {
+                mark = 1;
+                bean = Array.newInstance(
+                    elem, length = 1
+                );
+                return;
+            }
+
             int capacity;
             if (Integer.MAX_VALUE - mark > size) {
                 // fibonacci
@@ -214,95 +213,107 @@ public class ArraySpare extends BeanSpare<Object> {
                 capacity = size + 8;
             }
 
-            Object make = Array.newInstance(
+            bean = Array.newInstance(
                 elem, length = capacity
             );
 
             //noinspection SuspiciousSystemArraycopy
             System.arraycopy(
-                bean, 0, bean = make, 0, mark = size
+                data, 0, bean, 0, mark = size
             );
         }
 
         @Override
         public Object build() {
-            if (length == size) {
-                return bean;
+            Object data = bean;
+            if (data == null) {
+                return bean = Array
+                    .newInstance(elem, 0);
             }
 
-            Object data = Array
-                .newInstance(elem, size);
+            if (length == size) {
+                return data;
+            }
+
+            Object make = Array
+                .newInstance(elem, length = size);
             //noinspection SuspiciousSystemArraycopy
-            System.arraycopy(
-                bean, 0, data, 0, size
-            );
-            return data;
+            System.arraycopy(data, 0, make, 0, size);
+            return bean = make;
         }
 
         @Override
         public void onClose() {
             bean = null;
+            size = length = 0;
         }
     }
 
     public static class Builder1 extends Builder0 {
 
-        protected Type visa;
+        protected int step;
+        protected Type root;
+        protected Factory next;
 
         public Builder1(
-            Class<?> elem
+            Type mold
         ) {
-            super(elem);
-            this.visa = elem;
+            super(null);
+            this.step = -2;
+            this.root = mold;
+        }
+
+        private Builder1(
+            Class<?> mold,
+            Builder1 head
+        ) {
+            super(mold);
+            this.root = head.root;
+            this.step = head.step - 1;
         }
 
         public Builder1(
-            Type visa,
-            Class<?> elem
+            Class<?> mold
         ) {
-            super(elem);
-            this.visa = visa;
+            super(mold);
+            this.root = mold;
+            this.step = mold.isArray() ||
+                mold == Object.class ? -1 : -3;
         }
 
         @Override
         public void onOpen() {
-            Type v = visa;
-            Class<?> e = elem;
-            if (e != v) {
-                int i = 0;
-                for (; v instanceof GenericArrayType; i++) {
-                    v = ((GenericArrayType) v).getGenericComponentType();
+            switch (step) {
+                case -3: {
+                    step = -1;
+                    spare = context.assign(elem);
+                    break;
                 }
-                v = holder.solve(v);
-                if (v instanceof Class) {
-                    if (i == 0) {
-                        e = (Class<?>) v;
-                    } else {
-                        e = Array.newInstance(
-                            (Class<?>) v, new int[i]
-                        ).getClass();
+                case -2: {
+                    int i = 0;
+                    while (root instanceof GenericArrayType) {
+                        i++;
+                        root = ((GenericArrayType) root)
+                            .getGenericComponentType();
                     }
-                    visa = elem = e;
-                } else {
-                    if (i == 0) {
-                        elem = e = classOf(visa = v);
+
+                    if (root instanceof Class) {
+                        elem = (Class<?>) root;
                     } else {
-                        elem = e = Array.newInstance(
-                            classOf(v), new int[i]
-                        ).getClass();
+                        elem = classOf(
+                            root = getModel(root)
+                        );
+                    }
+
+                    if ((step = i) == 0) {
+                        if (elem != Object.class) {
+                            spare = context.assign(root);
+                        }
+                    } else {
+                        elem = Array.newInstance(elem, new int[i]).getClass();
                     }
                 }
             }
-
-            if (e != Object.class) {
-                spare = context.assign(e);
-            }
-
-            size = 0;
-            mark = 1;
-            bean = Array.newInstance(
-                e, length = 1
-            );
         }
 
         @Override
@@ -310,26 +321,44 @@ public class ArraySpare extends BeanSpare<Object> {
             @NotNull Alias alias,
             @NotNull Space space
         ) throws IOException {
-            Spare<?> spare0 = spare;
-            if (spare0 == null) {
-                spare0 = context.assign(elem, space);
-                if (spare0 == null) {
-                    throw new IOException(
-                        "Not found the spare of " + space
-                    );
+            Factory child = next;
+            if (child == null) {
+                switch (step) {
+                    case -1: {
+                        Class<?> e = elem
+                            .getComponentType();
+                        if (e != null) {
+                            child = next = new Builder1(e);
+                            break;
+                        }
+                    }
+                    case +0: {
+                        Spare<?> coder =
+                            context.assign(root, space);
+                        if (coder == null) {
+                            throw new IOException(
+                                "Not found the spare of " + root
+                            );
+                        }
+                        child = coder.getFactory(root);
+                        if (child != null) {
+                            break;
+                        } else {
+                            return null;
+                        }
+                    }
+                    case -2:
+                    case -3: {
+                        throw new IOException();
+                    }
+                    default: {
+                        child = next = new Builder1(
+                            elem.getComponentType(), this
+                        );
+                    }
                 }
             }
-
-            Factory child =
-                spare0.getFactory(visa);
-
-            if (child == null) {
-                return null;
-            }
-
-            return child.init(
-                this, context
-            );
+            return child.init(this, context);
         }
 
         @Override
@@ -350,28 +379,23 @@ public class ArraySpare extends BeanSpare<Object> {
             @NotNull Space space,
             @NotNull Value value
         ) throws IOException {
-            Spare<?> spare0 = spare;
-            if (spare0 == null) {
-                spare0 = context.assign(elem, space);
-                if (spare0 == null) {
+            Spare<?> coder = spare;
+            if (coder == null) {
+                coder = context.assign(elem, space);
+                if (coder == null) {
                     throw new IOException(
-                        "Not found the spare of " + space
+                        "Not found the spare of " + elem
                     );
                 }
             }
 
+            Object data = coder.read(this, value);
             if (length == size) {
                 enlarge();
             }
-
             Array.set(
-                bean, size++, spare0.read(this, value)
+                bean, size++, data
             );
-        }
-
-        @Override
-        public void onClose() {
-            bean = null;
         }
     }
 
@@ -382,9 +406,9 @@ public class ArraySpare extends BeanSpare<Object> {
         protected Object[] bean;
 
         public Builder2(
-            Type[] visa
+            Type[] mold
         ) {
-            elems = visa;
+            elems = mold;
         }
 
         @Override
@@ -404,21 +428,12 @@ public class ArraySpare extends BeanSpare<Object> {
                 Spare<?> spare = context.assign(type);
 
                 if (spare != null) {
-                    Factory child =
-                        spare.getFactory(type);
-
-                    if (child == null) {
-                        return null;
-                    }
-
-                    return child.init(
-                        this, context
-                    );
-                } else {
-                    throw new IOException(
-                        "Not found the spare of " + space
-                    );
+                    Factory child = spare.getFactory(type);
+                    return child == null ? null : child.init(this, context);
                 }
+                throw new IOException(
+                    "Not found the spare of " + space
+                );
             } else {
                 throw new IOException(
                     "The number of elements exceeds the range: " + types.length
@@ -441,16 +456,11 @@ public class ArraySpare extends BeanSpare<Object> {
         ) throws IOException {
             Type[] types = elems;
             if (++index < types.length) {
-                Spare<?> spare =
-                    context.assign(
-                        types[index]
-                    );
+                Type type = types[index];
+                Spare<?> spare = context.assign(type);
 
                 if (spare != null) {
-                    bean[index] =
-                        spare.read(
-                            this, value
-                        );
+                    bean[index] = spare.read(this, value);
                 } else {
                     throw new IOException(
                         "Not found the spare of " + space

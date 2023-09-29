@@ -15,9 +15,10 @@
  */
 package plus.kat.spare;
 
-import plus.kat.Flag;
+import plus.kat.*;
+import plus.kat.actor.*;
 
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 
 /**
  * @author kraity
@@ -25,14 +26,21 @@ import java.lang.reflect.Type;
  */
 public interface Helper extends Flag {
     /**
-     * Handles the unknown {@link Type}
+     * Use this helper to resolve unknown mold type
+     * and replace type variables as much as possible
+     *
+     * @param mold the specified mold type
+     * @throws IllegalArgumentException If the mold is illegal
      */
-    Type solve(
-        Type type
-    );
-
-    /**
-     * Returns the holder of this {@link Helper}
-     */
-    Helper holder();
+    @NotNull
+    default Type getModel(
+        @NotNull Type mold
+    ) {
+        if (mold != null) {
+            return mold;
+        }
+        throw new IllegalArgumentException(
+            "Received unknown mold type is illegal"
+        );
+    }
 }

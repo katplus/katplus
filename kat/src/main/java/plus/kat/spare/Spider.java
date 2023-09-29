@@ -29,8 +29,9 @@ public interface Spider {
      * Opens a child of this spider and returns the child
      *
      * @return the child spider, may be null
-     * @throws IOException           If a read error occurs
-     * @throws IllegalStateException If a fatal error occurs
+     * @throws IOException              If a read error occurs
+     * @throws IllegalStateException    If a fatal error occurs
+     * @throws IllegalArgumentException If a params error occurs
      */
     @Nullable
     Spider onOpen(
@@ -41,8 +42,9 @@ public interface Spider {
     /**
      * Uses the alias, spare and value to update property
      *
-     * @throws IOException           If a read error occurs
-     * @throws IllegalStateException If a fatal error occurs
+     * @throws IOException              If a read error occurs
+     * @throws IllegalStateException    If a fatal error occurs
+     * @throws IllegalArgumentException If a params error occurs
      */
     void onEach(
         @NotNull Alias alias,
@@ -54,8 +56,9 @@ public interface Spider {
      * Closes the transport of this spider and returns the parent
      *
      * @return the parent spider, may be null
-     * @throws IOException           If a read error occurs
-     * @throws IllegalStateException If a fatal error occurs
+     * @throws IOException              If a read error occurs
+     * @throws IllegalStateException    If a fatal error occurs
+     * @throws IllegalArgumentException If a params error occurs
      */
     @Nullable
     Spider onClose(

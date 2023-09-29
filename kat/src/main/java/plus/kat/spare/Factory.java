@@ -32,8 +32,9 @@ public abstract class Factory implements Spider, Helper {
     /**
      * Prepare this {@link Factory} before parsing
      *
-     * @throws IOException           If a read error occurs
-     * @throws IllegalStateException If a fatal error occurs
+     * @throws IOException              If a read error occurs
+     * @throws IllegalStateException    If a fatal error occurs
+     * @throws IllegalArgumentException If a params error occurs
      */
     public void onOpen()
         throws IOException {
@@ -43,8 +44,9 @@ public abstract class Factory implements Spider, Helper {
     /**
      * Uses the received value to update property
      *
-     * @throws IOException           If a read error occurs
-     * @throws IllegalStateException If a fatal error occurs
+     * @throws IOException              If a read error occurs
+     * @throws IllegalStateException    If a fatal error occurs
+     * @throws IllegalArgumentException If a params error occurs
      */
     public void onEach(
         @Nullable Object value
@@ -55,8 +57,9 @@ public abstract class Factory implements Spider, Helper {
     /**
      * Closes the resources for this {@link Factory}
      *
-     * @throws IOException           If a read error occurs
-     * @throws IllegalStateException If a fatal error occurs
+     * @throws IOException              If a read error occurs
+     * @throws IllegalStateException    If a fatal error occurs
+     * @throws IllegalArgumentException If a params error occurs
      */
     public void onClose()
         throws IOException {
@@ -67,8 +70,9 @@ public abstract class Factory implements Spider, Helper {
      * Initializes the context for this factory
      *
      * @return this or the proxy spider
-     * @throws IOException           If a read error occurs
-     * @throws IllegalStateException If a fatal error occurs
+     * @throws IOException              If a read error occurs
+     * @throws IllegalStateException    If a fatal error occurs
+     * @throws IllegalArgumentException If a params error occurs
      */
     @NotNull
     public Spider init(
@@ -86,13 +90,5 @@ public abstract class Factory implements Spider, Helper {
         }
         onOpen();
         return this;
-    }
-
-    /**
-     * Returns the holder of this factory
-     */
-    @Nullable
-    public Factory holder() {
-        return holder;
     }
 }

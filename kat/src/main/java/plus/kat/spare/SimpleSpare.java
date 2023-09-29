@@ -103,27 +103,27 @@ public abstract class SimpleSpare<T> extends BeanSpare<T> implements Subject<T> 
     public Sensor getProperty(
         @NotNull Object name
     ) {
-        Node[] tab = table;
-        if (tab == null) {
+        Node[] t = table;
+        long h = hash1(name);
+
+        if (t == null) {
             return null;
         }
 
-        int m = tab.length - 1;
-        long hash = hash1(name);
-
-        boolean retry = true;
+        int i = 0,
+            m = t.length - 1;
         while (true) {
-            Node n = tab[(int) (m & hash)];
-            for (; n != null; n = n.next) {
-                if (n.hash == hash) {
+            Node n = t[(int) (m & h)];
+            while (n != null) {
+                if (n.hash != h) {
+                    n = n.next;
+                } else {
                     return n.getter;
                 }
             }
-            if (retry) {
-                if (hash != (hash = hash2(name))) {
-                    retry = false;
-                    continue;
-                }
+            if (i == 0 && h != (h = hash2(name))) {
+                i = -1;
+                continue;
             }
 
             return null;
@@ -134,27 +134,27 @@ public abstract class SimpleSpare<T> extends BeanSpare<T> implements Subject<T> 
     public Sensor setProperty(
         @NotNull Object name
     ) {
-        Node[] tab = table;
-        if (tab == null) {
+        Node[] t = table;
+        long h = hash1(name);
+
+        if (t == null) {
             return null;
         }
 
-        int m = tab.length - 1;
-        long hash = hash1(name);
-
-        boolean retry = true;
+        int i = 0,
+            m = t.length - 1;
         while (true) {
-            Node n = tab[(int) (m & hash)];
-            for (; n != null; n = n.next) {
-                if (n.hash == hash) {
+            Node n = t[(int) (m & h)];
+            while (n != null) {
+                if (n.hash != h) {
+                    n = n.next;
+                } else {
                     return n.setter;
                 }
             }
-            if (retry) {
-                if (hash != (hash = hash2(name))) {
-                    retry = false;
-                    continue;
-                }
+            if (i == 0 && h != (h = hash2(name))) {
+                i = -1;
+                continue;
             }
 
             return null;
@@ -172,27 +172,27 @@ public abstract class SimpleSpare<T> extends BeanSpare<T> implements Subject<T> 
     public Sensor setParameter(
         @NotNull Object name
     ) {
-        Node[] tab = table;
-        if (tab == null) {
+        Node[] t = table;
+        long h = hash1(name);
+
+        if (t == null) {
             return null;
         }
 
-        int m = tab.length - 1;
-        long hash = hash1(name);
-
-        boolean retry = true;
+        int i = 0,
+            m = t.length - 1;
         while (true) {
-            Node n = tab[(int) (m & hash)];
-            for (; n != null; n = n.next) {
-                if (n.hash == hash) {
+            Node n = t[(int) (m & h)];
+            while (n != null) {
+                if (n.hash != h) {
+                    n = n.next;
+                } else {
                     return n.arguer;
                 }
             }
-            if (retry) {
-                if (hash != (hash = hash2(name))) {
-                    retry = false;
-                    continue;
-                }
+            if (i == 0 && h != (h = hash2(name))) {
+                i = -1;
+                continue;
             }
 
             return null;

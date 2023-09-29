@@ -29,8 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 
-import static plus.kat.stream.Toolkit.*;
-
 /**
  * @author kraity
  * @since 0.0.1
@@ -164,55 +162,48 @@ public class MapSpare extends BeanSpare<Map> {
         protected Map bean;
         protected Object name;
 
-        protected Class<?> elemType;
-        protected Spare<Map> rawSpare;
-
+        protected Type elem;
         protected Type actual;
-        protected Type key, val;
+
+        protected Spare<Map> rawSpare;
         protected Spare<?> keySpace, valSpace;
 
         public Builder0(
             Type type,
             Spare<Map> spare
         ) {
+            elem = Object.class;
             actual = type;
             rawSpare = spare;
-            elemType = Object.class;
         }
 
         @Override
         public void onOpen() throws IOException {
             Type type = actual;
             if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
-                Type[] args = p.getActualTypeArguments();
+                Type[] args = ((ParameterizedType)
+                    type).getActualTypeArguments();
+
+                type = args[1];
+                if (type != Object.class) {
+                    type = getModel(type);
+                    if (type != Object.class) {
+                        elem = type;
+                        valSpace = context.assign(type);
+                    }
+                }
 
                 type = args[0];
                 if (type != Object.class &&
                     type != String.class) {
-                    Class<?> cls = classOf(
-                        key = holder.solve(type)
-                    );
-                    if (cls != Object.class &&
-                        cls != String.class) {
-                        keySpace = context.assign(cls);
-                        if (keySpace == null) {
+                    type = getModel(type);
+                    if (type != Object.class &&
+                        type != String.class) {
+                        if ((keySpace = context.assign(type)) == null) {
                             throw new IOException(
-                                type + "'s spare does not exist"
+                                "Not found the spare of " + type
                             );
                         }
-                    }
-                }
-
-                type = args[1];
-                if (type != Object.class) {
-                    Class<?> cls = classOf(
-                        val = holder.solve(type)
-                    );
-                    if (cls != null &&
-                        cls != Object.class) {
-                        elemType = cls;
-                        valSpace = context.assign(cls);
                     }
                 }
             }
@@ -226,7 +217,7 @@ public class MapSpare extends BeanSpare<Map> {
         ) throws IOException {
             Spare<?> s1 = valSpace;
             if (s1 == null) {
-                s1 = context.assign(elemType, space);
+                s1 = context.assign(elem, space);
                 if (s1 == null) {
                     throw new IOException(
                         "Not found the spare of " + space
@@ -234,21 +225,18 @@ public class MapSpare extends BeanSpare<Map> {
                 }
             }
 
-            Factory child =
-                s1.getFactory(val);
-
+            Factory child = s1.getFactory(elem);
             if (child == null) {
                 return null;
-            }
-
-            Spare<?> s0 = keySpace;
-            if (s0 == null) {
-                name = alias.toString();
             } else {
-                name = s0.read(this, alias);
+                Spare<?> s0 = keySpace;
+                if (s0 == null) {
+                    name = alias.toString();
+                } else {
+                    name = s0.read(this, alias);
+                }
+                return child.init(this, context);
             }
-
-            return child.init(this, context);
         }
 
         @Override
@@ -268,7 +256,7 @@ public class MapSpare extends BeanSpare<Map> {
         ) throws IOException {
             Spare<?> s1 = valSpace;
             if (s1 == null) {
-                s1 = context.assign(elemType, space);
+                s1 = context.assign(elem, space);
                 if (s1 == null) {
                     throw new IOException(
                         "Not found the spare of " + space
@@ -279,13 +267,11 @@ public class MapSpare extends BeanSpare<Map> {
             Spare<?> s0 = keySpace;
             if (s0 == null) {
                 bean.put(
-                    alias.toString(),
-                    s1.read(this, value)
+                    alias.toString(), s1.read(this, value)
                 );
             } else {
                 bean.put(
-                    s0.read(this, alias),
-                    s1.read(this, value)
+                    s0.read(this, alias), s1.read(this, value)
                 );
             }
         }
@@ -299,7 +285,6 @@ public class MapSpare extends BeanSpare<Map> {
         public void onClose() {
             name = null;
             bean = null;
-            actual = null;
         }
     }
 }

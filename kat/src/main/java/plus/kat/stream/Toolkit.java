@@ -352,7 +352,7 @@ public final class Toolkit {
             return h;
         }
 
-        throw new IllegalStateException(
+        throw new IllegalArgumentException(
             "Received name(" + (name == null ?
                 "null" : name.getClass()) + ") is not supported"
         );
@@ -448,7 +448,7 @@ public final class Toolkit {
             return h;
         }
 
-        throw new IllegalStateException(
+        throw new IllegalArgumentException(
             "Received name(" + (name == null ?
                 "null" : name.getClass()) + ") is not supported"
         );

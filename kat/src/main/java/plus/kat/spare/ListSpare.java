@@ -26,8 +26,6 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static plus.kat.stream.Toolkit.*;
-
 /**
  * @author kraity
  * @since 0.0.1
@@ -171,11 +169,9 @@ public class ListSpare extends BeanSpare<List> {
 
     public static class Builder0<T extends Collection> extends Builder<T> {
 
+        protected T bean;
         protected Type elem;
         protected Type actual;
-
-        protected T bean;
-        protected Class<?> elemType;
 
         protected Spare<T> rawSpare;
         protected Spare<?> elemSpare;
@@ -184,25 +180,22 @@ public class ListSpare extends BeanSpare<List> {
             Type type,
             Spare<T> spare
         ) {
+            elem = Object.class;
             actual = type;
             rawSpare = spare;
-            elemType = Object.class;
         }
 
         @Override
         public void onOpen() {
             Type type = actual;
             if (type instanceof ParameterizedType) {
-                ParameterizedType p = (ParameterizedType) type;
-                type = p.getActualTypeArguments()[0];
+                type = ((ParameterizedType)
+                    type).getActualTypeArguments()[0];
                 if (type != Object.class) {
-                    Class<?> cls = classOf(
-                        elem = holder.solve(type)
-                    );
-                    if (cls != null &&
-                        cls != Object.class) {
-                        elemType = cls;
-                        elemSpare = context.assign(cls);
+                    type = getModel(type);
+                    if (type != Object.class) {
+                        elem = type;
+                        elemSpare = context.assign(type);
                     }
                 }
             }
@@ -216,7 +209,7 @@ public class ListSpare extends BeanSpare<List> {
         ) throws IOException {
             Spare<?> spare = elemSpare;
             if (spare == null) {
-                spare = context.assign(elemType, space);
+                spare = context.assign(elem, space);
                 if (spare == null) {
                     throw new IOException(
                         "Not found the spare of " + space
@@ -224,16 +217,8 @@ public class ListSpare extends BeanSpare<List> {
                 }
             }
 
-            Factory child =
-                spare.getFactory(elem);
-
-            if (child == null) {
-                return null;
-            }
-
-            return child.init(
-                this, context
-            );
+            Factory child = spare.getFactory(elem);
+            return child == null ? null : child.init(this, context);
         }
 
         @Override
@@ -251,7 +236,7 @@ public class ListSpare extends BeanSpare<List> {
         ) throws IOException {
             Spare<?> spare = elemSpare;
             if (spare == null) {
-                spare = context.assign(elemType, space);
+                spare = context.assign(elem, space);
                 if (spare == null) {
                     throw new IOException(
                         "Not found the spare of " + space
@@ -260,9 +245,7 @@ public class ListSpare extends BeanSpare<List> {
             }
 
             bean.add(
-                spare.read(
-                    this, value
-                )
+                spare.read(this, value)
             );
         }
 
