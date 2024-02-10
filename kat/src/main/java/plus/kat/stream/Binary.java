@@ -15,6 +15,8 @@
  */
 package plus.kat.stream;
 
+import java.nio.charset.Charset;
+
 /**
  * @author kraity
  * @since 0.0.1
@@ -26,6 +28,9 @@ public class Binary implements ByteSequence {
 
     protected byte state;
     protected byte[] value;
+
+    protected static final Charset
+        UTF_8 = Charset.forName("UTF-8");
 
     /**
      * Constructs an empty binary

@@ -18,7 +18,6 @@ package plus.kat.chain;
 import plus.kat.stream.Binary;
 
 import static plus.kat.stream.Toolkit.*;
-import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author kraity

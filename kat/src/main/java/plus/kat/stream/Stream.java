@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import static plus.kat.stream.Toolkit.*;
 import static plus.kat.stream.Toolkit.Streams.*;
-import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author kraity

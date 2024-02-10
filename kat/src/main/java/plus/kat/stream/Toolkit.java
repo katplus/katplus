@@ -28,7 +28,7 @@ import java.util.*;
 import java.lang.reflect.*;
 
 import static plus.kat.Algo.*;
-import static java.nio.charset.StandardCharsets.*;
+import static plus.kat.stream.Binary.*;
 
 /**
  * @author kraity
