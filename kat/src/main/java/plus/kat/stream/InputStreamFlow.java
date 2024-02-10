@@ -60,13 +60,12 @@ public final class InputStreamFlow extends Flow {
         byte[] buf = value;
         InputStream in = source;
 
+        index = 0;
         if (buf != null) {
             return limit = in.read(buf);
         }
 
-        index = 0;
         int m = in.available();
-
         if (m < 1 || m > 1023) {
             return limit = in.read(
                 value = STREAMS.apply(2048)
