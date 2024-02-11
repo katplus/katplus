@@ -6,7 +6,7 @@
 Kat+ 一个轻量级的 **KAT** + **XML** + **JSON** 库
 
 - 兼容 **Kotlin**
-- 兼容 **Android 6+**
+- 兼容 **Android kitkat+**
 
 致力于安全性、规范性、拓展性和轻量性的微组件
 
