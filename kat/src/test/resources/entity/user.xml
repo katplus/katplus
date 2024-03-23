@@ -1,0 +1,5 @@
+<!-- this is a test entity -->
+<User>
+    <id>1</id>
+    <name>kraity</name>
+</User>
