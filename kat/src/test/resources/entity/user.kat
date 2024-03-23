@@ -1,0 +1,5 @@
+# this is a test entity
+@plus.kat.bean.User {
+    id:Int = 1,
+    name:String = kraity
+}
