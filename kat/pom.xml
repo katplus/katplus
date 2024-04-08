@@ -65,6 +65,15 @@
                 <artifactId>moditect-maven-plugin</artifactId>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/source</directory>
+                <includes>
+                    <include>*.pro</include>
+                </includes>
+                <targetPath>META-INF/proguard</targetPath>
+            </resource>
+        </resources>
     </build>
 
 </project>
