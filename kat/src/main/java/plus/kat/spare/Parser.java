@@ -417,7 +417,7 @@ public class Parser extends Factory implements Closeable {
                 generic : parent.getType(generic);
         }
         throw new IllegalArgumentException(
-            "Received unknown mold type is illegal"
+            "Received unknown generic type is null"
         );
     }
 
@@ -428,7 +428,7 @@ public class Parser extends Factory implements Closeable {
         @Nilable Type last
     ) {
         if (last != null) {
-            type = last;
+            type = typeOf(last);
         }
     }
 
@@ -446,9 +446,7 @@ public class Parser extends Factory implements Closeable {
     public void setSpare(
         @Nilable Spare<?> last
     ) {
-        if (last != null) {
-            spare = last;
-        }
+        if (last != null) spare = last;
     }
 
     /**
@@ -465,9 +463,7 @@ public class Parser extends Factory implements Closeable {
     public void setContext(
         @Nilable Context last
     ) {
-        if (last != null) {
-            context = last;
-        }
+        if (last != null) context = last;
     }
 
     /**

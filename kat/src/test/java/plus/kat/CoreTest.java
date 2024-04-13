@@ -8,7 +8,6 @@ import java.util.concurrent.*;
 
 import org.junit.jupiter.api.Test;
 
-import static plus.kat.BeanTest.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -77,9 +76,9 @@ public class CoreTest {
     @Test
     public void test1() throws IOException {
         Data<User[]> data = Kat.decode(
-            new Bean<Data<User[]>>(
+            new Klass<Data<User[]>>(
             ) {
-            }.type,
+            },
             "{data=[{id=1,name=kraity},{id=2,name=kraithy}]}"
         );
 
@@ -119,9 +118,9 @@ public class CoreTest {
     @Test
     public void test2() throws IOException {
         Bundle<Data<HashMap<String, Long>>> data = Kat.decode(
-            new Bean<Bundle<Data<HashMap<String, Long>>>>(
+            new Klass<Bundle<Data<HashMap<String, Long>>>>(
             ) {
-            }.type,
+            },
             "{bean={data={id=123456}}}"
         );
 
@@ -153,9 +152,9 @@ public class CoreTest {
     @Test
     public void test3() throws IOException {
         Bundle<Data<User>> data = Kat.decode(
-            new Bean<Bundle<Data<User>>>(
+            new Klass<Bundle<Data<User>>>(
             ) {
-            }.type,
+            },
             "{bean={data={id=1,name=kraity}}}"
         );
 
@@ -192,9 +191,9 @@ public class CoreTest {
     @Test
     public void test4() throws IOException {
         Group<Data<User>> data = Kat.decode(
-            new Bean<Group<Data<User>>>(
+            new Klass<Group<Data<User>>>(
             ) {
-            }.type,
+            },
             "{bundle={bean={data={id=1,name=kraity}}}}"
         );
 
@@ -234,9 +233,9 @@ public class CoreTest {
     @Test
     public void test5() throws IOException {
         Bucket<String, User> data = Kat.decode(
-            new Bean<Bucket<String, User>>(
+            new Klass<Bucket<String, User>>(
             ) {
-            }.type,
+            },
             "{oneself={id=1,name=kraity},friends={one={id=2,name=kat},two={id=3,name=plus}}}"
         );
 
@@ -291,9 +290,9 @@ public class CoreTest {
     @Test
     public void test6() throws IOException {
         Packet<User> data = Kat.decode(
-            new Bean<Packet<User>>(
+            new Klass<Packet<User>>(
             ) {
-            }.type,
+            },
             "{bag={id=1,name=kraity}}"
         );
 
@@ -336,9 +335,9 @@ public class CoreTest {
     @Test
     public void test7() throws IOException {
         Animal<User> data = Kat.decode(
-            new Bean<Animal<User>>(
+            new Klass<Animal<User>>(
             ) {
-            }.type,
+            },
             "{master={id=1,name=kraity}}"
         );
 
@@ -369,9 +368,9 @@ public class CoreTest {
     @Test
     public void test8() throws IOException {
         Dragon<User> data = Kat.decode(
-            new Bean<Dragon<User>>(
+            new Klass<Dragon<User>>(
             ) {
-            }.type,
+            },
             "{master={id=1,name=kraity}}"
         );
 
@@ -406,9 +405,9 @@ public class CoreTest {
     @Test
     public void test9() throws IOException {
         Container<Long> data = Kat.decode(
-            new Bean<Container<Long>>(
+            new Klass<Container<Long>>(
             ) {
-            }.type,
+            },
             "{elems=[[[[1,2]]],[[[3,4]]]]}"
         );
 
@@ -453,9 +452,9 @@ public class CoreTest {
     @Test
     public void test10() throws IOException {
         Container<HashMap<String, Double>> data = Kat.decode(
-            new Bean<Container<HashMap<String, Double>>>(
+            new Klass<Container<HashMap<String, Double>>>(
             ) {
-            }.type,
+            },
             "{elems=[[[[{volume=123456}]]]]}"
         );
 

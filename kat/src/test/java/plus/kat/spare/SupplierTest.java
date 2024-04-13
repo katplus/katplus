@@ -15,7 +15,6 @@ import java.util.concurrent.*;
 
 import static plus.kat.Algo.*;
 import static plus.kat.spare.Supplier.*;
-import static plus.kat.BeanTest.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.*;
 
@@ -152,8 +151,8 @@ public class SupplierTest {
 
             List<User> users1 = context.solve(
                 entry.getKey(),
-                new Bean<List<User>>() {
-                }.type,
+                new Klass<List<User>>() {
+                },
                 Flow.of(
                     entry.getValue()
                 )

@@ -33,6 +33,7 @@ import java.util.concurrent.*;
 
 import static plus.kat.Algo.*;
 import static plus.kat.lang.Uniform.*;
+import static plus.kat.spare.ClassSpare.*;
 
 /**
  * @author kraity
@@ -498,6 +499,7 @@ public interface Supplier extends Context {
 
             Provider[] PS = PRO;
             if (PS != null) {
+                type = typeOf(type);
                 for (Provider p : PS) {
                     spare = p.search(
                         type, this
@@ -529,6 +531,7 @@ public interface Supplier extends Context {
 
             Provider[] PS = PRO;
             if (PS != null) {
+                type = typeOf(type);
                 for (Provider p : PS) {
                     spare = p.search(
                         type, name, this

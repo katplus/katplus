@@ -23,6 +23,26 @@ package plus.kat
 
 import plus.kat.chain.*
 import plus.kat.spare.*
+import java.lang.reflect.*
+
+/**
+ * @author kraity
+ * @since 0.0.6
+ */
+abstract class Klass<T> : Type
+
+/**
+ * E.g.
+ * ```
+ *  val klass = klass<List<User>>()
+ *  val spare = context.assign(klass)
+ * ```
+ *
+ * @return [Klass]
+ * @since 0.0.6
+ */
+inline fun <reified T : Any>
+    klass() = object : Klass<T>() {}
 
 /**
  * Returns the spare of the

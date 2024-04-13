@@ -15,3 +15,6 @@
   @plus.kat.actor.Magic <methods>;
 }
 -keep, allowobfuscation, allowoptimization class <1>
+
+-keep, allowobfuscation class plus.kat.Klass
+-keep, allowobfuscation class * extends plus.kat.Klass

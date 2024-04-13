@@ -110,10 +110,24 @@ public class ClassSpare extends BaseSpare<Class> {
     }
 
     @Nullable
+    public static Type typeOf(
+        @Nullable Type type
+    ) {
+        if (type instanceof Klass) {
+            type = ((ParameterizedType)
+                type.getClass()
+                    .getGenericSuperclass())
+                .getActualTypeArguments()[0];
+        }
+        return type;
+    }
+
+    @Nullable
     @SuppressWarnings("unchecked")
     public static <T> Class<T> classOf(
         @Nullable Type type
     ) {
+        type = typeOf(type);
         if (type == null) {
             return null;
         }

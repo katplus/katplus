@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.util.*;
-import java.lang.reflect.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,26 +12,12 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class BeanTest {
 
-    public static class Bean<T> {
-
-        public Type type;
-
-        public Bean() {
-            Type t = getClass()
-                .getGenericSuperclass();
-            if (t instanceof ParameterizedType) {
-                type = ((ParameterizedType) t)
-                    .getActualTypeArguments()[0];
-            }
-        }
-    }
-
     @Test
     public void test_map1() throws IOException {
         Map<Integer, Long> map = Kat.decode(
-            new Bean<Map<Integer, Long>>(
+            new Klass<Map<Integer, Long>>(
             ) {
-            }.type,
+            },
             "{16:Double=123,32:Boolean=456}"
         );
 
@@ -44,9 +29,9 @@ public class BeanTest {
     @Test
     public void test_map2() throws IOException {
         Map<Integer, Long> map = Json.decode(
-            new Bean<Map<Integer, Long>>(
+            new Klass<Map<Integer, Long>>(
             ) {
-            }.type,
+            },
             "{\"16\":\"123\",\"32\":\"456\"}"
         );
 
@@ -58,9 +43,9 @@ public class BeanTest {
     @Test
     public void test_map3() throws IOException {
         Map<Integer, Long> map = Doc.decode(
-            new Bean<Map<Integer, Long>>(
+            new Klass<Map<Integer, Long>>(
             ) {
-            }.type,
+            },
             "<data><16>123</16><32>456</32></data>"
         );
 
@@ -72,9 +57,9 @@ public class BeanTest {
     @Test
     public void test_list1() throws IOException {
         List<Long> list = Kat.decode(
-            new Bean<List<Long>>(
+            new Klass<List<Long>>(
             ) {
-            }.type,
+            },
             "[@Int 123,@Float 456,@Double 789]"
         );
 
@@ -87,9 +72,9 @@ public class BeanTest {
     @Test
     public void test_map_array() throws IOException {
         Map<Long, Long>[][] data = Kat.decode(
-            new Bean<Map<Long, Long>[][]>(
+            new Klass<Map<Long, Long>[][]>(
             ) {
-            }.type,
+            },
             "[[{16=16,32=32},{64=64,128=128}]]"
         );
 
