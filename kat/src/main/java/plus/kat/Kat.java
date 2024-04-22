@@ -232,10 +232,12 @@ public class Kat extends Stream implements Chan {
             if (wide == 0) {
                 head = true;
                 value.accept(this);
+                head = false;
             } else {
                 ++depth;
                 head = true;
                 value.accept(this);
+                head = false;
                 --depth;
                 if (wide == 1) {
                     byte[] it = grow(
@@ -411,17 +413,20 @@ public class Kat extends Stream implements Chan {
             }
         }
 
-        head = true;
         join(left);
         if (wide == 0) {
+            head = true;
             coder.write(
                 (Chan) this, value
             );
+            head = false;
         } else {
             ++depth;
+            head = true;
             coder.write(
                 (Chan) this, value
             );
+            head = false;
             --depth;
             if (wide == 1) {
                 byte[] it = grow(
