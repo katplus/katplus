@@ -17,13 +17,13 @@ public class FlagTest {
     }
 
     @Test
-    public void test_date_as_timestamp() throws IOException {
+    public void test_date_as_digit() throws IOException {
         Time time = new Time();
         time.date = new Date(1641871353003L);
 
         try (Chan chan = Json.encode(time)) {
             assertEquals(
-                "{\"date\":\"2022-01-11 11:22:33.003\"}", chan.toString()
+                "{\"date\":\"2022-01-11T11:22:33.003+08:00\"}", chan.toString()
             );
         }
 

@@ -41,12 +41,11 @@ public class CalendarSpare extends TimeSpare<Calendar> {
         return getInstance();
     }
 
-    @Nullable
+    @Override
     public Calendar apply(
         @NotNull long time
     ) {
-        Calendar calendar
-            = getInstance();
+        Calendar calendar = apply();
         calendar.setTimeInMillis(time);
         return calendar;
     }
@@ -67,9 +66,7 @@ public class CalendarSpare extends TimeSpare<Calendar> {
                 calendar.getTimeInMillis()
             );
         } else {
-            serialize(
-                flux, calendar
-            );
+            write(flux, calendar);
         }
     }
 }

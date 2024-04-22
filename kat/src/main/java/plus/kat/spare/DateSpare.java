@@ -36,10 +36,12 @@ public class DateSpare extends TimeSpare<Date> {
 
     @Override
     public Date apply() {
-        return new Date();
+        return apply(
+            System.currentTimeMillis()
+        );
     }
 
-    @Nullable
+    @Override
     public Date apply(
         @NotNull long time
     ) {
@@ -62,8 +64,8 @@ public class DateSpare extends TimeSpare<Date> {
                 date.getTime()
             );
         } else {
-            serialize(
-                flux, date
+            write(
+                flux, date.getTime()
             );
         }
     }

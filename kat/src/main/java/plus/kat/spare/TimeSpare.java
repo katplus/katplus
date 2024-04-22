@@ -21,7 +21,7 @@ import plus.kat.chain.*;
 
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.TimeZone;
 import java.util.GregorianCalendar;
 
 import static java.util.Calendar.*;
@@ -54,10 +54,16 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
         super(klass, context);
     }
 
-    public T apply(
+    public abstract T apply(
         @NotNull long time
+    );
+
+    public T apply(
+        @NotNull Calendar calendar
     ) {
-        return null;
+        return apply(
+            calendar.getTimeInMillis()
+        );
     }
 
     public Border getBorder(
@@ -77,13 +83,7 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
             return null;
         }
 
-        if (stateOf(value) == 0) {
-            return apply(
-                value.toLong()
-            );
-        }
-
-        int i = 0;
+        int i = 0, x = 7;
         int l = value.size();
 
         scope:
@@ -93,7 +93,7 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
 
             check:
             {
-                if (9 < l && l < 30) {
+                if (l > 9) {
                     switch (w = v[4]) {
                         case '.':
                         case '-':
@@ -104,9 +104,19 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
                                 break scope;
                             }
                         }
+                        default: {
+                            switch (v[8]) {
+                                case ' ':
+                                case 'T': {
+                                    x = 6;
+                                    break check;
+                                }
+                            }
+                        }
                     }
                 }
-                if (flag.isFlag(Flag.DIGIT_AS_TIME)) {
+                if (stateOf(value) == 0 ||
+                    flag.isFlag(Flag.DIGIT_AS_TIME)) {
                     return apply(
                         value.toLong()
                     );
@@ -115,7 +125,7 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
             }
 
             int e = 4, n = 0, a;
-            int y = 0, m = 1, d;
+            int y = 0, M = 1, d;
 
             check:
             while (true) {
@@ -128,25 +138,32 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
                 }
 
                 if (i == e) {
-                    switch (i) {
+                    switch (e) {
                         case 4: {
                             y = n;
                             n = 0;
                             i = 5;
-                            e = 7;
+                            e = x;
+                            break;
+                        }
+                        case 6: {
+                            M = n;
+                            n = 0;
+                            e = 8;
                             break;
                         }
                         case 7: {
-                            m = n;
+                            M = n;
                             n = 0;
                             i = 8;
                             e = 10;
                             break;
                         }
+                        case 8:
                         case 10: {
                             d = n;
                             n = 0;
-                            e = 13;
+                            e += 3;
                             break check;
                         }
                     }
@@ -158,19 +175,20 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
                 calendar = CALENDAR.get();
                 calendar.clear();
                 calendar.setLenient(false);
-                calendar.set(YEAR, y);
-                calendar.set(MONTH, m - 1);
-                calendar.set(DAY_OF_MONTH, d);
-                return apply(
-                    calendar.getTimeInMillis()
+                calendar.setTimeZone(
+                    TimeZone.getDefault()
                 );
+                calendar.set(YEAR, y);
+                calendar.set(MONTH, M - 1);
+                calendar.set(DAY_OF_MONTH, d);
+                return apply(calendar);
             }
 
             switch (v[i++]) {
                 case ' ':
                 case 'T': {
-                    if (l > 15 &&
-                        v[13] == ':') {
+                    if (l > e + 2 &&
+                        v[e] == ':') {
                         break;
                     }
                 }
@@ -179,8 +197,8 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
                 }
             }
 
-            int h = 0, s = 0;
-            int min = 0, mil = 0;
+            int H = 0, s = 0;
+            int m = 0, ms = 0;
 
             check:
             while (true) {
@@ -193,48 +211,51 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
                 }
 
                 if (i == e) {
-                    switch (i) {
+                    switch (e) {
+                        case 11:
                         case 13: {
-                            h = n;
+                            H = n;
                             n = 0;
-                            i = 14;
-                            e = 16;
+                            i += 1;
+                            e += 3;
                             break;
                         }
+                        case 14:
                         case 16: {
-                            min = n;
-                            if (i == l ||
-                                v[i] != ':') {
-                                break check;
-                            } else {
-                                if (l > 18) {
+                            m = n;
+                            if (i < l && v[i] == ':') {
+                                if (l > e + 2) {
                                     n = 0;
-                                    i = 17;
-                                    e = 19;
+                                    i += 1;
+                                    e += 3;
                                     break;
                                 } else {
                                     break scope;
                                 }
                             }
+                            break check;
                         }
+                        case 17:
                         case 19: {
                             s = n;
-                            if (i == l ||
-                                v[i] != '.') {
-                                break check;
-                            } else {
-                                if (l > 22) {
-                                    n = 0;
-                                    i = 20;
-                                    e = 23;
-                                    break;
+                            if (i < l && v[i] == '.') {
+                                if (l > e + 1) {
+                                    n = 1000;
+                                    while (++i < l) {
+                                        a = v[i] - 0x30;
+                                        if (a < 0 ||
+                                            a > 9) {
+                                            break;
+                                        }
+                                        if (n != 0) {
+                                            n /= 10;
+                                            ms += a * n;
+                                        }
+                                    }
                                 } else {
                                     break scope;
                                 }
                             }
-                        }
-                        case 23: {
-                            mil = n;
                             break check;
                         }
                     }
@@ -244,11 +265,6 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
             int scale = 60000;
             if (i == l) {
                 scale = 1;
-                // truncate up to
-                // 3 leap seconds
-                if (s > 59 && s < 63) {
-                    s = 59;
-                }
             } else {
                 check:
                 switch (v[i++]) {
@@ -301,19 +317,21 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
             calendar.clear();
             calendar.setLenient(false);
             calendar.set(YEAR, y);
-            calendar.set(MONTH, m - 1);
+            calendar.set(MONTH, M - 1);
             calendar.set(DAY_OF_MONTH, d);
-            calendar.set(HOUR_OF_DAY, h);
-            calendar.set(MINUTE, min);
+            calendar.set(HOUR_OF_DAY, H);
+            calendar.set(MINUTE, m);
             calendar.set(SECOND, s);
-            calendar.set(MILLISECOND, mil);
-            if (scale != 1) {
+            calendar.set(MILLISECOND, ms);
+            if (scale == 1) {
+                calendar.setTimeZone(
+                    TimeZone.getDefault()
+                );
+            } else {
                 calendar.set(DST_OFFSET, 0);
                 calendar.set(ZONE_OFFSET, scale);
             }
-            return apply(
-                calendar.getTimeInMillis()
-            );
+            return apply(calendar);
         }
 
         throw new IOException(
@@ -322,20 +340,21 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
         );
     }
 
-    protected void serialize(
+    public void write(
         @NotNull Flux flux,
-        @NotNull Date value
+        @NotNull long value
     ) throws IOException {
         Calendar calendar = CALENDAR.get();
         calendar.clear();
         calendar.setLenient(false);
-        calendar.setTimeInMillis(
-            value.getTime()
+        calendar.setTimeZone(
+            TimeZone.getDefault()
         );
-        serialize(flux, calendar);
+        calendar.setTimeInMillis(value);
+        write(flux, calendar);
     }
 
-    protected void serialize(
+    public void write(
         @NotNull Flux flux,
         @NotNull Calendar value
     ) throws IOException {
@@ -355,7 +374,7 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
         flux.emit((byte) (num / 10 + 0x30));
         flux.emit((byte) (num % 10 + 0x30));
 
-        flux.emit((byte) ' ');
+        flux.emit((byte) 'T');
         num = value.get(HOUR_OF_DAY);
         flux.emit((byte) (num / 10 + 0x30));
         flux.emit((byte) (num % 10 + 0x30));
@@ -374,6 +393,28 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
         num = value.get(MILLISECOND);
         flux.emit((byte) (num / 100 + 0x30));
         flux.emit((byte) (num / 10 % 10 + 0x30));
+        flux.emit((byte) (num % 10 + 0x30));
+
+        int zone = value.get(ZONE_OFFSET);
+        if (zone == 0) {
+            flux.emit((byte) 'Z');
+            return;
+        }
+
+        if (zone > 0) {
+            flux.emit((byte) '+');
+        } else {
+            zone = -zone;
+            flux.emit((byte) '-');
+        }
+
+        num = zone / 3600000;
+        flux.emit((byte) (num / 10 + 0x30));
+        flux.emit((byte) (num % 10 + 0x30));
+
+        flux.emit((byte) ':');
+        num = (zone % 3600000) / 60000;
+        flux.emit((byte) (num / 10 + 0x30));
         flux.emit((byte) (num % 10 + 0x30));
     }
 }
