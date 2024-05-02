@@ -15,6 +15,7 @@
  */
 @file:JvmName("Pure")
 @file:Suppress(
+    "FunctionName",
     "HasPlatformType",
     "NOTHING_TO_INLINE"
 )
@@ -80,6 +81,20 @@ inline fun <reified T : Any>
     spare(name: Space) = Spare.of(name, T::class.java)
 
 /**
+ * Encodes the bean to kat [Chan]
+ *
+ * E.g.
+ * ```
+ *  val bean = ...
+ *  val chan = Kat(bean)
+ * ```
+ *
+ * @return [Chan]
+ * @since 0.0.6
+ */
+inline fun Kat(bean: Any?) = Kat.encode(bean)
+
+/**
  * Encodes the entity to kat [Chan]
  *
  * E.g.
@@ -96,6 +111,20 @@ inline fun <reified T : Any>
 inline fun kat(entity: Entity?) = Kat.encode(entity)
 
 /**
+ * Encodes the bean to doc [Chan]
+ *
+ * E.g.
+ * ```
+ *  val bean = ...
+ *  val chan = Doc(bean)
+ * ```
+ *
+ * @return [Chan]
+ * @since 0.0.6
+ */
+inline fun Doc(bean: Any?) = Doc.encode(bean)
+
+/**
  * Encodes the entity to doc [Chan]
  *
  * E.g.
@@ -110,6 +139,20 @@ inline fun kat(entity: Entity?) = Kat.encode(entity)
  * @since 0.0.6
  */
 inline fun doc(entity: Entity?) = Doc.encode(entity)
+
+/**
+ * Encodes the bean to json [Chan]
+ *
+ * E.g.
+ * ```
+ *  val bean = ...
+ *  val chan = Json(bean)
+ * ```
+ *
+ * @return [Chan]
+ * @since 0.0.6
+ */
+inline fun Json(bean: Any?) = Json.encode(bean)
 
 /**
  * Encodes the entity to json [Chan]
