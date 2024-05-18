@@ -125,7 +125,7 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
             }
 
             int e = 4, n = 0, a;
-            int y = 0, M = 1, d;
+            int y = 0, M = 0, d;
 
             check:
             while (true) {
@@ -142,7 +142,7 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
                         case 4: {
                             y = n;
                             n = 0;
-                            i = 5;
+                            i = x - 2;
                             e = x;
                             break;
                         }
@@ -163,7 +163,7 @@ public abstract class TimeSpare<T> extends BaseSpare<T> {
                         case 10: {
                             d = n;
                             n = 0;
-                            e += 3;
+                            e = e + 3;
                             break check;
                         }
                     }

@@ -64,60 +64,79 @@ public class UUIDSpare extends BaseSpare<UUID> {
             return null;
         }
 
-        stage:
+        check:
         {
-            int size = value.size();
-            if (size < 9 ||
-                size > 36) {
-                break stage;
-            }
+            int l = value.size();
+            byte[] v = value.flow();
 
-            int i = 0, k = 0;
+            int i = 0, x = 0, e = 8;
             long m = 0, n = 0, u = 0;
 
-            byte[] flow = value.flow();
-            while (i < size) {
-                byte b = flow[i++];
-                if (b > 0x2F) {
-                    if (b < 0x3A) {
-                        u = u << 4 | (b - 0x30);
-                        continue;
+            switch (l) {
+                case 32:
+                    break;
+                case 36:
+                    if (v[0x08] == '-' &&
+                        v[0x0D] == '-' &&
+                        v[0x12] == '-' &&
+                        v[0x17] == '-') {
+                        x = 1;
+                        break;
                     }
-                    if (b > 0x60 && b < 0x67) {
-                        u = u << 4 | (b - 0x57);
-                        continue;
-                    }
-                    if (b > 0x40 && b < 0x47) {
-                        u = u << 4 | (b - 0x37);
-                        continue;
-                    }
-                }
-                if (b == 0x2D) {
-                    switch (k++) {
-                        case 0: {
-                            m = u & 0xFFFFFFFFL;
-                            u = 0;
-                            continue;
-                        }
-                        case 1:
-                        case 2: {
-                            m = m << 16 | u & 0xFFFFL;
-                            u = 0;
-                            continue;
-                        }
-                        case 3: {
-                            n = u & 0xFFFFL;
-                            u = 0;
-                            continue;
-                        }
-                    }
-                }
-                break stage;
+                default:
+                    break check;
             }
 
-            return k != 4 ? null : new UUID(
-                m, n << 48 | u & 0xFFFFFFFFFFFFL
-            );
+            while (i < l) {
+                byte w = v[i++];
+                if (w > 0x2F) {
+                    if (w < 0x3A) {
+                        u = u << 4 | (w - 0x30);
+                    } else if (w > 0x60 && w < 0x67) {
+                        u = u << 4 | (w - 0x57);
+                    } else if (w > 0x40 && w < 0x47) {
+                        u = u << 4 | (w - 0x37);
+                    } else {
+                        break check;
+                    }
+                }
+
+                if (i == e) {
+                    switch (e) {
+                        case 8: {
+                            m = u & 0xFFFFFFFFL;
+                            u = 0;
+                            e = (i += x) + 4;
+                            continue;
+                        }
+                        case 12:
+                        case 13:
+                        case 16:
+                        case 18: {
+                            m = m << 16 | u & 0xFFFFL;
+                            u = 0;
+                            e = (i += x) + 4;
+                            continue;
+                        }
+                        case 20:
+                        case 23: {
+                            n = u & 0xFFFFL;
+                            u = 0;
+                            e = (i += x) + 12;
+                            continue;
+                        }
+                        case 32:
+                        case 36: {
+                            n = n << 48 | u & 0xFFFFFFFFFFFFL;
+                            u = 0;
+                            continue;
+                        }
+                    }
+                    break check;
+                }
+            }
+
+            return new UUID(m, n);
         }
 
         throw new IOException(

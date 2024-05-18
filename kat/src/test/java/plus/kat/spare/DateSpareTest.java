@@ -64,6 +64,15 @@ public class DateSpareTest {
         try (Chan chan = spare.write(date5)) {
             assertEquals("\"2022-01-11T19:11:11.012+08:00\"", chan.toString());
         }
+
+        Date date6 = spare.read(
+            Flow.of("\"1111-11-11T11:11:11.0123456789Z\"")
+        );
+
+        assertNotNull(date6);
+        try (Chan chan = spare.write(date6)) {
+            assertEquals("\"1111-11-11T19:11:11.012+08:00\"", chan.toString());
+        }
     }
 
     Flag flag = v -> false;
