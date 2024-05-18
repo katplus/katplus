@@ -89,16 +89,14 @@ public class UUIDSpare extends BaseSpare<UUID> {
 
             while (i < l) {
                 byte w = v[i++];
-                if (w > 0x2F) {
-                    if (w < 0x3A) {
-                        u = u << 4 | (w - 0x30);
-                    } else if (w > 0x60 && w < 0x67) {
-                        u = u << 4 | (w - 0x57);
-                    } else if (w > 0x40 && w < 0x47) {
-                        u = u << 4 | (w - 0x37);
-                    } else {
-                        break check;
-                    }
+                if (w > 0x2F && w < 0x3A) {
+                    u = u << 4 | (w - 0x30);
+                } else if (w > 0x60 && w < 0x67) {
+                    u = u << 4 | (w - 0x57);
+                } else if (w > 0x40 && w < 0x47) {
+                    u = u << 4 | (w - 0x37);
+                } else {
+                    break check;
                 }
 
                 if (i == e) {
